@@ -1,0 +1,23 @@
+ZEBJUS V12.1 FINAL GUIDED ORDER QA
+=======================================================
+
+[PASS] All final guided steps present
+[PASS] Guided order is correct
+[PASS] No FC standoff step
+[PASS] FC double-side tape step exists
+[PASS] Top plate comes after ESC power soldering
+[PASS] Top plate comes before FC
+[PASS] Battery under-frame step present
+[PASS] XT60 after battery
+[PASS] Props last before inspection
+[PASS] Known I/O parse bug absent
+[PASS] Correct quoted I/O key present
+[PASS] Cache bumped to V12.1
+[PASS] app.js syntax passes
+[PASS] All JS files parse
+[PASS] All local refs exist
+
+Passed 15 / 15 checks.
+
+Final order:
+bottom → arms → guards → motors → motorScrews → escs → motorWire → powerWire → top → frameScrews → fcTape → fc → escFc → straps → battery → xt60 → props → inspect
