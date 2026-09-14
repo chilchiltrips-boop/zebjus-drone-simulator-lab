@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V17</title>
-<link rel="stylesheet" href="styles.css?v=17.0.0"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V17.1</title>
+<link rel="stylesheet" href="styles.css?v=17.1.0"><link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V17 • PID Learning Simulator • correct Rate/Angle control • live P/I/D teaching</span></div></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V17.1 • PID Learning Simulator • softer user-friendly audio • quiet battery power-up</span></div></div>
  <div class="top-actions"><span id="assetStatus" class="status">Loading V16 local module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
@@ -189,9 +189,10 @@
 <section id="tab-telemetry" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>ATTITUDE</small><h2>Live telemetry</h2></div></div><div class="metrics"><div><span>ROLL</span><b id="telRoll">0.00°</b></div><div><span>PITCH</span><b id="telPitch">0.00°</b></div><div><span>YAW</span><b id="telYaw">0.00°</b></div><div><span>BATTERY</span><b id="telBatt">-- V</b></div></div></div><div class="form-card"><div class="panel-head"><div><small>RAW</small><h2>Telemetry stream</h2></div></div><pre id="telemetryLog" class="terminal"></pre></div></div></section>
 <section id="tab-settings" class="panel tab-panel"><div class="settings-grid"><div class="form-card"><div class="panel-head"><div><small>KEYBOARD</small><h2>Simulator key mapping</h2></div></div><p class="micro-note">Click a key field, then press the key you want. Save settings to keep the mapping on this browser.</p><div id="keySettings" class="key-settings"></div><div class="button-row"><button id="saveKeysBtn" class="btn primary">Save key mapping</button><button id="resetKeysBtn" class="btn ghost">Restore defaults</button></div></div><div class="form-card"><div class="panel-head"><div><small>FC CASE / EXPANSION</small><h2>Accessible case headers</h2></div></div><div class="io-guide"><div><b>FC MOUNT</b><span>Double-side foam tape directly on the top plate • NO spacer / standoff.</span></div><div><b>ESC1–ESC4</b><span>Upward 2.54 mm male header pins. Source row • +5V centre row • GND bottom row. ESC female plug comes down from above.</span></div><div><b>External GPIO ×3</b><span>Source / +5V / GND. Use for servo, LED, LED matrix, GPS/control or sensors as appropriate.</span></div><div><b>RX / PPM header</b><span>Optional. PPM signal / +5V / GND. When RX is not used, the source pin can be used as another compatible I/O.</span></div><div><b>I²C 4-pin</b><span>VCC • GND • SCL • SDA remains user accessible.</span></div></div><img class="fc-reference-img" src="fc_board_reference.png" alt="ZEBJUS FC accessible pin reference"></div>
 <div class="form-card"><div class="panel-head"><div><small>PROJECT TOOLS</small><h2>Export / report / fullscreen</h2></div></div><div class="export-grid"><button id="exportProjectBtn" class="btn ghost">Export project JSON</button><button id="importProjectBtn" class="btn ghost">Import project JSON</button><input id="importProjectFile" type="file" accept=".json,application/json" hidden><button id="exportSvgBtn" class="btn ghost">Export wiring SVG</button><button id="exportPngBtn" class="btn ghost">Export wiring PNG</button><button id="exportBomBtn" class="btn ghost">Export BOM CSV</button><button id="exportReportBtn" class="btn ghost">Progress report</button><button id="printWiringBtn" class="btn ghost">Print / Save PDF</button><button id="fullscreenBtn" class="btn primary">Fullscreen Lab</button></div></div>
+<div class="form-card"><div class="panel-head"><div><small>AUDIO</small><h2>Comfortable sound effects</h2></div><span id="soundState" class="status good">ON</span></div><label class="sound-toggle"><input id="soundEnabled" type="checkbox" checked> Enable simulator / component sounds</label><label>Master volume <output id="soundVolumeOut">55%</output><input id="soundVolume" type="range" min="0" max="100" value="55" step="5"></label><p class="micro-note">Assembly battery power-up uses only soft confirmation chimes. Continuous motor sound is reserved for the PID simulator and 2D BLDC test.</p></div>
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=17.0.0"></script>
-<script type="module" src="app.js?v=17.0.0"></script>
+<script src="ui-runtime.js?v=17.1.0"></script>
+<script type="module" src="app.js?v=17.1.0"></script>
 </body></html>

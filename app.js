@@ -7,7 +7,7 @@ window.__zebjusModuleParsed=true;
 window.__zebjusAppLoaded=false;
 window.__zebjus3DReady=false;
 function setBootStatus(text,kind=''){const s=$('#assetStatus');if(s){s.textContent=text;s.className='status'+(kind?' '+kind:'')}}
-setBootStatus('V17 local module loaded • starting PID learning simulator…');
+setBootStatus('V17.1 local module loaded • starting PID learning simulator…');
 
 /* V9: local camera controls. No network add-on is required for 3D startup. */
 class MiniOrbitControls {
@@ -135,26 +135,34 @@ function cloneAsset(path){return null}
 
 /* ==================== V13 SOUND / POWER FX ==================== */
 let audioCtx=null,powerSequenceToken=0;
+let soundEnabled=(()=>{try{return localStorage.getItem('zebjus-v171-sound')!=='off'}catch{return true}})();
+let soundVolume=(()=>{try{return clamp(+(localStorage.getItem('zebjus-v171-volume')||.55),0,1)}catch{return .55}})();
 function getAudioCtx(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}catch{return null}}
-function tone(freq=440,dur=.08,type='sine',gain=.035,delay=0){
- const ac=getAudioCtx();if(!ac)return;const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+delay;o.type=type;o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.001,gain),t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+dur+.02)
+function tone(freq=440,dur=.08,type='sine',gain=.025,delay=0){
+ if(!soundEnabled||soundVolume<=0)return;
+ const ac=getAudioCtx();if(!ac)return;const o=ac.createOscillator(),g=ac.createGain(),f=ac.createBiquadFilter(),t=ac.currentTime+delay;
+ o.type=type;o.frequency.setValueAtTime(freq,t);f.type='lowpass';f.frequency.setValueAtTime(1800,t);f.Q.value=.35;
+ const level=Math.max(.0004,gain*soundVolume);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(level,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+ o.connect(f);f.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+dur+.03)
 }
 function playFX(kind){
+ if(!soundEnabled)return;
  const seq={
-  plate:[[155,.06,'triangle'],[205,.07,'triangle']],
-  arm:[[215,.05,'square'],[280,.045,'triangle']],
-  guard:[[310,.06,'triangle'],[370,.04,'sine']],
-  motor:[[420,.05,'sine'],[560,.07,'sine']],
-  esc:[[520,.04,'square'],[690,.05,'square']],
-  tape:[[130,.055,'triangle'],[105,.06,'triangle']],
-  fc:[[640,.045,'sine'],[820,.07,'sine']],
-  battery:[[235,.075,'sine'],[185,.08,'triangle']],
-  strap:[[175,.05,'triangle'],[145,.06,'triangle']],
-  prop:[[390,.04,'triangle'],[510,.05,'sine']],
-  connector:[[760,.035,'sine'],[990,.05,'sine']],
-  screw:[[960,.018,'square'],[1180,.018,'square']]
+  plate:[[190,.055,'triangle'],[245,.065,'sine']],
+  arm:[[235,.045,'triangle'],[295,.055,'sine']],
+  guard:[[300,.05,'triangle'],[355,.055,'sine']],
+  motor:[[330,.045,'sine'],[430,.065,'sine']],
+  esc:[[410,.045,'triangle'],[520,.055,'sine']],
+  tape:[[165,.045,'triangle'],[135,.055,'sine']],
+  fc:[[510,.04,'sine'],[650,.06,'sine']],
+  battery:[[205,.06,'triangle'],[175,.065,'sine']],
+  strap:[[180,.04,'triangle'],[150,.05,'sine']],
+  prop:[[300,.04,'triangle'],[390,.05,'sine']],
+  connector:[[520,.035,'sine'],[660,.055,'sine']],
+  screw:[[520,.014,'triangle'],[610,.016,'sine']]
  };
- (seq[kind]||[[360,.05,'sine']]).forEach((q,i)=>tone(q[0],q[1],q[2],.022,i*.045))
+ const baseGain=kind==='screw'?.010:kind==='connector'?.014:.013;
+ (seq[kind]||[[300,.05,'sine']]).forEach((q,i)=>tone(q[0],q[1],q[2],baseGain,i*.052))
 }
 
 const motorAudio={sim:null,wire:null,assembly:null};
@@ -162,8 +170,8 @@ function ensureMotorAudio(kind){
  const ac=getAudioCtx();if(!ac)return null;
  if(motorAudio[kind])return motorAudio[kind];
  const g=ac.createGain(),f=ac.createBiquadFilter(),o1=ac.createOscillator(),o2=ac.createOscillator(),o3=ac.createOscillator();
- g.gain.value=.0001;f.type='lowpass';f.frequency.value=2200;f.Q.value=.35;
- o1.type='sawtooth';o2.type='triangle';o3.type='sine';
+ g.gain.value=.0001;f.type='lowpass';f.frequency.value=1450;f.Q.value=.25;
+ o1.type='triangle';o2.type='sine';o3.type='sine';
  o1.frequency.value=70;o2.frequency.value=140;o3.frequency.value=35;
  o2.detune.value=7;o3.detune.value=-6;
  o1.connect(f);o2.connect(f);o3.connect(f);f.connect(g);g.connect(ac.destination);
@@ -174,15 +182,15 @@ function ensureMotorAudio(kind){
 function updateMotorAudio(kind,level,imbalance=0){
  const a=motorAudio[kind];if(!a)return;
  const t=a.ac.currentTime,l=clamp(level,0,1),imb=clamp(imbalance,0,1);
- const base=(kind==='wire'?85:kind==='assembly'?58:62)+l*(kind==='wire'?470:kind==='assembly'?330:390);
- a.o1.frequency.setTargetAtTime(base,t,.035);
- a.o2.frequency.setTargetAtTime(base*2.03+imb*35,t,.035);
- a.o3.frequency.setTargetAtTime(Math.max(28,base*.48),t,.05);
- a.f.frequency.setTargetAtTime(700+l*3200,t,.05);
- a.g.gain.setTargetAtTime(l>0?(kind==='wire'?.022:kind==='assembly'?.018:.030)+l*(kind==='wire'?.038:kind==='assembly'?.028:.050)+imb*.010:.0001,t,.055)
+ if(!soundEnabled||soundVolume<=0){a.g.gain.setTargetAtTime(.0001,t,.06);return}
+ const base=(kind==='wire'?72:kind==='assembly'?58:56)+l*(kind==='wire'?350:kind==='assembly'?220:310);
+ a.o1.frequency.setTargetAtTime(base,t,.05);a.o2.frequency.setTargetAtTime(base*2.0+imb*18,t,.05);a.o3.frequency.setTargetAtTime(Math.max(28,base*.48),t,.07);
+ a.f.frequency.setTargetAtTime(650+l*1900,t,.07);
+ const raw=kind==='wire'?.010+l*.020:kind==='assembly'?.004+l*.007:.012+l*.026;
+ a.g.gain.setTargetAtTime((raw+imb*.004)*soundVolume,t,.08)
 }
 function silenceMotorAudio(kind){const a=motorAudio[kind];if(a)a.g.gain.setTargetAtTime(.0001,a.ac.currentTime,.06)}
-function escBeep(i){tone(650+i*115,.07,'square',.026,0);tone(820+i*105,.055,'square',.020,.08)}
+function escBeep(i){const notes=[392,440,494,523];tone(notes[i]||440,.055,'sine',.010,0);tone((notes[i]||440)*1.25,.05,'sine',.007,.065)}
 function setEscLed(index,on){
  const p=state.parts.filter(x=>x.type==='esc')[index];if(!p)return;
  p.obj.traverse(o=>{if(o.isMesh&&o.name==='ESC_POWER_LED')o.material.emissiveIntensity=on?2.4:0})
@@ -212,10 +220,10 @@ function setPowerVisual(on,instant=false){
 function runPowerUpSequence(){
  const token=++powerSequenceToken;state.powered=true;state.powerStage=1;for(let i=0;i<4;i++)setEscLed(i,false);setFcLeds(false,false);rebuildPowerPulses();updatePowerUi();
  [0,1,2,3].forEach(i=>setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setEscLed(i,true);escBeep(i)},300+i*190));
- setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;state.powerStage=2;setFcLeds(true,false);tone(1180,.08,'sine',.025);updatePowerUi();notify('FC RGB LED RED • booting • gyro initialising…')},1120);
- setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setFcLeds(true,true);tone(1480,.06,'sine',.02);notify('Gyro OK • receiver / control input check…')},1360);
+ setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;state.powerStage=2;setFcLeds(true,false);tone(660,.07,'sine',.010);updatePowerUi();notify('FC RGB LED RED • booting • gyro initialising…')},1120);
+ setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setFcLeds(true,true);tone(784,.055,'sine',.008);notify('Gyro OK • receiver / control input check…')},1360);
  setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setFcLeds(true,false)},1510);
- setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;state.powerStage=3;setFcLeds(true,true);tone(1680,.09,'sine',.018);updatePowerUi();updateMotorAudio('assembly',.13,0);notify('READY TO ARM • ESC idle tone • FC RGB green/cyan • prop idle enabled.','good')},1740)
+ setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;state.powerStage=3;setFcLeds(true,true);tone(880,.075,'sine',.009);tone(1175,.08,'sine',.007,.09);updatePowerUi();silenceMotorAudio('assembly');notify('READY TO ARM • soft confirmation chime • FC RGB green/cyan • prop idle animation enabled.','good')},1740)
 }
 function animateBatteryPlug(connect=true){
  if(!extrasRoot)return;const bottom=installed('bottomPlate','bottom'),bat=installed('battery','BAT');if(!bottom||!bat)return;
@@ -239,7 +247,7 @@ function connectBatteryPower(fromGuided=false){
  if(!installed('battery','BAT')){notify('Install the LiPo underneath the frame first.','bad');return false}
  if(!installed('bottomPlate','bottom')){notify('Bottom PDB is missing.','bad');return false}
  [['BAT.+','PDB.BAT+'],['BAT.-','PDB.BAT-']].forEach(([from,to])=>{if(!state.connections.some(c=>c.from===from&&c.to===to))state.connections.push({from,to,new:true,id:`bat-${Date.now()}-${from}`})});
- state.doneActions.add('xt60');ensureMotorAudio('assembly');animateBatteryPlug(true);playFX('connector');setTimeout(xt60Spark,420);rebuild3DWires();rebuildSolder();render2D();renderAssemblyUI();validate2D();
+ state.doneActions.add('xt60');silenceMotorAudio('assembly');animateBatteryPlug(true);playFX('connector');setTimeout(xt60Spark,420);rebuild3DWires();rebuildSolder();render2D();renderAssemblyUI();validate2D();
  notify('XT60 inserted • beginning ESC / FC startup sequence…','good');runPowerUpSequence();return true
 }
 function disconnectBatteryPower(){
@@ -711,7 +719,7 @@ function loop3D(t){
      a.obj.scale.setScalar(1+lt*5);a.obj.material.opacity=Math.max(0,1-lt*2.7);if(a.light)a.light.intensity=Math.max(0,4-lt*12);if(lt>.38){a.obj.removeFromParent();a.light?.removeFromParent();animations.splice(i,1)}
    }
  }
- if(state.powered&&state.powerStage>=3){state.parts.filter(p=>p.type==='prop').forEach((p,i)=>p.obj.rotation.y+=(i%2?1:-1)*.014);updateMotorAudio('assembly',.13,0)}else silenceMotorAudio('assembly');
+ if(state.powered&&state.powerStage>=3){state.parts.filter(p=>p.type==='prop').forEach((p,i)=>p.obj.rotation.y+=(i%2?1:-1)*.014);silenceMotorAudio('assembly')}else silenceMotorAudio('assembly');
  powerPulseItems.forEach(x=>{x.phase=(x.phase+x.speed*.016)%1;x.mesh.position.copy(x.curve.getPointAt(x.phase))});
  partsRoot.traverse(o=>{if(o.isMesh&&o.material){o.material.transparent=state.xray;o.material.opacity=state.xray?.36:1;o.material.depthWrite=!state.xray}});
  if(state.fcCaseXray&&!state.xray)applyFcCaseXray();
@@ -1050,10 +1058,10 @@ function buildDownwash(){
 }
 function ensureSimMotorBank(){
  const ac=getAudioCtx();if(!ac||simMotorBank)return simMotorBank;
- simMotorBank=[0,1,2,3].map(i=>{const o=ac.createOscillator(),g=ac.createGain(),f=ac.createBiquadFilter();o.type=i%2?'sawtooth':'triangle';o.detune.value=[-8,4,11,-3][i];g.gain.value=.0001;f.type='lowpass';f.frequency.value=1800;o.connect(f);f.connect(g);g.connect(ac.destination);o.start();return{o,g,f}});return simMotorBank
+ simMotorBank=[0,1,2,3].map(i=>{const o=ac.createOscillator(),g=ac.createGain(),f=ac.createBiquadFilter();o.type=i%2?'sine':'triangle';o.detune.value=[-8,4,11,-3][i];g.gain.value=.0001;f.type='lowpass';f.frequency.value=1800;o.connect(f);f.connect(g);g.connect(ac.destination);o.start();return{o,g,f}});return simMotorBank
 }
 function updateSimMotorBank(mix){
- if(!simMotorBank)return;const t=getAudioCtx()?.currentTime||0;mix.forEach((v,i)=>{const s=clamp(v/100,0,1),m=simMotorBank[i],hz=70+s*440+i*3;m.o.frequency.setTargetAtTime(hz,t,.035);m.f.frequency.setTargetAtTime(800+s*3000,t,.04);m.g.gain.setTargetAtTime(state.sim.running?(.003+s*.014):.0001,t,.05)})
+ if(!simMotorBank)return;const t=getAudioCtx()?.currentTime||0;mix.forEach((v,i)=>{const s=clamp(v/100,0,1),m=simMotorBank[i],hz=70+s*440+i*3;m.o.frequency.setTargetAtTime(hz,t,.035);m.f.frequency.setTargetAtTime(800+s*3000,t,.04);m.g.gain.setTargetAtTime(state.sim.running&&soundEnabled?((.0015+s*.0065)*soundVolume):.0001,t,.07)})
 }
 function silenceSimMotorBank(){if(!simMotorBank)return;const t=getAudioCtx()?.currentTime||0;simMotorBank.forEach(m=>m.g.gain.setTargetAtTime(.0001,t,.06))}
 function ensureSim(){
@@ -1250,9 +1258,9 @@ function simKeyDown(e){if(keyCaptureAction){e.preventDefault();keyMap[keyCapture
 function simKeyUp(e){heldKeys.delete(e.key);if([keyMap.rollLeft,keyMap.rollRight,keyMap.pitchForward,keyMap.pitchBack].includes(e.key))setStickVisual('right',state.sim.cmdRoll,-state.sim.cmdPitch);if([keyMap.yawLeft,keyMap.yawRight].includes(e.key))setStickVisual('left',state.sim.cmdYaw,(1500-state.sim.throttle)/500)}
 function renderKeySettings(){const box=$('#keySettings');if(!box)return;const labels={rollLeft:'Roll left',rollRight:'Roll right',pitchForward:'Pitch forward',pitchBack:'Pitch back',throttleUp:'Throttle +',throttleDown:'Throttle −',yawLeft:'Yaw left',yawRight:'Yaw right',run:'Run / Stop'};box.innerHTML=Object.entries(labels).map(([k,l])=>`<div class="key-row"><span>${l}</span><button class="key-capture ${keyCaptureAction===k?'listening':''}" data-key-action="${k}">${keyCaptureAction===k?'PRESS KEY…':keyLabel(keyMap[k])}</button></div>`).join('');$$('.key-capture').forEach(b=>b.onclick=()=>{keyCaptureAction=b.dataset.keyAction;renderKeySettings()})}
 function downloadBlob(name,data,type='text/plain'){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)}
-function projectPayload(){return{version:'17.0',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
+function projectPayload(){return{version:'17.1',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
 function exportProjectJson(){downloadBlob('ZEBJUS_F450_Project_V17.json',JSON.stringify(projectPayload(),null,2),'application/json')}
-function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V17',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
+function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V171',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
 function exportWiringSvg(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg);downloadBlob('ZEBJUS_F450_Wiring.svg',xml,'image/svg+xml')}
 function exportWiringPng(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg),img=new Image(),url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml'}));img.onload=()=>{const c=document.createElement('canvas');c.width=1500;c.height=900;const x=c.getContext('2d');x.fillStyle='#07131d';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0);URL.revokeObjectURL(url);c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ZEBJUS_F450_Wiring.png';a.click()},'image/png')};img.src=url}
 function exportBom(){const rows=[['Item','Quantity','Rating / Notes']];products.filter(p=>state.parts.some(x=>x.type===p.type)).forEach(p=>rows.push([p.name,state.parts.filter(x=>x.type===p.type).length,Object.values(p.rating||{}).join(' • ')]));downloadBlob('ZEBJUS_F450_BOM.csv',rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n'),'text/csv')}
@@ -1260,7 +1268,17 @@ function exportProgressReport(){const issues=electricalIssues?.()||[],done=steps
 function applyPerformanceMode(){const m=$('#performanceMode')?.value||'balanced';try{localStorage.setItem('zebjus-v17-performance',m)}catch{};const ratio=m==='high'?Math.min(devicePixelRatio||1,2):m==='low'?1:Math.min(devicePixelRatio||1,1.5);if(renderer){renderer.setPixelRatio(ratio);renderer.shadowMap.enabled=m!=='low';resize3D()}if(sRenderer){sRenderer.setPixelRatio(ratio);sRenderer.shadowMap.enabled=m!=='low';resizeSim()}notify(`Graphics profile: ${m}`)}
 function updateStartupDiagnostics(){const e=$('#startupDiagnostics');if(!e)return;const lines=[`V17 runtime: ${window.__zebjusAppLoaded?'loaded':'starting'}`,`WebGL: ${renderer?'OK':'pending / unavailable'}`,`Local Three.js: ${THREE.REVISION}`,`Storage: ${(()=>{try{localStorage.setItem('__zj','1');localStorage.removeItem('__zj');return'OK'}catch{return'blocked'}})()}`,`Service worker: ${'serviceWorker' in navigator?'supported':'not supported'}`,`Pixel ratio: ${devicePixelRatio||1}`,`Assembly FPS: ${runtimeFps||'--'}`,`Parts installed: ${state.parts.filter(p=>!p.internal).length}`,`Connections: ${state.connections.length}`];e.textContent=lines.join('\n')}
 function registerOffline(){if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./service-worker.js').catch(()=>{})}
-function initSettings(){renderKeySettings();$('#saveKeysBtn').onclick=()=>{try{localStorage.setItem('zebjus-v15-keys',JSON.stringify(keyMap))}catch{}notify('Keyboard mapping saved.')};$('#resetKeysBtn').onclick=()=>{keyMap={...keyDefaults};try{localStorage.removeItem('zebjus-v15-keys');localStorage.removeItem('zebjus-v10-keys');localStorage.removeItem('zebjus-v9-keys')}catch{}renderKeySettings();notify('Default key mapping restored.')};
+function updateAudioUi(){
+ const en=$('#soundEnabled'),vol=$('#soundVolume'),out=$('#soundVolumeOut'),st=$('#soundState');
+ if(en)en.checked=soundEnabled;if(vol)vol.value=Math.round(soundVolume*100);if(out)out.textContent=Math.round(soundVolume*100)+'%';
+ if(st){st.textContent=soundEnabled?'ON':'MUTED';st.className='status '+(soundEnabled?'good':'')}
+}
+function initAudioSettings(){
+ updateAudioUi();
+ if($('#soundEnabled'))$('#soundEnabled').onchange=e=>{soundEnabled=e.target.checked;try{localStorage.setItem('zebjus-v171-sound',soundEnabled?'on':'off')}catch{};if(!soundEnabled){Object.keys(motorAudio).forEach(silenceMotorAudio);silenceSimMotorBank?.()}else tone(660,.06,'sine',.008);updateAudioUi()};
+ if($('#soundVolume'))$('#soundVolume').oninput=e=>{soundVolume=clamp(+e.target.value/100,0,1);try{localStorage.setItem('zebjus-v171-volume',String(soundVolume))}catch{};updateAudioUi()}
+}
+function initSettings(){renderKeySettings();initAudioSettings();$('#saveKeysBtn').onclick=()=>{try{localStorage.setItem('zebjus-v15-keys',JSON.stringify(keyMap))}catch{}notify('Keyboard mapping saved.')};$('#resetKeysBtn').onclick=()=>{keyMap={...keyDefaults};try{localStorage.removeItem('zebjus-v15-keys');localStorage.removeItem('zebjus-v10-keys');localStorage.removeItem('zebjus-v9-keys')}catch{}renderKeySettings();notify('Default key mapping restored.')};
  $('#exportProjectBtn').onclick=exportProjectJson;$('#importProjectBtn').onclick=()=>$('#importProjectFile').click();$('#importProjectFile').onchange=e=>e.target.files[0]&&importProjectJson(e.target.files[0]);$('#exportSvgBtn').onclick=exportWiringSvg;$('#exportPngBtn').onclick=exportWiringPng;$('#exportBomBtn').onclick=exportBom;$('#exportReportBtn').onclick=exportProgressReport;$('#printWiringBtn').onclick=()=>window.print();$('#fullscreenBtn').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();$('#applyPerformanceBtn').onclick=applyPerformanceMode;
  const perf=localStorage.getItem('zebjus-v17-performance')||'balanced';if($('#performanceMode'))$('#performanceMode').value=perf;setTimeout(()=>{applyPerformanceMode();updateStartupDiagnostics()},100)
 }
@@ -1269,7 +1287,7 @@ function initSettings(){renderKeySettings();$('#saveKeysBtn').onclick=()=>{try{l
 /* FC / CAL / PID / PYTHON */
 function fcLog(t){const e=$('#fcLog');e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
 function fcStatus(on){state.fc.connected=on;$('#fcBadge').textContent=on?'Connected':'Disconnected';$('#fcBadge').className='status '+(on?'good':'')}
-function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V17'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
+function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V17.1'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
 function disconnectFc(log=true){if(state.fc.socket)try{state.fc.socket.close()}catch{}state.fc.socket=null;fcStatus(false);if(log)fcLog('Disconnected')}
 function sendFc(o){if(state.fc.socket?.readyState===1){state.fc.socket.send(JSON.stringify(o));fcLog('TX '+JSON.stringify(o));return true}fcLog('Not connected');return false}
 function packet(raw){let d;try{d=JSON.parse(raw)}catch{d={raw}};['roll','pitch','yaw','gyroX','gyroY','gyroZ','battery'].forEach(k=>{if(Number.isFinite(+d[k]))state.telemetry[k]=+d[k]});$('#telemetryLog').textContent=(new Date().toLocaleTimeString()+' '+raw+'\n'+$('#telemetryLog').textContent).slice(0,12000);telemetryUI()}
@@ -1301,14 +1319,14 @@ print("Attitude:",json.loads(str(zebjusBridge.attitude())))
 }
 
 /* Save/load/buttons */
-function save(){try{localStorage.setItem('zebjusF450V17',JSON.stringify({guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}));$('#saveState').textContent='Saved';setTimeout(()=>$('#saveState').textContent='Ready',800)}catch(e){console.warn('[ZEBJUS] Save unavailable:',e);notify('Browser storage is unavailable in this embed/session.','bad')}}
-function load(){try{const rawCurrent=localStorage.getItem('zebjusF450V17')||localStorage.getItem('zebjusF450V152')||localStorage.getItem('zebjusF450V151'),rawLegacy=localStorage.getItem('zebjusF450V121')||localStorage.getItem('zebjusF450V12')||localStorage.getItem('zebjusF450V10')||localStorage.getItem('zebjusF450V9'),d=JSON.parse(rawCurrent||rawLegacy||'null');if(!d)return;history.restoring=true;state.guided=d.guided??true;state.step=rawCurrent?(d.step||0):0;state.doneActions=new Set(d.actions||[]);state.connections=d.connections||[];state.pid=normalizePidShape(d.pid||state.pid);wireLayout={...wireDefaultLayout,...(d.wireLayout||{})};wireNodeTransforms=d.wireNodeTransforms||{};optionalWireNodes=d.optionalWireNodes||[];if(d.sim)Object.assign(state.sim,d.sim);(d.parts||[]).filter(p=>p.type!=='fcStandoff'&&p.type!=='batteryStrap').forEach(p=>{const s=(slots[p.type]||[]).find(x=>x.id===p.slotId);if(s)install(p.type,s,false)});if(!rawCurrent){const firstIncomplete=steps.findIndex((_,i)=>!stepDone(i));state.step=firstIncomplete<0?steps.length-1:firstIncomplete}render2D();renderPid();rebuild3DWires();rebuildSolder();setPowerVisual(state.doneActions.has('xt60'),true);persistWireLayout();history.restoring=false}catch(e){console.warn(e)}}
+function save(){try{localStorage.setItem('zebjusF450V171',JSON.stringify({guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}));$('#saveState').textContent='Saved';setTimeout(()=>$('#saveState').textContent='Ready',800)}catch(e){console.warn('[ZEBJUS] Save unavailable:',e);notify('Browser storage is unavailable in this embed/session.','bad')}}
+function load(){try{const rawCurrent=localStorage.getItem('zebjusF450V171')||localStorage.getItem('zebjusF450V152')||localStorage.getItem('zebjusF450V151'),rawLegacy=localStorage.getItem('zebjusF450V121')||localStorage.getItem('zebjusF450V12')||localStorage.getItem('zebjusF450V10')||localStorage.getItem('zebjusF450V9'),d=JSON.parse(rawCurrent||rawLegacy||'null');if(!d)return;history.restoring=true;state.guided=d.guided??true;state.step=rawCurrent?(d.step||0):0;state.doneActions=new Set(d.actions||[]);state.connections=d.connections||[];state.pid=normalizePidShape(d.pid||state.pid);wireLayout={...wireDefaultLayout,...(d.wireLayout||{})};wireNodeTransforms=d.wireNodeTransforms||{};optionalWireNodes=d.optionalWireNodes||[];if(d.sim)Object.assign(state.sim,d.sim);(d.parts||[]).filter(p=>p.type!=='fcStandoff'&&p.type!=='batteryStrap').forEach(p=>{const s=(slots[p.type]||[]).find(x=>x.id===p.slotId);if(s)install(p.type,s,false)});if(!rawCurrent){const firstIncomplete=steps.findIndex((_,i)=>!stepDone(i));state.step=firstIncomplete<0?steps.length-1:firstIncomplete}render2D();renderPid();rebuild3DWires();rebuildSolder();setPowerVisual(state.doneActions.has('xt60'),true);persistWireLayout();history.restoring=false}catch(e){console.warn(e)}}
 function initButtons(){
  $('#undoBtn').onclick=undoAction;$('#redoBtn').onclick=redoAction;
  $('#guidedModeBtn').onclick=()=>{historyPush();state.guided=true;$('#guidedModeBtn').classList.add('active');$('#freeModeBtn').classList.remove('active');renderAssemblyUI();showGuides()};$('#freeModeBtn').onclick=()=>{historyPush();state.guided=false;$('#freeModeBtn').classList.add('active');$('#guidedModeBtn').classList.remove('active');guidesRoot?.clear();renderAssemblyUI()};
  $('#prevStepBtn').onclick=()=>{historyPush();state.step=Math.max(0,state.step-1);renderAssemblyUI();showGuides()};$('#nextStepBtn').onclick=()=>{if(state.guided&&!stepDone(state.step)){notify('Complete current step first.','bad');return}historyPush();state.step=Math.min(steps.length-1,state.step+1);renderAssemblyUI();showGuides()};
  $('#objectViewBtn').onclick=()=>setWireMap(false);$('#wireMapBtn').onclick=()=>setWireMap(true);$('#xrayBtn').onclick=()=>{state.xray=!state.xray;$('#xrayBtn').classList.toggle('active',state.xray);document.body.classList.toggle('xray',state.xray)};$('#fcCaseXrayBtn').onclick=()=>{state.fcCaseXray=!state.fcCaseXray;$('#fcCaseXrayBtn').classList.toggle('active',state.fcCaseXray);applyFcCaseXray()};$('#view3dBtn').onclick=()=>setView('3d');$('#topBtn').onclick=()=>setView('top');$('#frontBtn').onclick=()=>setView('front');$('#explodeBtn').onclick=toggleExplode;$('#autoRotateBtn').onclick=()=>{state.autoRotate=!state.autoRotate;$('#autoRotateBtn').classList.toggle('active',state.autoRotate)};
- $('#saveBtn').onclick=save;$('#resetBtn').onclick=()=>{if(confirm('Reset project?')){try{localStorage.removeItem('zebjusF450V17');localStorage.removeItem('zebjusF450V152');localStorage.removeItem('zebjusF450V151');localStorage.removeItem('zebjusF450V121');localStorage.removeItem('zebjusF450V10');localStorage.removeItem('zebjusF450V9');localStorage.removeItem('zebjus-v152-wire-layout');localStorage.removeItem('zebjus-v8-wire-layout')}catch{}location.reload()}};
+ $('#saveBtn').onclick=save;$('#resetBtn').onclick=()=>{if(confirm('Reset project?')){try{localStorage.removeItem('zebjusF450V171');localStorage.removeItem('zebjusF450V152');localStorage.removeItem('zebjusF450V151');localStorage.removeItem('zebjusF450V121');localStorage.removeItem('zebjusF450V10');localStorage.removeItem('zebjusF450V9');localStorage.removeItem('zebjus-v152-wire-layout');localStorage.removeItem('zebjus-v8-wire-layout')}catch{}location.reload()}};
  $('#autoWireBtn').onclick=()=>{wireRemember();historyPush();state.connections=requiredWires.map(([from,to],i)=>({from,to,new:true,id:`ref-${Date.now()}-${i}`}));['motorWire','powerWire','escFc'].forEach(x=>state.doneActions.add(x));state.doneActions.delete('xt60');setPowerVisual(false,false);render2D();rebuild3DWires();rebuildSolder();renderAssemblyUI();notify('Full correct wiring created.');setTimeout(()=>{state.connections.forEach(c=>c.new=false);render2D()},900)};$('#clearWireBtn').onclick=()=>{wireRemember();historyPush();state.connections=[];['motorWire','powerWire','escFc','xt60'].forEach(x=>state.doneActions.delete(x));setPowerVisual(false,false);render2D();rebuild3DWires();rebuildSolder();renderAssemblyUI()};
  $('#batteryConnectBtn').onclick=toggleBatteryPower;$('#connectFcBtn').onclick=connectFc;$('#disconnectFcBtn').onclick=disconnectFc;$('#pingFcBtn').onclick=()=>sendFc({type:'ping',time:Date.now()});$('#applyPidBtn').onclick=()=>{syncQuickPid();notify('PID values applied to tripod simulator.');};$('#sendPidBtn').onclick=()=>sendFc({type:'pid_set',pid:state.pid});$('#restorePidBtn').onclick=()=>{historyPush();state.pid={rateRoll:{P:.9,I:15,D:.035},ratePitch:{P:.9,I:15,D:.035},rateYaw:{P:3,I:13,D:0},angleRoll:{P:3,I:0,D:0},anglePitch:{P:3,I:0,D:0}};renderPid();syncQuickPid()};
  window.addEventListener('keydown',e=>{const cmd=e.ctrlKey||e.metaKey;if(!cmd)return;if(e.key.toLowerCase()==='z'&&!e.shiftKey){e.preventDefault();undoAction()}else if((e.key.toLowerCase()==='z'&&e.shiftKey)||e.key.toLowerCase()==='y'){e.preventDefault();redoAction()}});historyButtons()
@@ -1340,6 +1358,6 @@ function boot(){
  if(threeOK){setBootStatus('Local 3D engine ready','good');notify('3D engine ready • offline/local runtime.','good')}
  else{setBootStatus('3D unavailable • 2D tools active');notify('3D renderer unavailable — 2D tools are still active.','bad')}
  window.__zebjusAppLoaded=true;updateStartupDiagnostics?.();
- window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'17.0'}}));
+ window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'17.1'}}));
 }
 boot();

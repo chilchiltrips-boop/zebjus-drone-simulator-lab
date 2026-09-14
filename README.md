@@ -1,4 +1,4 @@
-# ZEBJUS F450 Drone Engineering Lab — V17 PID Learning Simulator
+# ZEBJUS F450 Drone Engineering Lab — V17.1 PID Learning Simulator
 
 V17 corrects the control-model teaching behavior.
 
@@ -26,3 +26,12 @@ The stable example uses the working ZEBJUS baseline:
 Rate Roll/Pitch P=0.9, I=15, D=0.035; Rate Yaw P=3, I=13, D=0; Angle Roll/Pitch P=3.
 
 All V16 assembly, wiring, electrical validation, round workbench, export, offline and diagnostics features remain.
+
+
+## V17.1 Audio comfort update
+- Battery / XT60 power-up no longer starts continuous motor or propeller audio in the 3D assembly workspace.
+- Slow propeller idle remains as a visual indication only.
+- ESC startup uses soft sine-wave chimes instead of harsh square-wave beeps.
+- Component placement, screw, connector, battery and FC effects use lower volume and softer waveforms.
+- PID simulator and 2D BLDC test retain speed-dependent motor sound because those sounds are educational, but their gain and high-frequency content are reduced.
+- Settings now include a Sound ON/MUTE control and master volume slider.

@@ -1,0 +1,16 @@
+ZEBJUS F450 DRONE LAB V17.1 — AUDIO COMFORT QA
+========================================================================
+
+[PASS] Assembly battery connect has no motor-audio start
+[PASS] Assembly idle has visual prop rotation but no continuous audio
+[PASS] ESC startup uses soft sine chimes
+[PASS] Component FX have no harsh square waves
+[PASS] Sound master toggle exists
+[PASS] Sound volume slider exists
+[PASS] PID simulator motor sound retained
+[PASS] 2D BLDC sound retained
+[PASS] V17.1 cache bust
+[PASS] app.js syntax
+[PASS] service worker syntax
+
+Passed 11 / 11 checks.

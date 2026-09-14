@@ -335,3 +335,9 @@
 .tuning-lesson{margin-top:12px;border:1px solid #294b3e;background:#071c17;border-radius:10px;padding:12px;color:#a9c7bb;font-size:9px;line-height:1.55}.tuning-lesson>b{color:#76efc2}.tuning-lesson ol{margin:8px 0 0 18px;padding:0}.tuning-lesson li{margin:5px 0}.c-target{background:#f7f7f7}
 @media(max-width:1450px){.sim-v17-grid{grid-template-columns:1fr!important}.sim-v17-controls{max-height:none}}
 @media(max-width:900px){.pid-class-grid,.mode-lesson{grid-template-columns:1fr}.pid-live-equation{grid-template-columns:1fr 1fr}}
+
+
+/* ==================== V17.1 AUDIO COMFORT ==================== */
+.sound-toggle{display:flex!important;align-items:center;gap:9px;padding:9px 10px;border:1px solid #29485c;border-radius:9px;background:#071722;margin-bottom:10px}
+.sound-toggle input{width:17px;height:17px;accent-color:#53efbd}
+#soundVolume{width:100%}
