@@ -341,3 +341,14 @@
 .sound-toggle{display:flex!important;align-items:center;gap:9px;padding:9px 10px;border:1px solid #29485c;border-radius:9px;background:#071722;margin-bottom:10px}
 .sound-toggle input{width:17px;height:17px;accent-color:#53efbd}
 #soundVolume{width:100%}
+
+
+/* ==================== V17.2 ZEBJUS BRANDING / SHOP ==================== */
+.zebjus-top-shop{display:grid;gap:1px;min-width:165px;padding:6px 10px;border:1px solid #2d735b;border-radius:10px;background:linear-gradient(135deg,#0b2a22,#0a1721);text-decoration:none;box-shadow:0 0 20px #48dcab10}.zebjus-top-shop span{font-size:6px;color:#69e8bf;letter-spacing:.14em;font-weight:900}.zebjus-top-shop b{font-size:9px;color:#effff9;white-space:nowrap}
+.zebjus-ad-card{display:flex;align-items:center;justify-content:space-between;gap:10px;text-decoration:none;border:1px solid #315d4d;border-radius:12px;padding:10px;background:linear-gradient(135deg,#0a251e,#0a1723);margin:9px 0;overflow:hidden;transition:.18s}.zebjus-ad-card:hover{border-color:#58d6aa;transform:translateY(-1px);box-shadow:0 8px 22px #0005}.zebjus-ad-copy{display:grid;gap:3px;min-width:0}.zebjus-ad-copy small{font-size:7px;color:#62e7ba;letter-spacing:.13em;font-weight:950}.zebjus-ad-copy b{font-size:10px;color:#f0fff9}.zebjus-ad-copy span{font-size:8px;color:#94aab7;line-height:1.35}.zebjus-ad-copy em{font-size:8px;color:#70f0c5;font-style:normal;font-weight:850}.zebjus-ad-images{display:flex;flex:0 0 auto}.zebjus-ad-images img{width:52px;height:42px;object-fit:contain;border:1px solid #294a3f;background:#07131c;border-radius:8px;padding:3px;margin-left:-7px;box-shadow:0 3px 10px #0008}.zebjus-ad-images img:first-child{margin-left:0}
+.zebjus-ad-card.compact{margin:8px 0 11px}.zebjus-ad-card.mini{padding:9px}.zebjus-ad-card.pid-ad{margin:13px 0}.zebjus-ad-card.connect-ad{margin-top:14px}
+.shop-mini{display:inline-block;margin-top:6px;color:#65e9bd!important;font-size:7px!important;font-weight:900;text-decoration:none;border:1px solid #2c624f;border-radius:999px;padding:3px 7px;background:#0a211b}.shop-mini:hover{border-color:#62e7ba;background:#103329}
+.inspector-shop{display:block;margin-top:10px;border:1px solid #30604f;border-radius:8px;padding:8px;text-align:center;color:#66e9bd;text-decoration:none;font-size:8px;font-weight:900;background:#092018}
+.product-card[role="button"]{cursor:pointer}
+.accuracy-note{grid-column:1/-1!important;border-color:#5b5530!important;background:#201c08!important}.accuracy-note b{color:#ffd36f!important}.accuracy-note span{color:#cbbf91!important}
+@media(max-width:900px){.zebjus-top-shop{display:none}.zebjus-ad-images img{width:44px;height:36px}}

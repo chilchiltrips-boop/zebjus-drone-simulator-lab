@@ -1,4 +1,4 @@
-# ZEBJUS F450 Drone Engineering Lab — V17.1 PID Learning Simulator
+# ZEBJUS F450 Drone Engineering Lab — V17.2 Branding + PID Hold Simulator
 
 V17 corrects the control-model teaching behavior.
 
@@ -35,3 +35,29 @@ All V16 assembly, wiring, electrical validation, round workbench, export, offlin
 - Component placement, screw, connector, battery and FC effects use lower volume and softer waveforms.
 - PID simulator and 2D BLDC test retain speed-dependent motor sound because those sounds are educational, but their gain and high-frequency content are reduced.
 - Settings now include a Sound ON/MUTE control and master volume slider.
+
+
+## V17.2 ZEBJUS branding
+- First-party component-purchase branding links to https://www.zebjus.com.
+- Header shop CTA.
+- Assembly component-shelf advertisement with local product images.
+- Every component shelf card includes a ZEBJUS purchase/find link.
+- Inspector includes a ZEBJUS hardware link.
+- Wiring, PID learning and real-FC connection areas include small branded hardware cards.
+- No third-party ad network is used.
+
+## V17.2 Roll / Pitch hold behaviour
+The course simulator now provides the requested **Rate Hold** training behaviour:
+- Move Roll/Pitch stick to rotate/tilt the drone.
+- On stick release, the simulator captures the current Roll/Pitch attitude.
+- Wind or manual disturbance is corrected back to that captured attitude through a fixed capture helper feeding the Rate PID.
+- Poor Rate PID values create slow recovery, drift/steady error, overshoot or oscillation.
+
+This is deliberately labelled **Rate Hold**, because pure acro/rate mode normally controls angular rate only and does not hold an absolute angle after disturbance.
+
+### Angle Mode
+- A `Calibrate level` button stores the current Roll/Pitch level reference.
+- Roll/Pitch stick commands angles relative to that calibrated level.
+- On stick release, target returns to the calibrated level.
+- Wind/manual disturbance is corrected back to calibrated level using Angle PID → Rate PID.
+- Yaw remains Rate PID only; there is no yaw-angle lock.

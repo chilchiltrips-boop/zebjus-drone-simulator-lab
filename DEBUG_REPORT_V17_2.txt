@@ -1,0 +1,42 @@
+ZEBJUS F450 DRONE LAB V17.2 — BRANDING + RATE HOLD QA
+============================================================================
+
+[PASS] ZEBJUS URL appears in multiple branding placements
+[PASS] Header hardware shop CTA
+[PASS] Assembly ad contains local product images
+[PASS] Each shelf component has purchase/find link
+[PASS] Inspector has ZEBJUS hardware link
+[PASS] Wiring/PID/Connect branding cards
+[PASS] Rate Hold state exists
+[PASS] Rate Hold captures attitude on stick release
+[PASS] Rate Hold resists later manual/wind disturbance
+[PASS] Angle mode uses calibrated level
+[PASS] Calibrate-level button/function
+[PASS] Yaw remains rate-only
+[PASS] Course accuracy note distinguishes pure rate mode
+[PASS] Rate Hold target shown on graph/metrics
+[PASS] Audio comfort from V17.1 retained
+[PASS] Round workbench retained
+[PASS] V17.2 cache busting
+[PASS] app.js ES module syntax
+[PASS] service-worker syntax
+[PASS] No duplicate HTML IDs
+[PASS] Static JS UI IDs exist
+[PASS] All local references exist
+[PASS] Flat project folder
+[PASS] Top-level module evaluation
+
+Passed 24 / 24 checks.
+
+RATE HOLD TRAINING MODE:
+- Stick active: Roll/Pitch commands angular rate.
+- Stick release: capture current Roll/Pitch attitude.
+- Disturbance: fixed attitude-capture helper creates a corrective rate target, then Rate PID controls the motors.
+
+ANGLE MODE:
+- Calibrate level stores Roll/Pitch reference.
+- Stick release returns target to calibrated level.
+- Angle PID -> Rate PID restores level after disturbance.
+- Yaw remains Rate PID only.
+
+TECHNICAL NOTE: Pure acro/rate mode normally holds rate only. V17.2 explicitly labels the requested behaviour as Rate Hold.

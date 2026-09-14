@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V17.1</title>
-<link rel="stylesheet" href="styles.css?v=17.1.0"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V17.2</title>
+<link rel="stylesheet" href="styles.css?v=17.2.0"><link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V17.1 • PID Learning Simulator • softer user-friendly audio • quiet battery power-up</span></div></div>
- <div class="top-actions"><span id="assetStatus" class="status">Loading V16 local module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V17.2 • ZEBJUS hardware branding • Rate Hold capture • calibrated Angle level hold</span></div></div>
+ <div class="top-actions"><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="assetStatus" class="status">Loading V16 local module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
 <button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="connect">CONNECT FC</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
@@ -38,7 +38,10 @@
  <aside class="right-panel right-workbench">
   <section class="right-shelf-section">
    <div class="panel-head"><div><small>REAL-STYLE COMPONENT SHELF</small><h2>Pick next component</h2></div></div>
-   <div class="shelf-note">Required parts stay in assembly order. Installed parts disappear; Undo/Delete returns them. Expansion devices are optional.</div>
+   <div class="shelf-note">Required parts stay in assembly order. Installed parts disappear; Undo/Delete returns them. Expansion devices are optional.</div><a class="zebjus-ad-card compact" href="https://www.zebjus.com" target="_blank" rel="noopener">
+ <div class="zebjus-ad-copy"><small>ZEBJUS HARDWARE</small><b>Build this drone for real</b><span>Motors • ESCs • LiPo • Prop guards • modules</span><em>www.zebjus.com ↗</em></div>
+ <div class="zebjus-ad-images"><img src="ref_a2212-motor.png" alt="A2212 motor"><img src="ref_simonk-30a-esc.png" alt="30A ESC"><img src="ref_lipo-2200.png" alt="LiPo battery"></div>
+</a>
    <div id="componentShelf" class="component-shelf vertical-shelf"></div>
   </section>
   <section class="right-inspector-section">
@@ -57,7 +60,7 @@
    <div class="svg-wrap"><svg id="wiringSvg" viewBox="0 0 1500 900"></svg></div>
   </div>
   <aside class="wiring-side">
-   <div class="panel-head"><div><small>VALIDATION</small><h2>Electrical check</h2></div></div><div id="wireValidation" class="checks"></div>
+   <div class="panel-head"><div><small>VALIDATION</small><h2>Electrical check</h2></div></div><div id="wireValidation" class="checks"></div><a class="zebjus-ad-card mini" href="https://www.zebjus.com" target="_blank" rel="noopener"><div class="zebjus-ad-copy"><small>NEED REAL PARTS?</small><b>ESC • Motor • Power • Connectors</b><span>Continue from virtual wiring to a real build.</span><em>Visit ZEBJUS ↗</em></div><div class="zebjus-ad-images"><img src="ref_simonk-30a-esc.png" alt="ESC"><img src="ref_a2212-motor.png" alt="Motor"></div></a>
    <div class="motor-test-panel">
     <div class="panel-head compact"><div><small>ESC / MOTOR TEST</small><h2>Virtual PWM bench</h2></div><span id="wireRunState" class="status">STOPPED</span></div>
     <button id="wireRunBtn" class="btn primary full">RUN MOTOR TEST</button>
@@ -91,11 +94,11 @@
  <div class="sim-grid sim-v17-grid">
   <div class="sim-card">
    <div class="section-toolbar sim-toolbar">
-    <div><b>PID Learning Simulator</b><span>Rate Mode = rate hold only • Angle Mode = Roll/Pitch angle → rate • Yaw always rate</span></div>
-    <div class="toolbar-row sim-toolbar-actions"><select id="simFlightMode"><option value="angle">ANGLE MODE • Roll/Pitch Angle + Rate</option><option value="rate">RATE MODE • Roll/Pitch/Yaw Rate only</option></select><button id="simDisturbBtn" class="btn ghost small">Manual tilt: OFF</button><button id="simRunBtn" class="btn primary small">RUN</button><button id="simResetBtn" class="btn ghost small">Reset</button></div>
+    <div><b>PID Learning Simulator</b><span>Rate Hold = capture stick-release Roll/Pitch attitude • Angle = calibrated level hold • Yaw always rate</span></div>
+    <div class="toolbar-row sim-toolbar-actions"><select id="simFlightMode"><option value="angle">ANGLE MODE • calibrated Roll/Pitch level hold</option><option value="rate">RATE HOLD • capture released Roll/Pitch attitude</option></select><button id="simCalibrateLevelBtn" class="btn ghost small">Calibrate level</button><button id="simDisturbBtn" class="btn ghost small">Manual tilt: OFF</button><button id="simRunBtn" class="btn primary small">RUN</button><button id="simResetBtn" class="btn ghost small">Reset</button></div>
    </div>
    <div id="simThree"></div>
-   <div id="simDisturbHint" class="sim-disturb-hint"><b>Manual disturbance lesson:</b> Angle Mode returns Roll/Pitch to the commanded angle. Rate Mode only returns angular velocity to 0°/s, so the drone remains near the new tilted attitude. Yaw has no angle lock in either mode.</div>
+   <div id="simDisturbHint" class="sim-disturb-hint"><b>Manual disturbance lesson:</b> Rate Hold captures the Roll/Pitch attitude when the stick is released and returns to that captured attitude after wind/manual disturbance. Angle Mode returns to the calibrated level when Roll/Pitch stick is released. Yaw remains rate-only.</div>
   </div>
   <aside class="sim-controls sim-v17-controls">
    <div class="metrics sim-metrics">
@@ -172,17 +175,17 @@
    <div class="pid-live-equation"><span>Target <b id="teachTarget">0.00</b></span><span>Actual <b id="teachActual">0.00</b></span><span>Error <b id="teachError">0.00</b></span><span>Loop <b id="teachLoopLive">RATE</b></span></div>
    <div id="pidCoach" class="pid-coach">Run the simulator, apply a preset or change P/I/D, then manually disturb the drone. The coach explains the response.</div>
    <div class="mode-lesson">
-    <div><b>RATE MODE</b><span>Stick commands angular rate. Stick centre = 0°/s. After manual tilt the controller stops rotation, but it does not level the angle.</span></div>
-    <div><b>ANGLE MODE</b><span>Roll/Pitch stick commands angle. Outer Angle PID asks the inner Rate PID for a recovery rate. Manual tilt returns to the commanded angle.</span></div>
-    <div><b>YAW</b><span>Yaw is Rate PID in both modes. There is no Yaw Angle PID or heading lock in this simulator.</span></div>
+    <div><b>RATE HOLD</b><span>While the Roll/Pitch stick is moved it commands angular rate. When released, this trainer captures the current Roll/Pitch attitude and uses a fixed attitude-capture helper feeding the Rate PID to maintain that angle against disturbance.</span></div>
+    <div><b>ANGLE MODE</b><span>Roll/Pitch stick commands angle around the calibrated level. When released, target returns to the calibrated level. Wind or manual tilt is corrected back to that level by Angle PID → Rate PID.</span></div>
+    <div><b>YAW</b><span>Yaw is Rate PID in both modes. There is no Yaw Angle PID or heading lock.</span></div><div class="accuracy-note"><b>COURSE NOTE</b><span>Pure acro/rate mode normally holds angular rate only. This simulator’s <strong>Rate Hold</strong> intentionally adds stick-release attitude capture so students can study disturbance rejection using the Rate PID around a held attitude.</span></div>
    </div>
-   <div class="tuning-lesson"><b>Practical tuning exercise</b><ol><li>Set I and D low. Increase <b>P</b> until response is quick but begins to oscillate, then reduce slightly.</li><li>Increase <b>D</b> until overshoot / bounce is damped without noisy motor activity.</li><li>Add <b>I</b> until persistent error from CG or wind disappears.</li><li>After the Rate loop is stable, tune Roll/Pitch <b>Angle P</b> for the desired leveling speed.</li><li>Yaw is tuned only in the Rate loop.</li></ol></div>
+   <a class="zebjus-ad-card pid-ad" href="https://www.zebjus.com" target="_blank" rel="noopener"><div class="zebjus-ad-copy"><small>FROM SIMULATION TO HARDWARE</small><b>Practice here. Build with ZEBJUS.</b><span>F450 components, electronics and learning hardware.</span><em>www.zebjus.com ↗</em></div><div class="zebjus-ad-images"><img src="ref_f450-complete.png" alt="F450 drone"><img src="ref_zebjus-fc-gerber-top.png" alt="ZEBJUS FC"></div></a><div class="tuning-lesson"><b>Practical tuning exercise</b><ol><li>Set I and D low. Increase <b>P</b> until response is quick but begins to oscillate, then reduce slightly.</li><li>Increase <b>D</b> until overshoot / bounce is damped without noisy motor activity.</li><li>Add <b>I</b> until persistent error from CG or wind disappears.</li><li>After the Rate loop is stable, tune Roll/Pitch <b>Angle P</b> for the desired leveling speed.</li><li>Yaw is tuned only in the Rate loop.</li></ol></div>
   </section>
 
   <div class="chart-card sim-chart-card"><div class="sim-chart-head"><b>PID RESPONSE</b><span><i class="c-target"></i>Target <i class="c-roll"></i>Roll <i class="c-pitch"></i>Pitch <i class="c-yaw"></i>Yaw rate</span></div><canvas id="simChart" width="1200" height="260"></canvas></div>
  </div>
 </section>
-<section id="tab-connect" class="panel tab-panel"><div class="form-card narrow"><div class="panel-head"><div><small>REAL HARDWARE</small><h2>Connect ZEBJUS Flight Controller</h2></div><span id="fcBadge" class="status">Disconnected</span></div><div class="form-grid"><label>IP<input id="fcIp" value="192.168.4.1"></label><label>WebSocket path<input id="fcPath" value="/ws/telemetry"></label><label>Protocol<select id="fcProtocol"><option value="auto">Auto</option><option value="wss">WSS</option><option value="ws">WS</option></select></label><label>Kit name<input value="ZEBJUS-DRONE-01"></label></div><div class="button-row"><button id="connectFcBtn" class="btn primary">Connect</button><button id="disconnectFcBtn" class="btn ghost">Disconnect</button><button id="pingFcBtn" class="btn ghost">Ping</button></div><pre id="fcLog" class="terminal mini">Ready to connect…</pre></div></section>
+<section id="tab-connect" class="panel tab-panel"><div class="form-card narrow"><div class="panel-head"><div><small>REAL HARDWARE</small><h2>Connect ZEBJUS Flight Controller</h2></div><span id="fcBadge" class="status">Disconnected</span></div><div class="form-grid"><label>IP<input id="fcIp" value="192.168.4.1"></label><label>WebSocket path<input id="fcPath" value="/ws/telemetry"></label><label>Protocol<select id="fcProtocol"><option value="auto">Auto</option><option value="wss">WSS</option><option value="ws">WS</option></select></label><label>Kit name<input value="ZEBJUS-DRONE-01"></label></div><div class="button-row"><button id="connectFcBtn" class="btn primary">Connect</button><button id="disconnectFcBtn" class="btn ghost">Disconnect</button><button id="pingFcBtn" class="btn ghost">Ping</button></div><pre id="fcLog" class="terminal mini">Ready to connect…</pre><a class="zebjus-ad-card connect-ad" href="https://www.zebjus.com" target="_blank" rel="noopener"><div class="zebjus-ad-copy"><small>ZEBJUS</small><b>Hardware & learning components</b><span>Move from this virtual lab to your physical drone project.</span><em>www.zebjus.com ↗</em></div><div class="zebjus-ad-images"><img src="fc_board_reference.png" alt="ZEBJUS flight controller"><img src="ref_f450-complete.png" alt="F450 drone"></div></a></div></section>
 <section id="tab-cal" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>STEP-BY-STEP</small><h2>Calibration wizard</h2></div></div><div id="calSteps" class="cal-steps"></div></div><div class="form-card"><div class="panel-head"><div><small>LIVE</small><h2>Sensor status</h2></div></div><div class="metrics"><div><span>GYRO X</span><b id="gyroX">0.000</b></div><div><span>GYRO Y</span><b id="gyroY">0.000</b></div><div><span>GYRO Z</span><b id="gyroZ">0.000</b></div><div><span>LEVEL</span><b id="levelState">Waiting</b></div></div><div class="orientation-card">↑<span>Match the ZEBJUS FC FRONT arrow to the red-arm front.</span></div></div></div></section>
 <section id="tab-pid" class="panel tab-panel"><div class="pid-layout"><div id="pidEditor" class="form-card"></div><aside class="form-card"><div class="panel-head"><div><small>ACTIONS</small><h2>Apply tuning</h2></div></div><button id="applyPidBtn" class="btn primary full">Apply to tripod simulator</button><button id="sendPidBtn" class="btn ghost full">Send to real FC</button><button id="restorePidBtn" class="btn ghost full">Restore defaults</button><div class="callout"><b>Rate + Angle</b><p>Rate loop controls angular rate. Angle mode cascades an angle controller into the rate loop. Use the tripod simulator before free flight.</p></div></aside></div></section>
 <section id="tab-python" class="panel tab-panel"><div class="python-layout"><div class="editor-card"><div class="section-toolbar"><div><b>Python Drone Lab</b><span>Simulator or real-drone target</span></div><div><select id="pythonTarget"><option value="sim">Simulator</option><option value="real">Real drone</option></select><button id="runPythonBtn" class="btn primary small">Run</button></div></div><textarea id="pythonEditor" spellcheck="false"></textarea></div><div class="terminal-card"><div class="section-toolbar"><div><b>Output</b><span id="pyStatus">Pyodide loads on first run</span></div><button id="clearTerminalBtn" class="btn ghost small">Clear</button></div><pre id="pythonTerminal" class="terminal"></pre></div></div></section>
@@ -193,6 +196,6 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=17.1.0"></script>
-<script type="module" src="app.js?v=17.1.0"></script>
+<script src="ui-runtime.js?v=17.2.0"></script>
+<script type="module" src="app.js?v=17.2.0"></script>
 </body></html>
