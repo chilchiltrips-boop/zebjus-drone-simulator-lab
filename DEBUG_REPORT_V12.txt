@@ -1,0 +1,27 @@
+ZEBJUS F450 DRONE LAB V12 — QA / DEBUG REPORT
+================================================================
+
+[PASS] FC standoff product removed
+[PASS] FC tape product added
+[PASS] Battery moved under frame
+[PASS] Battery straps moved under frame
+[PASS] PDB XT60 3D connector
+[PASS] Battery connect UI
+[PASS] Power LEDs
+[PASS] ESC startup tone
+[PASS] Upward male headers
+[PASS] Female connector descends
+[PASS] Source orange
+[PASS] GND brown
+[PASS] +5V light red
+[PASS] Realistic two-blade prop function
+[PASS] Allen key screw animation
+[PASS] 2D FC wire visibility improved
+[PASS] Tripod dust animation
+[PASS] Larger PID controls
+[PASS] V12 cache busting
+[PASS] Flat folder
+[PASS] JavaScript syntax
+[PASS] All local references exist
+
+Passed 22 / 22 checks.

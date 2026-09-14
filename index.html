@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V10</title>
-<link rel="stylesheet" href="styles.css?v=10.0.1">
+<title>ZEBJUS F450 Drone Engineering Lab V12</title>
+<link rel="stylesheet" href="styles.css?v=12.0.0">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V10 • startup-safe local 3D • A→Z assembly • interactive wiring • tripod PID simulator</span></div></div>
- <div class="top-actions"><span id="assetStatus" class="status">Loading V10 local module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V12 • FC tape mount • vertical male headers • battery power sequence • enhanced tripod PID simulator</span></div></div>
+ <div class="top-actions"><span id="assetStatus" class="status">Loading V12 local module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
 <button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="connect">CONNECT FC</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
@@ -25,16 +25,16 @@
  </aside>
  <section class="center-stage">
   <div class="stage-toolbar">
-   <div class="view-switch"><button id="objectViewBtn" class="view-btn active">Object</button><button id="wireMapBtn" class="view-btn">Wiring map</button><button id="xrayBtn" class="view-btn">X-ray</button></div>
+   <div class="view-switch"><button id="objectViewBtn" class="view-btn active">Object</button><button id="wireMapBtn" class="view-btn">Wiring map</button><button id="xrayBtn" class="view-btn">X-ray</button><button id="batteryConnectBtn" class="view-btn power-connect-btn">Connect battery</button><span id="batteryPowerState" class="status">POWER OFF</span></div>
    <div class="camera-actions"><button id="view3dBtn" class="view-btn active">3D</button><button id="topBtn" class="view-btn">Top</button><button id="frontBtn" class="view-btn">Front</button><button id="explodeBtn" class="view-btn">Exploded</button><button id="autoRotateBtn" class="view-btn">Auto rotate</button></div>
   </div>
   <div id="threeWrap" class="three-wrap">
    <div class="bench-badge"><b>VIRTUAL PRODUCT BENCH</b><span id="benchSubtitle">F450 guided mechanical assembly</span><small>Arc guards • locked snaps • actual FC layout • accessible I/O case</small></div>
    <div class="front-badge">↑ FRONT · RED ARMS</div>
-   <div id="wireLegend" class="wire-legend hidden"><b>WIRE COLOURS</b><span><i class="w red"></i>DC + / power</span><span><i class="w blk"></i>Ground −</span><span><i class="w phase-u"></i>Motor U</span><span><i class="w phase-v"></i>Motor V</span><span><i class="w phase-w"></i>Motor W</span><span><i class="w white"></i>Signal</span><span><i class="w pink"></i>+5V</span></div>
+   <div id="wireLegend" class="wire-legend hidden"><b>WIRE COLOURS</b><span><i class="w red"></i>DC + / power</span><span><i class="w blk"></i>Ground −</span><span><i class="w phase-u"></i>Motor U</span><span><i class="w phase-v"></i>Motor V</span><span><i class="w phase-w"></i>Motor W</span><span><i class="w source"></i>Source / PWM</span><span><i class="w pink"></i>+5V thin</span><span><i class="w ground-brown"></i>GND</span></div>
    <div id="threeContainer"></div>
    <div class="virtual-chip"><i></i><div><b>VIRTUAL BENCH</b><span>No real hardware energised</span></div></div>
-   <div id="snapMessage" class="snap-message">Initializing V10 local runtime…</div>
+   <div id="snapMessage" class="snap-message">Initializing V12 enhanced local runtime…</div>
   </div>
  </section>
  <aside class="right-panel right-workbench">
@@ -109,8 +109,8 @@
 <section id="tab-pid" class="panel tab-panel"><div class="pid-layout"><div id="pidEditor" class="form-card"></div><aside class="form-card"><div class="panel-head"><div><small>ACTIONS</small><h2>Apply tuning</h2></div></div><button id="applyPidBtn" class="btn primary full">Apply to tripod simulator</button><button id="sendPidBtn" class="btn ghost full">Send to real FC</button><button id="restorePidBtn" class="btn ghost full">Restore defaults</button><div class="callout"><b>Rate + Angle</b><p>Rate loop controls angular rate. Angle mode cascades an angle controller into the rate loop. Use the tripod simulator before free flight.</p></div></aside></div></section>
 <section id="tab-python" class="panel tab-panel"><div class="python-layout"><div class="editor-card"><div class="section-toolbar"><div><b>Python Drone Lab</b><span>Simulator or real-drone target</span></div><div><select id="pythonTarget"><option value="sim">Simulator</option><option value="real">Real drone</option></select><button id="runPythonBtn" class="btn primary small">Run</button></div></div><textarea id="pythonEditor" spellcheck="false"></textarea></div><div class="terminal-card"><div class="section-toolbar"><div><b>Output</b><span id="pyStatus">Pyodide loads on first run</span></div><button id="clearTerminalBtn" class="btn ghost small">Clear</button></div><pre id="pythonTerminal" class="terminal"></pre></div></div></section>
 <section id="tab-telemetry" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>ATTITUDE</small><h2>Live telemetry</h2></div></div><div class="metrics"><div><span>ROLL</span><b id="telRoll">0.00°</b></div><div><span>PITCH</span><b id="telPitch">0.00°</b></div><div><span>YAW</span><b id="telYaw">0.00°</b></div><div><span>BATTERY</span><b id="telBatt">-- V</b></div></div></div><div class="form-card"><div class="panel-head"><div><small>RAW</small><h2>Telemetry stream</h2></div></div><pre id="telemetryLog" class="terminal"></pre></div></div></section>
-<section id="tab-settings" class="panel tab-panel"><div class="settings-grid"><div class="form-card"><div class="panel-head"><div><small>KEYBOARD</small><h2>Simulator key mapping</h2></div></div><p class="micro-note">Click a key field, then press the key you want. Save settings to keep the mapping on this browser.</p><div id="keySettings" class="key-settings"></div><div class="button-row"><button id="saveKeysBtn" class="btn primary">Save key mapping</button><button id="resetKeysBtn" class="btn ghost">Restore defaults</button></div></div><div class="form-card"><div class="panel-head"><div><small>FC EXPANSION</small><h2>Accessible case headers</h2></div></div><div class="io-guide"><div><b>ESC1–ESC4</b><span>Top/source row: motor signal • middle row: +5V • bottom row: GND</span></div><div><b>External GPIO ×3</b><span>Source / +5V / GND. Use for servo, LED, LED matrix, GPS/control or sensors as appropriate.</span></div><div><b>RX / PPM header</b><span>Optional. PPM signal / +5V / GND. When RX is not used, the source pin can be used as another compatible I/O.</span></div><div><b>I²C 4-pin</b><span>VCC • GND • SCL • SDA remains user accessible.</span></div></div><img class="fc-reference-img" src="fc_board_reference.png" alt="ZEBJUS FC accessible pin reference"></div></div></section>
+<section id="tab-settings" class="panel tab-panel"><div class="settings-grid"><div class="form-card"><div class="panel-head"><div><small>KEYBOARD</small><h2>Simulator key mapping</h2></div></div><p class="micro-note">Click a key field, then press the key you want. Save settings to keep the mapping on this browser.</p><div id="keySettings" class="key-settings"></div><div class="button-row"><button id="saveKeysBtn" class="btn primary">Save key mapping</button><button id="resetKeysBtn" class="btn ghost">Restore defaults</button></div></div><div class="form-card"><div class="panel-head"><div><small>FC CASE / EXPANSION</small><h2>Accessible case headers</h2></div></div><div class="io-guide"><div><b>ESC1–ESC4</b><span>Top/source row: motor signal • middle row: +5V • bottom row: GND</span></div><div><b>External GPIO ×3</b><span>Source / +5V / GND. Use for servo, LED, LED matrix, GPS/control or sensors as appropriate.</span></div><div><b>RX / PPM header</b><span>Optional. PPM signal / +5V / GND. When RX is not used, the source pin can be used as another compatible I/O.</span></div><div><b>I²C 4-pin</b><span>VCC • GND • SCL • SDA remains user accessible.</span></div></div><img class="fc-reference-img" src="fc_board_reference.png" alt="ZEBJUS FC accessible pin reference"></div></div></section>
 </main></div>
-<script src="ui-runtime.js?v=10.0.1"></script>
-<script type="module" src="app.js?v=10.0.1"></script>
+<script src="ui-runtime.js?v=12.0.0"></script>
+<script type="module" src="app.js?v=12.0.0"></script>
 </body></html>

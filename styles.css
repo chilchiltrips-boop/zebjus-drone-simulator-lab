@@ -121,3 +121,50 @@
 .runtime-error-card{position:absolute;inset:18% 12%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;border:1px solid #7a3b48;border-radius:18px;background:linear-gradient(180deg,#21121aee,#0b151dee);padding:28px;z-index:12;color:#f5f7fa}
 .runtime-error-card b{font-size:18px;color:#ffb4bd}.runtime-error-card span{font-size:11px;max-width:760px;color:#ffd6da;word-break:break-word}.runtime-error-card small{font-size:10px;line-height:1.5;color:#a9bcc8;max-width:700px}
 #simThree .runtime-error-card{position:relative;inset:auto;min-height:460px;margin:24px}
+
+
+/* ==================== V12 REALISM / POWER / SIM VISUALS ==================== */
+.w.source{background:#f59e0b}.w.ground-brown{background:#4b2f20;border:1px solid #7b5948}
+.power-connect-btn{border-color:#826b28!important;color:#ffe49a!important;background:#251f0e!important}
+#batteryPowerState.good{box-shadow:0 0 16px #53efbd33}
+
+.three-wrap{
+ background:
+  radial-gradient(circle at 50% 30%,rgba(79,117,137,.30),transparent 42%),
+  radial-gradient(circle at 50% 68%,rgba(28,48,60,.65),transparent 58%),
+  linear-gradient(180deg,#10202b,#07121a)!important;
+}
+.three-wrap:after{opacity:.34!important}
+.bench-badge{box-shadow:0 12px 32px #0007,0 0 0 1px #7ddcff11 inset}
+.virtual-chip{box-shadow:0 10px 24px #0008}
+.front-badge{text-shadow:0 2px 10px #000}
+
+.port-v8.signal{fill:#f59e0b!important}
+.port-v8.ground{fill:#4b2f20!important}
+.port-v8.fivev{fill:#fb7185!important}
+.wire-v8{opacity:.95}
+.wire-layer-v8{pointer-events:visibleStroke}
+.fc-2d-case{fill:#2d3c48;stroke:#7890a3;stroke-width:2.2}
+.fc-2d-window{fill:#0f6c484f;stroke:#5ae3b19c}
+
+.sim-v8-grid{grid-template-columns:minmax(0,1fr) 470px!important}
+.sim-v8-controls{padding:16px!important}
+.sim-card #simThree{
+ height:700px!important;
+ background:
+  radial-gradient(circle at 50% 32%,#29404d 0,#142630 34%,#08131b 76%)!important;
+}
+.sim-pid-box{padding:13px!important;border-color:#3b5b70!important;box-shadow:inset 0 0 24px #0004}
+.sim-pid-box .panel-head h2{font-size:17px!important}
+.quick-pid-grid{grid-template-columns:repeat(3,1fr)!important;gap:9px!important}
+.quick-pid-grid label{font-size:10px!important;font-weight:800;color:#b8cad7!important}
+.quick-pid-grid input{font-size:12px!important;min-height:40px!important;padding:8px!important;border-color:#3a5b71!important}
+.tx-sticks{gap:14px!important}
+.stick-pad{height:165px!important}
+.metrics>div{padding:11px!important}.metrics b{font-size:17px!important}
+.motor-mix span{padding:9px!important;font-size:9px!important}
+
+@media(max-width:1350px){
+ .sim-v8-grid{grid-template-columns:1fr!important}
+ .sim-v8-controls{max-height:none!important}
+}
