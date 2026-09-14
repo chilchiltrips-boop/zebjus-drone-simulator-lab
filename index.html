@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V15.2</title>
-<link rel="stylesheet" href="styles.css?v=15.2.0">
+<title>ZEBJUS F450 Drone Engineering Lab V16</title>
+<link rel="stylesheet" href="styles.css?v=16.0.0"><link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V15.2 • 2D↔3D sync • object shortcuts • PID simulator polish • bug-fix pass</span></div></div>
- <div class="top-actions"><span id="assetStatus" class="status">Loading V15.2 local module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V16 • engineering validation • full 2D↔3D sync • realistic PID physics • export/offline tools</span></div></div>
+ <div class="top-actions"><span id="assetStatus" class="status">Loading V16 local module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
 <button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="connect">CONNECT FC</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
@@ -25,14 +25,14 @@
  </aside>
  <section class="center-stage">
   <div class="stage-toolbar">
-   <div class="view-switch"><button id="objectViewBtn" class="view-btn active">Object</button><button id="wireMapBtn" class="view-btn">Wiring map</button><button id="xrayBtn" class="view-btn">X-ray</button><button id="batteryConnectBtn" class="view-btn power-connect-btn">Connect battery</button><span id="batteryPowerState" class="status">POWER OFF</span></div>
+   <div class="view-switch"><button id="objectViewBtn" class="view-btn active">Object</button><button id="wireMapBtn" class="view-btn">Wiring map</button><button id="xrayBtn" class="view-btn">Frame X-ray</button><button id="fcCaseXrayBtn" class="view-btn">FC case X-ray</button><button id="batteryConnectBtn" class="view-btn power-connect-btn">Connect battery</button><span id="batteryPowerState" class="status">POWER OFF</span></div>
    <div class="camera-actions"><button id="view3dBtn" class="view-btn active">3D</button><button id="topBtn" class="view-btn">Top</button><button id="frontBtn" class="view-btn">Front</button><button id="explodeBtn" class="view-btn">Exploded</button><button id="autoRotateBtn" class="view-btn">Auto rotate</button></div>
   </div>
   <div id="threeWrap" class="three-wrap">
 <div id="wireLegend" class="wire-legend hidden"><b>WIRE COLOURS / GAUGE</b><span><i class="w red thick"></i>+12V / battery / ESC power • THICK</span><span><i class="w ground-brown thick"></i>GND return • THICK brown-black</span><span><i class="w source"></i>Source / PWM • ORANGE thin</span><span><i class="w pink"></i>+5V • LIGHT RED thin</span><span><i class="w phase-u"></i>Motor U</span><span><i class="w phase-v"></i>Motor V</span><span><i class="w phase-w"></i>Motor W</span></div>
-   <div id="threeContainer"></div>
+   <div id="threeContainer"></div><div id="threeTooltip" class="three-tooltip"></div>
    <div class="virtual-chip"><i></i><div><b>VIRTUAL BENCH</b><span>No real hardware energised</span></div></div>
-   <div id="snapMessage" class="snap-message">Initializing V15.2 enhanced local runtime…</div>
+   <div id="snapMessage" class="snap-message">Initializing V16 engineering runtime…</div>
   </div>
  </section>
  <aside class="right-panel right-workbench">
@@ -132,6 +132,17 @@
      </div>
     </section>
     <button id="simApplyPidBtn" class="btn primary full">Apply PID to simulator</button>
+    <div class="sim-env-card">
+     <div class="axis-pid-head"><b>PHYSICS / LOAD</b><span>Battery • payload • CG • wind • motor lag</span></div>
+     <div class="sim-env-grid">
+      <label>Battery <output id="simBatteryOut">12.2 V</output><input id="simBatteryV" type="range" min="9.6" max="12.6" value="12.2" step="0.1"></label>
+      <label>Payload <output id="simPayloadOut">0 g</output><input id="simPayload" type="range" min="0" max="800" value="0" step="25"></label>
+      <label>CG X <output id="simCgXOut">0 mm</output><input id="simCgX" type="range" min="-25" max="25" value="0" step="1"></label>
+      <label>CG Y <output id="simCgYOut">0 mm</output><input id="simCgY" type="range" min="-25" max="25" value="0" step="1"></label>
+      <label>Wind <output id="simWindOut">0%</output><input id="simWind" type="range" min="0" max="100" value="0" step="5"></label>
+      <label>Motor lag <output id="simLagOut">0.12 s</output><input id="simMotorLag" type="range" min="0.04" max="0.30" value="0.12" step="0.01"></label>
+     </div>
+    </div>
    </div>
    <div class="motor-mix v15-motor-mix"><span>M1 <b id="m1">0%</b></span><span>M2 <b id="m2">0%</b></span><span>M3 <b id="m3">0%</b></span><span>M4 <b id="m4">0%</b></span></div>
    <p class="micro-note">Arrow keys: Pitch/Roll • W/S: Throttle • A/D: Yaw • R: Run/Stop. Manual tilt can physically disturb the virtual drone.</p>
@@ -144,8 +155,11 @@
 <section id="tab-pid" class="panel tab-panel"><div class="pid-layout"><div id="pidEditor" class="form-card"></div><aside class="form-card"><div class="panel-head"><div><small>ACTIONS</small><h2>Apply tuning</h2></div></div><button id="applyPidBtn" class="btn primary full">Apply to tripod simulator</button><button id="sendPidBtn" class="btn ghost full">Send to real FC</button><button id="restorePidBtn" class="btn ghost full">Restore defaults</button><div class="callout"><b>Rate + Angle</b><p>Rate loop controls angular rate. Angle mode cascades an angle controller into the rate loop. Use the tripod simulator before free flight.</p></div></aside></div></section>
 <section id="tab-python" class="panel tab-panel"><div class="python-layout"><div class="editor-card"><div class="section-toolbar"><div><b>Python Drone Lab</b><span>Simulator or real-drone target</span></div><div><select id="pythonTarget"><option value="sim">Simulator</option><option value="real">Real drone</option></select><button id="runPythonBtn" class="btn primary small">Run</button></div></div><textarea id="pythonEditor" spellcheck="false"></textarea></div><div class="terminal-card"><div class="section-toolbar"><div><b>Output</b><span id="pyStatus">Pyodide loads on first run</span></div><button id="clearTerminalBtn" class="btn ghost small">Clear</button></div><pre id="pythonTerminal" class="terminal"></pre></div></div></section>
 <section id="tab-telemetry" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>ATTITUDE</small><h2>Live telemetry</h2></div></div><div class="metrics"><div><span>ROLL</span><b id="telRoll">0.00°</b></div><div><span>PITCH</span><b id="telPitch">0.00°</b></div><div><span>YAW</span><b id="telYaw">0.00°</b></div><div><span>BATTERY</span><b id="telBatt">-- V</b></div></div></div><div class="form-card"><div class="panel-head"><div><small>RAW</small><h2>Telemetry stream</h2></div></div><pre id="telemetryLog" class="terminal"></pre></div></div></section>
-<section id="tab-settings" class="panel tab-panel"><div class="settings-grid"><div class="form-card"><div class="panel-head"><div><small>KEYBOARD</small><h2>Simulator key mapping</h2></div></div><p class="micro-note">Click a key field, then press the key you want. Save settings to keep the mapping on this browser.</p><div id="keySettings" class="key-settings"></div><div class="button-row"><button id="saveKeysBtn" class="btn primary">Save key mapping</button><button id="resetKeysBtn" class="btn ghost">Restore defaults</button></div></div><div class="form-card"><div class="panel-head"><div><small>FC CASE / EXPANSION</small><h2>Accessible case headers</h2></div></div><div class="io-guide"><div><b>FC MOUNT</b><span>Double-side foam tape directly on the top plate • NO spacer / standoff.</span></div><div><b>ESC1–ESC4</b><span>Upward 2.54 mm male header pins. Source row • +5V centre row • GND bottom row. ESC female plug comes down from above.</span></div><div><b>External GPIO ×3</b><span>Source / +5V / GND. Use for servo, LED, LED matrix, GPS/control or sensors as appropriate.</span></div><div><b>RX / PPM header</b><span>Optional. PPM signal / +5V / GND. When RX is not used, the source pin can be used as another compatible I/O.</span></div><div><b>I²C 4-pin</b><span>VCC • GND • SCL • SDA remains user accessible.</span></div></div><img class="fc-reference-img" src="fc_board_reference.png" alt="ZEBJUS FC accessible pin reference"></div></div></section>
+<section id="tab-settings" class="panel tab-panel"><div class="settings-grid"><div class="form-card"><div class="panel-head"><div><small>KEYBOARD</small><h2>Simulator key mapping</h2></div></div><p class="micro-note">Click a key field, then press the key you want. Save settings to keep the mapping on this browser.</p><div id="keySettings" class="key-settings"></div><div class="button-row"><button id="saveKeysBtn" class="btn primary">Save key mapping</button><button id="resetKeysBtn" class="btn ghost">Restore defaults</button></div></div><div class="form-card"><div class="panel-head"><div><small>FC CASE / EXPANSION</small><h2>Accessible case headers</h2></div></div><div class="io-guide"><div><b>FC MOUNT</b><span>Double-side foam tape directly on the top plate • NO spacer / standoff.</span></div><div><b>ESC1–ESC4</b><span>Upward 2.54 mm male header pins. Source row • +5V centre row • GND bottom row. ESC female plug comes down from above.</span></div><div><b>External GPIO ×3</b><span>Source / +5V / GND. Use for servo, LED, LED matrix, GPS/control or sensors as appropriate.</span></div><div><b>RX / PPM header</b><span>Optional. PPM signal / +5V / GND. When RX is not used, the source pin can be used as another compatible I/O.</span></div><div><b>I²C 4-pin</b><span>VCC • GND • SCL • SDA remains user accessible.</span></div></div><img class="fc-reference-img" src="fc_board_reference.png" alt="ZEBJUS FC accessible pin reference"></div>
+<div class="form-card"><div class="panel-head"><div><small>PROJECT TOOLS</small><h2>Export / report / fullscreen</h2></div></div><div class="export-grid"><button id="exportProjectBtn" class="btn ghost">Export project JSON</button><button id="importProjectBtn" class="btn ghost">Import project JSON</button><input id="importProjectFile" type="file" accept=".json,application/json" hidden><button id="exportSvgBtn" class="btn ghost">Export wiring SVG</button><button id="exportPngBtn" class="btn ghost">Export wiring PNG</button><button id="exportBomBtn" class="btn ghost">Export BOM CSV</button><button id="exportReportBtn" class="btn ghost">Progress report</button><button id="printWiringBtn" class="btn ghost">Print / Save PDF</button><button id="fullscreenBtn" class="btn primary">Fullscreen Lab</button></div></div>
+<div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
+</div></section>
 </main></div>
-<script src="ui-runtime.js?v=15.2.0"></script>
-<script type="module" src="app.js?v=15.2.0"></script>
+<script src="ui-runtime.js?v=16.0.0"></script>
+<script type="module" src="app.js?v=16.0.0"></script>
 </body></html>

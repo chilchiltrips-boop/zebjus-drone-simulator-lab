@@ -1,0 +1,59 @@
+ZEBJUS F450 DRONE ENGINEERING LAB V16 — FINAL QA
+============================================================================
+
+[PASS] Round assembly workbench
+[PASS] Magnetic snap preview with correct/wrong feedback
+[PASS] 2D optional add attaches corresponding 3D component
+[PASS] 3D optional add creates corresponding 2D node
+[PASS] 2D/3D object delete synchronization
+[PASS] 3D wire delete synchronizes to 2D
+[PASS] Optional 2D wiring renders as flexible 3D wiring
+[PASS] Advanced electrical validation
+[PASS] Final inspection blocks critical electrical faults
+[PASS] Realistic XT60 spark / staged power-up
+[PASS] Assembly idle BLDC/prop sound
+[PASS] PID physics controls
+[PASS] Motor response lag simulation
+[PASS] Quadratic prop thrust curve
+[PASS] Payload, CG and wind disturbances
+[PASS] Four-motor differentiated simulator sound
+[PASS] Motor-specific downwash cones/rings
+[PASS] Height-dependent dust / ground effect
+[PASS] FC pin hover tooltip
+[PASS] FC case transparency toggle
+[PASS] Guided WHY/CORRECT/MISTAKE/RISK/CHECK training
+[PASS] Project JSON export/import
+[PASS] Wiring SVG + PNG export
+[PASS] BOM / progress report / Print-PDF tools
+[PASS] Fullscreen lab and graphics profiles
+[PASS] Startup diagnostics with FPS
+[PASS] Offline service worker + manifest
+[PASS] 2D shortcuts W/F/R/Delete retained
+[PASS] Rate mode + Angle mode Roll/Pitch/Yaw PID retained
+[PASS] Requested old assembly overlay text removed
+[PASS] V15.2 saved-project migration retained
+[PASS] V16 cache busting
+[PASS] app.js ES module syntax
+[PASS] service-worker.js syntax
+[PASS] Top-level module evaluation
+[PASS] No duplicate HTML IDs
+[PASS] Static JS UI IDs exist
+[PASS] All shipped local references exist
+[PASS] Flat project folder
+
+Passed 39 / 39 checks.
+
+NOTE: Browser visual automation was attempted in the sandbox, but local/file navigation is blocked by the environment administrator. ES-module syntax, top-level module evaluation, UI-ID integrity and local-reference checks passed.
+
+V16 UPDATE SET:
+1. Full 2D ↔ 3D sync
+2. Magnetic snap / assembly realism
+3. Electrical validation
+4. Realistic power-up
+5. Expanded PID physics
+6. Per-motor sound response
+7. Improved downwash / dust
+8. FC pin/case realism
+9. Guided learning information
+10. Export / offline / diagnostics / performance tools
+11. Round 3D assembly workbench

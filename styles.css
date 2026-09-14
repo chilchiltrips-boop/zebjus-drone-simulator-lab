@@ -306,3 +306,14 @@
 .optional-node .node-title{fill:#8af7d6}
 .fc-node-v14.selected-node .fc-2d-window{stroke:#6ee9c0!important}
 .sim-disturb-hint{line-height:1.55}
+
+
+/* ==================== V16 ENGINEERING SUITE ==================== */
+.learning-grid{display:grid;gap:6px;margin-top:10px}.learning-grid>div{display:grid;grid-template-columns:112px 1fr;gap:8px;padding:7px 8px;border:1px solid #263f50;border-radius:8px;background:#081722}.learning-grid b{font-size:8px;letter-spacing:.08em;color:#69eac0}.learning-grid span{font-size:9px;line-height:1.45;color:#a9bdca}.learning-grid .risk{border-color:#6a3d35}.learning-grid .risk b{color:#ff9b8f}.learning-grid .checkline{border-color:#37634f}
+.three-tooltip{position:absolute;z-index:12;display:none;pointer-events:none;max-width:270px;padding:8px 10px;border:1px solid #477084;background:#07151feF;border-radius:9px;box-shadow:0 8px 28px #000a}.three-tooltip.show{display:grid;gap:4px}.three-tooltip b{color:#dffbf1;font-size:10px}.three-tooltip span{color:#9eb4c2;font-size:8px;line-height:1.4}
+.electrical-issue-list{display:grid;gap:5px;margin:7px 0}.electrical-issue-list>div{font-size:8px;padding:6px 7px;border-radius:6px;background:#091823}.electrical-issue-list .bad{color:#ff9a90;border:1px solid #713b35}.electrical-issue-list .warn{color:#ffd27a;border:1px solid #6d592e}.electrical-issue-list .ok{color:#75e6bd;border:1px solid #285c49}
+.sim-env-card{margin-top:12px;padding:10px;border:1px solid #315269;border-radius:11px;background:#071823}.sim-env-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.sim-env-grid label{font-size:8px;color:#9fb2bf;display:grid;gap:4px}.sim-env-grid output{color:#7ce8c2;font-weight:800}.sim-env-grid input{width:100%}
+.export-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.export-grid .btn{min-height:40px}
+#startupDiagnostics{min-height:150px}
+@media(max-width:760px){.learning-grid>div{grid-template-columns:1fr}.sim-env-grid,.export-grid{grid-template-columns:1fr}}
+@media print{header,.tabs,.wiring-side,.section-toolbar .toolbar-row{display:none!important}body{background:#fff!important}#tab-wiring{display:block!important}.svg-wrap{border:0!important}#wiringSvg{background:#fff!important}}
