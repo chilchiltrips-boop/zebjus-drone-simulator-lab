@@ -1,17 +1,28 @@
-# ZEBJUS F450 Drone Engineering Lab — V16
+# ZEBJUS F450 Drone Engineering Lab — V17 PID Learning Simulator
 
-V16 applies the requested 11-part improvement pass.
+V17 corrects the control-model teaching behavior.
 
-1. Full 2D ↔ 3D optional-device sync, including 3D flexible wires for optional 2D connections.
-2. Magnetic snap preview, green/red target feedback, existing screw/strap animations and X-ray inspection.
-3. Expanded electrical validation: polarity, battery-voltage-to-FC mistakes, missing ESC grounds, wrong ESC output, duplicate FC pins, I²C swap, phase completeness and battery range.
-4. More realistic power-up: XT60 spark, ESC sequence, gyro / receiver checks, READY TO ARM indication and assembly idle motor sound.
-5. Improved PID physics: motor lag, battery voltage, payload, CG offset, wind disturbance and separate Roll/Pitch/Yaw inertial response.
-6. Four-motor PID sound bank so correction load changes the sound as individual motor speeds diverge.
-7. Improved prop/downwash: motor-specific blur, downwash rings/cones and floor dust that changes with throttle and height.
-8. FC realism: exact accessible headers retained, hover tooltips and an FC case X-ray toggle.
-9. Guided education cards: WHY, CORRECT, COMMON MISTAKE, RISK and CHECK for each build stage.
-10. Professional tools: project JSON export/import, wiring SVG/PNG, BOM CSV, progress report, Print/PDF, fullscreen, graphics profiles, diagnostics and offline service worker.
-11. The 3D assembly workbench is now ROUND instead of the previous square bed.
+## Rate Mode
+Roll, Pitch and Yaw use Rate PID only. Stick centre commands 0°/s. If the student manually tilts the drone and releases it, the controller stops the rotation but does not return to level. This is intentional Rate-mode behavior.
 
-Existing V15.2 W/F/R/Delete wiring shortcuts and 2D↔3D optional-component add/delete sync are retained.
+## Angle Mode
+Roll and Pitch use Angle PID outer loops feeding the Roll/Pitch Rate PID inner loops. A manual Roll/Pitch disturbance returns to the commanded angle when tuning is stable.
+
+Yaw is Rate PID in both modes. There is no Yaw Angle PID or heading lock.
+
+## Student PID lesson
+The simulator now shows:
+- P, I and D meaning
+- live P / I / D contribution values
+- live target / actual / error
+- Rate-loop or Angle-loop teaching selection
+- Low P / High P / Low I / High I / Low D / High D / Stable presets
+- diagnosis for under-tuned, over-tuned and near-stable values
+- practical tuning steps
+- setpoint-vs-response graph
+- individual motor response and sound during correction
+
+The stable example uses the working ZEBJUS baseline:
+Rate Roll/Pitch P=0.9, I=15, D=0.035; Rate Yaw P=3, I=13, D=0; Angle Roll/Pitch P=3.
+
+All V16 assembly, wiring, electrical validation, round workbench, export, offline and diagnostics features remain.

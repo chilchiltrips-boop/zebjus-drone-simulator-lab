@@ -317,3 +317,21 @@
 #startupDiagnostics{min-height:150px}
 @media(max-width:760px){.learning-grid>div{grid-template-columns:1fr}.sim-env-grid,.export-grid{grid-template-columns:1fr}}
 @media print{header,.tabs,.wiring-side,.section-toolbar .toolbar-row{display:none!important}body{background:#fff!important}#tab-wiring{display:block!important}.svg-wrap{border:0!important}#wiringSvg{background:#fff!important}}
+
+
+/* ==================== V17 PID LEARNING SIMULATOR ==================== */
+.sim-v17-grid{grid-template-columns:minmax(0,1fr) 630px!important}
+.sim-v17-controls{padding:16px!important;overflow:auto;max-height:calc(100vh - 154px)}
+.sim-metrics small{display:block;margin-top:3px;color:#78909f;font-size:7px;line-height:1.3}
+.v17-pid-box .axis-pid-table{grid-template-columns:60px repeat(3,minmax(72px,1fr))}
+.pid-presets{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.pid-class-card{grid-column:1/-1;border:1px solid #315269;border-radius:14px;background:linear-gradient(180deg,#0b1d2a,#07151f);padding:16px}
+.pid-class-card .panel-head{margin-bottom:12px}.teach-selects{display:flex;gap:7px;flex-wrap:wrap}.teach-selects select{max-width:170px}
+.pid-class-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pid-term{position:relative;border:1px solid #2b4b60;border-radius:12px;padding:14px;background:#081824;min-height:150px}.pid-term>b{font-size:12px;letter-spacing:.04em}.pid-term>span{display:block;color:#b7c9d4;font-size:9px;margin:7px 0}.pid-term p{color:#879eac;font-size:9px;line-height:1.55}.pid-term output{position:absolute;right:13px;top:12px;font:800 20px ui-monospace;color:#fff}.pid-term.p{border-top:3px solid #53efbd}.pid-term.i{border-top:3px solid #54dbef}.pid-term.d{border-top:3px solid #f59e0b}
+.pid-live-equation{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.pid-live-equation span{border:1px solid #29485c;background:#06141e;border-radius:9px;padding:9px;color:#7894a5;font-size:8px}.pid-live-equation b{display:block;margin-top:3px;color:#e9f8ff;font-size:13px}
+.pid-coach{border:1px solid #42647a;background:#0a2230;border-radius:10px;padding:11px;color:#9eb7c5;font-size:9px;line-height:1.55}.pid-coach b{display:block;color:#6ee9c0;font-size:11px;margin-bottom:4px}
+.mode-lesson{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.mode-lesson>div{border:1px solid #2c4a5d;border-radius:9px;padding:10px;background:#081822}.mode-lesson b{display:block;color:#68e9c0;font-size:9px;margin-bottom:5px}.mode-lesson span{font-size:8px;line-height:1.5;color:#91a8b6}
+.tuning-lesson{margin-top:12px;border:1px solid #294b3e;background:#071c17;border-radius:10px;padding:12px;color:#a9c7bb;font-size:9px;line-height:1.55}.tuning-lesson>b{color:#76efc2}.tuning-lesson ol{margin:8px 0 0 18px;padding:0}.tuning-lesson li{margin:5px 0}.c-target{background:#f7f7f7}
+@media(max-width:1450px){.sim-v17-grid{grid-template-columns:1fr!important}.sim-v17-controls{max-height:none}}
+@media(max-width:900px){.pid-class-grid,.mode-lesson{grid-template-columns:1fr}.pid-live-equation{grid-template-columns:1fr 1fr}}

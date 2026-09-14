@@ -1,0 +1,35 @@
+ZEBJUS F450 DRONE LAB V17 — PID LEARNING QA
+========================================================================
+
+[PASS] Rate mode is rate-only Roll/Pitch/Yaw
+[PASS] Angle mode uses Roll/Pitch angle outer loop
+[PASS] Yaw always uses Rate PID
+[PASS] No Yaw Angle PID state or inputs
+[PASS] Rate-mode manual tilt explanation
+[PASS] Angle-mode manual tilt recovery explanation
+[PASS] Live P/I/D contribution teaching
+[PASS] Teaching loop selector
+[PASS] PID presets
+[PASS] Stable baseline preset
+[PASS] PID response diagnosis
+[PASS] Practical tuning lesson
+[PASS] Target vs response chart
+[PASS] Per-motor sound retained
+[PASS] Manual disturbance retained
+[PASS] Physics/load controls retained
+[PASS] V16 engineering features retained
+[PASS] Round assembly bench retained
+[PASS] V17 cache busting
+[PASS] app.js ES module syntax
+[PASS] service-worker.js syntax
+[PASS] Top-level module evaluation
+[PASS] No duplicate HTML IDs
+[PASS] Static JS UI IDs exist
+[PASS] All local references exist
+[PASS] Flat project folder
+
+Passed 26 / 26 checks.
+
+RATE MODE: Roll/Pitch/Yaw Rate PID only. Manual tilt stops rotating and stays near the new attitude.
+ANGLE MODE: Roll/Pitch Angle outer loop -> Rate inner loop. Yaw remains Rate PID only.
+No Yaw Angle PID / heading lock.

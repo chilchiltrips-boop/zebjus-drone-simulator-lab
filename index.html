@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V16</title>
-<link rel="stylesheet" href="styles.css?v=16.0.0"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V17</title>
+<link rel="stylesheet" href="styles.css?v=17.0.0"><link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V16 • engineering validation • full 2D↔3D sync • realistic PID physics • export/offline tools</span></div></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V17 • PID Learning Simulator • correct Rate/Angle control • live P/I/D teaching</span></div></div>
  <div class="top-actions"><span id="assetStatus" class="status">Loading V16 local module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
@@ -88,50 +88,63 @@
 </section>
 
 <section id="tab-sim" class="panel tab-panel">
- <div class="sim-grid sim-v15-grid">
+ <div class="sim-grid sim-v17-grid">
   <div class="sim-card">
    <div class="section-toolbar sim-toolbar">
-    <div><b>Tripod PID Tuning Simulator</b><span>Roll • Pitch • Yaw • throttle lift • manual disturbance • live motor correction</span></div>
-    <div class="toolbar-row sim-toolbar-actions"><select id="simFlightMode"><option value="angle">ANGLE MODE</option><option value="rate">RATE MODE</option></select><button id="simDisturbBtn" class="btn ghost small">Manual tilt: OFF</button><button id="simRunBtn" class="btn primary small">RUN</button><button id="simResetBtn" class="btn ghost small">Reset</button></div>
+    <div><b>PID Learning Simulator</b><span>Rate Mode = rate hold only • Angle Mode = Roll/Pitch angle → rate • Yaw always rate</span></div>
+    <div class="toolbar-row sim-toolbar-actions"><select id="simFlightMode"><option value="angle">ANGLE MODE • Roll/Pitch Angle + Rate</option><option value="rate">RATE MODE • Roll/Pitch/Yaw Rate only</option></select><button id="simDisturbBtn" class="btn ghost small">Manual tilt: OFF</button><button id="simRunBtn" class="btn primary small">RUN</button><button id="simResetBtn" class="btn ghost small">Reset</button></div>
    </div>
    <div id="simThree"></div>
-   <div id="simDisturbHint" class="sim-disturb-hint">Enable <b>Manual tilt</b>, then drag the drone to disturb Roll/Pitch while motors react in sound and speed. Angle mode actively levels the drone; Rate mode only damps angular rate.</div>
+   <div id="simDisturbHint" class="sim-disturb-hint"><b>Manual disturbance lesson:</b> Angle Mode returns Roll/Pitch to the commanded angle. Rate Mode only returns angular velocity to 0°/s, so the drone remains near the new tilted attitude. Yaw has no angle lock in either mode.</div>
   </div>
-  <aside class="sim-controls sim-v15-controls">
+  <aside class="sim-controls sim-v17-controls">
    <div class="metrics sim-metrics">
-    <div><span>ROLL</span><b id="simRoll">0.0°</b></div>
-    <div><span>PITCH</span><b id="simPitch">0.0°</b></div>
-    <div><span>YAW</span><b id="simYaw">0.0°</b></div>
-    <div><span>YAW RATE</span><b id="simYawRate">0.0°/s</b></div>
-    <div><span>THROTTLE / LIFT</span><b id="simLift">1000 µs</b></div>
-    <div><span>RESPONSE</span><b id="simTuneState">READY</b></div>
+    <div><span>ROLL</span><b id="simRoll">0.0°</b><small id="simRollTarget">Target 0.0°</small></div>
+    <div><span>PITCH</span><b id="simPitch">0.0°</b><small id="simPitchTarget">Target 0.0°</small></div>
+    <div><span>YAW</span><b id="simYaw">0.0°</b><small>Heading is free</small></div>
+    <div><span>YAW RATE</span><b id="simYawRate">0.0°/s</b><small id="simYawTarget">Target 0.0°/s</small></div>
+    <div><span>THROTTLE / LIFT</span><b id="simLift">1000 µs</b><small>Quadratic thrust</small></div>
+    <div><span>RESPONSE</span><b id="simTuneState">READY</b><small id="simDiagnosis">Adjust PID and disturb the drone</small></div>
    </div>
+
    <div class="tx-title"><b>VIRTUAL TRANSMITTER</b><span>Mouse / touch + keyboard</span></div>
    <div class="tx-sticks v15-sticks">
-    <div class="gimbal-card"><small>THROTTLE / YAW</small><div id="leftStick" class="stick-pad v15-gimbal"><i id="leftStickKnob"></i></div><span id="leftStickRead">T 1000 • Y 0</span></div>
+    <div class="gimbal-card"><small>THROTTLE / YAW RATE</small><div id="leftStick" class="stick-pad v15-gimbal"><i id="leftStickKnob"></i></div><span id="leftStickRead">T 1000 • Y 0</span></div>
     <div class="gimbal-card"><small>PITCH / ROLL</small><div id="rightStick" class="stick-pad v15-gimbal"><i id="rightStickKnob"></i></div><span id="rightStickRead">P 0 • R 0</span></div>
    </div>
-   <div class="sim-pid-box v15-pid-box">
-    <div class="panel-head compact"><div><small>LIVE PID</small><h2 id="simPidTitle">Angle mode: Rate + Angle PID</h2></div><span id="simPidModeBadge" class="status good">ANGLE</span></div>
+
+   <div class="sim-pid-box v17-pid-box">
+    <div class="panel-head compact"><div><small>LIVE PID</small><h2 id="simPidTitle">Angle Mode: Roll/Pitch Angle + Rate • Yaw Rate</h2></div><span id="simPidModeBadge" class="status good">ANGLE</span></div>
     <section id="simRatePidPanel" class="axis-pid-card">
-     <div class="axis-pid-head"><b>RATE PID</b><span>Inner loop • Roll / Pitch / Yaw</span></div>
+     <div class="axis-pid-head"><b>RATE PID • INNER LOOP</b><span>Roll / Pitch / Yaw</span></div>
      <div class="axis-pid-table">
       <b>AXIS</b><b>P</b><b>I</b><b>D</b>
-      <span>ROLL</span><input id="simRateRollP" type="number" step="0.05"><input id="simRateRollI" type="number" step="0.5"><input id="simRateRollD" type="number" step="0.005">
-      <span>PITCH</span><input id="simRatePitchP" type="number" step="0.05"><input id="simRatePitchI" type="number" step="0.5"><input id="simRatePitchD" type="number" step="0.005">
-      <span>YAW</span><input id="simRateYawP" type="number" step="0.05"><input id="simRateYawI" type="number" step="0.5"><input id="simRateYawD" type="number" step="0.005">
+      <span>ROLL</span><input id="simRateRollP" type="number" min="0" max="4" step="0.05"><input id="simRateRollI" type="number" min="0" max="40" step="0.5"><input id="simRateRollD" type="number" min="0" max=".15" step="0.005">
+      <span>PITCH</span><input id="simRatePitchP" type="number" min="0" max="4" step="0.05"><input id="simRatePitchI" type="number" min="0" max="40" step="0.5"><input id="simRatePitchD" type="number" min="0" max=".15" step="0.005">
+      <span>YAW</span><input id="simRateYawP" type="number" min="0" max="6" step="0.05"><input id="simRateYawI" type="number" min="0" max="35" step="0.5"><input id="simRateYawD" type="number" min="0" max=".08" step="0.002">
      </div>
     </section>
+
     <section id="simAnglePidPanel" class="axis-pid-card">
-     <div class="axis-pid-head"><b>ANGLE PID</b><span>Outer loop • Roll / Pitch / Yaw</span></div>
+     <div class="axis-pid-head"><b>ANGLE PID • OUTER LOOP</b><span>Roll / Pitch only • NO Yaw angle lock</span></div>
      <div class="axis-pid-table">
       <b>AXIS</b><b>P</b><b>I</b><b>D</b>
-      <span>ROLL</span><input id="simAngleRollP" type="number" step="0.1"><input id="simAngleRollI" type="number" step="0.05"><input id="simAngleRollD" type="number" step="0.005">
-      <span>PITCH</span><input id="simAnglePitchP" type="number" step="0.1"><input id="simAnglePitchI" type="number" step="0.05"><input id="simAnglePitchD" type="number" step="0.005">
-      <span>YAW</span><input id="simAngleYawP" type="number" step="0.1"><input id="simAngleYawI" type="number" step="0.05"><input id="simAngleYawD" type="number" step="0.005">
+      <span>ROLL</span><input id="simAngleRollP" type="number" min="0" max="8" step="0.1"><input id="simAngleRollI" type="number" min="0" max="4" step="0.05"><input id="simAngleRollD" type="number" min="0" max=".25" step="0.005">
+      <span>PITCH</span><input id="simAnglePitchP" type="number" min="0" max="8" step="0.1"><input id="simAnglePitchI" type="number" min="0" max="4" step="0.05"><input id="simAnglePitchD" type="number" min="0" max=".25" step="0.005">
      </div>
     </section>
+
+    <div class="pid-presets">
+      <button class="btn ghost small pid-preset" data-preset="lowP">Low P</button>
+      <button class="btn ghost small pid-preset" data-preset="highP">High P</button>
+      <button class="btn ghost small pid-preset" data-preset="lowI">Low I</button>
+      <button class="btn ghost small pid-preset" data-preset="highI">High I</button>
+      <button class="btn ghost small pid-preset" data-preset="lowD">Low D</button>
+      <button class="btn ghost small pid-preset" data-preset="highD">High D</button>
+      <button class="btn primary small pid-preset" data-preset="stable">Stable example</button>
+    </div>
     <button id="simApplyPidBtn" class="btn primary full">Apply PID to simulator</button>
+
     <div class="sim-env-card">
      <div class="axis-pid-head"><b>PHYSICS / LOAD</b><span>Battery • payload • CG • wind • motor lag</span></div>
      <div class="sim-env-grid">
@@ -144,10 +157,29 @@
      </div>
     </div>
    </div>
+
    <div class="motor-mix v15-motor-mix"><span>M1 <b id="m1">0%</b></span><span>M2 <b id="m2">0%</b></span><span>M3 <b id="m3">0%</b></span><span>M4 <b id="m4">0%</b></span></div>
-   <p class="micro-note">Arrow keys: Pitch/Roll • W/S: Throttle • A/D: Yaw • R: Run/Stop. Manual tilt can physically disturb the virtual drone.</p>
+   <p class="micro-note">Arrow keys: Pitch/Roll • W/S: Throttle • A/D: Yaw rate • R: Run/Stop.</p>
   </aside>
-  <div class="chart-card sim-chart-card"><div class="sim-chart-head"><b>ATTITUDE RESPONSE</b><span><i class="c-roll"></i>Roll <i class="c-pitch"></i>Pitch <i class="c-yaw"></i>Yaw</span></div><canvas id="simChart" width="1200" height="260"></canvas></div>
+
+  <section class="pid-class-card">
+   <div class="panel-head"><div><small>STUDENT LESSON</small><h2>Learn what P, I and D actually do</h2></div><div class="teach-selects"><select id="teachAxis"><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw rate</option></select><select id="teachLoop"><option value="rate">Rate loop</option><option value="angle">Angle loop</option></select></div></div>
+   <div class="pid-class-grid">
+    <article class="pid-term p"><b>P • Proportional</b><span>Correction from the error right now.</span><p><strong>Too low:</strong> weak / slow response. <strong>Too high:</strong> aggressive correction and oscillation.</p><output id="liveP">0.00</output></article>
+    <article class="pid-term i"><b>I • Integral</b><span>Accumulated error over time.</span><p><strong>Too low:</strong> CG/wind bias remains. <strong>Too high:</strong> slow wobble, overshoot and wind-up.</p><output id="liveI">0.00</output></article>
+    <article class="pid-term d"><b>D • Derivative</b><span>Damping from how fast error changes.</span><p><strong>Too low:</strong> bounce / overshoot. <strong>Too high:</strong> harsh/noisy motor corrections.</p><output id="liveD">0.00</output></article>
+   </div>
+   <div class="pid-live-equation"><span>Target <b id="teachTarget">0.00</b></span><span>Actual <b id="teachActual">0.00</b></span><span>Error <b id="teachError">0.00</b></span><span>Loop <b id="teachLoopLive">RATE</b></span></div>
+   <div id="pidCoach" class="pid-coach">Run the simulator, apply a preset or change P/I/D, then manually disturb the drone. The coach explains the response.</div>
+   <div class="mode-lesson">
+    <div><b>RATE MODE</b><span>Stick commands angular rate. Stick centre = 0°/s. After manual tilt the controller stops rotation, but it does not level the angle.</span></div>
+    <div><b>ANGLE MODE</b><span>Roll/Pitch stick commands angle. Outer Angle PID asks the inner Rate PID for a recovery rate. Manual tilt returns to the commanded angle.</span></div>
+    <div><b>YAW</b><span>Yaw is Rate PID in both modes. There is no Yaw Angle PID or heading lock in this simulator.</span></div>
+   </div>
+   <div class="tuning-lesson"><b>Practical tuning exercise</b><ol><li>Set I and D low. Increase <b>P</b> until response is quick but begins to oscillate, then reduce slightly.</li><li>Increase <b>D</b> until overshoot / bounce is damped without noisy motor activity.</li><li>Add <b>I</b> until persistent error from CG or wind disappears.</li><li>After the Rate loop is stable, tune Roll/Pitch <b>Angle P</b> for the desired leveling speed.</li><li>Yaw is tuned only in the Rate loop.</li></ol></div>
+  </section>
+
+  <div class="chart-card sim-chart-card"><div class="sim-chart-head"><b>PID RESPONSE</b><span><i class="c-target"></i>Target <i class="c-roll"></i>Roll <i class="c-pitch"></i>Pitch <i class="c-yaw"></i>Yaw rate</span></div><canvas id="simChart" width="1200" height="260"></canvas></div>
  </div>
 </section>
 <section id="tab-connect" class="panel tab-panel"><div class="form-card narrow"><div class="panel-head"><div><small>REAL HARDWARE</small><h2>Connect ZEBJUS Flight Controller</h2></div><span id="fcBadge" class="status">Disconnected</span></div><div class="form-grid"><label>IP<input id="fcIp" value="192.168.4.1"></label><label>WebSocket path<input id="fcPath" value="/ws/telemetry"></label><label>Protocol<select id="fcProtocol"><option value="auto">Auto</option><option value="wss">WSS</option><option value="ws">WS</option></select></label><label>Kit name<input value="ZEBJUS-DRONE-01"></label></div><div class="button-row"><button id="connectFcBtn" class="btn primary">Connect</button><button id="disconnectFcBtn" class="btn ghost">Disconnect</button><button id="pingFcBtn" class="btn ghost">Ping</button></div><pre id="fcLog" class="terminal mini">Ready to connect…</pre></div></section>
@@ -160,6 +192,6 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=16.0.0"></script>
-<script type="module" src="app.js?v=16.0.0"></script>
+<script src="ui-runtime.js?v=17.0.0"></script>
+<script type="module" src="app.js?v=17.0.0"></script>
 </body></html>
