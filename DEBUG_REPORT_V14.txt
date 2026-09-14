@@ -1,0 +1,34 @@
+ZEBJUS F450 DRONE LAB V14 — FINAL FC HEADER / WIRING QA
+==========================================================================
+
+[PASS] ESC header has 4 columns
+[PASS] ESC header has 3 ordered rows
+[PASS] ESC female sockets align to 3 rows
+[PASS] GPIO header has 3 columns
+[PASS] GPIO header has 3 ordered rows
+[PASS] RX is separate 1×3 block
+[PASS] I2C separate 4-pin block
+[PASS] 3D case labels identify ESC/GPIO/RX/I2C
+[PASS] Upward 2.54-style male pins
+[PASS] FC endpoint positions match ESC rows
+[PASS] Flexible ESC wires rise above FC
+[PASS] Female plug descends from above
+[PASS] GPS mast/stand present
+[PASS] RX top-deck reserved space
+[PASS] LED matrix side placement
+[PASS] Bright RGB status LED
+[PASS] Battery plug flexible red/brown leads
+[PASS] 2D FC mirrors 4×3 ESC section
+[PASS] 2D FC has separate GPIO and RX blocks
+[PASS] 2D optional LED/output can be added
+[PASS] 2D optional parts hide when placed in 3D
+[PASS] 2D add blocks already-placed 3D optional device
+[PASS] FC tape retained; no FC standoff guided step
+[PASS] V14 cache busting
+[PASS] app.js ESM syntax
+[PASS] Top-level module evaluation
+[PASS] All local references exist
+[PASS] Static UI IDs exist
+[PASS] Flat project folder
+
+Passed 29 / 29 checks.

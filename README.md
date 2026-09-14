@@ -1,61 +1,43 @@
-# ZEBJUS F450 Drone Engineering Lab — V13 FULL REALISM FIXED
+# ZEBJUS F450 Drone Engineering Lab — V14
 
-This build fixes the malformed V12.1 `app.js` and implements the requested hardware-style assembly and simulator behaviour.
+## Corrected ZEBJUS FC headers
+- ESC section: **4 columns × 3 rows**
+  - columns = ESC1, ESC2, ESC3, ESC4
+  - rows = Source / +5V / GND
+- External GPIO: separate **3 columns × 3 rows** block, visually lower/separated from RX.
+- RX/PPM: separate **1 column × 3 rows** block.
+- I²C: separate 4-pin block.
+- All FC user pins project upward as 2.54 mm-style male header pins.
 
-## Final guided order
+## ESC female plug / flexible cable
+- ESC Source/+5V/GND wires now rise above the top plate and approach the FC from above.
+- Flexible curved 3D leads remain visible.
+- One female 3-pin housing descends vertically onto each ESC male-header column.
 
-Bottom PDB → Arms → Prop guards → Motors → Motor screw set → ESCs →
-Motor U/V/W → ESC power soldering → Top plate → Frame screw set →
-FC double-side foam tape → ZEBJUS FC → ESC Source/+5V/GND →
-Battery underneath + automatic straps → XT60 connect → 1045 props → Final inspection.
+## Top-deck optional-component space
+- Receiver: reserved right-side top-deck position.
+- GPS: automatic raised mast / GPS stand.
+- LED matrix: reserved left-side position.
+- Sensor / LED / servo positions stay separated from the FC header blocks.
 
-**There are NO FC spacers/standoffs.** The FC case is mounted directly to the top plate using double-side foam tape.
+## FC RGB status
+- Bright RGB indicator replaces the previous weak two-LED indication.
+- Boot: bright red.
+- Ready: bright green/cyan.
+- Battery disconnect: RGB off.
 
-## FC connector realism
-- Upward-projecting 2.54 mm-style male header pins on the FC.
-- ESC female 3-pin housings insert vertically from above.
-- Source/PWM = orange.
-- +5V = thin light red.
-- GND = brown-black.
-- High-current battery / ESC +12 V = thick red.
-- High-current return = thick brown-black.
+## Battery
+- XT60 connection animation now includes visible flexible thick red + brown-black leads.
+- Existing ESC startup tone, LED sequence, power-flow and prop idle are retained.
 
-## Battery / power sequence
-- LiPo is mounted under the central frame.
-- Two straps appear automatically and tighten around the battery.
-- The bottom PDB includes a 3D soldered XT60 socket.
-- Connect battery button animates XT60 insertion.
-- ESC LEDs and startup beeps run sequentially.
-- FC power/status LEDs then start.
-- Installed propellers idle slowly only after startup completes.
-- Disconnect stops props, LEDs and power-flow particles.
+## 2D wiring / 3D sync
+- 2D FC header drawing mirrors the corrected 3D layout.
+- ESC, GPIO, RX and I²C blocks are boxed separately.
+- Exact pin dots stay visible above wires.
+- PPM Receiver, Servo, LED Matrix, I²C Sensor, GPS + stand and LED/Output can be added to the 2D bench.
+- An optional part that is already placed in 3D is hidden from the 2D **unplaced-parts** bench; its 2D wires also disappear because that node is no longer drawn.
 
-## Assembly feedback
-- Different generated sound cues for plate, arm, guard, motor, ESC, tape, FC, battery, strap, prop, connector and screw.
-- Frame/motor screw sets use one-drag installation with a slower visible Allen-key tightening sequence.
-
-## 2D wiring
-- FC wires pass visibly over the FC case to the exact pin.
-- FC pin circles are redrawn above the wires.
-- FC rows are labelled SOURCE / +5V / GND.
-- Wire gauge is represented visually:
-  - +12 V high-current: thick red
-  - Ground return: thick brown-black
-  - Source/PWM: thin orange
-  - +5 V: thin light red
-- Components remain draggable and wires reroute automatically.
-- Wire delete/redraw/undo retained.
-- Motor U/V/W swap still reverses motor direction.
-- PWM motor test and animated current flow retained.
-
-## Tripod PID simulator
-- Larger grouped Rate PID and Angle PID controls.
-- Improved lighting/background.
-- Realistic two-blade 1045 propeller geometry.
-- Rotor blur increases with throttle.
-- Ground dust/downwash increases with prop speed.
-- Keyboard + virtual transmitter controls retained.
-
-## GitHub Pages
-The ZIP contains one top-level folder. Inside it all project files are flat; there is no nested `assets` folder.
-Upload every file inside the folder directly to the GitHub repository root.
+## Guided order
+Bottom PDB → Arms → Prop guards → Motors → Motor screws → ESCs → Motor U/V/W →
+ESC power soldering → Top plate → Frame screw set → FC double-side tape →
+ZEBJUS FC → ESC Source/+5V/GND → Battery underneath + straps → XT60 → Props → Final inspection.

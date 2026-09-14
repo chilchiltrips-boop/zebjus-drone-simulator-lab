@@ -42,10 +42,10 @@ const products=[
  {type:'batteryStrap',internal:true,icon:'═',name:'Battery Strap',short:'LiPo retention strap',max:2,asset:'battery_strap.glb',thumb:'thumb_batteryStrap.png',rating:{Qty:'2',Use:'Battery retention'},detail:'Two tight straps wrap around the LiPo mounted underneath the central frame/PDB.',pins:[['ROUTE','Plate slots'],['TENSION','Firm, not crushing']]},
  {type:'battery',icon:'▰',name:'LiPo Battery',short:'2200mAh 3S 11.1V + XT60',max:1,asset:'lipo_2200_3s.glb',thumb:'ref_lipo-2200.png',rating:{Capacity:'2200mAh',Cells:'3S',Voltage:'11.1V',Connector:'XT60'},detail:'Main 2200mAh 3S propulsion battery mounted underneath the central frame and held tightly with two straps. Its XT60 plug mates with the soldered PDB battery connector.',pins:[['XT60 +','PDB BAT+'],['XT60 −','PDB BAT−']]},
  {type:'prop',icon:'✣',name:'1045 Propeller',short:'10×4.5 CW / CCW',max:4,asset:'prop_1045_cw.glb',assetCCW:'prop_1045_ccw.glb',thumb:'thumb_prop.png',rating:{Size:'10×4.5',Pair:'CW / CCW'},detail:'Correct direction asset is chosen automatically for each motor.',pins:[['CW','M1/M3'],['CCW','M2/M4']]},
- {type:'receiver',icon:'⌁',name:'PPM Receiver (Optional)',short:'Optional because Wi‑Fi control is built in',max:1,asset:'receiver_module.glb',thumb:'thumb_receiver.png',optional:true,rating:{Output:'PPM',Wires:'Signal / +5V / GND',Requirement:'Optional'},detail:'Optional PPM-output receiver. The RX header is not required when using Wi‑Fi control.',pins:[['PPM','RX source pin'],['+5V','Center row'],['GND','Bottom row']]},
- {type:'gps',icon:'⌖',name:'GPS Module (Optional)',short:'External GPIO / serial learning device',max:1,optional:true,rating:{Use:'Position / navigation',Power:'+5V/GND','I/O':'External GPIO'},detail:'Optional GPS learning module. Connect compatible serial/source pins using the external GPIO area.',pins:[['SOURCE','GPIO source pin(s)'],['+5V','Center row'],['GND','Bottom row']]},
+ {type:'receiver',icon:'⌁',name:'PPM Receiver (Optional)',short:'Optional because Wi‑Fi control is built in',max:1,asset:'receiver_module.glb',thumb:'thumb_receiver.png',optional:true,rating:{Output:'PPM',Wires:'Signal / +5V / GND',Requirement:'Optional'},detail:'Optional PPM-output receiver. A reserved top-deck side area is provided. Use the isolated RX/PPM 3-pin Source/+5V/GND section. Wi‑Fi control can be used without this receiver.',pins:[['PPM','RX source pin'],['+5V','Center row'],['GND','Bottom row']]},
+ {type:'gps',icon:'⌖',name:'GPS Module (Optional)',short:'External GPIO / serial learning device',max:1,optional:true,rating:{Use:'Position / navigation',Power:'+5V/GND','I/O':'External GPIO'},detail:'Optional GPS module with an automatic raised mast/stand. The stand lifts the GPS above the top deck and keeps space clear around the FC headers. Connect compatible source/serial pins through external GPIO plus +5V/GND.',pins:[['SOURCE','GPIO source pin(s)'],['+5V','Center row'],['GND','Bottom row']]},
  {type:'servo',icon:'↻',name:'Servo (Optional)',short:'External GPIO output',max:2,optional:true,rating:{Signal:'PWM',Power:'+5V/GND',Header:'External GPIO or spare RX source'},detail:'Optional servo. Use a compatible source pin plus +5V and GND.',pins:[['PWM','Source row'],['+5V','Center row'],['GND','Bottom row']]},
- {type:'matrix',icon:'▦',name:'LED Matrix (Optional)',short:'GPIO data + +5V + GND',max:1,optional:true,thumb:'ref_led-matrix-16x16.png',rating:{Signal:'Data',Power:'+5V/GND',Use:'Learning output'},detail:'Optional LED matrix output. Use a compatible GPIO source/data pin with +5V and GND.',pins:[['DATA','GPIO source'],['+5V','Center row'],['GND','Bottom row']]},
+ {type:'matrix',icon:'▦',name:'LED Matrix (Optional)',short:'GPIO data + +5V + GND',max:1,optional:true,thumb:'ref_led-matrix-16x16.png',rating:{Signal:'Data',Power:'+5V/GND',Use:'Learning output'},detail:'Optional LED matrix mounts on the left-side top-deck area so it does not cover the FC headers. Use a compatible GPIO source/data pin with +5V and GND.',pins:[['DATA','GPIO source'],['+5V','Center row'],['GND','Bottom row']]},
  {type:'sensor',icon:'◫',name:'I²C Sensor (Optional)',short:'Use exposed I²C 4-pin header',max:2,optional:true,rating:{Bus:'I²C',Header:'VCC/GND/SCL/SDA'},detail:'Optional I²C sensor. The four-pin I²C header remains exposed through the FC case.',pins:[['VCC','I²C VCC'],['GND','I²C GND'],['SCL','Clock'],['SDA','Data']]},
  {type:'led',icon:'●',name:'LED / Output (Optional)',short:'GPIO source + +5V/GND as required',max:2,optional:true,rating:{Use:'Digital/PWM output',Header:'External GPIO'},detail:'Optional output device for GPIO learning.',pins:[['SOURCE','GPIO output'],['+5V','Center row if required'],['GND','Bottom row']]}
 ];
@@ -94,7 +94,7 @@ const slots={
  motor:[{id:'M1',p:[2.96,.96,2.96],r:rad(135)},{id:'M2',p:[-2.96,.96,2.96],r:rad(45)},{id:'M3',p:[-2.96,.96,-2.96],r:rad(-45)},{id:'M4',p:[2.96,.96,-2.96],r:rad(-135)}],
  esc:[{id:'ESC1',p:[1.82,.82,1.82],r:rad(-45)},{id:'ESC2',p:[-1.82,.82,1.82],r:rad(-135)},{id:'ESC3',p:[-1.82,.82,-1.82],r:rad(135)},{id:'ESC4',p:[1.82,.82,-1.82],r:rad(45)}],
  fcTape:[{id:'TAPE',p:[0,1.00,0],r:0}],fc:[{id:'FC',p:[0,1.035,0],r:0}],
- receiver:[{id:'RX',p:[1.25,1.17,-.35],r:0}],gps:[{id:'GPS',p:[1.35,1.17,.45],r:0}],servo:[{id:'SV1',p:[1.4,1.05,-1.0],r:0},{id:'SV2',p:[-1.4,1.05,-1.0],r:0}],matrix:[{id:'MATRIX',p:[-1.25,1.17,-.45],r:0}],sensor:[{id:'SEN1',p:[-1.25,1.17,.45],r:0},{id:'SEN2',p:[0,1.17,1.05],r:0}],led:[{id:'LED1',p:[.75,1.17,1.0],r:0},{id:'LED2',p:[-.75,1.17,1.0],r:0}],
+ receiver:[{id:'RX',p:[1.36,1.08,-.48],r:0}],gps:[{id:'GPS',p:[0,1.96,.82],r:0}],servo:[{id:'SV1',p:[1.58,1.00,-1.10],r:0},{id:'SV2',p:[-1.58,1.00,-1.10],r:0}],matrix:[{id:'MATRIX',p:[-1.52,1.09,-.52],r:rad(90)}],sensor:[{id:'SEN1',p:[-1.30,1.09,.50],r:0},{id:'SEN2',p:[1.30,1.09,.52],r:0}],led:[{id:'LED1',p:[.78,1.09,1.03],r:0},{id:'LED2',p:[-.78,1.09,1.03],r:0}],
  batteryStrap:[{id:'BS1',p:[-.62,.00,0],r:0},{id:'BS2',p:[.62,.00,0],r:0}],battery:[{id:'BAT',p:[0,.00,0],r:0}],
  prop:[{id:'M1',p:[2.96,1.96,2.96]},{id:'M2',p:[-2.96,1.96,2.96]},{id:'M3',p:[-2.96,1.96,-2.96]},{id:'M4',p:[2.96,1.96,-2.96]}],frameScrew:[],motorScrew:[]};
 [
@@ -155,7 +155,12 @@ function setEscLed(index,on){
 }
 function setFcLeds(powerOn,statusOn){
  const p=state.parts.find(x=>x.type==='fc');if(!p)return;
- p.obj.traverse(o=>{if(!o.isMesh)return;if(o.name==='FC_POWER_LED')o.material.emissiveIntensity=powerOn?2.5:0;if(o.name==='FC_STATUS_LED')o.material.emissiveIntensity=statusOn?1.9:0})
+ p.obj.traverse(o=>{
+   if(!o.isMesh||!o.material)return;
+   if(o.name==='FC_RGB_LED_R')o.material.emissiveIntensity=powerOn&&!statusOn?7.5:0;
+   if(o.name==='FC_RGB_LED_G')o.material.emissiveIntensity=powerOn&&statusOn?9.0:0;
+   if(o.name==='FC_RGB_LED_B')o.material.emissiveIntensity=powerOn&&statusOn?3.4:0
+ })
 }
 function updatePowerUi(){
  const st=$('#batteryPowerState'),btn=$('#batteryConnectBtn');
@@ -173,8 +178,8 @@ function setPowerVisual(on,instant=false){
 function runPowerUpSequence(){
  const token=++powerSequenceToken;state.powered=true;state.powerStage=1;for(let i=0;i<4;i++)setEscLed(i,false);setFcLeds(false,false);rebuildPowerPulses();updatePowerUi();
  [0,1,2,3].forEach(i=>setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setEscLed(i,true);escBeep(i)},300+i*190));
- setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;state.powerStage=2;setFcLeds(true,false);tone(1180,.08,'sine',.025);updatePowerUi()},1120);
- setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setFcLeds(true,true);tone(1480,.06,'sine',.02);},1360);
+ setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;state.powerStage=2;setFcLeds(true,false);tone(1180,.08,'sine',.025);updatePowerUi();notify('FC RGB LED bright RED • booting…')},1120);
+ setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setFcLeds(true,true);tone(1480,.06,'sine',.02);notify('FC RGB LED bright GREEN/CYAN • ready')},1360);
  setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setFcLeds(true,false)},1510);
  setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;state.powerStage=3;setFcLeds(true,true);tone(1680,.09,'sine',.018);updatePowerUi();notify('Power-up complete • ESCs armed in virtual idle • FC LEDs ready • prop idle enabled.','good')},1740)
 }
@@ -183,7 +188,10 @@ function animateBatteryPlug(connect=true){
  scene.updateMatrixWorld(true);
  const target=wiresRoot.worldToLocal(bottom.localToWorld(new THREE.Vector3(-1.88,.31,0)));
  const start=wiresRoot.worldToLocal(bat.localToWorld(new THREE.Vector3(1.62,.44,.42)));
- const g=new THREE.Group();B(.34,.20,.28,mat(0xf3c42f,.05,.48),[0,0,0],g);g.position.copy(connect?start:target);extrasRoot.add(g);
+ const g=new THREE.Group();const plug=B(.34,.20,.28,mat(0xf3c42f,.05,.48),[0,0,0],g);plug.name='BAT_XT60_MOVING';
+ curvedLocalCable(g,[[.12,.04,.09],[.40,.10,.14],[.68,.13,.18]],0xef3f48,.045);
+ curvedLocalCable(g,[[.12,-.04,-.09],[.40,.03,-.14],[.68,.06,-.18]],0x3a2419,.045);
+ g.position.copy(connect?start:target);extrasRoot.add(g);
  animations.push({type:'batteryPlug',obj:g,target:(connect?target:start),removeAtEnd:true})
 }
 function connectBatteryPower(fromGuided=false){
@@ -360,7 +368,11 @@ function procedural(type,id){
  const g=new THREE.Group();
  if(type==='frameScrew'||type==='motorScrew'){CY(.075,.12,mat(C.metal,.8,.2),[0,.06,0],g);B(.10,.012,.018,mat(C.dark),[0,.125,0],g)}
  else if(type==='receiver'){B(.72,.18,.52,mat(0x285f88,.2,.5),[0,.10,0],g);B(.48,.05,.30,mat(0x0c1115),[0,.22,0],g);curvedLocalCable(g,[[.32,.12,.16],[.55,.22,.28],[.8,.28,.34]],0x93c5fd,.014)}
- else if(type==='gps'){B(.72,.12,.62,mat(0x184c72,.15,.55),[0,.08,0],g);B(.46,.10,.46,mat(0xe8edf2,.05,.55),[0,.17,0],g);B(.18,.05,.10,mat(0xc8a03c,.7,.25),[.30,.17,-.22],g)}
+ else if(type==='gps'){
+   const carbon=mat(0x1b252c,.30,.34),silver=mat(0xc0c9cf,.74,.20);
+   B(.72,.12,.62,mat(0x184c72,.15,.55),[0,.08,0],g);B(.46,.10,.46,mat(0xe8edf2,.05,.55),[0,.17,0],g);B(.18,.05,.10,mat(0xc8a03c,.7,.25),[.30,.17,-.22],g);
+   B(.74,.07,.54,carbon,[0,-.88,0],g);CY(.075,1.73,silver,[0,-.02,0],g);CY(.19,.05,carbon,[0,.84,0],g)
+ }
  else if(type==='servo'){B(.58,.42,.32,mat(0x1f5b8d,.12,.56),[0,.22,0],g);CY(.11,.12,mat(0xd4dbe0,.75,.2),[0,.49,0],g);B(.68,.045,.08,mat(0xe5e7eb,.25,.35),[0,.58,0],g)}
  else if(type==='matrix'){B(.86,.08,.86,mat(0x111820,.25,.5),[0,.05,0],g);for(let x=-.30;x<=.30;x+=.20)for(let z=-.30;z<=.30;z+=.20)CY(.035,.035,mat(0x52d273,.05,.4),[x,.11,z],g)}
  else if(type==='sensor'){B(.60,.07,.48,mat(0x13764a,.12,.55),[0,.05,0],g);B(.24,.07,.24,mat(0x182029,.4,.35),[0,.13,0],g)}
@@ -379,35 +391,68 @@ function makeCaseDecal(text,fg='#ecfff8',bg='rgba(12,24,32,.96)',w=512,h=160){co
 function fcPinInfo(title,electrical,use){return{title,detail:`${electrical}. ${use}`,rating:{Electrical:electrical,Accessible:'Yes • through FC case'},pins:[[title,use]]}}
 function addFCCase(g){
  const shell=new THREE.Group();shell.name='ZEBJUS_FC_CASE';g.add(shell);
- const graphite=0x34434f,edge=0x141c22,gold=0xd7a12e,sourceCol=0xf59e0b,fiveCol=0xfb7185,gndCol=0x4b2f20;
- // Thin protected shell: no standoffs. Bottom sits on the double-side tape.
- addLocalBox(shell,[2.02,.07,1.84],edge,[0,-.045,0],[0,0,0],.18,{roughness:.44});
- addLocalBox(shell,[2.04,.27,.08],graphite,[0,.12,.88]);addLocalBox(shell,[2.04,.27,.08],graphite,[0,.12,-.88]);addLocalBox(shell,[.08,.27,1.68],graphite,[-.98,.12,0]);addLocalBox(shell,[.08,.27,1.68],graphite,[.98,.12,0]);
- addLocalBox(shell,[1.14,.13,.88],0x293844,[0,.285,.06],[0,0,0],.12,{roughness:.38});
- addLocalBox(shell,[.27,.12,.68],0x293844,[-.73,.285,.02]);addLocalBox(shell,[.27,.12,.44],0x293844,[.73,.285,.34]);
- const brand=makeCaseDecal('ZEBJUS FC','#d4fff0');brand.position.set(0,.365,.02);brand.scale.set(1.08,1.08,1);shell.add(brand);
- const arrow=makeCaseDecal('↑ FRONT','#61f0c1','rgba(21,52,45,.96)');arrow.position.set(0,.369,.39);arrow.scale.set(.64,.64,1);shell.add(arrow);
+ const graphite=0x34434f,edge=0x141c22,gold=0xd7a12e,sourceCol=0xf59e0b,fiveCol=0xfb7185,gndCol=0x3a2419;
+ addLocalBox(shell,[2.05,.07,1.87],edge,[0,-.045,0],[0,0,0],.18,{roughness:.44});
+ addLocalBox(shell,[2.06,.27,.08],graphite,[0,.12,.90]);addLocalBox(shell,[2.06,.27,.08],graphite,[0,.12,-.90]);
+ addLocalBox(shell,[.08,.27,1.72],graphite,[-.99,.12,0]);addLocalBox(shell,[.08,.27,1.72],graphite,[.99,.12,0]);
+ addLocalBox(shell,[1.02,.13,.75],0x293844,[-.05,.285,.12],[0,0,0],.12,{roughness:.38});
+ const brand=makeCaseDecal('ZEBJUS FC','#d4fff0');brand.position.set(-.05,.365,.08);brand.scale.set(.98,.98,1);shell.add(brand);
+ const arrow=makeCaseDecal('↑ FRONT','#61f0c1','rgba(21,52,45,.96)');arrow.position.set(-.05,.369,.40);arrow.scale.set(.60,.60,1);shell.add(arrow);
 
- function maleHeaderPin(x,z,label,electrical,use,collarColor=sourceCol){
-   addLocalBox(shell,[.075,.065,.075],0x111820,[x,.355,z],[0,0,0],.12,{roughness:.65});
-   addLocalBox(shell,[.050,.30,.050],gold,[x,.53,z],[0,0,0],.78,{roughness:.18,info:fcPinInfo(label,electrical,use)});
-   const ring=addLocalCylinder(shell,.043,.018,collarColor,[x,.388,z],[],.15,fcPinInfo(label,electrical,use));ring.name='HEADER_COLLAR';
+ function headerBase(x,z,w,d,label=''){
+   const b=addLocalBox(shell,[w,.072,d],0x0b1116,[x,.345,z],[0,0,0],.08,{roughness:.74});b.name='HEADER_BASE';
+   return b
  }
- // 2.54 mm-equivalent pitch in this educational scale (~0.12 model units).
- const escX=[-.54,-.18,.18,.54],rows=[[-.66,'SOURCE / SIGNAL',sourceCol],[-.78,'+5V',fiveCol],[-.90,'GND',gndCol]];
- escX.forEach((x,i)=>{addLocalBox(shell,[.12,.06,.39],0x0d1318,[x,.345,-.78]);rows.forEach(([z,n,c])=>maleHeaderPin(x,z,`ESC${i+1} ${n}`,n,n==='SOURCE / SIGNAL'?'ESC PWM/source':n==='+5V'?'Centre +5V rail':'Ground rail',c))});
- // External GPIO ×3.
- const gx=[.36,.60,.84],gz=[-.28,-.40,-.52];
- gx.forEach((x,i)=>{addLocalBox(shell,[.12,.06,.36],0x0d1318,[x,.345,-.40]);gz.forEach((z,r)=>{const n=['SOURCE','+5V','GND'][r],c=[sourceCol,fiveCol,gndCol][r];maleHeaderPin(x,z,`GPIO${i+1} ${n}`,n,r===0?'User source/input/output pin':r===1?'Centre +5V rail':'Ground rail',c)})});
- // RX / PPM optional header.
- addLocalBox(shell,[.12,.06,.36],0x0d1318,[.90,.345,.02]);
- [[.14,'SOURCE / PPM',sourceCol],[.02,'+5V',fiveCol],[-.10,'GND',gndCol]].forEach(([z,n,c])=>maleHeaderPin(.90,z,`RX ${n}`,n,n==='SOURCE / PPM'?'Optional PPM or compatible I/O':n,c));
- // I2C 4-pin header.
- addLocalBox(shell,[.58,.06,.12],0x0d1318,[-.48,.345,.84]);
- [['VCC',fiveCol],['GND',gndCol],['SCL',0x47c8f1],['SDA',0x47c8f1]].forEach(([n,c],i)=>maleHeaderPin(-.66+i*.12,.84,`I²C ${n}`,n,'User-accessible I²C header',c));
- // Status LEDs visible through top case.
- const pwr=addLocalBox(shell,[.10,.025,.10],0x18351f,[.48,.365,.34],[0,0,0],.02,{roughness:.25});pwr.name='FC_POWER_LED';pwr.material.emissive=new THREE.Color(0x28d56d);pwr.material.emissiveIntensity=0;
- const stat=addLocalBox(shell,[.10,.025,.10],0x173046,[.64,.365,.34],[0,0,0],.02,{roughness:.25});stat.name='FC_STATUS_LED';stat.material.emissive=new THREE.Color(0x45b9ff);stat.material.emissiveIntensity=0;
+ function maleHeaderPin(x,z,label,electrical,use,collarColor=sourceCol){
+   addLocalBox(shell,[.080,.060,.080],0x111820,[x,.355,z],[0,0,0],.12,{roughness:.65});
+   const pin=addLocalBox(shell,[.050,.31,.050],gold,[x,.535,z],[0,0,0],.82,{roughness:.15,info:fcPinInfo(label,electrical,use)});pin.name='FC_MALE_PIN';
+   const ring=addLocalCylinder(shell,.044,.018,collarColor,[x,.390,z],[],.15,fcPinInfo(label,electrical,use));ring.name='HEADER_COLLAR';
+ }
+
+ // ESC SECTION — EXACT 4 COLUMNS × 3 ROWS.
+ // Left→right: ESC1 ESC2 ESC3 ESC4
+ // Top/front→bottom/back rows: SOURCE, +5V, GND
+ const escCols=[-.54,-.18,.18,.54],escRows=[
+   {z:-.55,name:'SOURCE',color:sourceCol},
+   {z:-.70,name:'+5V',color:fiveCol},
+   {z:-.85,name:'GND',color:gndCol}
+ ];
+ headerBase(0,-.70,1.22,.48);
+ escCols.forEach((x,i)=>escRows.forEach(r=>maleHeaderPin(x,r.z,`ESC${i+1} ${r.name}`,r.name,r.name==='SOURCE'?'ESC PWM/source':r.name==='+5V'?'Centre +5V rail':'Ground rail',r.color)));
+
+ // EXTERNAL GPIO — EXACT 3 COLUMNS × 3 ROWS.
+ // Kept lower / separated from the RX block.
+ const gpioCols=[.36,.60,.84],gpioRows=[
+   {z:-.05,name:'SOURCE',color:sourceCol},
+   {z:-.19,name:'+5V',color:fiveCol},
+   {z:-.33,name:'GND',color:gndCol}
+ ];
+ headerBase(.60,-.19,.80,.48);
+ gpioCols.forEach((x,i)=>gpioRows.forEach(r=>maleHeaderPin(x,r.z,`GPIO${i+1} ${r.name}`,r.name,r.name==='SOURCE'?'External GPIO source/input/output':r.name==='+5V'?'Centre +5V rail':'Ground rail',r.color)));
+
+ // RX / PPM — SEPARATE 1 COLUMN × 3 ROWS.
+ headerBase(.91,.35,.20,.48);
+ [
+   {z:.49,name:'SOURCE / PPM',color:sourceCol},
+   {z:.35,name:'+5V',color:fiveCol},
+   {z:.21,name:'GND',color:gndCol}
+ ].forEach(r=>maleHeaderPin(.91,r.z,`RX ${r.name}`,r.name,r.name==='SOURCE / PPM'?'Optional PPM receiver source/signal':'RX '+r.name,r.color));
+
+ // I²C — separate user 4-pin block.
+ headerBase(-.47,.82,.62,.18);
+ [['VCC',fiveCol],['GND',gndCol],['SCL',0x47c8f1],['SDA',0x47c8f1]].forEach(([n,c],i)=>maleHeaderPin(-.65+i*.12,.82,`I²C ${n}`,n,'User-accessible I²C header',c));
+
+ // Small printed section legends on top of the case.
+ const escLab=makeCaseDecal('ESC1   ESC2   ESC3   ESC4','#d9fff2','rgba(12,24,32,.93)',640,120);escLab.position.set(0,.374,-.36);escLab.scale.set(1.18,.48,1);shell.add(escLab);
+ const gpioLab=makeCaseDecal('GPIO 1–3','#ffd67a','rgba(12,24,32,.93)',420,120);gpioLab.position.set(.60,.374,.01);gpioLab.scale.set(.56,.42,1);shell.add(gpioLab);
+ const rxLab=makeCaseDecal('RX / PPM','#ffe96f','rgba(12,24,32,.93)',420,120);rxLab.position.set(.83,.374,.66);rxLab.scale.set(.43,.38,1);shell.add(rxLab);
+ const i2cLab=makeCaseDecal('I²C','#7fdfff','rgba(12,24,32,.93)',300,120);i2cLab.position.set(-.47,.374,.64);i2cLab.scale.set(.37,.36,1);shell.add(i2cLab);
+
+ // Bright RGB status LED window.
+ const body=addLocalBox(shell,[.20,.035,.18],0x0a0f13,[.50,.375,.38],[0,0,0],.02,{roughness:.10});body.name='FC_RGB_LED_BODY';
+ const lr=addLocalBox(shell,[.052,.022,.145],0x2f0909,[.463,.398,.38],[0,0,0],.02,{roughness:.06});lr.name='FC_RGB_LED_R';lr.material.emissive=new THREE.Color(0xff2035);lr.material.emissiveIntensity=0;
+ const lg=addLocalBox(shell,[.052,.022,.145],0x082f16,[.500,.398,.38],[0,0,0],.02,{roughness:.06});lg.name='FC_RGB_LED_G';lg.material.emissive=new THREE.Color(0x27ff74);lg.material.emissiveIntensity=0;
+ const lb=addLocalBox(shell,[.052,.022,.145],0x08182f,[.537,.398,.38],[0,0,0],.02,{roughness:.06});lb.name='FC_RGB_LED_B';lb.material.emissive=new THREE.Color(0x30a8ff);lb.material.emissiveIntensity=0;
  return shell
 }
 function decoratePart(g,type,id){
@@ -500,7 +545,7 @@ function install(type,s,animate=true){
  if(type==='frameScrew'||type==='motorScrew')animateScrew(o,s,animate,0);
  if(type==='battery'){if(animate){const target=new THREE.Vector3(...s.p);o.position.set(s.p[0]+2.5,s.p[1]+.08,s.p[2]);animations.push({type:'batterySlide',obj:o,target});}ensureBatteryStraps(animate);}
  const snd={bottomPlate:'plate',topPlate:'plate',armRed:'arm',armWhite:'arm',guard:'guard',motor:'motor',esc:'esc',fcTape:'tape',fc:'fc',battery:'battery',prop:'prop'}[type];if(snd&&!history.restoring)playFX(snd);
- rebuild3DWires();rebuildSolder();if(!history.restoring)notify(`${product(type).name} snapped and locked at ${s.id}.`)
+ rebuild3DWires();rebuildSolder();if(['receiver','gps','servo','matrix','sensor','led'].includes(type))render2D?.();if(!history.restoring)notify(`${product(type).name} snapped and locked at ${s.id}.`)
 }
 function addEscStrap(s,ownerPartId){const g=new THREE.Group(),strap=B(.18,.06,.72,mat(0x20262b,.02,.88),[0,.32,0],g);g.position.set(s.p[0],s.p[1],s.p[2]);g.rotation.y=s.r||0;g.userData.ownerPartId=ownerPartId;extrasRoot.add(g);tag(strap,{partRoot:g})}
 function ensureBatteryStraps(animate=true){
@@ -622,12 +667,12 @@ function endpoint(k){
  }
  if(/^M[1-4]$/.test(n))return localOnPart('motor',n,[.70,.18,{U:-.13,V:0,W:.13}[p]||0]);
  if(n==='FC'){
-   if(p.startsWith('ESC')){const i=+p[3],xs=[-.54,-.18,.18,.54],z=p.endsWith('-S')?-.66:p.endsWith('5V')?-.78:-.90;return localOnPart('fc','FC',[xs[i-1],.68,z])}
-   if(p.startsWith('GPIO')){const i=+p[4],xs=[.36,.60,.84],z=p.endsWith('-S')?-.28:p.endsWith('5V')?-.40:-.52;return localOnPart('fc','FC',[xs[i-1],.68,z])}
-   if(p==='RX-S')return localOnPart('fc','FC',[.90,.68,.14]);
-   if(p==='RX-V')return localOnPart('fc','FC',[.90,.68,.02]);
-   if(p==='RX-G')return localOnPart('fc','FC',[.90,.68,-.10]);
-   if(p.startsWith('I2C-')){const names=['V','G','SCL','SDA'],i=names.indexOf(p.slice(4));return localOnPart('fc','FC',[-.66+Math.max(0,i)*.12,.68,.84])}
+   if(p.startsWith('ESC')){const i=+p[3],xs=[-.54,-.18,.18,.54],z=p.endsWith('-S')?-.55:p.endsWith('5V')?-.70:-.85;return localOnPart('fc','FC',[xs[i-1],.71,z])}
+   if(p.startsWith('GPIO')){const i=+p[4],xs=[.36,.60,.84],z=p.endsWith('-S')?-.05:p.endsWith('5V')?-.19:-.33;return localOnPart('fc','FC',[xs[i-1],.71,z])}
+   if(p==='RX-S')return localOnPart('fc','FC',[.91,.71,.49]);
+   if(p==='RX-V')return localOnPart('fc','FC',[.91,.71,.35]);
+   if(p==='RX-G')return localOnPart('fc','FC',[.91,.71,.21]);
+   if(p.startsWith('I2C-')){const names=['V','G','SCL','SDA'],i=names.indexOf(p.slice(4));return localOnPart('fc','FC',[-.65+Math.max(0,i)*.12,.71,.82])}
  }
  if(n==='RX'){
    if(p==='SIG')return localOnPart('receiver','RX',[-.45,.12,-.12]);
@@ -653,7 +698,13 @@ function routePoints(c){
    const i=+c.to[3],esc=installed('esc','ESC'+i);
    if(esc){scene.updateMatrixWorld(true);const w=esc.localToWorld(new THREE.Vector3(-.28,.12,0));const e=wiresRoot.worldToLocal(w.clone());const m=a.clone().lerp(e,.58);m.y=.92;return[a,m,e,b]}
  }
- if(c.from.startsWith('ESC')&&/SIG|5V|GND/.test(c.from)){const m=a.clone().lerp(b,.46);m.y=Math.max(a.y,b.y)+.10;const m2=m.clone().lerp(b,.52);m2.y+=.04;return[a,m,m2,b]}
+ if(c.from.startsWith('ESC')&&/SIG|5V|GND/.test(c.from)){
+   const m1=a.clone();m1.y+=.11;
+   const m2=a.clone().lerp(b,.38);m2.y=Math.max(a.y,b.y)+.30;
+   const m3=a.clone().lerp(b,.70);m3.y=Math.max(a.y,b.y)+.42;
+   const m4=b.clone();m4.y+=.18;
+   return[a,m1,m2,m3,m4,b]
+ }
  if(c.from.startsWith('BAT')){const m1=a.clone().lerp(b,.28);m1.y=.42;const m2=a.clone().lerp(b,.64);m2.y=.66;const m3=a.clone().lerp(b,.86);m3.y=.88;return[a,m1,m2,m3,b]}
  const m=a.clone().lerp(b,.5);m.y+=.08;return[a,m,b]
 }
@@ -685,11 +736,14 @@ function animatePlug(from,to){
  if(from.startsWith('OPT')||to.startsWith('OPT'))return;
  const fcKey=from.startsWith('FC.ESC')?from:(to.startsWith('FC.ESC')?to:null);
  if(fcKey){
-   // One female 3-pin housing per ESC descends vertically onto the upward male header.
    if(!fcKey.endsWith('-S'))return;
-   const b=endpoint(fcKey),g=new THREE.Group();B(.18,.16,.42,mat(0x1a2228,.06,.72),[0,0,0],g);
-   [-.12,0,.12].forEach(z=>{const s=CY(.026,.07,mat(0x030506,.0,.9),[0,-.04,z],g);});
-   g.position.copy(b.clone().add(new THREE.Vector3(0,.72,0)));extrasRoot.add(g);animations.push({type:'plug',obj:g,target:b.clone().add(new THREE.Vector3(0,.10,0)),removeAtEnd:false});playFX('connector');notify(`ESC female 3-pin plug descending onto ${fcKey.split('-')[0]} male header`)
+   const escNum=+(fcKey.match(/ESC(\d)/)?.[1]||1),b=endpoint(fcKey),g=new THREE.Group();
+   B(.19,.17,.40,mat(0x172027,.06,.75),[0,0,-.15],g);
+   [0,-.15,-.30].forEach(z=>{const s=CY(.027,.075,mat(0x020405,.0,.92),[0,-.04,z],g);s.name='FEMALE_SOCKET'});
+   g.position.copy(b.clone().add(new THREE.Vector3(0,.86,0)));extrasRoot.add(g);
+   g.userData.ownerPartId=`esc-fc-plug-${escNum}`;
+   animations.push({type:'plug',obj:g,target:b.clone().add(new THREE.Vector3(0,.12,0)),removeAtEnd:false});
+   playFX('connector');notify(`ESC${escNum} female 3-pin plug moving from above onto FC ESC${escNum} male header`);
    return
  }
  const a=endpoint(from),b=endpoint(to),g=new THREE.Group();B(.14,.09,.18,mat(0x35424c),[0,0,0],g);g.position.copy(a);extrasRoot.add(g);animations.push({type:'plug',obj:g,target:b.clone(),removeAtEnd:true});playFX('connector')
@@ -744,31 +798,65 @@ function drawNode(svg,id,title,w,h,portsLeft=[],portsRight=[],sub='DRAG TO MOVE'
 }
 function drawMotorNode(svg,id,title){const p=nodePos(id),w=150,h=100,g=drawNode(svg,id,title,w,h,[],[['U','u'],['V','v'],['W','w']],'DRAG • U/V/W');const holder=E('g',{transform:'translate(75 62)'}),rotor=E('g',{id:`motorRotor${id.slice(1)}`,class:'motor-rotor-2d'});rotor.appendChild(E('circle',{cx:0,cy:0,r:25,class:'motor-ring-2d'}));rotor.appendChild(E('rect',{x:-39,y:-3,width:78,height:6,rx:3,class:'motor-blade-2d'}));rotor.appendChild(E('rect',{x:-3,y:-39,width:6,height:78,rx:3,class:'motor-blade-2d'}));holder.appendChild(rotor);g.appendChild(holder);g.appendChild(E('text',{x:75,y:95,id:`motorDir${id.slice(1)}`,class:'motor-dir-2d'},'OPEN'));return g}
 function drawFCNode(svg){
- const id='FC',p=nodePos(id),w=285,h=255,g=E('g',{class:'wire-node-v8','data-node':id,transform:`translate(${p.x},${p.y})`});g.onpointerdown=e=>beginNodeDrag(id,e);g.appendChild(E('rect',{x:0,y:0,width:w,height:h,rx:14,class:'fc-2d-case'}));g.appendChild(E('rect',{x:74,y:50,width:137,height:112,rx:10,class:'fc-2d-window'}));g.appendChild(E('text',{x:w/2,y:24,class:'fc-2d-label'},'ZEBJUS FC • CASE'));g.appendChild(E('text',{x:w/2,y:42,class:'fc-2d-front'},'↑ FRONT'));g.appendChild(E('text',{x:12,y:h-10,class:'node-sub'},'DRAG • USER ACCESSIBLE HEADERS ONLY'));
- // ESC 4×3 block at lower edge: source / +5V / GND rows.
- g.appendChild(E('text',{x:10,y:181,class:'fc-row-label source'},'SOURCE'));
- g.appendChild(E('text',{x:10,y:201,class:'fc-row-label fivev'},'+5V'));
- g.appendChild(E('text',{x:10,y:221,class:'fc-row-label ground'},'GND'));
- const xs=[55,95,135,175];xs.forEach((x,i)=>{[['S','signal',178],['5V','fivev',198],['G','ground',218]].forEach(([n,t,y])=>{const key=`FC.ESC${i+1}-${n}`;const c=E('circle',{cx:x,cy:y,r:6.5,class:`port-v8 ${t}${selPort===key?' selected':''}`});c.dataset.port=key;c.onclick=e=>{e.stopPropagation();choosePort(key)};g.appendChild(c);svgPorts[key]={x:p.x+x,y:p.y+y}});g.appendChild(E('text',{x,y:169,class:'port-label-v8','text-anchor':'middle'},`E${i+1}`))});
- g.appendChild(E('text',{x:205,y:76,class:'fc-section-label'},'GPIO 1–3'));
- // External GPIO 3×3.
- [205,232,259].forEach((x,i)=>{[['S','signal',92],['5V','fivev',112],['G','ground',132]].forEach(([n,t,y])=>{const key=`FC.GPIO${i+1}-${n}`;const c=E('circle',{cx:x,cy:y,r:5.8,class:`port-v8 ${t}${selPort===key?' selected':''}`});c.dataset.port=key;c.onclick=e=>{e.stopPropagation();choosePort(key)};g.appendChild(c);svgPorts[key]={x:p.x+x,y:p.y+y}})});
- g.appendChild(E('text',{x:267,y:42,class:'fc-section-label','text-anchor':'end'},'RX / PPM'));
- // RX/PPM 3-pin.
- [['S','signal',54],['V','fivev',74],['G','ground',94]].forEach(([n,t,y])=>{const key=`FC.RX-${n}`;const c=E('circle',{cx:270,cy:y,r:6.2,class:`port-v8 ${t}${selPort===key?' selected':''}`});c.dataset.port=key;c.onclick=e=>{e.stopPropagation();choosePort(key)};g.appendChild(c);svgPorts[key]={x:p.x+270,y:p.y+y}});
- g.appendChild(E('text',{x:35,y:42,class:'fc-section-label'},'I²C'));
- // I2C 4-pin across top-left.
- [['V','fivev'],['G','ground'],['SCL','i2c'],['SDA','i2c']].forEach(([n,t],i)=>{const key=`FC.I2C-${n}`;const x=35+i*28,y=54,c=E('circle',{cx:x,cy:y,r:6.2,class:`port-v8 ${t}${selPort===key?' selected':''}`});c.dataset.port=key;c.onclick=e=>{e.stopPropagation();choosePort(key)};g.appendChild(c);svgPorts[key]={x:p.x+x,y:p.y+y}});
+ const id='FC',p=nodePos(id),w=310,h=285,g=E('g',{class:'wire-node-v8 fc-node-v14','data-node':id,transform:`translate(${p.x},${p.y})`});
+ g.onpointerdown=e=>beginNodeDrag(id,e);
+ g.appendChild(E('rect',{x:0,y:0,width:w,height:h,rx:14,class:'fc-2d-case'}));
+ g.appendChild(E('rect',{x:78,y:44,width:132,height:95,rx:9,class:'fc-2d-window'}));
+ g.appendChild(E('text',{x:w/2,y:22,class:'fc-2d-label'},'ZEBJUS FC • 2.54 mm HEADERS'));
+ g.appendChild(E('text',{x:w/2,y:38,class:'fc-2d-front'},'↑ FRONT'));
+ g.appendChild(E('text',{x:12,y:h-9,class:'node-sub'},'DRAG • ALL PINS ACCESSIBLE FROM TOP'));
+
+ const makePin=(key,cx,cy,t,label)=>{
+   const c=E('circle',{cx,cy,r:6.4,class:`port-v8 ${t}${selPort===key?' selected':''}`});
+   c.dataset.port=key;c.onclick=e=>{e.stopPropagation();choosePort(key)};g.appendChild(c);
+   svgPorts[key]={x:p.x+cx,y:p.y+cy};
+   if(label)g.appendChild(E('text',{x:cx,y:cy-9,class:'fc-pin-mini','text-anchor':'middle'},label))
+ };
+
+ // ESC section: 4 columns × 3 rows
+ g.appendChild(E('rect',{x:35,y:172,width:178,height:78,rx:7,class:'fc-block-v14 esc'}));
+ g.appendChild(E('text',{x:124,y:166,'text-anchor':'middle',class:'fc-section-label'},'ESC1–ESC4 • 4 × 3'));
+ const ex=[58,100,142,184],ey=[190,214,238];
+ ['SOURCE','+5V','GND'].forEach((n,r)=>g.appendChild(E('text',{x:28,y:ey[r]+3,'text-anchor':'end',class:`fc-row-label ${r===0?'source':r===1?'fivev':'ground'}`},n)));
+ ex.forEach((x,i)=>ey.forEach((y,r)=>makePin(`FC.ESC${i+1}-${r===0?'S':r===1?'5V':'G'}`,x,y,r===0?'signal':r===1?'fivev':'ground',r===0?`E${i+1}`:'')));
+
+ // GPIO section: separate 3 × 3, lower/side
+ g.appendChild(E('rect',{x:219,y:115,width:78,height:78,rx:7,class:'fc-block-v14 gpio'}));
+ g.appendChild(E('text',{x:258,y:108,'text-anchor':'middle',class:'fc-section-label'},'GPIO 1–3'));
+ const gx=[232,258,284],gy=[132,154,176];
+ gx.forEach((x,i)=>gy.forEach((y,r)=>makePin(`FC.GPIO${i+1}-${r===0?'S':r===1?'5V':'G'}`,x,y,r===0?'signal':r===1?'fivev':'ground',r===0?`G${i+1}`:'')));
+
+ // RX/PPM isolated 1 × 3
+ g.appendChild(E('rect',{x:263,y:45,width:34,height:64,rx:7,class:'fc-block-v14 rx'}));
+ g.appendChild(E('text',{x:280,y:39,'text-anchor':'middle',class:'fc-section-label'},'RX'));
+ [['S','signal',60,'PPM'],['V','fivev',78,'+5V'],['G','ground',96,'GND']].forEach(([n,t,y,l])=>makePin(`FC.RX-${n}`,280,y,t,l));
+
+ // I2C 4 pin
+ g.appendChild(E('rect',{x:18,y:47,width:114,height:38,rx:7,class:'fc-block-v14 i2c'}));
+ g.appendChild(E('text',{x:75,y:40,'text-anchor':'middle',class:'fc-section-label'},'I²C'));
+ [['V','fivev'],['G','ground'],['SCL','i2c'],['SDA','i2c']].forEach(([n,t],i)=>makePin(`FC.I2C-${n}`,36+i*28,66,t,n));
+
+ // RGB LED indicator
+ g.appendChild(E('circle',{cx:225,cy:65,r:9,class:'fc-rgb-v14'}));g.appendChild(E('text',{x:225,y:83,'text-anchor':'middle',class:'fc-rgb-label-v14'},'RGB'));
  svg.appendChild(g)
 }
+const optional3DTypeMap={ppm:'receiver',servo:'servo',matrix:'matrix',sensor:'sensor',gps:'gps',led:'led'};
+function optionalPlacedIn3D(type){const t=optional3DTypeMap[type];return !!t&&state.parts.some(p=>p.type===t)}
 function optionalNodeDefinition(n){
  if(n.type==='ppm')return{title:'PPM RECEIVER',ports:[['SIG','signal'],['5V','fivev'],['GND','ground']]};
  if(n.type==='servo')return{title:'SERVO',ports:[['SIG','signal'],['5V','fivev'],['GND','ground']]};
  if(n.type==='matrix')return{title:'LED MATRIX',ports:[['DATA','signal'],['5V','fivev'],['GND','ground']]};
  if(n.type==='sensor')return{title:'I²C SENSOR',ports:[['SDA','i2c'],['SCL','i2c'],['VCC','fivev'],['GND','ground']]};
+ if(n.type==='led')return{title:'LED / OUTPUT',ports:[['DATA','signal'],['5V','fivev'],['GND','ground']]};
  return{title:'GPS',ports:[['TX','signal'],['RX','signal'],['5V','fivev'],['GND','ground']]}
 }
-function drawOptionalNodes(svg){optionalWireNodes.forEach(n=>{if(!wireLayout[n.id])wireLayout[n.id]={x:1180,y:420+(optionalWireNodes.indexOf(n)%3)*120};const d=optionalNodeDefinition(n);drawNode(svg,n.id,d.title,175,120,d.ports,[],'OPTIONAL • DRAG','optional-node')})}
+function drawOptionalNodes(svg){
+ optionalWireNodes.forEach(n=>{
+   if(optionalPlacedIn3D(n.type))return;
+   if(!wireLayout[n.id])wireLayout[n.id]={x:1180,y:420+(optionalWireNodes.indexOf(n)%3)*120};
+   const d=optionalNodeDefinition(n);drawNode(svg,n.id,d.title,175,120,d.ports,[],'UNPLACED IN 3D • DRAG','optional-node')
+ })
+}
 function wireRoute(c){
  const a=svgPorts[c.from],b=svgPorts[c.to];if(!a||!b)return'';
  if(/\.[UVW]$/.test(c.from)||/\.[UVW]$/.test(c.to)){const mx=(a.x+b.x)/2;return`M${a.x},${a.y} Q${mx},${Math.min(a.y,b.y)-18} ${b.x},${b.y}`}
@@ -850,7 +938,11 @@ function deleteSelectedWire(){if(!selectedWireId){notify('Select a wire first.',
 function validate2D(){
  const b=$('#wireValidation');if(!b)return;const fixed=requiredWires.filter(([a,b])=>!/\.[UVW]$/.test(a)&&!/\.[UVW]$/.test(b));const missing=fixed.filter(([a,z])=>!conn(a,z)).length;const phaseReady=[1,2,3,4].filter(i=>phaseMap(i)).length;let conflict=false;state.connections.forEach(c=>{const t=c.from+' '+c.to;if((/\+|PWR\+/.test(t))&&(/PWR-|GND|BAT-|\.G$/.test(t)))conflict=true});b.innerHTML=`<div class="check ${conflict?'bad':'ok'}">${conflict?'⚠ Positive / ground conflict':'✓ No direct positive-to-ground conflict'}</div><div class="check ${missing?'warn':'ok'}">${missing?`${missing} fixed power/FC connection(s) missing`:'✓ Fixed power + FC wiring complete'}</div><div class="check ${phaseReady===4?'ok':'warn'}">${phaseReady}/4 motors have three unique U/V/W phase connections</div><div class="check ${selectedWireId?'ok':'warn'}">${selectedWireId?'Wire selected — Delete/Backspace or button removes it':'Click a wire to select/delete/redraw'}</div>`
 }
-function addOptionalWireDevice(){const type=$('#optionalWireDevice')?.value||'ppm',n={id:`OPT${Date.now().toString(36)}`,type};wireRemember();optionalWireNodes.push(n);wireLayout[n.id]={x:1180,y:390+(optionalWireNodes.length-1)*120};render2D();notify(`${optionalNodeDefinition(n).title} added to 2D bench.`)}
+function addOptionalWireDevice(){
+ const type=$('#optionalWireDevice')?.value||'ppm';
+ if(optionalPlacedIn3D(type)){notify(`${optionalNodeDefinition({type}).title} is already placed in 3D, so it is hidden from the 2D unplaced-parts bench.`,'bad');return}
+ const n={id:`OPT${Date.now().toString(36)}`,type};wireRemember();optionalWireNodes.push(n);wireLayout[n.id]={x:1180,y:390+(optionalWireNodes.length-1)*120};render2D();notify(`${optionalNodeDefinition(n).title} added to 2D bench.`)
+}
 function updateMotorTestUI(){for(let i=1;i<=4;i++){const e=motorElectrical(i),active=motorActive(i),el=$(`#wireM${i}State`);if(el){el.textContent=!e.ready?'OPEN':active?`${e.dir} • RUN`:`${e.dir} • READY`;el.className=active?(e.reverse?'reverse':'running'):''}const dir=$(`#motorDir${i}`);if(dir){dir.textContent=e.ready?e.dir:'OPEN';dir.setAttribute('class',`motor-dir-2d ${e.reverse?'reverse':''}`)}}const pwm=$('#wireThrottle');if($('#wirePwmOut')&&pwm)$('#wirePwmOut').textContent=`${pwm.value} µs`;if($('#wireRunState')){$('#wireRunState').textContent=wireMotorRun?'RUNNING':'STOPPED';$('#wireRunState').className='status '+(wireMotorRun?'good':'')}}
 function animate2DMotors(now=performance.now()){requestAnimationFrame(animate2DMotors);const dt=Math.min(.05,(now-wireAnimLast)/1000);wireAnimLast=now;const pwm=+($('#wireThrottle')?.value||1000),speed=pwm<1100?0:(pwm-1000)/1000;for(let i=1;i<=4;i++){if(motorActive(i)){const e=motorElectrical(i),sign=e.dir==='CW'?1:-1;wireMotorAngle[i-1]=(wireMotorAngle[i-1]+sign*dt*(220+speed*1100))%360}const r=$(`#motorRotor${i}`);if(r)r.style.transform=`rotate(${wireMotorAngle[i-1]}deg)`}if(wireMotorRun&&Math.floor(now/150)%2===0)updateMotorTestUI()}
 function initWiringControls(){
@@ -940,7 +1032,7 @@ function initSettings(){renderKeySettings();$('#saveKeysBtn').onclick=()=>{try{l
 /* FC / CAL / PID / PYTHON */
 function fcLog(t){const e=$('#fcLog');e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
 function fcStatus(on){state.fc.connected=on;$('#fcBadge').textContent=on?'Connected':'Disconnected';$('#fcBadge').className='status '+(on?'good':'')}
-function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V13'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
+function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V14'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
 function disconnectFc(log=true){if(state.fc.socket)try{state.fc.socket.close()}catch{}state.fc.socket=null;fcStatus(false);if(log)fcLog('Disconnected')}
 function sendFc(o){if(state.fc.socket?.readyState===1){state.fc.socket.send(JSON.stringify(o));fcLog('TX '+JSON.stringify(o));return true}fcLog('Not connected');return false}
 function packet(raw){let d;try{d=JSON.parse(raw)}catch{d={raw}};['roll','pitch','yaw','gyroX','gyroY','gyroZ','battery'].forEach(k=>{if(Number.isFinite(+d[k]))state.telemetry[k]=+d[k]});$('#telemetryLog').textContent=(new Date().toLocaleTimeString()+' '+raw+'\n'+$('#telemetryLog').textContent).slice(0,12000);telemetryUI()}
@@ -967,14 +1059,14 @@ print("Attitude:",json.loads(str(zebjusBridge.attitude())))
 }
 
 /* Save/load/buttons */
-function save(){try{localStorage.setItem('zebjusF450V13',JSON.stringify({guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid}));$('#saveState').textContent='Saved';setTimeout(()=>$('#saveState').textContent='Ready',800)}catch(e){console.warn('[ZEBJUS] Save unavailable:',e);notify('Browser storage is unavailable in this embed/session.','bad')}}
-function load(){try{const raw13=localStorage.getItem('zebjusF450V13'),rawLegacy=localStorage.getItem('zebjusF450V121')||localStorage.getItem('zebjusF450V12')||localStorage.getItem('zebjusF450V10')||localStorage.getItem('zebjusF450V9'),d=JSON.parse(raw13||rawLegacy||'null');if(!d)return;history.restoring=true;state.guided=d.guided??true;state.step=raw13?(d.step||0):0;state.doneActions=new Set(d.actions||[]);state.connections=d.connections||[];state.pid=d.pid||state.pid;(d.parts||[]).filter(p=>p.type!=='fcStandoff'&&p.type!=='batteryStrap').forEach(p=>{const s=(slots[p.type]||[]).find(x=>x.id===p.slotId);if(s)install(p.type,s,false)});if(!raw13){const firstIncomplete=steps.findIndex((_,i)=>!stepDone(i));state.step=firstIncomplete<0?steps.length-1:firstIncomplete}render2D();renderPid();rebuild3DWires();rebuildSolder();setPowerVisual(state.doneActions.has('xt60'),true);history.restoring=false}catch(e){console.warn(e)}}
+function save(){try{localStorage.setItem('zebjusF450V14',JSON.stringify({guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid}));$('#saveState').textContent='Saved';setTimeout(()=>$('#saveState').textContent='Ready',800)}catch(e){console.warn('[ZEBJUS] Save unavailable:',e);notify('Browser storage is unavailable in this embed/session.','bad')}}
+function load(){try{const raw13=localStorage.getItem('zebjusF450V14'),rawLegacy=localStorage.getItem('zebjusF450V121')||localStorage.getItem('zebjusF450V12')||localStorage.getItem('zebjusF450V10')||localStorage.getItem('zebjusF450V9'),d=JSON.parse(raw13||rawLegacy||'null');if(!d)return;history.restoring=true;state.guided=d.guided??true;state.step=raw13?(d.step||0):0;state.doneActions=new Set(d.actions||[]);state.connections=d.connections||[];state.pid=d.pid||state.pid;(d.parts||[]).filter(p=>p.type!=='fcStandoff'&&p.type!=='batteryStrap').forEach(p=>{const s=(slots[p.type]||[]).find(x=>x.id===p.slotId);if(s)install(p.type,s,false)});if(!raw13){const firstIncomplete=steps.findIndex((_,i)=>!stepDone(i));state.step=firstIncomplete<0?steps.length-1:firstIncomplete}render2D();renderPid();rebuild3DWires();rebuildSolder();setPowerVisual(state.doneActions.has('xt60'),true);history.restoring=false}catch(e){console.warn(e)}}
 function initButtons(){
  $('#undoBtn').onclick=undoAction;$('#redoBtn').onclick=redoAction;
  $('#guidedModeBtn').onclick=()=>{historyPush();state.guided=true;$('#guidedModeBtn').classList.add('active');$('#freeModeBtn').classList.remove('active');renderAssemblyUI();showGuides()};$('#freeModeBtn').onclick=()=>{historyPush();state.guided=false;$('#freeModeBtn').classList.add('active');$('#guidedModeBtn').classList.remove('active');guidesRoot?.clear();renderAssemblyUI()};
  $('#prevStepBtn').onclick=()=>{historyPush();state.step=Math.max(0,state.step-1);renderAssemblyUI();showGuides()};$('#nextStepBtn').onclick=()=>{if(state.guided&&!stepDone(state.step)){notify('Complete current step first.','bad');return}historyPush();state.step=Math.min(steps.length-1,state.step+1);renderAssemblyUI();showGuides()};
  $('#objectViewBtn').onclick=()=>setWireMap(false);$('#wireMapBtn').onclick=()=>setWireMap(true);$('#xrayBtn').onclick=()=>{state.xray=!state.xray;$('#xrayBtn').classList.toggle('active',state.xray);document.body.classList.toggle('xray',state.xray)};$('#view3dBtn').onclick=()=>setView('3d');$('#topBtn').onclick=()=>setView('top');$('#frontBtn').onclick=()=>setView('front');$('#explodeBtn').onclick=toggleExplode;$('#autoRotateBtn').onclick=()=>{state.autoRotate=!state.autoRotate;$('#autoRotateBtn').classList.toggle('active',state.autoRotate)};
- $('#saveBtn').onclick=save;$('#resetBtn').onclick=()=>{if(confirm('Reset project?')){try{localStorage.removeItem('zebjusF450V13');localStorage.removeItem('zebjusF450V10');localStorage.removeItem('zebjusF450V9')}catch{}location.reload()}};
+ $('#saveBtn').onclick=save;$('#resetBtn').onclick=()=>{if(confirm('Reset project?')){try{localStorage.removeItem('zebjusF450V14');localStorage.removeItem('zebjusF450V10');localStorage.removeItem('zebjusF450V9')}catch{}location.reload()}};
  $('#autoWireBtn').onclick=()=>{wireRemember();historyPush();state.connections=requiredWires.map(([from,to],i)=>({from,to,new:true,id:`ref-${Date.now()}-${i}`}));['motorWire','powerWire','escFc'].forEach(x=>state.doneActions.add(x));state.doneActions.delete('xt60');setPowerVisual(false,false);render2D();rebuild3DWires();rebuildSolder();renderAssemblyUI();notify('Full correct wiring created.');setTimeout(()=>{state.connections.forEach(c=>c.new=false);render2D()},900)};$('#clearWireBtn').onclick=()=>{wireRemember();historyPush();state.connections=[];['motorWire','powerWire','escFc','xt60'].forEach(x=>state.doneActions.delete(x));setPowerVisual(false,false);render2D();rebuild3DWires();rebuildSolder();renderAssemblyUI()};
  $('#batteryConnectBtn').onclick=toggleBatteryPower;$('#connectFcBtn').onclick=connectFc;$('#disconnectFcBtn').onclick=disconnectFc;$('#pingFcBtn').onclick=()=>sendFc({type:'ping',time:Date.now()});$('#applyPidBtn').onclick=()=>{syncQuickPid();notify('PID values applied to tripod simulator.');};$('#sendPidBtn').onclick=()=>sendFc({type:'pid_set',pid:state.pid});$('#restorePidBtn').onclick=()=>{historyPush();state.pid={rateRoll:{P:.9,I:15,D:.035},ratePitch:{P:.9,I:15,D:.035},rateYaw:{P:3,I:13,D:0},angleRoll:{P:3,I:0,D:0},anglePitch:{P:3,I:0,D:0}};renderPid();syncQuickPid()};
  window.addEventListener('keydown',e=>{const cmd=e.ctrlKey||e.metaKey;if(!cmd)return;if(e.key.toLowerCase()==='z'&&!e.shiftKey){e.preventDefault();undoAction()}else if((e.key.toLowerCase()==='z'&&e.shiftKey)||e.key.toLowerCase()==='y'){e.preventDefault();redoAction()}});historyButtons()
@@ -1006,6 +1098,6 @@ function boot(){
  if(threeOK){setBootStatus('Local 3D engine ready','good');notify('3D engine ready • offline/local runtime.','good')}
  else{setBootStatus('3D unavailable • 2D tools active');notify('3D renderer unavailable — 2D tools are still active.','bad')}
  window.__zebjusAppLoaded=true;
- window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'13.0'}}));
+ window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'14.0'}}));
 }
 boot();

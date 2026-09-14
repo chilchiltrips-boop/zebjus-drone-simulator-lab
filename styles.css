@@ -240,3 +240,16 @@
 }
 
 .fc-pin-mini{fill:#d8f8ec;font-size:6px;font-weight:900;paint-order:stroke;stroke:#07131b;stroke-width:2px;stroke-linejoin:round;pointer-events:none}
+
+
+/* ==================== V14 FC HEADER ALIGNMENT / OPTIONAL SYNC ==================== */
+.fc-node-v14 .fc-2d-case{fill:#243641;stroke:#88a8ba;stroke-width:2.2;filter:drop-shadow(0 4px 9px #000b)}
+.fc-block-v14{fill:#0c151b;stroke:#4e7186;stroke-width:1.4}
+.fc-block-v14.esc{stroke:#7ed8b7}
+.fc-block-v14.gpio{stroke:#e7a83d}
+.fc-block-v14.rx{stroke:#f1d34f}
+.fc-block-v14.i2c{stroke:#4bc8ed}
+.fc-rgb-v14{fill:#75ffe0;stroke:#eaffff;stroke-width:2;filter:drop-shadow(0 0 9px #46ffd9)}
+.fc-rgb-label-v14{fill:#a8ffeb;font-size:7px;font-weight:900}
+.fc-pin-mini{fill:#bcd0dc;font-size:6px;font-weight:900}
+.optional-node{opacity:.98}
