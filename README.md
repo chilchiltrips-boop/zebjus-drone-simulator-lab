@@ -1,53 +1,61 @@
-# ZEBJUS F450 Drone Engineering Lab — V12
+# ZEBJUS F450 Drone Engineering Lab — V13 FULL REALISM FIXED
 
-V12 focuses on the mechanical/electrical details of the real build and a more readable PID tripod simulator.
+This build fixes the malformed V12.1 `app.js` and implements the requested hardware-style assembly and simulator behaviour.
 
-## Flight-controller mounting
-- FC standoffs/spacers are removed.
-- The ZEBJUS FC case mounts directly to the upper plate using a thin double-side foam tape pad.
-- The FC case retains ZEBJUS FC branding and the FRONT arrow.
+## Final guided order
 
-## FC headers
-- User-accessible 3-pin groups now use upward-projecting educational 2.54 mm-style male header pins.
-- ESC female 3-pin connector housings animate downward from above onto the male pins.
+Bottom PDB → Arms → Prop guards → Motors → Motor screw set → ESCs →
+Motor U/V/W → ESC power soldering → Top plate → Frame screw set →
+FC double-side foam tape → ZEBJUS FC → ESC Source/+5V/GND →
+Battery underneath + automatic straps → XT60 connect → 1045 props → Final inspection.
+
+**There are NO FC spacers/standoffs.** The FC case is mounted directly to the top plate using double-side foam tape.
+
+## FC connector realism
+- Upward-projecting 2.54 mm-style male header pins on the FC.
+- ESC female 3-pin housings insert vertically from above.
 - Source/PWM = orange.
 - +5V = thin light red.
-- GND = brown/black.
-- ESC high-current / ~12 V positive = thick red.
-- Ground return for high-current paths = thick brown/black.
+- GND = brown-black.
+- High-current battery / ESC +12 V = thick red.
+- High-current return = thick brown-black.
 
-## Battery / PDB
-- The LiPo is mounted underneath the central drone frame.
-- Two strap loops visually tighten around the battery.
-- A 3D XT60 socket is soldered to the bottom PDB.
-- Assembly Lab includes a Connect battery / Disconnect battery control.
-- Battery connection animates the XT60 plug.
-- After connection, simulated ESC startup tones play, FC/ESC LEDs light, and assembled propellers rotate slowly at idle.
-- Disconnecting the battery turns off LEDs and stops idle propeller rotation.
+## Battery / power sequence
+- LiPo is mounted under the central frame.
+- Two straps appear automatically and tighten around the battery.
+- The bottom PDB includes a 3D soldered XT60 socket.
+- Connect battery button animates XT60 insertion.
+- ESC LEDs and startup beeps run sequentially.
+- FC power/status LEDs then start.
+- Installed propellers idle slowly only after startup completes.
+- Disconnect stops props, LEDs and power-flow particles.
 
 ## Assembly feedback
-- Each major component placement has its own generated sound cue.
-- Frame and motor screw sets install with a slower sequential tightening animation.
-- A visible virtual Allen-key tool follows each screw while it tightens.
-
-## 1045 propellers
-- The runtime propeller is now a tapered, swept, two-blade 1045-style shape with a central adapter/nut.
-- The same improved propeller is used in the tripod simulator.
+- Different generated sound cues for plate, arm, guard, motor, ESC, tape, FC, battery, strap, prop, connector and screw.
+- Frame/motor screw sets use one-drag installation with a slower visible Allen-key tightening sequence.
 
 ## 2D wiring
-- FC-side wires are drawn above the FC body and approach each pin with a visible final segment.
-- Wires remain attached when components are dragged.
-- Source/PWM is orange, +5V light red, GND brown/black, and high-current +12 V red.
-- Existing phase-swap motor direction simulation, current-flow animation, wire delete/redraw, component dragging and PWM test are retained.
+- FC wires pass visibly over the FC case to the exact pin.
+- FC pin circles are redrawn above the wires.
+- FC rows are labelled SOURCE / +5V / GND.
+- Wire gauge is represented visually:
+  - +12 V high-current: thick red
+  - Ground return: thick brown-black
+  - Source/PWM: thin orange
+  - +5 V: thin light red
+- Components remain draggable and wires reroute automatically.
+- Wire delete/redraw/undo retained.
+- Motor U/V/W swap still reverses motor direction.
+- PWM motor test and animated current flow retained.
 
 ## Tripod PID simulator
-- Larger Rate / Angle PID controls.
-- Brighter studio-style lighting and background.
-- Final assembled drone remains on the tripod.
-- Prop speed is more readable.
-- Ground dust/downwash particles increase with throttle.
-- Stable / under-tuned / oscillating response logic is retained.
+- Larger grouped Rate PID and Angle PID controls.
+- Improved lighting/background.
+- Realistic two-blade 1045 propeller geometry.
+- Rotor blur increases with throttle.
+- Ground dust/downwash increases with prop speed.
+- Keyboard + virtual transmitter controls retained.
 
-## Packaging
-The ZIP has one top-level folder and no nested asset directory.
-Upload every file inside that folder to the GitHub repository root.
+## GitHub Pages
+The ZIP contains one top-level folder. Inside it all project files are flat; there is no nested `assets` folder.
+Upload every file inside the folder directly to the GitHub repository root.

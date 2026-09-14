@@ -1,0 +1,50 @@
+ZEBJUS F450 DRONE ENGINEERING LAB V13 — FINAL QA
+========================================================================
+
+[PASS] app.js parses as ES module
+[PASS] Top-level module evaluation succeeds
+[PASS] Three.js is local
+[PASS] No malformed ESC product object
+[PASS] Known GPS I/O key parse bug absent
+[PASS] No FC spacer/standoff product or guided step
+[PASS] FC double-side tape product + guided step
+[PASS] Upward 2.54 mm male FC headers
+[PASS] ESC female connector plugs from above
+[PASS] 2D FC port overlay is above wiring
+[PASS] 2D FC row labels source/5V/GND
+[PASS] Orange Source/PWM
+[PASS] Brown-black GND
+[PASS] Thick red +12V/high current
+[PASS] Thin light-red +5V
+[PASS] Battery is under frame
+[PASS] Battery straps auto-install/tighten
+[PASS] Bottom PDB has 3D XT60 socket
+[PASS] Battery connect/disconnect UI exists
+[PASS] Staged ESC + FC LED startup
+[PASS] Battery disconnect stops power effects
+[PASS] Power flow particles in 3D
+[PASS] Different component sound cues
+[PASS] Allen-key screw animation
+[PASS] Realistic 2-blade 1045 procedural prop
+[PASS] Graphite plate visibility improved
+[PASS] Tripod dust/downwash
+[PASS] Tripod rotor blur
+[PASS] Tripod PID controls enlarged/grouped
+[PASS] Runtime fallback refers to V13
+[PASS] V13 cache busting
+[PASS] All final guided steps exist
+[PASS] Final guided order is correct
+[PASS] Top plate occurs after ESC power soldering
+[PASS] FC tape replaces old FC standoffs
+[PASS] Battery step includes straps, no separate strap step
+[PASS] All local referenced files exist
+[PASS] Project folder has no subfolders
+[PASS] Static UI element IDs exist
+
+Passed 39 / 39 checks.
+
+FINAL GUIDED ORDER:
+bottom → arms → guards → motors → motorScrews → escs → motorWire → powerWire → top → frameScrews → fcTape → fc → escFc → battery → xt60 → props → inspect
+
+IMPORTANT HARDWARE RULE:
+FC spacers/standoffs are intentionally NOT used. The requested double-side foam tape replaces that old step.

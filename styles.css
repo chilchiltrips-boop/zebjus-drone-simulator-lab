@@ -168,3 +168,75 @@
  .sim-v8-grid{grid-template-columns:1fr!important}
  .sim-v8-controls{max-height:none!important}
 }
+
+
+/* ==================== V13 FULL REALISM / VISIBILITY ==================== */
+.w.thick{height:7px!important}
+.w.red{background:#ef3f48!important}
+.w.ground-brown{background:#3a2419!important;border:1px solid #7f5b49!important}
+.w.source{background:#f59e0b!important}
+.w.pink{background:#fb7185!important}
+.three-wrap{
+ background:
+  radial-gradient(circle at 52% 28%,rgba(107,157,183,.31),transparent 32%),
+  radial-gradient(circle at 46% 62%,rgba(44,72,88,.72),transparent 54%),
+  linear-gradient(180deg,#132733 0%,#091721 52%,#061018 100%)!important;
+}
+.three-wrap:before{
+ background:
+  linear-gradient(90deg,transparent 0 10%,rgba(117,171,196,.035) 10% 10.2%,transparent 10.2% 89.8%,rgba(117,171,196,.035) 89.8% 90%,transparent 90%),
+  radial-gradient(ellipse at 50% 48%,rgba(83,130,151,.23),transparent 66%)!important;
+}
+.bench-badge,.wire-legend,.virtual-chip{backdrop-filter:blur(8px)}
+.power-connect-btn:disabled{opacity:.35;cursor:not-allowed}
+#batteryPowerState.good{color:#a7f3d0;border-color:#2f805f;box-shadow:0 0 18px #53efbd30}
+
+.port-v8.signal{fill:#f59e0b!important}
+.port-v8.fivev{fill:#fb7185!important}
+.port-v8.ground{fill:#3a2419!important;stroke:#c7a38c!important}
+.port-v8.power{fill:#ef3f48!important}
+.fc-port-overlay-v13{pointer-events:auto}
+.port-overlay-v13{stroke-width:2.4!important;filter:url(#glow)}
+.fc-row-label{font-size:7px;font-weight:900;letter-spacing:.05em}
+.fc-row-label.source{fill:#f59e0b}.fc-row-label.fivev{fill:#fb7185}.fc-row-label.ground{fill:#c49a83}
+.fc-section-label{fill:#7fdcbe;font-size:7px;font-weight:900;letter-spacing:.06em}
+.wire-v8{filter:drop-shadow(0 1px 1px #000c)}
+.wire-v8.current-flow{stroke-dasharray:14 9;animation:currentFlow .48s linear infinite;filter:url(#flowGlow)}
+.wire-gauge-guide{display:grid;gap:7px;margin:10px 0 14px;padding:11px;border:1px solid #29485e;border-radius:11px;background:#081925}
+.wire-gauge-guide>b{font-size:9px;color:#61efc2;letter-spacing:.12em}
+.wire-gauge-guide>span{display:flex;align-items:center;gap:8px;font-size:9px;color:#a9bdcb}
+.wire-gauge-guide strong{color:#e8f2f7}
+.wg{display:inline-block;width:34px;border-radius:999px;flex:0 0 34px}
+.wg.pwr{height:7px;background:#ef3f48}.wg.gnd{height:7px;background:#3a2419;border:1px solid #7f5b49}
+.wg.src{height:4px;background:#f59e0b}.wg.five{height:4px;background:#fb7185}
+
+.sim-v8-grid{grid-template-columns:minmax(0,1fr) 540px!important}
+.sim-card #simThree{
+ height:720px!important;
+ background:
+  radial-gradient(circle at 50% 28%,#395565 0,#203642 28%,#10232e 54%,#07131b 82%)!important;
+ box-shadow:inset 0 0 90px #0007;
+}
+.sim-v8-controls{padding:18px!important}
+.sim-pid-box{padding:15px!important;border:1px solid #42647a!important;background:linear-gradient(180deg,#0c2130,#081722)!important}
+.sim-pid-box .panel-head h2{font-size:18px!important}
+.pid-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:9px 0 12px}
+.pid-mode-card{border:1px solid #31536a;border-radius:11px;background:#0a1b27;padding:11px}
+.pid-mode-card>b{display:block;color:#6ee9c0;font-size:10px;letter-spacing:.08em;margin-bottom:8px}
+.pid-mode-card .quick-pid-grid{grid-template-columns:repeat(3,1fr)!important;gap:8px!important;margin:0!important}
+.pid-mode-card label{font-size:10px!important;font-weight:900!important}
+.pid-mode-card input{font-size:14px!important;min-height:46px!important;padding:9px!important;background:#06131d!important;border:1px solid #41647b!important}
+.tx-sticks{gap:18px!important}.stick-pad{height:178px!important}
+.metrics>div{min-height:70px}.metrics b{font-size:18px!important}
+.motor-mix span{font-size:10px!important;padding:10px!important}
+
+@media(max-width:1380px){
+ .sim-v8-grid{grid-template-columns:1fr!important}
+ .sim-v8-controls{max-height:none!important}
+}
+@media(max-width:760px){
+ .pid-mode-grid{grid-template-columns:1fr}
+ .sim-card #simThree{height:560px!important}
+}
+
+.fc-pin-mini{fill:#d8f8ec;font-size:6px;font-weight:900;paint-order:stroke;stroke:#07131b;stroke-width:2px;stroke-linejoin:round;pointer-events:none}
