@@ -1,0 +1,17 @@
+ZEBJUS F450 Drone Lab V15.2 UPDATED — QA
+================================================================
+
+[PASS] app.js module syntax
+[PASS] 2D wire mode shortcut W
+[PASS] 2D flip shortcut F
+[PASS] 2D rotate shortcut R
+[PASS] 2D delete object
+[PASS] Optional 2D add attaches 3D
+[PASS] 3D optional install syncs to 2D
+[PASS] Optional delete sync
+[PASS] Save V15.2 state
+[PASS] PID Rate/Angle UI
+[PASS] No old unwanted FRONT RED ARMS string
+[PASS] HTML local refs exist
+
+Passed 12 / 12 checks.

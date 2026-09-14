@@ -1,0 +1,21 @@
+ZEBJUS F450 DRONE LAB V15.1 — XT60 VISIBILITY / VALIDATION QA
+==========================================================================
+
+[PASS] Stale benchSubtitle reference removed
+[PASS] Visible XT60 connector group exists
+[PASS] XT60 socket enlarged
+[PASS] XT60 contact barrels exist
+[PASS] XT60 heavy red/brown leads exist
+[PASS] PDB BAT endpoints match visible socket
+[PASS] Battery animation targets visible socket
+[PASS] Validator distinguishes battery pending
+[PASS] Battery connect refreshes validator
+[PASS] Final inspection is documented as manual confirmation
+[PASS] V15.1 cache bust
+[PASS] app.js ESM syntax
+[PASS] Top-level module evaluation
+[PASS] All local refs exist
+[PASS] Static UI IDs exist
+[PASS] Flat project folder
+
+Passed 16 / 16 checks.

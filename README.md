@@ -1,43 +1,92 @@
-# ZEBJUS F450 Drone Engineering Lab — V14
+# ZEBJUS F450 Drone Engineering Lab — V15.2
 
-## Corrected ZEBJUS FC headers
-- ESC section: **4 columns × 3 rows**
-  - columns = ESC1, ESC2, ESC3, ESC4
-  - rows = Source / +5V / GND
-- External GPIO: separate **3 columns × 3 rows** block, visually lower/separated from RX.
-- RX/PPM: separate **1 column × 3 rows** block.
-- I²C: separate 4-pin block.
-- All FC user pins project upward as 2.54 mm-style male header pins.
+V15 focuses on simulator physics, complete Roll/Pitch/Yaw PID tuning, motor audio, manual disturbance testing, transmitter realism and cleaner assembly UI.
 
-## ESC female plug / flexible cable
-- ESC Source/+5V/GND wires now rise above the top plate and approach the FC from above.
-- Flexible curved 3D leads remain visible.
-- One female 3-pin housing descends vertically onto each ESC male-header column.
+## Assembly UI
+The following overlay text has been removed from the 3D assembly canvas:
+- VIRTUAL PRODUCT BENCH
+- F450 guided mechanical assembly
+- Arc guards / locked snaps / actual FC layout text
+- FRONT / RED ARMS overlay
 
-## Top-deck optional-component space
-- Receiver: reserved right-side top-deck position.
-- GPS: automatic raised mast / GPS stand.
-- LED matrix: reserved left-side position.
-- Sensor / LED / servo positions stay separated from the FC header blocks.
+The main top bar and assembly toolbar now have improved alignment, wrapping and spacing.
 
-## FC RGB status
-- Bright RGB indicator replaces the previous weak two-LED indication.
-- Boot: bright red.
-- Ready: bright green/cyan.
-- Battery disconnect: RGB off.
+## PID modes
 
-## Battery
-- XT60 connection animation now includes visible flexible thick red + brown-black leads.
-- Existing ESC startup tone, LED sequence, power-flow and prop idle are retained.
+### RATE MODE
+Only the **Rate PID** panel is used:
+- Roll P / I / D
+- Pitch P / I / D
+- Yaw P / I / D
 
-## 2D wiring / 3D sync
-- 2D FC header drawing mirrors the corrected 3D layout.
-- ESC, GPIO, RX and I²C blocks are boxed separately.
-- Exact pin dots stay visible above wires.
-- PPM Receiver, Servo, LED Matrix, I²C Sensor, GPS + stand and LED/Output can be added to the 2D bench.
-- An optional part that is already placed in 3D is hidden from the 2D **unplaced-parts** bench; its 2D wires also disappear because that node is no longer drawn.
+### ANGLE MODE
+Both cascaded loops are used:
+- Rate Roll / Pitch / Yaw PID
+- Angle Roll / Pitch / Yaw PID
 
-## Guided order
-Bottom PDB → Arms → Prop guards → Motors → Motor screws → ESCs → Motor U/V/W →
-ESC power soldering → Top plate → Frame screw set → FC double-side tape →
-ZEBJUS FC → ESC Source/+5V/GND → Battery underneath + straps → XT60 → Props → Final inspection.
+Angle mode uses the Angle loop to generate desired rates, then the Rate loop drives the virtual motors.
+
+## Tripod physics
+- Roll, Pitch and Yaw are simulated.
+- Yaw angle and yaw rate are both visible.
+- Throttle moves the drone slightly up/down on the tripod's sliding/pivot section.
+- Individual motor mix changes from PID correction.
+- Individual propeller speed now follows M1–M4 motor mix, not only a common throttle speed.
+- Rotor blur follows individual motor speed.
+
+## Manual disturbance
+Enable **Manual tilt**, then drag the drone in the 3D simulator:
+- Angle mode actively returns the drone toward the commanded angle.
+- Rate mode arrests angular rate but does not automatically level the attitude.
+- M1–M4 speeds visibly change while the controller corrects the disturbance.
+- Motor sound changes with the correction load.
+
+## Motor / propeller audio
+Web Audio is generated in the browser; no external audio files are required.
+- Tripod propeller/motor pitch increases with throttle.
+- Sound changes with motor imbalance during PID corrections.
+- 2D BLDC test has a free-spin motor sound.
+- 2D sound pitch follows PWM 1100–2000 µs.
+
+## Transmitter
+The virtual sticks now use a radio-gimbal style:
+- rounded square gimbal housing
+- circular travel ring
+- cross/diagonal guides
+- stem + stick cap
+- circular travel clamping
+
+## Airflow / downwash
+The tripod simulator now includes:
+- four separate animated downwash streams under the four propellers
+- speed-dependent air rings
+- stronger radial floor dust particles at higher throttle
+- downwash intensity follows each motor's individual speed
+
+## Response chart
+The simulator response chart now plots:
+- Roll
+- Pitch
+- Yaw
+
+## Existing V14 hardware work retained
+- corrected FC 4×3 ESC block
+- 3×3 GPIO block
+- separate RX/PPM block
+- I²C
+- 2.54 mm upward male headers
+- flexible ESC-to-FC wiring
+- GPS stand
+- optional 2D/3D sync
+- under-frame battery and XT60 animation
+- staged ESC/FC LEDs and power sequence
+
+
+## V15.2 XT60 visibility / validation fix
+- The bottom PDB now has a larger, clearly visible yellow XT60 socket at the outer left edge.
+- XT60 contact barrels, solder tabs, thick red BAT+ lead and brown-black BAT− lead are visible.
+- The battery plug animation targets this visible socket.
+- Before connection, the 2D validator explicitly says `XT60 battery + / − not connected yet`.
+- Pressing **Connect battery XT60** immediately updates the build checklist and 2D validation.
+- The removed assembly overlay no longer leaves a stale `benchSubtitle` JavaScript reference.
+- Final Inspection remains a deliberate manual confirmation step after XT60 + props.

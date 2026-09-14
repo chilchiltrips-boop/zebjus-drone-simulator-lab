@@ -194,7 +194,7 @@ export function initWiringDesigner({ workshop, toast, onPortInspect, onShow3D, o
     base.append(svgNode("rect", { x: 520, y: 635, width: 160, height: 82, rx: 12, class: "schematic-battery" }));
     const battery = svgNode("text", { x: 600, y: 676, class: "schematic-label" }); battery.textContent = "3S LiPo"; base.append(battery);
     const batterySub = svgNode("text", { x: 600, y: 699, class: "schematic-sub" }); batterySub.textContent = "XT60"; base.append(batterySub);
-    const front = svgNode("text", { x: 600, y: 46, class: "schematic-front" }); front.textContent = "↑ FRONT · RED ARMS"; base.append(front);
+    const front = svgNode("text", { x: 600, y: 46, class: "schematic-front" }); front.textContent = "↑ FRONT"; base.append(front);
     const pdb = svgNode("text", { x: 600, y: 456, class: "schematic-sub" }); pdb.textContent = "BOTTOM PDB · + / − SOLDER PADS"; base.append(pdb);
     return base;
   }
