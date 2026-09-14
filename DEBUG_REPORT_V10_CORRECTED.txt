@@ -1,0 +1,13 @@
+ZEBJUS V10 CORRECTED — PARSE / STARTUP QA
+=======================================================
+
+[PASS] Invalid unquoted I/O key removed
+[PASS] Correct quoted I/O key present
+[PASS] Local Three.js import
+[PASS] V10 cache busting on app.js
+[PASS] V10 cache busting on ui-runtime
+[PASS] Startup fallback exists
+[PASS] All JavaScript files parse with node --check
+[PASS] All local referenced files exist
+
+Passed 8 / 8 checks.

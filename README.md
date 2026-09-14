@@ -1,53 +1,47 @@
-# ZEBJUS F450 Drone Engineering Lab — V12
+# ZEBJUS F450 Drone Engineering Lab — V10 Startup Fixed
 
-V12 focuses on the mechanical/electrical details of the real build and a more readable PID tripod simulator.
+This build fixes the page getting stuck on **“Starting local 3D engine…”**.
 
-## Flight-controller mounting
-- FC standoffs/spacers are removed.
-- The ZEBJUS FC case mounts directly to the upper plate using a thin double-side foam tape pad.
-- The FC case retains ZEBJUS FC branding and the FRONT arrow.
+## Exact root cause found
+`app.js` contained an invalid JavaScript object key in the optional GPS component:
 
-## FC headers
-- User-accessible 3-pin groups now use upward-projecting educational 2.54 mm-style male header pins.
-- ESC female 3-pin connector housings animate downward from above onto the male pins.
-- Source/PWM = orange.
-- +5V = thin light red.
-- GND = brown/black.
-- ESC high-current / ~12 V positive = thick red.
-- Ground return for high-current paths = thick brown/black.
+`I/O:'External GPIO'`
 
-## Battery / PDB
-- The LiPo is mounted underneath the central drone frame.
-- Two strap loops visually tighten around the battery.
-- A 3D XT60 socket is soldered to the bottom PDB.
-- Assembly Lab includes a Connect battery / Disconnect battery control.
-- Battery connection animates the XT60 plug.
-- After connection, simulated ESC startup tones play, FC/ESC LEDs light, and assembled propellers rotate slowly at idle.
-- Disconnecting the battery turns off LEDs and stops idle propeller rotation.
+Because `I/O` was not quoted, the ES module failed during parsing. That means **none of `app.js` executed**, so the status text never reached the code that changes it to “Local 3D engine ready”.
 
-## Assembly feedback
-- Each major component placement has its own generated sound cue.
-- Frame and motor screw sets install with a slower sequential tightening animation.
-- A visible virtual Allen-key tool follows each screw while it tightens.
+V10 changes it to a valid quoted key and adds startup diagnostics so the page will no longer silently stay on a starting message if a future module/runtime error happens.
 
-## 1045 propellers
-- The runtime propeller is now a tapered, swept, two-blade 1045-style shape with a central adapter/nut.
-- The same improved propeller is used in the tripod simulator.
+## V10 fixes
+- `app.js` syntax error fixed.
+- `ui-runtime.js` now detects script-load, module-parse, runtime, and unhandled-promise failures.
+- Startup is split into guarded boot steps, so one non-critical section cannot freeze the whole UI.
+- Assembly 3D errors show a visible diagnostic card while 2D/non-3D tools remain available.
+- Tripod simulator is now **lazy-loaded only when its tab is opened**, reducing startup GPU load.
+- Local Three.js remains bundled; no CDN is required for the main 3D lab.
+- Cache-busting query strings were added to `styles.css`, `ui-runtime.js`, and `app.js` for GitHub Pages updates.
+- The 3D camera “3D / Top / Front” active-button logic is corrected.
+- Canvas rounded-rectangle drawing has a compatibility fallback.
+- Browser save now fails gracefully if localStorage is blocked by an iframe/private session.
+- Legacy `drone3d.js` now points to the same-folder `three.module.min.js`.
+- Version labels updated to V10.
 
-## 2D wiring
-- FC-side wires are drawn above the FC body and approach each pin with a visible final segment.
-- Wires remain attached when components are dragged.
-- Source/PWM is orange, +5V light red, GND brown/black, and high-current +12 V red.
-- Existing phase-swap motor direction simulation, current-flow animation, wire delete/redraw, component dragging and PWM test are retained.
+## F450 frame geometry update
+The arm root is now placed at the **bottom-plate corner/edge root zone**, not near the plate centre.
+The local arm length was shortened so the motor centre still aligns with the existing motor/guard positions.
+Frame screw positions were also moved outward to the four real root zones.
+The integrated F450 landing foot still rests at bench Y=0.
 
-## Tripod PID simulator
-- Larger Rate / Angle PID controls.
-- Brighter studio-style lighting and background.
-- Final assembled drone remains on the tripod.
-- Prop speed is more readable.
-- Ground dust/downwash particles increase with throttle.
-- Stable / under-tuned / oscillating response logic is retained.
+## GitHub Pages
+Upload the contents of this folder directly to the repository root, then publish from:
 
-## Packaging
-The ZIP has one top-level folder and no nested asset directory.
-Upload every file inside that folder to the GitHub repository root.
+`Settings → Pages → Deploy from a branch → main → /(root)`
+
+After upload, do a hard refresh once. V10 also uses versioned script URLs to avoid an older `app.js` remaining in browser cache.
+
+## Wix
+The normal simulator UI can be embedded with the supplied `WIX_EMBED.txt`.
+
+For a real flight-controller connection, opening the GitHub Pages lab directly in a new tab is more reliable than running hardware permissions inside a Wix iframe.
+
+## Safety
+Virtual motor/PID tests are simulations. For real motor-order, ESC or calibration tests, remove propellers until the hardware setup is verified.
