@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07111b">
+<title>ZEBJUS F450 Drone Engineering Lab V10</title>
+<link rel="stylesheet" href="styles.css?v=10.0.1">
+</head>
+<body>
+<div id="app">
+<header class="topbar">
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V10 • startup-safe local 3D • A→Z assembly • interactive wiring • tripod PID simulator</span></div></div>
+ <div class="top-actions"><span id="assetStatus" class="status">Loading V10 local module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
+</header>
+<nav class="tabs">
+<button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="connect">CONNECT FC</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
+</nav>
+<main>
+<section id="tab-assembly" class="panel tab-panel active assembly-grid">
+ <aside class="left-panel">
+  <div class="panel-head"><div><small>GUIDED BUILD</small><h2>F450 A→Z Assembly</h2></div><span id="progressPill" class="pill">0%</span></div>
+  <div class="mode-row"><button id="guidedModeBtn" class="mode active">Guided</button><button id="freeModeBtn" class="mode">Free build</button></div>
+  <div id="assemblySteps" class="step-list"></div>
+  <div class="step-actions"><button id="prevStepBtn" class="btn ghost">← Previous</button><button id="nextStepBtn" class="btn primary">Next →</button></div>
+ </aside>
+ <section class="center-stage">
+  <div class="stage-toolbar">
+   <div class="view-switch"><button id="objectViewBtn" class="view-btn active">Object</button><button id="wireMapBtn" class="view-btn">Wiring map</button><button id="xrayBtn" class="view-btn">X-ray</button></div>
+   <div class="camera-actions"><button id="view3dBtn" class="view-btn active">3D</button><button id="topBtn" class="view-btn">Top</button><button id="frontBtn" class="view-btn">Front</button><button id="explodeBtn" class="view-btn">Exploded</button><button id="autoRotateBtn" class="view-btn">Auto rotate</button></div>
+  </div>
+  <div id="threeWrap" class="three-wrap">
+   <div class="bench-badge"><b>VIRTUAL PRODUCT BENCH</b><span id="benchSubtitle">F450 guided mechanical assembly</span><small>Arc guards • locked snaps • actual FC layout • accessible I/O case</small></div>
+   <div class="front-badge">↑ FRONT · RED ARMS</div>
+   <div id="wireLegend" class="wire-legend hidden"><b>WIRE COLOURS</b><span><i class="w red"></i>DC + / power</span><span><i class="w blk"></i>Ground −</span><span><i class="w phase-u"></i>Motor U</span><span><i class="w phase-v"></i>Motor V</span><span><i class="w phase-w"></i>Motor W</span><span><i class="w white"></i>Signal</span><span><i class="w pink"></i>+5V</span></div>
+   <div id="threeContainer"></div>
+   <div class="virtual-chip"><i></i><div><b>VIRTUAL BENCH</b><span>No real hardware energised</span></div></div>
+   <div id="snapMessage" class="snap-message">Initializing V10 local runtime…</div>
+  </div>
+ </section>
+ <aside class="right-panel right-workbench">
+  <section class="right-shelf-section">
+   <div class="panel-head"><div><small>REAL-STYLE COMPONENT SHELF</small><h2>Pick next component</h2></div></div>
+   <div class="shelf-note">Required parts stay in assembly order. Installed parts disappear; Undo/Delete returns them. Expansion devices are optional.</div>
+   <div id="componentShelf" class="component-shelf vertical-shelf"></div>
+  </section>
+  <section class="right-inspector-section">
+   <div class="panel-head"><div><small>SMART INSPECTOR</small><h2>Selected item</h2></div></div>
+   <div id="inspector" class="inspector"><div class="empty"><div>◎</div><p>Select a component, screw, solder pad, connector or wire.</p></div></div>
+   <div class="panel-head compact"><div><small>CURRENT STEP</small><h2 id="currentStepTitle">Start assembly</h2></div></div><div id="currentStepCard" class="current-step-card"></div>
+   <div class="panel-head compact"><div><small>BUILD CHECK</small><h2>Completion</h2></div></div><div id="buildChecks" class="checks"></div>
+  </section>
+ </aside>
+</section>
+
+<section id="tab-wiring" class="panel tab-panel">
+ <div class="wiring-layout">
+  <div class="wiring-card">
+   <div class="section-toolbar"><div><b>F450 Interactive 2D Wiring Bench</b><span>Drag components • draw/delete/redraw wires • run connected motors • phase swapping reverses direction</span></div><div class="toolbar-row"><button id="wireUndoBtn" class="btn ghost small">↶ Wire undo</button><button id="deleteWireBtn" class="btn ghost small">Delete selected</button><button id="centerWireLayoutBtn" class="btn ghost small">Reset layout</button><button id="autoWireBtn" class="btn primary small">Reference wiring</button><button id="clearWireBtn" class="btn ghost small">Clear wires</button></div></div>
+   <div class="svg-wrap"><svg id="wiringSvg" viewBox="0 0 1500 900"></svg></div>
+  </div>
+  <aside class="wiring-side">
+   <div class="panel-head"><div><small>VALIDATION</small><h2>Electrical check</h2></div></div><div id="wireValidation" class="checks"></div>
+   <div class="motor-test-panel">
+    <div class="panel-head compact"><div><small>ESC / MOTOR TEST</small><h2>Virtual PWM bench</h2></div><span id="wireRunState" class="status">STOPPED</span></div>
+    <button id="wireRunBtn" class="btn primary full">RUN MOTOR TEST</button>
+    <label class="range-line">PWM / throttle <output id="wirePwmOut">1000 µs</output><input id="wireThrottle" type="range" min="1000" max="2000" value="1000" step="10"></label>
+    <label class="toggle-line"><input id="wireAllMotors" type="checkbox" checked> Test all enabled motors</label>
+    <div id="wireMotorRows" class="wire-motor-rows">
+      <label><input id="wireM1" type="checkbox" checked><span>M1</span><b id="wireM1State">OFF</b></label>
+      <label><input id="wireM2" type="checkbox" checked><span>M2</span><b id="wireM2State">OFF</b></label>
+      <label><input id="wireM3" type="checkbox" checked><span>M3</span><b id="wireM3State">OFF</b></label>
+      <label><input id="wireM4" type="checkbox" checked><span>M4</span><b id="wireM4State">OFF</b></label>
+    </div>
+    <p class="micro-note">Motor starts above ~1100 µs. Swapping any two U/V/W phase wires reverses the virtual motor direction. Animated dashes show current flow from the battery.</p>
+   </div>
+   <div class="optional-io-panel">
+    <div class="panel-head compact"><div><small>OPTIONAL I/O</small><h2>Add external device</h2></div></div>
+    <div class="inline-form"><select id="optionalWireDevice"><option value="ppm">PPM Receiver</option><option value="servo">Servo</option><option value="matrix">LED Matrix</option><option value="sensor">I²C Sensor</option><option value="gps">GPS</option></select><button id="addOptionalWireDevice" class="btn ghost small">Add</button></div>
+    <p class="micro-note">RX is optional because Wi‑Fi control is supported. External GPIO rows use Source / +5V / GND. The I²C 4-pin header remains available.</p>
+   </div>
+  </aside>
+ </div>
+</section>
+
+<section id="tab-sim" class="panel tab-panel">
+ <div class="sim-grid sim-v8-grid">
+  <div class="sim-card"><div class="section-toolbar"><div><b>Tripod PID Tuning Simulator</b><span>Final assembled F450 on a physical-style tuning stand • PID changes alter response and vibration</span></div><div class="toolbar-row"><select id="simFlightMode"><option value="angle">ANGLE MODE</option><option value="rate">RATE MODE</option></select><button id="simRunBtn" class="btn primary small">RUN</button><button id="simResetBtn" class="btn ghost small">Reset</button></div></div><div id="simThree"></div></div>
+  <aside class="sim-controls sim-v8-controls">
+   <div class="metrics"><div><span>ROLL</span><b id="simRoll">0.0°</b></div><div><span>PITCH</span><b id="simPitch">0.0°</b></div><div><span>YAW RATE</span><b id="simYaw">0.0°/s</b></div><div><span>RESPONSE</span><b id="simTuneState">READY</b></div></div>
+   <div class="tx-title"><b>VIRTUAL TRANSMITTER</b><span>Mouse / touch + keyboard</span></div>
+   <div class="tx-sticks">
+    <div><small>THROTTLE / YAW</small><div id="leftStick" class="stick-pad"><i id="leftStickKnob"></i></div><span id="leftStickRead">T 1000 • Y 0</span></div>
+    <div><small>PITCH / ROLL</small><div id="rightStick" class="stick-pad"><i id="rightStickKnob"></i></div><span id="rightStickRead">P 0 • R 0</span></div>
+   </div>
+   <div class="sim-pid-box">
+    <div class="panel-head compact"><div><small>LIVE PID</small><h2>Simulator tuning</h2></div></div>
+    <div class="quick-pid-grid"><label>Rate P<input id="simRateP" type="number" step="0.05"></label><label>Rate I<input id="simRateI" type="number" step="0.5"></label><label>Rate D<input id="simRateD" type="number" step="0.005"></label><label>Angle P<input id="simAngleP" type="number" step="0.1"></label><label>Angle I<input id="simAngleI" type="number" step="0.05"></label><label>Angle D<input id="simAngleD" type="number" step="0.005"></label></div>
+    <button id="simApplyPidBtn" class="btn ghost full">Apply these values to Roll + Pitch</button>
+   </div>
+   <div class="motor-mix"><span>M1 <b id="m1">0%</b></span><span>M2 <b id="m2">0%</b></span><span>M3 <b id="m3">0%</b></span><span>M4 <b id="m4">0%</b></span></div>
+   <p class="micro-note">Arrow keys: pitch/roll by default. W/S: throttle. A/D: yaw. Change every key in Settings.</p>
+  </aside>
+  <div class="chart-card"><canvas id="simChart" width="1200" height="260"></canvas></div>
+ </div>
+</section>
+
+<section id="tab-connect" class="panel tab-panel"><div class="form-card narrow"><div class="panel-head"><div><small>REAL HARDWARE</small><h2>Connect ZEBJUS Flight Controller</h2></div><span id="fcBadge" class="status">Disconnected</span></div><div class="form-grid"><label>IP<input id="fcIp" value="192.168.4.1"></label><label>WebSocket path<input id="fcPath" value="/ws/telemetry"></label><label>Protocol<select id="fcProtocol"><option value="auto">Auto</option><option value="wss">WSS</option><option value="ws">WS</option></select></label><label>Kit name<input value="ZEBJUS-DRONE-01"></label></div><div class="button-row"><button id="connectFcBtn" class="btn primary">Connect</button><button id="disconnectFcBtn" class="btn ghost">Disconnect</button><button id="pingFcBtn" class="btn ghost">Ping</button></div><pre id="fcLog" class="terminal mini">Ready to connect…</pre></div></section>
+<section id="tab-cal" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>STEP-BY-STEP</small><h2>Calibration wizard</h2></div></div><div id="calSteps" class="cal-steps"></div></div><div class="form-card"><div class="panel-head"><div><small>LIVE</small><h2>Sensor status</h2></div></div><div class="metrics"><div><span>GYRO X</span><b id="gyroX">0.000</b></div><div><span>GYRO Y</span><b id="gyroY">0.000</b></div><div><span>GYRO Z</span><b id="gyroZ">0.000</b></div><div><span>LEVEL</span><b id="levelState">Waiting</b></div></div><div class="orientation-card">↑<span>Match the ZEBJUS FC FRONT arrow to the red-arm front.</span></div></div></div></section>
+<section id="tab-pid" class="panel tab-panel"><div class="pid-layout"><div id="pidEditor" class="form-card"></div><aside class="form-card"><div class="panel-head"><div><small>ACTIONS</small><h2>Apply tuning</h2></div></div><button id="applyPidBtn" class="btn primary full">Apply to tripod simulator</button><button id="sendPidBtn" class="btn ghost full">Send to real FC</button><button id="restorePidBtn" class="btn ghost full">Restore defaults</button><div class="callout"><b>Rate + Angle</b><p>Rate loop controls angular rate. Angle mode cascades an angle controller into the rate loop. Use the tripod simulator before free flight.</p></div></aside></div></section>
+<section id="tab-python" class="panel tab-panel"><div class="python-layout"><div class="editor-card"><div class="section-toolbar"><div><b>Python Drone Lab</b><span>Simulator or real-drone target</span></div><div><select id="pythonTarget"><option value="sim">Simulator</option><option value="real">Real drone</option></select><button id="runPythonBtn" class="btn primary small">Run</button></div></div><textarea id="pythonEditor" spellcheck="false"></textarea></div><div class="terminal-card"><div class="section-toolbar"><div><b>Output</b><span id="pyStatus">Pyodide loads on first run</span></div><button id="clearTerminalBtn" class="btn ghost small">Clear</button></div><pre id="pythonTerminal" class="terminal"></pre></div></div></section>
+<section id="tab-telemetry" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>ATTITUDE</small><h2>Live telemetry</h2></div></div><div class="metrics"><div><span>ROLL</span><b id="telRoll">0.00°</b></div><div><span>PITCH</span><b id="telPitch">0.00°</b></div><div><span>YAW</span><b id="telYaw">0.00°</b></div><div><span>BATTERY</span><b id="telBatt">-- V</b></div></div></div><div class="form-card"><div class="panel-head"><div><small>RAW</small><h2>Telemetry stream</h2></div></div><pre id="telemetryLog" class="terminal"></pre></div></div></section>
+<section id="tab-settings" class="panel tab-panel"><div class="settings-grid"><div class="form-card"><div class="panel-head"><div><small>KEYBOARD</small><h2>Simulator key mapping</h2></div></div><p class="micro-note">Click a key field, then press the key you want. Save settings to keep the mapping on this browser.</p><div id="keySettings" class="key-settings"></div><div class="button-row"><button id="saveKeysBtn" class="btn primary">Save key mapping</button><button id="resetKeysBtn" class="btn ghost">Restore defaults</button></div></div><div class="form-card"><div class="panel-head"><div><small>FC EXPANSION</small><h2>Accessible case headers</h2></div></div><div class="io-guide"><div><b>ESC1–ESC4</b><span>Top/source row: motor signal • middle row: +5V • bottom row: GND</span></div><div><b>External GPIO ×3</b><span>Source / +5V / GND. Use for servo, LED, LED matrix, GPS/control or sensors as appropriate.</span></div><div><b>RX / PPM header</b><span>Optional. PPM signal / +5V / GND. When RX is not used, the source pin can be used as another compatible I/O.</span></div><div><b>I²C 4-pin</b><span>VCC • GND • SCL • SDA remains user accessible.</span></div></div><img class="fc-reference-img" src="fc_board_reference.png" alt="ZEBJUS FC accessible pin reference"></div></div></section>
+</main></div>
+<script src="ui-runtime.js?v=10.0.1"></script>
+<script type="module" src="app.js?v=10.0.1"></script>
+</body></html>

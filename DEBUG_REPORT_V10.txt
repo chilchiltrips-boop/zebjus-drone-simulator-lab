@@ -1,0 +1,36 @@
+ZEBJUS F450 DRONE LAB V10 — FINAL QA
+========================================================================
+
+ROOT CAUSE FIXED:
+The uploaded app.js had an invalid object key: I/O:'External GPIO'.
+That caused a JavaScript parse error before any app startup code could run,
+which explains the permanent “Starting local 3D engine…” state.
+
+[PASS] JS syntax: app.js
+[PASS] JS syntax: drone3d.js
+[PASS] JS syntax: learning-lab.js
+[PASS] JS syntax: three.module.min.js
+[PASS] JS syntax: ui-runtime.js
+[PASS] JS syntax: wiring2d.js
+[PASS] Original unquoted I/O parse bug removed
+[PASS] Correct quoted I/O key exists
+[PASS] App imports same-folder Three.js
+[PASS] Boot watchdog can detect parse/load failure
+[PASS] Tripod simulator is lazy initialized
+[PASS] V10 cache-busting enabled
+[PASS] 3D camera active-button mapping fixed
+[PASS] Canvas roundRect compatibility fallback
+[PASS] All local file references resolve
+[PASS] No duplicate HTML IDs
+[PASS] All PNG files decode
+[PASS] All GLB files have valid glTF 2 headers
+[PASS] CSS braces balanced — balance=0, min=0
+[PASS] FR arm edge-root tip aligns M1 — 2.9598 vs 2.9600
+[PASS] Integrated landing foot bottom is bench Y=0 — 0.000
+
+Passed 21 / 21 checks.
+Files in flat project folder: 65
+
+Browser/GPU note:
+The package is statically validated here. Actual WebGL rendering is browser/GPU dependent;
+V10 now reports a visible diagnostic instead of silently remaining on a starting message.
