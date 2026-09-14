@@ -1,4 +1,4 @@
-# ZEBJUS F450 Drone Engineering Lab — V17.2 Branding + PID Hold Simulator
+# ZEBJUS F450 Drone Engineering Lab — V17.3 Optimized UI + Power Audio
 
 V17 corrects the control-model teaching behavior.
 
@@ -61,3 +61,18 @@ This is deliberately labelled **Rate Hold**, because pure acro/rate mode normall
 - On stick release, target returns to the calibrated level.
 - Wind/manual disturbance is corrected back to calibrated level using Angle PID → Rate PID.
 - Yaw remains Rate PID only; there is no yaw-angle lock.
+
+
+## V17.3 update
+- Increased component pick/drop feedback volume while keeping soft waveforms.
+- Added a more realistic synthetic ESC power-up sequence with rising startup tones and individual ESC confirmation tones.
+- XT60 connection now has a stronger spark, expanding power-wave animation and brighter animated current pulses.
+- FC now includes dedicated PWR and STATUS LED geometry in addition to the RGB indicator.
+- PWR LED remains ON whenever the battery is connected; STATUS remains visibly active after boot.
+- Added an on-screen FC PWR / BOOT / READY indicator beside the battery power state.
+- Fixed keyboard pitch-stick direction: Arrow Up moves the virtual pitch stick upward; Arrow Down moves it downward.
+- Keyboard pitch/roll commands are momentary instead of accumulating after key release.
+- Enlarged the round assembly workstation and increased the 3D canvas area.
+- Rebalanced assembly side panels to give the 3D workbench more screen space.
+- Optimized wiring, simulator, forms, Python, settings and responsive layouts.
+- Added a subtle clickable ZEBJUS watermark advertisement to the 3D workstation and all other tab pages.

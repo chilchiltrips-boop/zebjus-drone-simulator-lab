@@ -352,3 +352,27 @@
 .product-card[role="button"]{cursor:pointer}
 .accuracy-note{grid-column:1/-1!important;border-color:#5b5530!important;background:#201c08!important}.accuracy-note b{color:#ffd36f!important}.accuracy-note span{color:#cbbf91!important}
 @media(max-width:900px){.zebjus-top-shop{display:none}.zebjus-ad-images img{width:44px;height:36px}}
+
+
+/* ==================== V17.3 LAYOUT / POWER / BRAND POLISH ==================== */
+html{scroll-behavior:smooth}body{overflow-x:hidden}.app-shell,main{width:100%;max-width:1920px;margin:0 auto}
+.panel{padding:10px clamp(10px,1.2vw,20px)}.tab-panel.active{position:relative}
+.topbar{min-height:70px!important;padding:9px clamp(14px,1.6vw,26px)!important}.tabs{height:auto!important;min-height:50px;padding:7px clamp(10px,1.2vw,20px)!important;gap:5px}
+.tab{padding:8px 11px!important}.panel-head h2{line-height:1.18}.section-toolbar{padding:10px 12px!important;gap:10px}
+.assembly-grid.active{grid-template-columns:250px minmax(760px,1fr) 325px!important;gap:10px;max-width:1900px;margin:0 auto;align-items:stretch}
+.left-panel,.right-panel{padding:11px!important;min-height:calc(100vh - 138px)!important}.center-stage{min-width:0;overflow:hidden!important}
+.stage-toolbar{min-height:58px!important;height:auto!important;padding:8px 10px!important;gap:8px!important;flex-wrap:wrap}.view-switch,.camera-actions{gap:6px!important;flex-wrap:wrap}.stage-toolbar .view-btn{min-height:34px!important;padding:7px 9px!important}
+.three-wrap{height:calc(100vh - 230px)!important;min-height:760px!important;border-radius:0 0 16px 16px}.right-workbench{grid-template-rows:minmax(390px,52vh) minmax(0,1fr)!important}
+.vertical-shelf{padding-right:3px}.vertical-shelf .product-card{min-height:82px}.current-step-card,.inspector,.checks{line-height:1.42}
+.wiring-layout{grid-template-columns:minmax(0,1fr) 350px!important;gap:10px;max-width:1880px;margin:0 auto}.svg-wrap{min-height:720px;max-height:calc(100vh - 190px)}#wiringSvg{min-height:720px}
+.sim-v17-grid{max-width:1880px;margin:0 auto;gap:10px!important}.sim-card #simThree{height:min(74vh,820px)!important;min-height:690px}.sim-v17-controls{max-height:min(82vh,900px)!important}.pid-class-card,.sim-chart-card{margin-top:2px}
+.form-card,.editor-card,.terminal-card{padding:15px}.form-card.narrow{max-width:1080px;margin:0 auto}.two-col,.pid-layout,.python-layout,.settings-grid{max-width:1600px;margin:0 auto;gap:12px!important}
+.python-layout{grid-template-columns:minmax(0,1.4fr) minmax(320px,.6fr)!important}.terminal{line-height:1.5}.settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.fc-led-state{display:inline-flex;align-items:center;gap:5px;border:1px solid #314a5c;border-radius:999px;padding:5px 8px;font-size:8px;font-weight:900;color:#9db0bd;background:#071520}.fc-led-state i{width:7px;height:7px;border-radius:50%;background:#35444e}.fc-led-state.boot .pwr,.fc-led-state.ready .pwr{background:#43f28a;box-shadow:0 0 9px #43f28a}.fc-led-state.boot .stat{background:#ff735f;box-shadow:0 0 8px #ff735f;animation:fcStatusBlink .28s steps(2,end) infinite}.fc-led-state.ready .stat{background:#45b7ff;box-shadow:0 0 10px #45b7ff}.fc-led-state.ready{border-color:#347761;color:#bafbe4}
+@keyframes fcStatusBlink{50%{opacity:.22}}
+.zebjus-workstation-watermark{position:absolute;right:18px;bottom:18px;z-index:8;display:grid;gap:0;text-align:right;text-decoration:none;opacity:.28;transition:.2s;pointer-events:auto}.zebjus-workstation-watermark:hover{opacity:.75}.zebjus-workstation-watermark b{font-size:25px;letter-spacing:.16em;color:#bdfbe6;text-shadow:0 2px 16px #000}.zebjus-workstation-watermark span{font-size:8px;color:#d5e7df;letter-spacing:.08em}.zebjus-workstation-watermark em{font-size:7px;color:#6eeac0;font-style:normal}
+.zebjus-page-watermark{position:absolute;right:24px;bottom:14px;z-index:0;display:grid;text-align:right;text-decoration:none;opacity:.055;pointer-events:auto;user-select:none;transition:.18s}.zebjus-page-watermark:hover{opacity:.26}.zebjus-page-watermark b{font-size:42px;line-height:.9;letter-spacing:.16em;color:#8be9c9}.zebjus-page-watermark span{font-size:8px;color:#9bb6ad;letter-spacing:.15em}.zebjus-page-watermark em{font-size:7px;color:#70dcb8;font-style:normal}.tab-panel>*:not(.zebjus-page-watermark){position:relative;z-index:1}
+.power-connect-btn:not(:disabled){box-shadow:0 0 0 1px #d8b12d55 inset,0 0 18px #e9ba2530!important}
+@media(max-width:1450px){.assembly-grid.active{grid-template-columns:225px minmax(650px,1fr) 295px!important}.three-wrap{min-height:680px!important}.right-workbench{grid-template-rows:minmax(350px,48vh) minmax(0,1fr)!important}.settings-grid{grid-template-columns:1fr 1fr!important}}
+@media(max-width:1180px){.assembly-grid.active{grid-template-columns:220px minmax(0,1fr)!important}.right-panel{grid-column:1/-1;min-height:auto!important}.right-workbench{grid-template-columns:1fr 1fr;grid-template-rows:auto!important}.three-wrap{height:680px!important}.wiring-layout,.python-layout{grid-template-columns:1fr!important}.wiring-side{max-height:none!important}}
+@media(max-width:850px){.assembly-grid.active{grid-template-columns:1fr!important}.left-panel,.right-panel{min-height:auto!important}.right-workbench{display:block}.three-wrap{height:600px!important;min-height:600px!important}.settings-grid{grid-template-columns:1fr!important}.zebjus-page-watermark{display:none}.zebjus-workstation-watermark{right:10px;bottom:10px}}

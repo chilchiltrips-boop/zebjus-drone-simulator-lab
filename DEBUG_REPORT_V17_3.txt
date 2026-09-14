@@ -1,0 +1,46 @@
+ZEBJUS F450 DRONE LAB V17.3 — UI / POWER / AUDIO QA
+============================================================================
+
+[PASS] Louder pick/drop audio
+[PASS] Realistic ESC startup tune
+[PASS] Power connect thunk exists
+[PASS] FC dedicated PWR and STATUS LEDs
+[PASS] FC status light halo
+[PASS] PWR LED active immediately on power-up
+[PASS] Ready LEDs persist while powered
+[PASS] On-screen FC LED state indicator
+[PASS] Enhanced XT60 spark / power waves
+[PASS] Power pulses brighter and denser
+[PASS] Keyboard Arrow Up maps to positive pitch command
+[PASS] Keyboard commands are momentary
+[PASS] Joystick visual uses upward screen movement for forward pitch
+[PASS] Bigger round workstation geometry
+[PASS] Larger assembly canvas CSS
+[PASS] Assembly grid gives more center space
+[PASS] All-page layout optimization
+[PASS] Workstation watermark ad
+[PASS] All-page subtle watermarks
+[PASS] Existing PID Rate Hold retained
+[PASS] Angle calibrated level retained
+[PASS] Yaw remains rate-only
+[PASS] Audio motor/prop simulation retained
+[PASS] V17.3 cache busting
+[PASS] app.js ES module syntax
+[PASS] service-worker syntax
+[PASS] No duplicate HTML IDs
+[PASS] Static JS UI IDs exist
+[PASS] All local references exist
+[PASS] Flat project folder
+[PASS] Top-level module evaluation
+
+Passed 31 / 31 checks.
+
+V17.3 FOCUS:
+- Stronger but soft component pick/drop audio
+- More realistic synthetic ESC power-up sequence
+- Enhanced XT60 power animation and current pulses
+- FC PWR + STATUS + RGB indication while powered
+- Corrected keyboard joystick pitch direction
+- Larger round assembly workstation
+- Responsive alignment optimization across all pages
+- Clickable ZEBJUS watermark branding on workstation and tabs

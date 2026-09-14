@@ -7,7 +7,7 @@ window.__zebjusModuleParsed=true;
 window.__zebjusAppLoaded=false;
 window.__zebjus3DReady=false;
 function setBootStatus(text,kind=''){const s=$('#assetStatus');if(s){s.textContent=text;s.className='status'+(kind?' '+kind:'')}}
-setBootStatus('V17.2 local module loaded • starting branded PID hold simulator…');
+setBootStatus('V17.3 local module loaded • starting optimized engineering lab…');
 
 /* V9: local camera controls. No network add-on is required for 3D startup. */
 class MiniOrbitControls {
@@ -148,21 +148,23 @@ function tone(freq=440,dur=.08,type='sine',gain=.025,delay=0){
 function playFX(kind){
  if(!soundEnabled)return;
  const seq={
-  plate:[[190,.055,'triangle'],[245,.065,'sine']],
-  arm:[[235,.045,'triangle'],[295,.055,'sine']],
-  guard:[[300,.05,'triangle'],[355,.055,'sine']],
-  motor:[[330,.045,'sine'],[430,.065,'sine']],
-  esc:[[410,.045,'triangle'],[520,.055,'sine']],
-  tape:[[165,.045,'triangle'],[135,.055,'sine']],
-  fc:[[510,.04,'sine'],[650,.06,'sine']],
-  battery:[[205,.06,'triangle'],[175,.065,'sine']],
-  strap:[[180,.04,'triangle'],[150,.05,'sine']],
-  prop:[[300,.04,'triangle'],[390,.05,'sine']],
-  connector:[[520,.035,'sine'],[660,.055,'sine']],
-  screw:[[520,.014,'triangle'],[610,.016,'sine']]
+  pick:[[470,.04,'sine'],[610,.05,'triangle']],
+  plate:[[180,.065,'triangle'],[250,.080,'sine']],
+  arm:[[225,.060,'triangle'],[315,.075,'sine']],
+  guard:[[290,.060,'triangle'],[380,.070,'sine']],
+  motor:[[310,.055,'triangle'],[450,.080,'sine']],
+  esc:[[370,.055,'triangle'],[520,.075,'sine']],
+  tape:[[155,.055,'triangle'],[125,.070,'sine']],
+  fc:[[500,.050,'sine'],[675,.075,'sine']],
+  battery:[[190,.070,'triangle'],[150,.080,'sine']],
+  strap:[[170,.050,'triangle'],[140,.065,'sine']],
+  prop:[[285,.050,'triangle'],[405,.065,'sine']],
+  connector:[[500,.045,'sine'],[690,.070,'sine']],
+  screw:[[500,.018,'triangle'],[620,.022,'sine']]
  };
- const baseGain=kind==='screw'?.010:kind==='connector'?.014:.013;
- (seq[kind]||[[300,.05,'sine']]).forEach((q,i)=>tone(q[0],q[1],q[2],baseGain,i*.052))
+ const gainMap={pick:.024,plate:.030,arm:.028,guard:.026,motor:.030,esc:.028,tape:.023,fc:.030,battery:.030,strap:.022,prop:.026,connector:.026,screw:.016};
+ const gain=gainMap[kind]??.024;
+ (seq[kind]||[[300,.06,'sine']]).forEach((q,i)=>tone(q[0],q[1],q[2],gain,i*.055))
 }
 
 const motorAudio={sim:null,wire:null,assembly:null};
@@ -190,40 +192,58 @@ function updateMotorAudio(kind,level,imbalance=0){
  a.g.gain.setTargetAtTime((raw+imb*.004)*soundVolume,t,.08)
 }
 function silenceMotorAudio(kind){const a=motorAudio[kind];if(a)a.g.gain.setTargetAtTime(.0001,a.ac.currentTime,.06)}
-function escBeep(i){const notes=[392,440,494,523];tone(notes[i]||440,.055,'sine',.010,0);tone((notes[i]||440)*1.25,.05,'sine',.007,.065)}
+function escBeep(i){
+ const base=[392,415,440,466][i]||440;
+ tone(base,.055,'triangle',.020,0);
+ tone(base*2,.055,'sine',.012,.006);
+ tone(base*1.26,.050,'sine',.016,.072)
+}
+function escStartupTune(){
+ if(!soundEnabled)return;
+ // Soft BLHeli-style synthetic sequence: three rising startup tones, cell/ready confirmation.
+ [[330,.00],[415,.10],[523,.20],[659,.43],[784,.52]].forEach(([f,d],i)=>{tone(f,i<3?.075:.065,i<3?'triangle':'sine',i<3?.024:.020,d);tone(f*2,.045,'sine',i<3?.008:.006,d+.006)})
+}
+function powerConnectThunk(){tone(145,.065,'triangle',.028,0);tone(290,.055,'sine',.014,.035)}
 function setEscLed(index,on){
  const p=state.parts.filter(x=>x.type==='esc')[index];if(!p)return;
  p.obj.traverse(o=>{if(o.isMesh&&o.name==='ESC_POWER_LED')o.material.emissiveIntensity=on?2.4:0})
 }
-function setFcLeds(powerOn,statusOn){
+function setFcLeds(powerOn,statusOn,ready=false){
  const p=state.parts.find(x=>x.type==='fc');if(!p)return;
  p.obj.traverse(o=>{
+   if(o.name==='FC_STATUS_LIGHT'){o.color.setHex(ready?0x55ffd0:0xff6b55);o.intensity=powerOn?(ready?.72:.40):0;return}
    if(!o.isMesh||!o.material)return;
-   if(o.name==='FC_RGB_LED_R')o.material.emissiveIntensity=powerOn&&!statusOn?7.5:0;
-   if(o.name==='FC_RGB_LED_G')o.material.emissiveIntensity=powerOn&&statusOn?9.0:0;
-   if(o.name==='FC_RGB_LED_B')o.material.emissiveIntensity=powerOn&&statusOn?3.4:0
+   if(o.name==='FC_PWR_LED')o.material.emissiveIntensity=powerOn?8.5:0;
+   if(o.name==='FC_STATUS_LED')o.material.emissiveIntensity=powerOn&&statusOn?8.0:0;
+   if(o.name==='FC_RGB_LED_R')o.material.emissiveIntensity=powerOn&&!ready?8.5:0;
+   if(o.name==='FC_RGB_LED_G')o.material.emissiveIntensity=powerOn&&ready?10.0:0;
+   if(o.name==='FC_RGB_LED_B')o.material.emissiveIntensity=powerOn&&ready?4.8:0
  })
 }
 function updatePowerUi(){
- const st=$('#batteryPowerState'),btn=$('#batteryConnectBtn');
+ const st=$('#batteryPowerState'),btn=$('#batteryConnectBtn'),led=$('#fcLedState');
  if(st){st.textContent=!state.powered?'POWER OFF':state.powerStage<3?'POWERING…':'POWER ON';st.className='status '+(state.powered?'good':'')}
  if(btn){btn.textContent=state.powered?'Disconnect battery':'Connect battery XT60';btn.disabled=!installed('battery','BAT')}
+ if(led){led.className='fc-led-state '+(!state.powered?'off':state.powerStage<3?'boot':'ready');led.innerHTML=`<i class="pwr"></i>PWR <i class="stat"></i>${!state.powered?'OFF':state.powerStage<3?'BOOT':'READY'}`}
 }
 function setPowerVisual(on,instant=false){
  powerSequenceToken++;
  state.powered=!!on;state.powerStage=on?(instant?3:0):0;
  for(let i=0;i<4;i++)setEscLed(i,on&&instant);
- setFcLeds(on&&instant,on&&instant);
+ setFcLeds(on&&instant,on&&instant,on&&instant);
  if(!on&&powerPulseRoot){powerPulseRoot.clear();powerPulseItems=[]}
  rebuildPowerPulses();updatePowerUi()
 }
 function runPowerUpSequence(){
- const token=++powerSequenceToken;state.powered=true;state.powerStage=1;for(let i=0;i<4;i++)setEscLed(i,false);setFcLeds(false,false);rebuildPowerPulses();updatePowerUi();
- [0,1,2,3].forEach(i=>setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setEscLed(i,true);escBeep(i)},300+i*190));
- setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;state.powerStage=2;setFcLeds(true,false);tone(660,.07,'sine',.010);updatePowerUi();notify('FC RGB LED RED • booting • gyro initialising…')},1120);
- setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setFcLeds(true,true);tone(784,.055,'sine',.008);notify('Gyro OK • receiver / control input check…')},1360);
- setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setFcLeds(true,false)},1510);
- setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;state.powerStage=3;setFcLeds(true,true);tone(880,.075,'sine',.009);tone(1175,.08,'sine',.007,.09);updatePowerUi();silenceMotorAudio('assembly');notify('READY TO ARM • soft confirmation chime • FC RGB green/cyan • prop idle animation enabled.','good')},1740)
+ const token=++powerSequenceToken;state.powered=true;state.powerStage=1;
+ for(let i=0;i<4;i++)setEscLed(i,false);
+ setFcLeds(true,false,false);rebuildPowerPulses();updatePowerUi();escStartupTune();
+ [0,1,2,3].forEach(i=>setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setEscLed(i,true);escBeep(i)},245+i*155));
+ setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;state.powerStage=2;setFcLeds(true,true,false);tone(590,.08,'triangle',.020);updatePowerUi();notify('FC PWR LED ON • RGB RED • gyro booting…')},930);
+ setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setFcLeds(true,false,false);tone(700,.060,'sine',.014);notify('Gyro initialised • checking control / receiver…')},1160);
+ setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setFcLeds(true,true,false)},1280);
+ setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;setFcLeds(true,false,false)},1400);
+ setTimeout(()=>{if(token!==powerSequenceToken||!state.powered)return;state.powerStage=3;setFcLeds(true,true,true);tone(880,.085,'sine',.020);tone(1175,.095,'sine',.014,.095);updatePowerUi();silenceMotorAudio('assembly');notify('READY TO ARM • PWR + STATUS LEDs active • prop idle visual enabled.','good')},1580)
 }
 function animateBatteryPlug(connect=true){
  if(!extrasRoot)return;const bottom=installed('bottomPlate','bottom'),bat=installed('battery','BAT');if(!bottom||!bat)return;
@@ -239,16 +259,18 @@ function animateBatteryPlug(connect=true){
 
 function xt60Spark(){
  if(!extrasRoot)return;const bottom=installed('bottomPlate','bottom');if(!bottom)return;scene.updateMatrixWorld(true);
- const p=bottom.localToWorld(new THREE.Vector3(-2.34,.30,0)),q=extrasRoot.worldToLocal(p.clone()),flash=new THREE.Mesh(new THREE.SphereGeometry(.08,12,8),new THREE.MeshBasicMaterial({color:0xfff0a8,transparent:true,opacity:1}));
- flash.position.copy(q);extrasRoot.add(flash);const light=new THREE.PointLight(0xffc84d,4,2.5);light.position.copy(q);extrasRoot.add(light);animations.push({type:'spark',obj:flash,light,t:0})
+ const p=bottom.localToWorld(new THREE.Vector3(-2.34,.30,0)),q=extrasRoot.worldToLocal(p.clone());
+ const flash=new THREE.Mesh(new THREE.SphereGeometry(.095,16,10),new THREE.MeshBasicMaterial({color:0xfff3b0,transparent:true,opacity:1}));flash.position.copy(q);extrasRoot.add(flash);
+ const light=new THREE.PointLight(0xffc84d,6,3.2);light.position.copy(q);extrasRoot.add(light);animations.push({type:'spark',obj:flash,light,t:0});
+ for(let j=0;j<2;j++){const ring=new THREE.Mesh(new THREE.RingGeometry(.10,.145,40),new THREE.MeshBasicMaterial({color:j?0x53efbd:0xffcf5b,transparent:true,opacity:.95,side:THREE.DoubleSide,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.copy(q);ring.position.y+=.025;extrasRoot.add(ring);animations.push({type:'powerWave',obj:ring,t:0,delay:j*.10})}
 }
 
 function connectBatteryPower(fromGuided=false){
  if(!installed('battery','BAT')){notify('Install the LiPo underneath the frame first.','bad');return false}
  if(!installed('bottomPlate','bottom')){notify('Bottom PDB is missing.','bad');return false}
  [['BAT.+','PDB.BAT+'],['BAT.-','PDB.BAT-']].forEach(([from,to])=>{if(!state.connections.some(c=>c.from===from&&c.to===to))state.connections.push({from,to,new:true,id:`bat-${Date.now()}-${from}`})});
- state.doneActions.add('xt60');silenceMotorAudio('assembly');animateBatteryPlug(true);playFX('connector');setTimeout(xt60Spark,420);rebuild3DWires();rebuildSolder();render2D();renderAssemblyUI();validate2D();
- notify('XT60 inserted • beginning ESC / FC startup sequence…','good');runPowerUpSequence();return true
+ state.doneActions.add('xt60');silenceMotorAudio('assembly');animateBatteryPlug(true);playFX('connector');powerConnectThunk();setTimeout(xt60Spark,340);rebuild3DWires();rebuildSolder();render2D();renderAssemblyUI();validate2D();
+ notify('XT60 inserted • power flowing to ESCs and FC…','good');runPowerUpSequence();return true
 }
 function disconnectBatteryPower(){
  silenceMotorAudio('assembly');
@@ -258,6 +280,12 @@ function disconnectBatteryPower(){
 function toggleBatteryPower(){historyPush();if(state.powered)disconnectBatteryPower();else connectBatteryPower(false)}
 
 /* UI */
+function initPageBrandWatermarks(){
+ $$('.tab-panel').forEach(p=>{
+   if(p.querySelector('.zebjus-page-watermark'))return;
+   const a=document.createElement('a');a.className='zebjus-page-watermark';a.href='https://www.zebjus.com';a.target='_blank';a.rel='noopener';a.innerHTML='<b>ZEBJUS</b><span>Drone Engineering Lab</span><em>www.zebjus.com ↗</em>';p.appendChild(a)
+ })
+}
 function initTabs(){$$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.tab-panel').forEach(x=>x.classList.remove('active'));$('#tab-'+b.dataset.tab)?.classList.add('active');if(b.dataset.tab==='assembly')setTimeout(resize3D,40);if(b.dataset.tab==='sim'){ensureSim();setTimeout(resizeSim,80)}})}
 const product=t=>products.find(x=>x.type===t);
 function showInspector(title,detail,rating={},pins=[],kind='PRODUCT',asset=''){ $('#inspector').innerHTML=`<div class="type">${kind}</div><h3>${title}</h3><p>${detail}</p><div class="specs">${Object.entries(rating).map(([k,v])=>`<div class="spec"><b>${k}</b><span>${v}</span></div>`).join('')}</div><table class="pin-table">${pins.map(p=>`<tr><td>${p[0]}</td><td>${p[1]}</td></tr>`).join('')}</table>${asset?`<div class="asset-path">3D asset: ${asset}</div>`:''}<a class="inspector-shop" href="https://www.zebjus.com" target="_blank" rel="noopener">ZEBJUS components & learning hardware ↗</a>` }
@@ -284,7 +312,7 @@ function selectProduct(type){
  if(c.optional&&!state.parts.some(p=>p.type==='fc')){notify('Mount the ZEBJUS FC case first; then optional GPIO / RX / I²C devices become usable.','bad');return}
  if(!c.optional&&state.guided&&!steps[state.step].types.includes(type)){notify(`Current step needs ${steps[state.step].types.map(t=>product(t)?.name).filter(Boolean).join(' / ')||'a connection action'}.`,'bad');return}
  if(state.parts.filter(p=>p.type===type).length>=c.max){notify('Required quantity already installed.','bad');return}
- state.selectedType=type;renderShelf();showInspector(c.name,c.detail,c.rating,c.pins,c.optional?'OPTIONAL DEVICE':'PRODUCT',c.asset||'')
+ state.selectedType=type;playFX('pick');renderShelf();showInspector(c.name,c.detail,c.rating,c.pins,c.optional?'OPTIONAL DEVICE':'PRODUCT',c.asset||'')
 }
 function countStep(s){if(s.action)return state.doneActions.has(s.id)?s.need:0;return state.parts.filter(p=>s.types.includes(p.type)).length}
 const stepDone=i=>countStep(steps[i])>=steps[i].need;
@@ -530,6 +558,9 @@ function addFCCase(g){
  const lr=addLocalBox(shell,[.052,.022,.145],0x2f0909,[.463,.398,.38],[0,0,0],.02,{roughness:.06});lr.name='FC_RGB_LED_R';lr.material.emissive=new THREE.Color(0xff2035);lr.material.emissiveIntensity=0;
  const lg=addLocalBox(shell,[.052,.022,.145],0x082f16,[.500,.398,.38],[0,0,0],.02,{roughness:.06});lg.name='FC_RGB_LED_G';lg.material.emissive=new THREE.Color(0x27ff74);lg.material.emissiveIntensity=0;
  const lb=addLocalBox(shell,[.052,.022,.145],0x08182f,[.537,.398,.38],[0,0,0],.02,{roughness:.06});lb.name='FC_RGB_LED_B';lb.material.emissive=new THREE.Color(0x30a8ff);lb.material.emissiveIntensity=0;
+ const pwr=addLocalCylinder(shell,.040,.028,0x17321f,[.68,.405,.40],[],.04);pwr.name='FC_PWR_LED';pwr.material.emissive=new THREE.Color(0x3dff86);pwr.material.emissiveIntensity=0;
+ const stat=addLocalCylinder(shell,.040,.028,0x10263a,[.79,.405,.40],[],.04);stat.name='FC_STATUS_LED';stat.material.emissive=new THREE.Color(0x38a8ff);stat.material.emissiveIntensity=0;
+ const glow=new THREE.PointLight(0x48ff9b,0,1.9);glow.name='FC_STATUS_LIGHT';glow.position.set(.61,.54,.39);shell.add(glow);
  return shell
 }
 function decoratePart(g,type,id){
@@ -563,10 +594,10 @@ function init3D(){
  const e=$('#threeContainer');if(!e)throw new Error('3D container missing');
  const w=Math.max(1,e.clientWidth||e.getBoundingClientRect().width||900),h=Math.max(1,e.clientHeight||e.getBoundingClientRect().height||600);
  scene=new THREE.Scene();scene.background=new THREE.Color(0x0b1720);
- camera=new THREE.PerspectiveCamera(40,w/h,.1,1000);camera.position.set(8.6,6.8,10.2);
+ camera=new THREE.PerspectiveCamera(40,w/h,.1,1000);camera.position.set(8.9,7.1,10.6);
  renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(w,h);
  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.38;e.appendChild(renderer.domElement);
- controls=new MiniOrbitControls(camera,renderer.domElement);controls.target.set(0,.95,0);controls.enableDamping=true;controls.minDistance=4;controls.maxDistance=20;
+ controls=new MiniOrbitControls(camera,renderer.domElement);controls.target.set(0,.95,0);controls.enableDamping=true;controls.minDistance=4;controls.maxDistance=23;
  scene.add(new THREE.AmbientLight(0xffffff,.75));
  scene.add(new THREE.HemisphereLight(0xe7f5ff,0x63717c,1.65));
  const key=new THREE.DirectionalLight(0xffffff,2.8);key.position.set(6,10,8);key.castShadow=true;scene.add(key);
@@ -575,10 +606,10 @@ function init3D(){
  const warm=new THREE.PointLight(0xffd7a8,1.25,18);warm.position.set(4.8,5.8,1.8);scene.add(warm);
  const frontFill=new THREE.PointLight(0xa9dcff,.95,16);frontFill.position.set(-4.5,3.8,5.5);scene.add(frontFill);
  // V16 round engineering workbench instead of the old square bed.
- const benchMat=mat(0x354550,.16,.52);bench=M(new THREE.CylinderGeometry(7.8,7.8,.36,96),benchMat,[0,-.18,0],[0,0,0],scene);
- const topDisc=M(new THREE.CylinderGeometry(7.55,7.55,.035,96),mat(0x1d2a32,.08,.44),[0,.018,0],[0,0,0],scene);
- [1.5,3.0,4.5,6.0,7.25].forEach(r=>{const ring=new THREE.Mesh(new THREE.TorusGeometry(r,.012,6,96),new THREE.MeshBasicMaterial({color:0x3b6072,transparent:true,opacity:.46}));ring.rotation.x=Math.PI/2;ring.position.y=.041;scene.add(ring)});
- for(let a=0;a<Math.PI*2;a+=Math.PI/8){const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,.042,0),new THREE.Vector3(Math.cos(a)*7.25,.042,Math.sin(a)*7.25)]);scene.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x2f4e5e,transparent:true,opacity:.32})))}
+ const benchMat=mat(0x354550,.16,.52);bench=M(new THREE.CylinderGeometry(8.8,8.8,.38,112),benchMat,[0,-.18,0],[0,0,0],scene);
+ const topDisc=M(new THREE.CylinderGeometry(8.55,8.55,.038,112),mat(0x1d2a32,.08,.44),[0,.018,0],[0,0,0],scene);
+ [1.5,3.0,4.5,6.0,7.4,8.25].forEach(r=>{const ring=new THREE.Mesh(new THREE.TorusGeometry(r,.012,6,96),new THREE.MeshBasicMaterial({color:0x3b6072,transparent:true,opacity:.46}));ring.rotation.x=Math.PI/2;ring.position.y=.041;scene.add(ring)});
+ for(let a=0;a<Math.PI*2;a+=Math.PI/8){const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,.042,0),new THREE.Vector3(Math.cos(a)*8.25,.042,Math.sin(a)*8.25)]);scene.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x2f4e5e,transparent:true,opacity:.32})))}
  snapPreview=new THREE.Mesh(new THREE.RingGeometry(.28,.42,36),new THREE.MeshBasicMaterial({color:C.green,transparent:true,opacity:.85,side:THREE.DoubleSide,depthWrite:false}));snapPreview.rotation.x=-Math.PI/2;snapPreview.visible=false;scene.add(snapPreview);
  partsRoot=new THREE.Group();wiresRoot=new THREE.Group();guidesRoot=new THREE.Group();extrasRoot=new THREE.Group();labelsRoot=new THREE.Group();solderRoot=new THREE.Group();powerPulseRoot=new THREE.Group();
  [partsRoot,wiresRoot,guidesRoot,extrasRoot,labelsRoot,solderRoot,powerPulseRoot].forEach(g=>g.position.y=0);scene.add(partsRoot,wiresRoot,guidesRoot,extrasRoot,labelsRoot,solderRoot,powerPulseRoot);
@@ -716,10 +747,12 @@ function loop3D(t){
      a.obj.scale.y=THREE.MathUtils.lerp(a.obj.scale.y,1,.10);a.obj.scale.z=THREE.MathUtils.lerp(a.obj.scale.z,1,.10);
      if(lt>1.45){a.obj.scale.set(1,1,1);animations.splice(i,1)}
    } else if(a.type==='spark'){
-     a.obj.scale.setScalar(1+lt*5);a.obj.material.opacity=Math.max(0,1-lt*2.7);if(a.light)a.light.intensity=Math.max(0,4-lt*12);if(lt>.38){a.obj.removeFromParent();a.light?.removeFromParent();animations.splice(i,1)}
+     a.obj.scale.setScalar(1+lt*5.5);a.obj.material.opacity=Math.max(0,1-lt*2.5);if(a.light)a.light.intensity=Math.max(0,6-lt*15);if(lt>.42){a.obj.removeFromParent();a.light?.removeFromParent();animations.splice(i,1)}
+   } else if(a.type==='powerWave'){
+     a.obj.visible=true;a.obj.scale.setScalar(1+lt*5.8);a.obj.material.opacity=Math.max(0,.95-lt*1.8);if(lt>.55){a.obj.removeFromParent();animations.splice(i,1)}
    }
  }
- if(state.powered&&state.powerStage>=3){state.parts.filter(p=>p.type==='prop').forEach((p,i)=>p.obj.rotation.y+=(i%2?1:-1)*.014);silenceMotorAudio('assembly')}else silenceMotorAudio('assembly');
+ if(state.powered&&state.powerStage>=3){state.parts.filter(p=>p.type==='prop').forEach((p,i)=>p.obj.rotation.y+=(i%2?1:-1)*.014);silenceMotorAudio('assembly');if(Math.floor(t/600)!==Math.floor((t-35)/600))setFcLeds(true,true,true)}else silenceMotorAudio('assembly');
  powerPulseItems.forEach(x=>{x.phase=(x.phase+x.speed*.016)%1;x.mesh.position.copy(x.curve.getPointAt(x.phase))});
  partsRoot.traverse(o=>{if(o.isMesh&&o.material){o.material.transparent=state.xray;o.material.opacity=state.xray?.36:1;o.material.depthWrite=!state.xray}});
  if(state.fcCaseXray&&!state.xray)applyFcCaseXray();
@@ -729,7 +762,7 @@ function loop3D(t){
 }
 function setView(v){
  if(!camera||!controls)return;
- if(v==='3d')camera.position.set(8.6,6.8,10.2);
+ if(v==='3d')camera.position.set(8.9,7.1,10.6);
  if(v==='top')camera.position.set(0,14,.01);
  if(v==='front')camera.position.set(0,3.8,12);
  controls.target.set(0,.95,0);
@@ -835,11 +868,10 @@ function rebuildPowerPulses(){
  if(!state.powered)return;
  state.connections.forEach(c=>{
    if(!(/BAT\.|PDB\.E|PWR/.test(c.from+c.to)))return;
-   const pts=routePoints(c);if(!pts||pts.length<2)return;
-   const curve=new THREE.CatmullRomCurve3(pts);
-   for(let j=0;j<2;j++){
-     const m=new THREE.Mesh(new THREE.SphereGeometry(.035,10,8),new THREE.MeshBasicMaterial({color:wColor(c.from),transparent:true,opacity:.9}));
-     powerPulseRoot.add(m);powerPulseItems.push({mesh:m,curve,phase:j*.5,speed:.10+Math.random()*.03});
+   const pts=routePoints(c);if(!pts||pts.length<2)return;const curve=new THREE.CatmullRomCurve3(pts);
+   for(let j=0;j<3;j++){
+     const m=new THREE.Mesh(new THREE.SphereGeometry(.043,12,9),new THREE.MeshBasicMaterial({color:wColor(c.from),transparent:true,opacity:.96}));
+     powerPulseRoot.add(m);powerPulseItems.push({mesh:m,curve,phase:j/3,speed:.13+Math.random()*.035})
    }
  })
 }
@@ -1169,8 +1201,10 @@ function simLoop(now){
  requestAnimationFrame(simLoop);const dt=Math.min(.035,(now-sLast)/1000||.016);sLast=now;const s=state.sim,q=tuneQuality(),authority=clamp((s.throttle-1050)/650,0,1);
  let uR=0,uP=0,uY=0,cmdR=s.cmdRoll,cmdP=s.cmdPitch,cmdY=s.cmdYaw;
  if(s.running){
-   const keyR=(heldKeys.has(keyMap.rollRight)?1:0)-(heldKeys.has(keyMap.rollLeft)?1:0),keyP=(heldKeys.has(keyMap.pitchBack)?1:0)-(heldKeys.has(keyMap.pitchForward)?1:0),keyY=(heldKeys.has(keyMap.yawRight)?1:0)-(heldKeys.has(keyMap.yawLeft)?1:0);
-   cmdR=clamp(cmdR+keyR,-1,1);cmdP=clamp(cmdP+keyP,-1,1);cmdY=clamp(cmdY+keyY,-1,1);if(keyR||keyP)setStickVisual('right',cmdR,-cmdP);if(keyY)setStickVisual('left',cmdY,(1500-s.throttle)/500);
+   const keyR=(heldKeys.has(keyMap.rollRight)?1:0)-(heldKeys.has(keyMap.rollLeft)?1:0),keyP=(heldKeys.has(keyMap.pitchForward)?1:0)-(heldKeys.has(keyMap.pitchBack)?1:0),keyY=(heldKeys.has(keyMap.yawRight)?1:0)-(heldKeys.has(keyMap.yawLeft)?1:0);
+   cmdR=keyR||s.cmdRoll;cmdP=keyP||s.cmdPitch;cmdY=keyY||s.cmdYaw;
+   if(keyR||keyP)setStickVisual('right',cmdR,-cmdP);else if(!s.cmdRoll&&!s.cmdPitch)setStickVisual('right',0,0);
+   if(keyY)setStickVisual('left',cmdY,(1500-s.throttle)/500);
    let targetRR=0,targetPR=0,targetYR=cmdY*180;s.targetYawRate=targetYR;
    if(s.flightMode==='angle'){
      s.targetRoll=s.levelTrimRoll+cmdR*26;s.targetPitch=s.levelTrimPitch-cmdP*26;
@@ -1270,18 +1304,22 @@ function bindStick(el,which){let drag=false;const update=e=>{const r=el.getBound
 function setStickVisual(which,x,y){const k=$(which==='right'?'#rightStickKnob':'#leftStickKnob');if(k){k.style.left=`${50+x*30}%`;k.style.top=`${50+y*30}%`}}
 function updateStickText(){if($('#rightStickRead'))$('#rightStickRead').textContent=`P ${Math.round(state.sim.cmdPitch*100)} • R ${Math.round(state.sim.cmdRoll*100)}`;if($('#leftStickRead'))$('#leftStickRead').textContent=`T ${state.sim.throttle} • Y ${Math.round(state.sim.cmdYaw*100)}`}
 function simKeyDown(e){if(keyCaptureAction){e.preventDefault();keyMap[keyCaptureAction]=e.key;keyCaptureAction=null;renderKeySettings();return}if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))return;if(!$('#tab-sim')?.classList.contains('active'))return;const relevant=Object.values(keyMap).includes(e.key);if(!relevant)return;e.preventDefault();if(e.key===keyMap.run&&!e.repeat){toggleSimRun();return}heldKeys.add(e.key);if(e.key===keyMap.throttleUp)state.sim.throttle=clamp(state.sim.throttle+25,1000,2000);if(e.key===keyMap.throttleDown)state.sim.throttle=clamp(state.sim.throttle-25,1000,2000);setStickVisual('left',state.sim.cmdYaw,(1500-state.sim.throttle)/500)}
-function simKeyUp(e){heldKeys.delete(e.key);if([keyMap.rollLeft,keyMap.rollRight,keyMap.pitchForward,keyMap.pitchBack].includes(e.key))setStickVisual('right',state.sim.cmdRoll,-state.sim.cmdPitch);if([keyMap.yawLeft,keyMap.yawRight].includes(e.key))setStickVisual('left',state.sim.cmdYaw,(1500-state.sim.throttle)/500)}
+function simKeyUp(e){
+ heldKeys.delete(e.key);
+ if([keyMap.rollLeft,keyMap.rollRight,keyMap.pitchForward,keyMap.pitchBack].includes(e.key))setStickVisual('right',state.sim.cmdRoll,-state.sim.cmdPitch);
+ if([keyMap.yawLeft,keyMap.yawRight].includes(e.key))setStickVisual('left',state.sim.cmdYaw,(1500-state.sim.throttle)/500)
+}
 function renderKeySettings(){const box=$('#keySettings');if(!box)return;const labels={rollLeft:'Roll left',rollRight:'Roll right',pitchForward:'Pitch forward',pitchBack:'Pitch back',throttleUp:'Throttle +',throttleDown:'Throttle −',yawLeft:'Yaw left',yawRight:'Yaw right',run:'Run / Stop'};box.innerHTML=Object.entries(labels).map(([k,l])=>`<div class="key-row"><span>${l}</span><button class="key-capture ${keyCaptureAction===k?'listening':''}" data-key-action="${k}">${keyCaptureAction===k?'PRESS KEY…':keyLabel(keyMap[k])}</button></div>`).join('');$$('.key-capture').forEach(b=>b.onclick=()=>{keyCaptureAction=b.dataset.keyAction;renderKeySettings()})}
 function downloadBlob(name,data,type='text/plain'){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)}
-function projectPayload(){return{version:'17.2',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
-function exportProjectJson(){downloadBlob('ZEBJUS_F450_Project_V17.json',JSON.stringify(projectPayload(),null,2),'application/json')}
-function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V172',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
+function projectPayload(){return{version:'17.3',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
+function exportProjectJson(){downloadBlob('ZEBJUS_F450_Project_V17_3.json',JSON.stringify(projectPayload(),null,2),'application/json')}
+function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V173',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
 function exportWiringSvg(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg);downloadBlob('ZEBJUS_F450_Wiring.svg',xml,'image/svg+xml')}
 function exportWiringPng(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg),img=new Image(),url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml'}));img.onload=()=>{const c=document.createElement('canvas');c.width=1500;c.height=900;const x=c.getContext('2d');x.fillStyle='#07131d';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0);URL.revokeObjectURL(url);c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ZEBJUS_F450_Wiring.png';a.click()},'image/png')};img.src=url}
 function exportBom(){const rows=[['Item','Quantity','Rating / Notes']];products.filter(p=>state.parts.some(x=>x.type===p.type)).forEach(p=>rows.push([p.name,state.parts.filter(x=>x.type===p.type).length,Object.values(p.rating||{}).join(' • ')]));downloadBlob('ZEBJUS_F450_BOM.csv',rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n'),'text/csv')}
 function exportProgressReport(){const issues=electricalIssues?.()||[],done=steps.filter((_,i)=>stepDone(i)).length,html=`<!doctype html><meta charset="utf-8"><title>ZEBJUS F450 Build Report</title><style>body{font:14px system-ui;max-width:900px;margin:40px auto}h1{color:#087f5b}.bad{color:#b42318}.ok{color:#087f5b}li{margin:7px}</style><h1>ZEBJUS F450 Build Report</h1><p>Generated: ${new Date().toLocaleString()}</p><p>Progress: ${done}/${steps.length} (${Math.round(done/steps.length*100)}%)</p><h2>Assembly</h2><ol>${steps.map((s,i)=>`<li class="${stepDone(i)?'ok':''}">${stepDone(i)?'✓':'○'} ${s.title}</li>`).join('')}</ol><h2>Electrical validation</h2>${issues.length?`<ul>${issues.map(x=>`<li class="${x.level}">${x.text}</li>`).join('')}</ul>`:'<p class="ok">✓ No electrical issues detected.</p>'}<h2>PID</h2><pre>${JSON.stringify(state.pid,null,2)}</pre>`;downloadBlob('ZEBJUS_F450_Progress_Report.html',html,'text/html')}
 function applyPerformanceMode(){const m=$('#performanceMode')?.value||'balanced';try{localStorage.setItem('zebjus-v17-performance',m)}catch{};const ratio=m==='high'?Math.min(devicePixelRatio||1,2):m==='low'?1:Math.min(devicePixelRatio||1,1.5);if(renderer){renderer.setPixelRatio(ratio);renderer.shadowMap.enabled=m!=='low';resize3D()}if(sRenderer){sRenderer.setPixelRatio(ratio);sRenderer.shadowMap.enabled=m!=='low';resizeSim()}notify(`Graphics profile: ${m}`)}
-function updateStartupDiagnostics(){const e=$('#startupDiagnostics');if(!e)return;const lines=[`V17 runtime: ${window.__zebjusAppLoaded?'loaded':'starting'}`,`WebGL: ${renderer?'OK':'pending / unavailable'}`,`Local Three.js: ${THREE.REVISION}`,`Storage: ${(()=>{try{localStorage.setItem('__zj','1');localStorage.removeItem('__zj');return'OK'}catch{return'blocked'}})()}`,`Service worker: ${'serviceWorker' in navigator?'supported':'not supported'}`,`Pixel ratio: ${devicePixelRatio||1}`,`Assembly FPS: ${runtimeFps||'--'}`,`Parts installed: ${state.parts.filter(p=>!p.internal).length}`,`Connections: ${state.connections.length}`];e.textContent=lines.join('\n')}
+function updateStartupDiagnostics(){const e=$('#startupDiagnostics');if(!e)return;const lines=[`V17.3 runtime: ${window.__zebjusAppLoaded?'loaded':'starting'}`,`WebGL: ${renderer?'OK':'pending / unavailable'}`,`Local Three.js: ${THREE.REVISION}`,`Storage: ${(()=>{try{localStorage.setItem('__zj','1');localStorage.removeItem('__zj');return'OK'}catch{return'blocked'}})()}`,`Service worker: ${'serviceWorker' in navigator?'supported':'not supported'}`,`Pixel ratio: ${devicePixelRatio||1}`,`Assembly FPS: ${runtimeFps||'--'}`,`Parts installed: ${state.parts.filter(p=>!p.internal).length}`,`Connections: ${state.connections.length}`];e.textContent=lines.join('\n')}
 function registerOffline(){if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./service-worker.js').catch(()=>{})}
 function updateAudioUi(){
  const en=$('#soundEnabled'),vol=$('#soundVolume'),out=$('#soundVolumeOut'),st=$('#soundState');
@@ -1302,7 +1340,7 @@ function initSettings(){renderKeySettings();initAudioSettings();$('#saveKeysBtn'
 /* FC / CAL / PID / PYTHON */
 function fcLog(t){const e=$('#fcLog');e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
 function fcStatus(on){state.fc.connected=on;$('#fcBadge').textContent=on?'Connected':'Disconnected';$('#fcBadge').className='status '+(on?'good':'')}
-function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V17.2'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
+function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V17.3'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
 function disconnectFc(log=true){if(state.fc.socket)try{state.fc.socket.close()}catch{}state.fc.socket=null;fcStatus(false);if(log)fcLog('Disconnected')}
 function sendFc(o){if(state.fc.socket?.readyState===1){state.fc.socket.send(JSON.stringify(o));fcLog('TX '+JSON.stringify(o));return true}fcLog('Not connected');return false}
 function packet(raw){let d;try{d=JSON.parse(raw)}catch{d={raw}};['roll','pitch','yaw','gyroX','gyroY','gyroZ','battery'].forEach(k=>{if(Number.isFinite(+d[k]))state.telemetry[k]=+d[k]});$('#telemetryLog').textContent=(new Date().toLocaleTimeString()+' '+raw+'\n'+$('#telemetryLog').textContent).slice(0,12000);telemetryUI()}
@@ -1334,14 +1372,14 @@ print("Attitude:",json.loads(str(zebjusBridge.attitude())))
 }
 
 /* Save/load/buttons */
-function save(){try{localStorage.setItem('zebjusF450V172',JSON.stringify({guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}));$('#saveState').textContent='Saved';setTimeout(()=>$('#saveState').textContent='Ready',800)}catch(e){console.warn('[ZEBJUS] Save unavailable:',e);notify('Browser storage is unavailable in this embed/session.','bad')}}
-function load(){try{const rawCurrent=localStorage.getItem('zebjusF450V172')||localStorage.getItem('zebjusF450V152')||localStorage.getItem('zebjusF450V151'),rawLegacy=localStorage.getItem('zebjusF450V121')||localStorage.getItem('zebjusF450V12')||localStorage.getItem('zebjusF450V10')||localStorage.getItem('zebjusF450V9'),d=JSON.parse(rawCurrent||rawLegacy||'null');if(!d)return;history.restoring=true;state.guided=d.guided??true;state.step=rawCurrent?(d.step||0):0;state.doneActions=new Set(d.actions||[]);state.connections=d.connections||[];state.pid=normalizePidShape(d.pid||state.pid);wireLayout={...wireDefaultLayout,...(d.wireLayout||{})};wireNodeTransforms=d.wireNodeTransforms||{};optionalWireNodes=d.optionalWireNodes||[];if(d.sim)Object.assign(state.sim,d.sim);(d.parts||[]).filter(p=>p.type!=='fcStandoff'&&p.type!=='batteryStrap').forEach(p=>{const s=(slots[p.type]||[]).find(x=>x.id===p.slotId);if(s)install(p.type,s,false)});if(!rawCurrent){const firstIncomplete=steps.findIndex((_,i)=>!stepDone(i));state.step=firstIncomplete<0?steps.length-1:firstIncomplete}render2D();renderPid();rebuild3DWires();rebuildSolder();setPowerVisual(state.doneActions.has('xt60'),true);persistWireLayout();history.restoring=false}catch(e){console.warn(e)}}
+function save(){try{localStorage.setItem('zebjusF450V173',JSON.stringify({guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}));$('#saveState').textContent='Saved';setTimeout(()=>$('#saveState').textContent='Ready',800)}catch(e){console.warn('[ZEBJUS] Save unavailable:',e);notify('Browser storage is unavailable in this embed/session.','bad')}}
+function load(){try{const rawCurrent=localStorage.getItem('zebjusF450V173')||localStorage.getItem('zebjusF450V152')||localStorage.getItem('zebjusF450V151'),rawLegacy=localStorage.getItem('zebjusF450V121')||localStorage.getItem('zebjusF450V12')||localStorage.getItem('zebjusF450V10')||localStorage.getItem('zebjusF450V9'),d=JSON.parse(rawCurrent||rawLegacy||'null');if(!d)return;history.restoring=true;state.guided=d.guided??true;state.step=rawCurrent?(d.step||0):0;state.doneActions=new Set(d.actions||[]);state.connections=d.connections||[];state.pid=normalizePidShape(d.pid||state.pid);wireLayout={...wireDefaultLayout,...(d.wireLayout||{})};wireNodeTransforms=d.wireNodeTransforms||{};optionalWireNodes=d.optionalWireNodes||[];if(d.sim)Object.assign(state.sim,d.sim);(d.parts||[]).filter(p=>p.type!=='fcStandoff'&&p.type!=='batteryStrap').forEach(p=>{const s=(slots[p.type]||[]).find(x=>x.id===p.slotId);if(s)install(p.type,s,false)});if(!rawCurrent){const firstIncomplete=steps.findIndex((_,i)=>!stepDone(i));state.step=firstIncomplete<0?steps.length-1:firstIncomplete}render2D();renderPid();rebuild3DWires();rebuildSolder();setPowerVisual(state.doneActions.has('xt60'),true);persistWireLayout();history.restoring=false}catch(e){console.warn(e)}}
 function initButtons(){
  $('#undoBtn').onclick=undoAction;$('#redoBtn').onclick=redoAction;
  $('#guidedModeBtn').onclick=()=>{historyPush();state.guided=true;$('#guidedModeBtn').classList.add('active');$('#freeModeBtn').classList.remove('active');renderAssemblyUI();showGuides()};$('#freeModeBtn').onclick=()=>{historyPush();state.guided=false;$('#freeModeBtn').classList.add('active');$('#guidedModeBtn').classList.remove('active');guidesRoot?.clear();renderAssemblyUI()};
  $('#prevStepBtn').onclick=()=>{historyPush();state.step=Math.max(0,state.step-1);renderAssemblyUI();showGuides()};$('#nextStepBtn').onclick=()=>{if(state.guided&&!stepDone(state.step)){notify('Complete current step first.','bad');return}historyPush();state.step=Math.min(steps.length-1,state.step+1);renderAssemblyUI();showGuides()};
  $('#objectViewBtn').onclick=()=>setWireMap(false);$('#wireMapBtn').onclick=()=>setWireMap(true);$('#xrayBtn').onclick=()=>{state.xray=!state.xray;$('#xrayBtn').classList.toggle('active',state.xray);document.body.classList.toggle('xray',state.xray)};$('#fcCaseXrayBtn').onclick=()=>{state.fcCaseXray=!state.fcCaseXray;$('#fcCaseXrayBtn').classList.toggle('active',state.fcCaseXray);applyFcCaseXray()};$('#view3dBtn').onclick=()=>setView('3d');$('#topBtn').onclick=()=>setView('top');$('#frontBtn').onclick=()=>setView('front');$('#explodeBtn').onclick=toggleExplode;$('#autoRotateBtn').onclick=()=>{state.autoRotate=!state.autoRotate;$('#autoRotateBtn').classList.toggle('active',state.autoRotate)};
- $('#saveBtn').onclick=save;$('#resetBtn').onclick=()=>{if(confirm('Reset project?')){try{localStorage.removeItem('zebjusF450V172');localStorage.removeItem('zebjusF450V152');localStorage.removeItem('zebjusF450V151');localStorage.removeItem('zebjusF450V121');localStorage.removeItem('zebjusF450V10');localStorage.removeItem('zebjusF450V9');localStorage.removeItem('zebjus-v152-wire-layout');localStorage.removeItem('zebjus-v8-wire-layout')}catch{}location.reload()}};
+ $('#saveBtn').onclick=save;$('#resetBtn').onclick=()=>{if(confirm('Reset project?')){try{localStorage.removeItem('zebjusF450V173');localStorage.removeItem('zebjusF450V152');localStorage.removeItem('zebjusF450V151');localStorage.removeItem('zebjusF450V121');localStorage.removeItem('zebjusF450V10');localStorage.removeItem('zebjusF450V9');localStorage.removeItem('zebjus-v152-wire-layout');localStorage.removeItem('zebjus-v8-wire-layout')}catch{}location.reload()}};
  $('#autoWireBtn').onclick=()=>{wireRemember();historyPush();state.connections=requiredWires.map(([from,to],i)=>({from,to,new:true,id:`ref-${Date.now()}-${i}`}));['motorWire','powerWire','escFc'].forEach(x=>state.doneActions.add(x));state.doneActions.delete('xt60');setPowerVisual(false,false);render2D();rebuild3DWires();rebuildSolder();renderAssemblyUI();notify('Full correct wiring created.');setTimeout(()=>{state.connections.forEach(c=>c.new=false);render2D()},900)};$('#clearWireBtn').onclick=()=>{wireRemember();historyPush();state.connections=[];['motorWire','powerWire','escFc','xt60'].forEach(x=>state.doneActions.delete(x));setPowerVisual(false,false);render2D();rebuild3DWires();rebuildSolder();renderAssemblyUI()};
  $('#batteryConnectBtn').onclick=toggleBatteryPower;$('#connectFcBtn').onclick=connectFc;$('#disconnectFcBtn').onclick=disconnectFc;$('#pingFcBtn').onclick=()=>sendFc({type:'ping',time:Date.now()});$('#applyPidBtn').onclick=()=>{syncQuickPid();notify('PID values applied to tripod simulator.');};$('#sendPidBtn').onclick=()=>sendFc({type:'pid_set',pid:state.pid});$('#restorePidBtn').onclick=()=>{historyPush();state.pid={rateRoll:{P:.9,I:15,D:.035},ratePitch:{P:.9,I:15,D:.035},rateYaw:{P:3,I:13,D:0},angleRoll:{P:3,I:0,D:0},anglePitch:{P:3,I:0,D:0}};renderPid();syncQuickPid()};
  window.addEventListener('keydown',e=>{const cmd=e.ctrlKey||e.metaKey;if(!cmd)return;if(e.key.toLowerCase()==='z'&&!e.shiftKey){e.preventDefault();undoAction()}else if((e.key.toLowerCase()==='z'&&e.shiftKey)||e.key.toLowerCase()==='y'){e.preventDefault();redoAction()}});historyButtons()
@@ -1373,6 +1411,6 @@ function boot(){
  if(threeOK){setBootStatus('Local 3D engine ready','good');notify('3D engine ready • offline/local runtime.','good')}
  else{setBootStatus('3D unavailable • 2D tools active');notify('3D renderer unavailable — 2D tools are still active.','bad')}
  window.__zebjusAppLoaded=true;updateStartupDiagnostics?.();
- window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'17.2'}}));
+ window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'17.3'}}));
 }
 boot();

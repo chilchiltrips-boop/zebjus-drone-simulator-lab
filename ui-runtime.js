@@ -32,6 +32,6 @@
   setTimeout(function(){
     if(window.__zebjusAppLoaded)return;
     if(window.__zebjusModuleParsed)setStatus('App startup did not finish • check runtime error',true);
-    else setStatus('V17.2 app.js failed to load/parse • upload the corrected V17.2 files',true);
+    else setStatus('V17.3 app.js failed to load/parse • upload the corrected V17.3 files',true);
   },7000);
 })();

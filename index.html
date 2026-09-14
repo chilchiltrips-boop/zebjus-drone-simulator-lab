@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V17.2</title>
-<link rel="stylesheet" href="styles.css?v=17.2.0"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V17.3</title>
+<link rel="stylesheet" href="styles.css?v=17.3.0"><link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V17.2 • ZEBJUS hardware branding • Rate Hold capture • calibrated Angle level hold</span></div></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V17.3 • optimized UI • realistic power-up • stronger placement audio • corrected joystick</span></div></div>
  <div class="top-actions"><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="assetStatus" class="status">Loading V16 local module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
@@ -25,12 +25,12 @@
  </aside>
  <section class="center-stage">
   <div class="stage-toolbar">
-   <div class="view-switch"><button id="objectViewBtn" class="view-btn active">Object</button><button id="wireMapBtn" class="view-btn">Wiring map</button><button id="xrayBtn" class="view-btn">Frame X-ray</button><button id="fcCaseXrayBtn" class="view-btn">FC case X-ray</button><button id="batteryConnectBtn" class="view-btn power-connect-btn">Connect battery</button><span id="batteryPowerState" class="status">POWER OFF</span></div>
+   <div class="view-switch"><button id="objectViewBtn" class="view-btn active">Object</button><button id="wireMapBtn" class="view-btn">Wiring map</button><button id="xrayBtn" class="view-btn">Frame X-ray</button><button id="fcCaseXrayBtn" class="view-btn">FC case X-ray</button><button id="batteryConnectBtn" class="view-btn power-connect-btn">Connect battery</button><span id="batteryPowerState" class="status">POWER OFF</span><span id="fcLedState" class="fc-led-state off"><i class="pwr"></i>PWR <i class="stat"></i>OFF</span></div>
    <div class="camera-actions"><button id="view3dBtn" class="view-btn active">3D</button><button id="topBtn" class="view-btn">Top</button><button id="frontBtn" class="view-btn">Front</button><button id="explodeBtn" class="view-btn">Exploded</button><button id="autoRotateBtn" class="view-btn">Auto rotate</button></div>
   </div>
   <div id="threeWrap" class="three-wrap">
 <div id="wireLegend" class="wire-legend hidden"><b>WIRE COLOURS / GAUGE</b><span><i class="w red thick"></i>+12V / battery / ESC power • THICK</span><span><i class="w ground-brown thick"></i>GND return • THICK brown-black</span><span><i class="w source"></i>Source / PWM • ORANGE thin</span><span><i class="w pink"></i>+5V • LIGHT RED thin</span><span><i class="w phase-u"></i>Motor U</span><span><i class="w phase-v"></i>Motor V</span><span><i class="w phase-w"></i>Motor W</span></div>
-   <div id="threeContainer"></div><div id="threeTooltip" class="three-tooltip"></div>
+   <div id="threeContainer"></div><div id="threeTooltip" class="three-tooltip"></div><a class="zebjus-workstation-watermark" href="https://www.zebjus.com" target="_blank" rel="noopener"><b>ZEBJUS</b><span>Build it for real</span><em>www.zebjus.com ↗</em></a>
    <div class="virtual-chip"><i></i><div><b>VIRTUAL BENCH</b><span>No real hardware energised</span></div></div>
    <div id="snapMessage" class="snap-message">Initializing V16 engineering runtime…</div>
   </div>
@@ -192,10 +192,10 @@
 <section id="tab-telemetry" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>ATTITUDE</small><h2>Live telemetry</h2></div></div><div class="metrics"><div><span>ROLL</span><b id="telRoll">0.00°</b></div><div><span>PITCH</span><b id="telPitch">0.00°</b></div><div><span>YAW</span><b id="telYaw">0.00°</b></div><div><span>BATTERY</span><b id="telBatt">-- V</b></div></div></div><div class="form-card"><div class="panel-head"><div><small>RAW</small><h2>Telemetry stream</h2></div></div><pre id="telemetryLog" class="terminal"></pre></div></div></section>
 <section id="tab-settings" class="panel tab-panel"><div class="settings-grid"><div class="form-card"><div class="panel-head"><div><small>KEYBOARD</small><h2>Simulator key mapping</h2></div></div><p class="micro-note">Click a key field, then press the key you want. Save settings to keep the mapping on this browser.</p><div id="keySettings" class="key-settings"></div><div class="button-row"><button id="saveKeysBtn" class="btn primary">Save key mapping</button><button id="resetKeysBtn" class="btn ghost">Restore defaults</button></div></div><div class="form-card"><div class="panel-head"><div><small>FC CASE / EXPANSION</small><h2>Accessible case headers</h2></div></div><div class="io-guide"><div><b>FC MOUNT</b><span>Double-side foam tape directly on the top plate • NO spacer / standoff.</span></div><div><b>ESC1–ESC4</b><span>Upward 2.54 mm male header pins. Source row • +5V centre row • GND bottom row. ESC female plug comes down from above.</span></div><div><b>External GPIO ×3</b><span>Source / +5V / GND. Use for servo, LED, LED matrix, GPS/control or sensors as appropriate.</span></div><div><b>RX / PPM header</b><span>Optional. PPM signal / +5V / GND. When RX is not used, the source pin can be used as another compatible I/O.</span></div><div><b>I²C 4-pin</b><span>VCC • GND • SCL • SDA remains user accessible.</span></div></div><img class="fc-reference-img" src="fc_board_reference.png" alt="ZEBJUS FC accessible pin reference"></div>
 <div class="form-card"><div class="panel-head"><div><small>PROJECT TOOLS</small><h2>Export / report / fullscreen</h2></div></div><div class="export-grid"><button id="exportProjectBtn" class="btn ghost">Export project JSON</button><button id="importProjectBtn" class="btn ghost">Import project JSON</button><input id="importProjectFile" type="file" accept=".json,application/json" hidden><button id="exportSvgBtn" class="btn ghost">Export wiring SVG</button><button id="exportPngBtn" class="btn ghost">Export wiring PNG</button><button id="exportBomBtn" class="btn ghost">Export BOM CSV</button><button id="exportReportBtn" class="btn ghost">Progress report</button><button id="printWiringBtn" class="btn ghost">Print / Save PDF</button><button id="fullscreenBtn" class="btn primary">Fullscreen Lab</button></div></div>
-<div class="form-card"><div class="panel-head"><div><small>AUDIO</small><h2>Comfortable sound effects</h2></div><span id="soundState" class="status good">ON</span></div><label class="sound-toggle"><input id="soundEnabled" type="checkbox" checked> Enable simulator / component sounds</label><label>Master volume <output id="soundVolumeOut">55%</output><input id="soundVolume" type="range" min="0" max="100" value="55" step="5"></label><p class="micro-note">Assembly battery power-up uses only soft confirmation chimes. Continuous motor sound is reserved for the PID simulator and 2D BLDC test.</p></div>
+<div class="form-card"><div class="panel-head"><div><small>AUDIO</small><h2>Comfortable sound effects</h2></div><span id="soundState" class="status good">ON</span></div><label class="sound-toggle"><input id="soundEnabled" type="checkbox" checked> Enable simulator / component sounds</label><label>Master volume <output id="soundVolumeOut">55%</output><input id="soundVolume" type="range" min="0" max="100" value="55" step="5"></label><p class="micro-note">Component pick/drop sounds are stronger. Battery power-up uses a realistic synthetic ESC startup sequence without continuous assembly motor noise. PID simulator and 2D BLDC motor sound remain speed-dependent.</p></div>
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=17.2.0"></script>
-<script type="module" src="app.js?v=17.2.0"></script>
+<script src="ui-runtime.js?v=17.3.0"></script>
+<script type="module" src="app.js?v=17.3.0"></script>
 </body></html>
