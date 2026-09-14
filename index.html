@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V17.3</title>
-<link rel="stylesheet" href="styles.css?v=17.3.0"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V17.4</title>
+<link rel="stylesheet" href="styles.css?v=17.4.0"><link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V17.3 • optimized UI • realistic power-up • stronger placement audio • corrected joystick</span></div></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V17.4 • hard audio stop • corrected M1/M4 wiring • readable flip • Roll/Pitch axis fix</span></div></div>
  <div class="top-actions"><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="assetStatus" class="status">Loading V16 local module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
@@ -56,7 +56,7 @@
 <section id="tab-wiring" class="panel tab-panel">
  <div class="wiring-layout">
   <div class="wiring-card">
-   <div class="section-toolbar"><div><b>F450 Interactive 2D Wiring Bench</b><span>Drag components • wire / delete / redraw • W wire mode • F flip • R rotate • Delete removes selected object or wire</span></div><div class="toolbar-row"><button id="wireUndoBtn" class="btn ghost small">↶ Wire undo</button><button id="deleteWireBtn" class="btn ghost small">Delete wire</button><button id="deleteNodeBtn" class="btn ghost small">Delete object</button><button id="centerWireLayoutBtn" class="btn ghost small">Reset layout</button><button id="autoWireBtn" class="btn primary small">Reference wiring</button><button id="clearWireBtn" class="btn ghost small">Clear wires</button><span id="wireModeBadge" class="status">OBJECT MODE</span></div></div>
+   <div class="section-toolbar"><div><b>F450 Interactive 2D Wiring Bench</b><span>Drag components • W wire mode • F flips connector facing without mirroring text • R rotate • Delete removes selected</span></div><div class="toolbar-row"><button id="wireUndoBtn" class="btn ghost small">↶ Wire undo</button><button id="deleteWireBtn" class="btn ghost small">Delete wire</button><button id="deleteNodeBtn" class="btn ghost small">Delete object</button><button id="centerWireLayoutBtn" class="btn ghost small">Reset layout</button><button id="autoWireBtn" class="btn primary small">Reference wiring</button><button id="clearWireBtn" class="btn ghost small">Clear wires</button><span id="wireModeBadge" class="status">OBJECT MODE</span></div></div>
    <div class="svg-wrap"><svg id="wiringSvg" viewBox="0 0 1500 900"></svg></div>
   </div>
   <aside class="wiring-side">
@@ -72,7 +72,7 @@
       <label><input id="wireM3" type="checkbox" checked><span>M3</span><b id="wireM3State">OFF</b></label>
       <label><input id="wireM4" type="checkbox" checked><span>M4</span><b id="wireM4State">OFF</b></label>
     </div>
-    <p class="micro-note">Motor starts above ~1100 µs. Swapping any two U/V/W phase wires reverses the virtual motor direction. Animated dashes show current flow from the battery, and motor sound changes with speed.</p>
+    <p class="micro-note">Motor starts above ~1100 µs. M1/M4 phase terminals face inward toward ESC1/ESC4; M2/M3 retain their inward-facing layout. F changes connector side without reversing labels. Swapping two U/V/W phases reverses motor direction.</p>
    </div>
    <div class="wire-gauge-guide">
     <b>WIRE GUIDE</b>
@@ -98,7 +98,7 @@
     <div class="toolbar-row sim-toolbar-actions"><select id="simFlightMode"><option value="angle">ANGLE MODE • calibrated Roll/Pitch level hold</option><option value="rate">RATE HOLD • capture released Roll/Pitch attitude</option></select><button id="simCalibrateLevelBtn" class="btn ghost small">Calibrate level</button><button id="simDisturbBtn" class="btn ghost small">Manual tilt: OFF</button><button id="simRunBtn" class="btn primary small">RUN</button><button id="simResetBtn" class="btn ghost small">Reset</button></div>
    </div>
    <div id="simThree"></div>
-   <div id="simDisturbHint" class="sim-disturb-hint"><b>Manual disturbance lesson:</b> Rate Hold captures the Roll/Pitch attitude when the stick is released and returns to that captured attitude after wind/manual disturbance. Angle Mode returns to the calibrated level when Roll/Pitch stick is released. Yaw remains rate-only.</div>
+   <div class="sim-axis-check"><b>AXIS MAP</b><span>← / → = ROLL only</span><span>↑ / ↓ = PITCH only</span><span>A / D = YAW rate</span></div><div id="simDisturbHint" class="sim-disturb-hint"><b>Manual disturbance lesson:</b> Rate Hold captures the Roll/Pitch attitude when the stick is released and returns to that captured attitude after wind/manual disturbance. Angle Mode returns to the calibrated level when Roll/Pitch stick is released. Yaw remains rate-only.</div>
   </div>
   <aside class="sim-controls sim-v17-controls">
    <div class="metrics sim-metrics">
@@ -196,6 +196,6 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=17.3.0"></script>
-<script type="module" src="app.js?v=17.3.0"></script>
+<script src="ui-runtime.js?v=17.4.0"></script>
+<script type="module" src="app.js?v=17.4.0"></script>
 </body></html>

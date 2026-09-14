@@ -7,7 +7,7 @@ window.__zebjusModuleParsed=true;
 window.__zebjusAppLoaded=false;
 window.__zebjus3DReady=false;
 function setBootStatus(text,kind=''){const s=$('#assetStatus');if(s){s.textContent=text;s.className='status'+(kind?' '+kind:'')}}
-setBootStatus('V17.3 local module loaded • starting optimized engineering lab…');
+setBootStatus('V17.4 local module loaded • starting runtime / wiring / axis bug-fix build…');
 
 /* V9: local camera controls. No network add-on is required for 3D startup. */
 class MiniOrbitControls {
@@ -134,16 +134,30 @@ function cloneAsset(path){return null}
 
 
 /* ==================== V13 SOUND / POWER FX ==================== */
-let audioCtx=null,powerSequenceToken=0;
+let audioCtx=null,powerSequenceToken=0,activeTones=new Set();
 let soundEnabled=(()=>{try{return localStorage.getItem('zebjus-v171-sound')!=='off'}catch{return true}})();
 let soundVolume=(()=>{try{return clamp(+(localStorage.getItem('zebjus-v171-volume')||.55),0,1)}catch{return .55}})();
 function getAudioCtx(){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}catch{return null}}
 function tone(freq=440,dur=.08,type='sine',gain=.025,delay=0){
  if(!soundEnabled||soundVolume<=0)return;
- const ac=getAudioCtx();if(!ac)return;const o=ac.createOscillator(),g=ac.createGain(),f=ac.createBiquadFilter(),t=ac.currentTime+delay;
+ const ac=getAudioCtx();if(!ac)return;
+ const o=ac.createOscillator(),g=ac.createGain(),f=ac.createBiquadFilter(),t=ac.currentTime+delay;
  o.type=type;o.frequency.setValueAtTime(freq,t);f.type='lowpass';f.frequency.setValueAtTime(1800,t);f.Q.value=.35;
- const level=Math.max(.0004,gain*soundVolume);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(level,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
- o.connect(f);f.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+dur+.03)
+ const level=Math.max(.0004,gain*soundVolume);
+ g.gain.setValueAtTime(.00001,t);g.gain.exponentialRampToValueAtTime(level,t+.012);g.gain.exponentialRampToValueAtTime(.00001,t+dur);
+ o.connect(f);f.connect(g);g.connect(ac.destination);
+ const rec={o,g,f};activeTones.add(rec);
+ o.onended=()=>{activeTones.delete(rec);try{o.disconnect();f.disconnect();g.disconnect()}catch{}};
+ o.start(t);o.stop(t+dur+.035)
+}
+function stopTransientTones(){
+ const ac=audioCtx,t=ac?.currentTime||0;
+ activeTones.forEach(a=>{
+   try{a.g.gain.cancelScheduledValues(t);a.g.gain.setValueAtTime(0,t)}catch{}
+   try{a.o.stop(t+.01)}catch{}
+   try{a.o.disconnect();a.f.disconnect();a.g.disconnect()}catch{}
+ });
+ activeTones.clear()
 }
 function playFX(kind){
  if(!soundEnabled)return;
@@ -184,14 +198,27 @@ function ensureMotorAudio(kind){
 function updateMotorAudio(kind,level,imbalance=0){
  const a=motorAudio[kind];if(!a)return;
  const t=a.ac.currentTime,l=clamp(level,0,1),imb=clamp(imbalance,0,1);
- if(!soundEnabled||soundVolume<=0){a.g.gain.setTargetAtTime(.0001,t,.06);return}
+ if(!soundEnabled||soundVolume<=0||l<=.001){
+   try{a.g.gain.cancelScheduledValues(t);a.g.gain.setTargetAtTime(0,t,.012)}catch{}
+   return
+ }
  const base=(kind==='wire'?72:kind==='assembly'?58:56)+l*(kind==='wire'?350:kind==='assembly'?220:310);
- a.o1.frequency.setTargetAtTime(base,t,.05);a.o2.frequency.setTargetAtTime(base*2.0+imb*18,t,.05);a.o3.frequency.setTargetAtTime(Math.max(28,base*.48),t,.07);
+ a.o1.frequency.setTargetAtTime(base,t,.05);a.o2.frequency.setTargetAtTime(base*2+imb*18,t,.05);a.o3.frequency.setTargetAtTime(Math.max(28,base*.48),t,.07);
  a.f.frequency.setTargetAtTime(650+l*1900,t,.07);
  const raw=kind==='wire'?.010+l*.020:kind==='assembly'?.004+l*.007:.012+l*.026;
  a.g.gain.setTargetAtTime((raw+imb*.004)*soundVolume,t,.08)
 }
-function silenceMotorAudio(kind){const a=motorAudio[kind];if(a)a.g.gain.setTargetAtTime(.0001,a.ac.currentTime,.06)}
+function silenceMotorAudio(kind){
+ const a=motorAudio[kind];if(!a)return;const t=a.ac.currentTime;
+ try{a.g.gain.cancelScheduledValues(t);a.g.gain.setTargetAtTime(0,t,.008)}catch{}
+}
+function destroyMotorAudio(kind){
+ const a=motorAudio[kind];if(!a)return;const t=a.ac.currentTime;
+ try{a.g.gain.cancelScheduledValues(t);a.g.gain.setValueAtTime(0,t)}catch{}
+ [a.o1,a.o2,a.o3].forEach(o=>{try{o.stop(t+.005)}catch{};try{o.disconnect()}catch{}});
+ try{a.f.disconnect();a.g.disconnect()}catch{}
+ motorAudio[kind]=null
+}
 function escBeep(i){
  const base=[392,415,440,466][i]||440;
  tone(base,.055,'triangle',.020,0);
@@ -269,11 +296,11 @@ function connectBatteryPower(fromGuided=false){
  if(!installed('battery','BAT')){notify('Install the LiPo underneath the frame first.','bad');return false}
  if(!installed('bottomPlate','bottom')){notify('Bottom PDB is missing.','bad');return false}
  [['BAT.+','PDB.BAT+'],['BAT.-','PDB.BAT-']].forEach(([from,to])=>{if(!state.connections.some(c=>c.from===from&&c.to===to))state.connections.push({from,to,new:true,id:`bat-${Date.now()}-${from}`})});
- state.doneActions.add('xt60');silenceMotorAudio('assembly');animateBatteryPlug(true);playFX('connector');powerConnectThunk();setTimeout(xt60Spark,340);rebuild3DWires();rebuildSolder();render2D();renderAssemblyUI();validate2D();
+ state.doneActions.add('xt60');silenceMotorAudio('assembly');animateBatteryPlug(true);playFX('connector');powerConnectThunk();setTimeout(()=>{if(state.powered)xt60Spark()},340);rebuild3DWires();rebuildSolder();render2D();renderAssemblyUI();validate2D();
  notify('XT60 inserted • power flowing to ESCs and FC…','good');runPowerUpSequence();return true
 }
 function disconnectBatteryPower(){
- silenceMotorAudio('assembly');
+ powerSequenceToken++;stopTransientTones();destroyMotorAudio('assembly');
  state.connections=state.connections.filter(c=>!((c.from.startsWith('BAT.')||c.to.startsWith('BAT.'))));
  state.doneActions.delete('xt60');animateBatteryPlug(false);silenceMotorAudio('assembly');setPowerVisual(false,false);renderAssemblyUI();render2D();rebuild3DWires();rebuildSolder();validate2D();notify('Battery disconnected • ESC/FC LEDs OFF • propellers stopped.','good')
 }
@@ -286,7 +313,19 @@ function initPageBrandWatermarks(){
    const a=document.createElement('a');a.className='zebjus-page-watermark';a.href='https://www.zebjus.com';a.target='_blank';a.rel='noopener';a.innerHTML='<b>ZEBJUS</b><span>Drone Engineering Lab</span><em>www.zebjus.com ↗</em>';p.appendChild(a)
  })
 }
-function initTabs(){$$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.tab-panel').forEach(x=>x.classList.remove('active'));$('#tab-'+b.dataset.tab)?.classList.add('active');if(b.dataset.tab==='assembly')setTimeout(resize3D,40);if(b.dataset.tab==='sim'){ensureSim();setTimeout(resizeSim,80)}})}
+function initTabs(){
+ $$('.tab').forEach(b=>b.onclick=()=>{
+   const leavingSim=$('#tab-sim')?.classList.contains('active')&&b.dataset.tab!=='sim';
+   const leavingWire=$('#tab-wiring')?.classList.contains('active')&&b.dataset.tab!=='wiring';
+   if(leavingSim)stopSimRuntime(true);
+   if(leavingWire&&wireMotorRun){wireMotorRun=false;destroyMotorAudio('wire');render2D()}
+   heldKeys.clear();
+   $$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+   $$('.tab-panel').forEach(x=>x.classList.remove('active'));$('#tab-'+b.dataset.tab)?.classList.add('active');
+   if(b.dataset.tab==='assembly')setTimeout(resize3D,40);
+   if(b.dataset.tab==='sim'){ensureSim();setTimeout(resizeSim,80)}
+ })
+}
 const product=t=>products.find(x=>x.type===t);
 function showInspector(title,detail,rating={},pins=[],kind='PRODUCT',asset=''){ $('#inspector').innerHTML=`<div class="type">${kind}</div><h3>${title}</h3><p>${detail}</p><div class="specs">${Object.entries(rating).map(([k,v])=>`<div class="spec"><b>${k}</b><span>${v}</span></div>`).join('')}</div><table class="pin-table">${pins.map(p=>`<tr><td>${p[0]}</td><td>${p[1]}</td></tr>`).join('')}</table>${asset?`<div class="asset-path">3D asset: ${asset}</div>`:''}<a class="inspector-shop" href="https://www.zebjus.com" target="_blank" rel="noopener">ZEBJUS components & learning hardware ↗</a>` }
 function notify(t,k='good'){const e=$('#snapMessage');e.textContent=t;e.className='snap-message '+k;clearTimeout(notify.t);notify.t=setTimeout(()=>e.className='snap-message',1800)}
@@ -922,8 +961,15 @@ function wireRemember(){wireUndoStack.push(wireSnapshot());if(wireUndoStack.leng
 function wireUndo(){const v=wireUndoStack.pop();if(!v){notify('Nothing to undo in wiring.','bad');return}const d=JSON.parse(v);state.connections=d.connections||[];wireLayout=d.layout||structuredClone(wireDefaultLayout);wireNodeTransforms=d.transforms||{};optionalWireNodes=d.optional||[];selectedWireNodeId=d.selectedNode||null;selectedWireId=null;selPort=null;render2D();rebuild3DWires();rebuildSolder();persistWireLayout();notify('Wiring undo restored.')}
 function resetWireLayout(){wireRemember();wireLayout=structuredClone(wireDefaultLayout);wireNodeTransforms={};selectedWireNodeId=null;try{localStorage.removeItem(wireStorageKey);localStorage.removeItem('zebjus-v8-wire-layout')}catch{}render2D();notify('2D positions, flips and rotations reset.')}
 function wireTransform(id){return wireNodeTransforms[id]||{rot:0,flipX:false}}
-function nodeTransformAttr(id,w,h){const p=nodePos(id),t=wireTransform(id),cx=w/2,cy=h/2,sx=t.flipX?-1:1;return `translate(${p.x} ${p.y}) translate(${cx} ${cy}) rotate(${t.rot||0}) scale(${sx} 1) translate(${-cx} ${-cy})`}
-function nodeCanvasPoint(id,w,h,x,y){const p=nodePos(id),t=wireTransform(id),cx=w/2,cy=h/2,sx=t.flipX?-1:1,r=rad(t.rot||0),dx=(x-cx)*sx,dy=y-cy;return{x:p.x+cx+dx*Math.cos(r)-dy*Math.sin(r),y:p.y+cy+dx*Math.sin(r)+dy*Math.cos(r)}}
+function nodeTransformAttr(id,w,h){
+ const p=nodePos(id),t=wireTransform(id),cx=w/2,cy=h/2;
+ // F-flip changes connector facing only. It intentionally never mirrors the text.
+ return `translate(${p.x} ${p.y}) translate(${cx} ${cy}) rotate(${t.rot||0}) translate(${-cx} ${-cy})`
+}
+function nodeCanvasPoint(id,w,h,x,y){
+ const p=nodePos(id),t=wireTransform(id),cx=w/2,cy=h/2,r=rad(t.rot||0),dx=x-cx,dy=y-cy;
+ return{x:p.x+cx+dx*Math.cos(r)-dy*Math.sin(r),y:p.y+cy+dx*Math.sin(r)+dy*Math.cos(r)}
+}
 function optionalNodeId(type,slotId){return `OPT_${type}_${slotId}`}
 function optionalThreeType(type){return optional3DTypeMap[type]||null}
 function optionalBenchType(threeType){return Object.entries(optional3DTypeMap).find(([,v])=>v===threeType)?.[0]||null}
@@ -941,7 +987,13 @@ function setWireMode(on=null,silent=false){wireMode=on===null?!wireMode:!!on;con
 function clearWireConnectionsForPrefix(prefix){state.connections=state.connections.filter(c=>!(c.from===prefix||c.to===prefix||c.from.startsWith(prefix+'.')||c.to.startsWith(prefix+'.')))}
 function deleteOptionalNodeOnly(id,silent=false){wireRemember();clearWireConnectionsForPrefix(id);delete wireLayout[id];delete wireNodeTransforms[id];optionalWireNodes=optionalWireNodes.filter(n=>n.id!==id);if(selectedWireNodeId===id)selectedWireNodeId=null;render2D();rebuild3DWires();rebuildSolder();persistWireLayout();if(!silent)notify('Optional device deleted from 2D bench.')}
 function rotateSelectedNode(){if(!selectedWireNodeId){notify('Select an object first.','bad');return}wireRemember();const t=wireTransform(selectedWireNodeId);wireNodeTransforms[selectedWireNodeId]={...t,rot:((t.rot||0)+90)%360};persistWireLayout();render2D();notify('Selected 2D object rotated 90°.','good')}
-function flipSelectedNode(){if(!selectedWireNodeId){notify('Select an object first.','bad');return}wireRemember();const t=wireTransform(selectedWireNodeId);wireNodeTransforms[selectedWireNodeId]={...t,flipX:!t.flipX};persistWireLayout();render2D();notify('Selected 2D object flipped.','good')}
+function flipSelectedNode(){
+ if(!selectedWireNodeId){notify('Select an object first.','bad');return}
+ if(selectedWireNodeId==='FC'){notify('FC pin map is fixed; FC is not mirrored.','bad');return}
+ wireRemember();const t=wireTransform(selectedWireNodeId);
+ wireNodeTransforms[selectedWireNodeId]={...t,flipX:!t.flipX};
+ persistWireLayout();render2D();notify('Connector side flipped • text remains readable.','good')
+}
 function deleteSelectedObject(){if(selectedWireId){deleteSelectedWire();return}if(!selectedWireNodeId){notify('Select an object or wire first.','bad');return}const part=wireNodePart(selectedWireNodeId);if(part){deleteInstalled(part.id);selectedWireNodeId=null;return}if(optionalWireNodes.some(n=>n.id===selectedWireNodeId)){deleteOptionalNodeOnly(selectedWireNodeId);return}notify('This fixed bench node is a reference. Install the matching 3D part first, then delete it.','bad')}
 function portDot(svg,key,x,y,type,label,anchor='start'){svgPorts[key]={x,y};const c=E('circle',{cx:x,cy:y,r:6.5,class:`port-v8 ${type}${selPort===key?' selected':''}`});c.dataset.port=key;c.onclick=e=>{e.stopPropagation();choosePort(key)};svg.appendChild(c);if(label)svg.appendChild(E('text',{x:x+(anchor==='start'?9:-9),y:y+3,class:'port-label-v8','text-anchor':anchor},label))}
 function draw2DFrame(svg){
@@ -957,14 +1009,30 @@ function setNodePos(id,x,y){wireLayout[id]={x:clamp(x,10,1380),y:clamp(y,10,820)
 function beginNodeDrag(id,e){if(e.target.closest?.('.port-v8'))return;e.preventDefault();e.stopPropagation();selectedWireNodeId=id;selectedWireId=null;selPort=null;wireRemember();const pt=svgLocalPoint($('#wiringSvg'),e.clientX,e.clientY),p=nodePos(id);wireDrag={id,dx:pt.x-p.x,dy:pt.y-p.y};document.body.style.userSelect='none'}
 function svgLocalPoint(svg,x,y){const p=svg.createSVGPoint();p.x=x;p.y=y;return p.matrixTransform(svg.getScreenCTM().inverse())}
 function drawNode(svg,id,title,w,h,portsLeft=[],portsRight=[],sub='DRAG TO MOVE',extraClass=''){
+ const t=wireTransform(id),flip=!!t.flipX,leftPorts=flip?portsRight:portsLeft,rightPorts=flip?portsLeft:portsRight;
  const g=E('g',{class:`wire-node-v8 ${extraClass}${selectedWireNodeId===id?' selected-node':''}`,'data-node':id,transform:nodeTransformAttr(id,w,h)});
  g.onclick=e=>{if(e.target.closest?.('.port-v8'))return;e.stopPropagation();selectWireNode(id)};
- g.appendChild(E('rect',{x:0,y:0,width:w,height:h,rx:12}));g.appendChild(E('rect',{x:0,y:0,width:w,height:28,rx:12,class:'drag-handle'}));g.appendChild(E('text',{x:11,y:18,class:'node-title'},title+nodeLabelSuffix(id)));g.appendChild(E('text',{x:11,y:h-8,class:'node-sub'},sub));
- portsLeft.forEach((q,i)=>{const yy=42+i*20;g.appendChild(E('text',{x:14,y:yy+3,class:'port-label-v8'},q[0]));const c=E('circle',{cx:0,cy:yy,r:6.5,class:`port-v8 ${q[1]}${selPort===id+'.'+q[0]?' selected':''}`});c.dataset.port=id+'.'+q[0];c.onclick=e=>{e.stopPropagation();choosePort(c.dataset.port)};g.appendChild(c);svgPorts[id+'.'+q[0]]=nodeCanvasPoint(id,w,h,0,yy)});
- portsRight.forEach((q,i)=>{const yy=42+i*20;g.appendChild(E('text',{x:w-14,y:yy+3,class:'port-label-v8','text-anchor':'end'},q[0]));const c=E('circle',{cx:w,cy:yy,r:6.5,class:`port-v8 ${q[1]}${selPort===id+'.'+q[0]?' selected':''}`});c.dataset.port=id+'.'+q[0];c.onclick=e=>{e.stopPropagation();choosePort(c.dataset.port)};g.appendChild(c);svgPorts[id+'.'+q[0]]=nodeCanvasPoint(id,w,h,w,yy)});
+ g.appendChild(E('rect',{x:0,y:0,width:w,height:h,rx:12}));
+ g.appendChild(E('rect',{x:0,y:0,width:w,height:28,rx:12,class:'drag-handle'}));
+ g.appendChild(E('text',{x:11,y:18,class:'node-title'},title+nodeLabelSuffix(id)));
+ g.appendChild(E('text',{x:11,y:h-8,class:'node-sub'},sub));
+ if(flip)g.appendChild(E('text',{x:w-12,y:18,class:'flip-badge-2d','text-anchor':'end'},'FLIPPED'));
+ leftPorts.forEach((q,i)=>{const yy=42+i*20;g.appendChild(E('text',{x:14,y:yy+3,class:'port-label-v8'},q[0]));const c=E('circle',{cx:0,cy:yy,r:6.5,class:`port-v8 ${q[1]}${selPort===id+'.'+q[0]?' selected':''}`});c.dataset.port=id+'.'+q[0];c.onclick=e=>{e.stopPropagation();choosePort(c.dataset.port)};g.appendChild(c);svgPorts[id+'.'+q[0]]=nodeCanvasPoint(id,w,h,0,yy)});
+ rightPorts.forEach((q,i)=>{const yy=42+i*20;g.appendChild(E('text',{x:w-14,y:yy+3,class:'port-label-v8','text-anchor':'end'},q[0]));const c=E('circle',{cx:w,cy:yy,r:6.5,class:`port-v8 ${q[1]}${selPort===id+'.'+q[0]?' selected':''}`});c.dataset.port=id+'.'+q[0];c.onclick=e=>{e.stopPropagation();choosePort(c.dataset.port)};g.appendChild(c);svgPorts[id+'.'+q[0]]=nodeCanvasPoint(id,w,h,w,yy)});
  g.onpointerdown=e=>beginNodeDrag(id,e);svg.appendChild(g);return g
 }
-function drawMotorNode(svg,id,title){const w=150,h=100,g=drawNode(svg,id,title,w,h,[],[['U','u'],['V','v'],['W','w']],'DRAG • U/V/W • F flip • R rotate');const holder=E('g',{transform:'translate(75 62)'}),rotor=E('g',{id:`motorRotor${id.slice(1)}`,class:'motor-rotor-2d'});rotor.appendChild(E('circle',{cx:0,cy:0,r:25,class:'motor-ring-2d'}));rotor.appendChild(E('rect',{x:-39,y:-3,width:78,height:6,rx:3,class:'motor-blade-2d'}));rotor.appendChild(E('rect',{x:-3,y:-39,width:6,height:78,rx:3,class:'motor-blade-2d'}));holder.appendChild(rotor);g.appendChild(holder);g.appendChild(E('text',{x:75,y:95,id:`motorDir${id.slice(1)}`,class:'motor-dir-2d'},'OPEN'));return g}
+function drawMotorNode(svg,id,title){
+ const w=150,h=100,phase=[['U','u'],['V','v'],['W','w']],phaseLeft=(id==='M1'||id==='M4');
+ const g=phaseLeft?drawNode(svg,id,title,w,h,phase,[],'PHASE LEADS ← ESC • F flip • R rotate'):
+                   drawNode(svg,id,title,w,h,[],phase,'ESC → PHASE LEADS • F flip • R rotate');
+ const holder=E('g',{transform:'translate(75 62)'}),rotor=E('g',{id:`motorRotor${id.slice(1)}`,class:'motor-rotor-2d'});
+ rotor.appendChild(E('circle',{cx:0,cy:0,r:25,class:'motor-ring-2d'}));
+ rotor.appendChild(E('rect',{x:-39,y:-3,width:78,height:6,rx:3,class:'motor-blade-2d'}));
+ rotor.appendChild(E('rect',{x:-3,y:-39,width:6,height:78,rx:3,class:'motor-blade-2d'}));holder.appendChild(rotor);g.appendChild(holder);
+ const effectiveLeft=phaseLeft!==!!wireTransform(id).flipX,edge=effectiveLeft?0:w;
+ [['#f5c542',-8],['#2c92ff',0],['#87949d',8]].forEach(([col,dy])=>g.appendChild(E('path',{d:effectiveLeft?`M52 ${62+dy} Q30 ${62+dy} ${edge} ${62+dy}`:`M98 ${62+dy} Q120 ${62+dy} ${edge} ${62+dy}`,stroke:col,'stroke-width':2.5,fill:'none',class:'motor-pigtail-2d'})));
+ g.appendChild(E('text',{x:75,y:95,id:`motorDir${id.slice(1)}`,class:'motor-dir-2d'},'OPEN'));return g
+}
 function drawFCNode(svg){
  const id='FC',w=310,h=285,g=E('g',{class:`wire-node-v8 fc-node-v14${selectedWireNodeId===id?' selected-node':''}`,'data-node':id,transform:nodeTransformAttr(id,w,h)});
  g.onpointerdown=e=>beginNodeDrag(id,e);g.onclick=e=>{if(e.target.closest?.('.port-v8'))return;e.stopPropagation();selectWireNode(id)};
@@ -1056,7 +1124,7 @@ function updateMotorTestUI(){for(let i=1;i<=4;i++){const e=motorElectrical(i),ac
 function animate2DMotors(now=performance.now()){requestAnimationFrame(animate2DMotors);const dt=Math.min(.05,(now-wireAnimLast)/1000);wireAnimLast=now;const pwm=+($('#wireThrottle')?.value||1000),speed=pwm<1100?0:clamp((pwm-1100)/900,0,1);let activeCount=0;for(let i=1;i<=4;i++){if(motorActive(i)){activeCount++;const e=motorElectrical(i),sign=e.dir==='CW'?1:-1;wireMotorAngle[i-1]=(wireMotorAngle[i-1]+sign*dt*(260+speed*1500))%360}const r=$(`#motorRotor${i}`);if(r)r.style.transform=`rotate(${wireMotorAngle[i-1]}deg)`}updateMotorAudio('wire',wireMotorRun&&activeCount?speed*(.45+.55*activeCount/4):0,.08*activeCount/4);if(wireMotorRun&&Math.floor(now/150)%2===0)updateMotorTestUI()}
 function initWiringControls(){
  $('#wireUndoBtn').onclick=wireUndo;$('#deleteWireBtn').onclick=deleteSelectedWire;$('#deleteNodeBtn').onclick=deleteSelectedObject;$('#centerWireLayoutBtn').onclick=resetWireLayout;$('#addOptionalWireDevice').onclick=addOptionalWireDevice;const mode=$('#wireModeBadge');if(mode)mode.onclick=()=>setWireMode();
- $('#wireRunBtn').onclick=()=>{wireMotorRun=!wireMotorRun;if(wireMotorRun)ensureMotorAudio('wire');else silenceMotorAudio('wire');render2D()};
+ $('#wireRunBtn').onclick=()=>{wireMotorRun=!wireMotorRun;if(wireMotorRun)ensureMotorAudio('wire');else destroyMotorAudio('wire');render2D()};
  $('#wireThrottle').oninput=()=>{if(wireMotorRun)ensureMotorAudio('wire');render2D()};$('#wireAllMotors').onchange=()=>render2D();[1,2,3,4].forEach(i=>$(`#wireM${i}`).onchange=()=>render2D());
  window.addEventListener('pointermove',e=>{if(!wireDrag)return;const p=svgLocalPoint($('#wiringSvg'),e.clientX,e.clientY);setNodePos(wireDrag.id,p.x-wireDrag.dx,p.y-wireDrag.dy);render2D()});window.addEventListener('pointerup',()=>{if(wireDrag){wireDrag=null;document.body.style.userSelect='';persistWireLayout()}});
  window.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))return;if(!$('#tab-wiring')?.classList.contains('active'))return;const k=(e.key||'').toLowerCase();if(k==='w'&&!e.repeat){e.preventDefault();setWireMode();return}if(k==='f'&&!e.repeat){e.preventDefault();flipSelectedNode();return}if(k==='r'&&!e.repeat){e.preventDefault();rotateSelectedNode();return}if((e.key==='Delete'||e.key==='Backspace')){e.preventDefault();deleteSelectedObject()}});requestAnimationFrame(animate2DMotors);setWireMode(false,true)
@@ -1093,9 +1161,26 @@ function ensureSimMotorBank(){
  simMotorBank=[0,1,2,3].map(i=>{const o=ac.createOscillator(),g=ac.createGain(),f=ac.createBiquadFilter();o.type=i%2?'sine':'triangle';o.detune.value=[-8,4,11,-3][i];g.gain.value=.0001;f.type='lowpass';f.frequency.value=1800;o.connect(f);f.connect(g);g.connect(ac.destination);o.start();return{o,g,f}});return simMotorBank
 }
 function updateSimMotorBank(mix){
- if(!simMotorBank)return;const t=getAudioCtx()?.currentTime||0;mix.forEach((v,i)=>{const s=clamp(v/100,0,1),m=simMotorBank[i],hz=70+s*440+i*3;m.o.frequency.setTargetAtTime(hz,t,.035);m.f.frequency.setTargetAtTime(800+s*3000,t,.04);m.g.gain.setTargetAtTime(state.sim.running&&soundEnabled?((.0015+s*.0065)*soundVolume):.0001,t,.07)})
+ if(!simMotorBank||!state.sim.running||!soundEnabled||soundVolume<=0)return;
+ const t=audioCtx?.currentTime||0;
+ mix.forEach((v,i)=>{
+   const s=clamp(v/100,0,1),m=simMotorBank[i],hz=70+s*440+i*3;
+   m.o.frequency.setTargetAtTime(hz,t,.035);m.f.frequency.setTargetAtTime(800+s*3000,t,.04);
+   m.g.gain.setTargetAtTime((.0015+s*.0065)*soundVolume,t,.07)
+ })
 }
-function silenceSimMotorBank(){if(!simMotorBank)return;const t=getAudioCtx()?.currentTime||0;simMotorBank.forEach(m=>m.g.gain.setTargetAtTime(.0001,t,.06))}
+function silenceSimMotorBank(){
+ if(!simMotorBank)return;const t=audioCtx?.currentTime||0;
+ simMotorBank.forEach(m=>{try{m.g.gain.cancelScheduledValues(t);m.g.gain.setTargetAtTime(0,t,.008)}catch{}})
+}
+function destroySimMotorBank(){
+ if(!simMotorBank)return;const t=audioCtx?.currentTime||0;
+ simMotorBank.forEach(m=>{
+   try{m.g.gain.cancelScheduledValues(t);m.g.gain.setValueAtTime(0,t);m.o.stop(t+.005)}catch{}
+   try{m.o.disconnect();m.f.disconnect();m.g.disconnect()}catch{}
+ });
+ simMotorBank=null
+}
 function ensureSim(){
  if(simInitialized)return true;
  try{initSim();simInitialized=true;return true}catch(e){console.error('[ZEBJUS] Tripod simulator init failed:',e);const box=$('#simThree');if(box)box.innerHTML=`<div class="runtime-error-card"><b>Tripod 3D unavailable</b><span>${String(e?.message||e)}</span><small>Assembly, wiring, calibration, PID editor and Python Lab remain available.</small></div>`;notify('Tripod simulator 3D could not start. Other lab tools remain active.','bad');return false}
@@ -1109,7 +1194,7 @@ function initSim(){
  const floor=new THREE.Mesh(new THREE.PlaneGeometry(28,28),new THREE.MeshStandardMaterial({color:0x243039,roughness:.82,metalness:.05}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;sScene.add(floor);sScene.add(new THREE.GridHelper(28,28,0x48606e,0x324651));sScene.add(buildTripod());
  const dustCount=300,pos=new Float32Array(dustCount*3);sDustBase=[];for(let i=0;i<dustCount;i++){const a=Math.random()*Math.PI*2,r=.8+Math.random()*4.2,y=.025+Math.random()*.23;pos[i*3]=Math.cos(a)*r;pos[i*3+1]=y;pos[i*3+2]=Math.sin(a)*r;sDustBase.push({a,r,y,seed:Math.random()*10})}
  const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.BufferAttribute(pos,3));const dm=new THREE.PointsMaterial({color:0xc2ae91,size:.06,transparent:true,opacity:0,depthWrite:false});sDust=new THREE.Points(dg,dm);sScene.add(sDust);
- sPivot=new THREE.Group();sPivot.position.set(0,3.48,0);sScene.add(sPivot);sDrone=buildFinalSimDrone();sPivot.add(sDrone);sPivot.add(buildDownwash());const clampG=new THREE.Group();simCylinderBetween([-.30,0,0],[.30,0,0],.09,0x161c20,clampG);sPivot.add(clampG);
+ sPivot=new THREE.Group();sPivot.position.set(0,3.48,0);sPivot.rotation.order='YXZ';sScene.add(sPivot);sDrone=buildFinalSimDrone();sPivot.add(sDrone);sPivot.add(buildDownwash());const clampG=new THREE.Group();simCylinderBetween([-.30,0,0],[.30,0,0],.09,0x161c20,clampG);sPivot.add(clampG);
  syncQuickPid();$('#simFlightMode').value=state.sim.flightMode;updateSimPidModeUI();
  $('#simRunBtn').onclick=toggleSimRun;$('#simResetBtn').onclick=resetSim;$('#simDisturbBtn').onclick=toggleDisturbMode;$('#simCalibrateLevelBtn').onclick=calibrateSimLevel;$('#simFlightMode').onchange=e=>{state.sim.flightMode=e.target.value;if(state.sim.flightMode==='rate'){state.sim.rateHoldRoll=state.sim.roll;state.sim.rateHoldPitch=state.sim.pitch;state.sim.rateRollStickActive=false;state.sim.ratePitchStickActive=false}updateSimPidModeUI();resetSimControllersOnly();chart=[]};$('#simApplyPidBtn').onclick=applyQuickPid;
  initSticks();initManualDisturbance();initSimEnvironmentControls();initPidLearning();renderKeySettings();window.addEventListener('resize',resizeSim);window.addEventListener('keydown',simKeyDown);window.addEventListener('keyup',simKeyUp);requestAnimationFrame(simLoop)
@@ -1135,9 +1220,19 @@ function initSimEnvironmentControls(){
  const bind=(id,key,out,fmt)=>{const e=$(id),o=$(out);if(!e)return;e.value=state.sim[key];const fn=()=>{state.sim[key]=+e.value;if(o)o.textContent=fmt(state.sim[key]);validate2D?.()};e.oninput=fn;fn()};
  bind('#simBatteryV','batteryV','#simBatteryOut',v=>v.toFixed(1)+' V');bind('#simPayload','payloadG','#simPayloadOut',v=>Math.round(v)+' g');bind('#simCgX','cgX','#simCgXOut',v=>Math.round(v)+' mm');bind('#simCgY','cgY','#simCgYOut',v=>Math.round(v)+' mm');bind('#simWind','wind','#simWindOut',v=>Math.round(v)+'%');bind('#simMotorLag','motorLag','#simLagOut',v=>v.toFixed(2)+' s')
 }
+function stopSimRuntime(updateButton=true){
+ state.sim.running=false;heldKeys.clear();
+ destroyMotorAudio('sim');destroySimMotorBank();
+ state.sim.motorActual=[0,0,0,0];state.sim.lastMix=[0,0,0,0];
+ simPropBlurs.forEach(b=>{b.material.opacity=0;b.scale.setScalar(1)});
+ sDownwash.forEach(x=>x.ring.material.opacity=0);sDownwashCones.forEach(x=>x.cone.material.opacity=0);
+ if(sDust)sDust.material.opacity=0;
+ if(updateButton&&$('#simRunBtn')){$('#simRunBtn').textContent='RUN';$('#simRunBtn').classList.remove('danger')}
+}
 function toggleSimRun(){
- state.sim.running=!state.sim.running;$('#simRunBtn').textContent=state.sim.running?'STOP':'RUN';$('#simRunBtn').classList.toggle('danger',state.sim.running);
- if(state.sim.running){ensureMotorAudio('sim');ensureSimMotorBank()}else{heldKeys.clear();silenceMotorAudio('sim');silenceSimMotorBank()}
+ if(state.sim.running){stopSimRuntime(true);return}
+ state.sim.running=true;$('#simRunBtn').textContent='STOP';$('#simRunBtn').classList.add('danger');
+ ensureMotorAudio('sim');ensureSimMotorBank()
 }
 function resetSimControllersOnly(){
  Object.assign(state.sim,{rollI:0,pitchI:0,yawI:0,prevRollErr:0,prevPitchErr:0,prevYawErr:0,angleRollI:0,anglePitchI:0,prevAngleRollErr:0,prevAnglePitchErr:0,pidLive:{P:0,I:0,D:0,error:0,target:0,actual:0,loop:'RATE'}})
@@ -1151,7 +1246,10 @@ function resetSimDynamics(resetAttitude=true){
  Object.assign(s,{...keep,rollRate:0,pitchRate:0,yawRate:0,rollI:0,pitchI:0,yawI:0,prevRollErr:0,prevPitchErr:0,prevYawErr:0,angleRollI:0,anglePitchI:0,prevAngleRollErr:0,prevAnglePitchErr:0,cmdRoll:0,cmdPitch:0,cmdYaw:0,vibration:0,liftY:0,lastMix:[0,0,0,0],motorActual:[0,0,0,0],targetRoll:s.levelTrimRoll||0,targetPitch:s.levelTrimPitch||0,targetYawRate:0,rateHoldRoll:s.levelTrimRoll||0,rateHoldPitch:s.levelTrimPitch||0,rateRollStickActive:false,ratePitchStickActive:false,pidLive:{P:0,I:0,D:0,error:0,target:0,actual:0,loop:'RATE'}});
  chart=[]
 }
-function resetSim(){state.sim.running=false;state.sim.throttle=1000;state.sim.disturbing=false;resetSimDynamics(true);silenceMotorAudio('sim');silenceSimMotorBank();$('#simRunBtn').textContent='RUN';$('#simRunBtn').classList.remove('danger');setStickVisual('right',0,0);setStickVisual('left',0,1);updateStickText()}
+function resetSim(){
+ stopSimRuntime(true);state.sim.throttle=1000;state.sim.disturbing=false;resetSimDynamics(true);
+ setStickVisual('right',0,0);setStickVisual('left',0,1);updateStickText()
+}
 function resizeSim(){if(!sRenderer||!sCamera)return;const e=$('#simThree');if(!e)return;const w=Math.max(1,e.clientWidth||e.getBoundingClientRect().width||900),h=Math.max(1,e.clientHeight||e.getBoundingClientRect().height||650);sCamera.aspect=w/h;sCamera.updateProjectionMatrix();sRenderer.setSize(w,h)}
 function avgPid(keys,v){return keys.reduce((s,k)=>s+state.pid[k][v],0)/keys.length}
 function tuneQuality(){
@@ -1187,7 +1285,7 @@ function toggleDisturbMode(){
 function initManualDisturbance(){
  const c=sRenderer?.domElement;if(!c)return;let start=null;
  c.addEventListener('pointerdown',e=>{if(!state.sim.disturbMode)return;e.preventDefault();start={x:e.clientX,y:e.clientY,roll:state.sim.roll,pitch:state.sim.pitch};state.sim.disturbing=true;try{c.setPointerCapture(e.pointerId)}catch{}});
- c.addEventListener('pointermove',e=>{if(!start||!state.sim.disturbMode)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;state.sim.roll=clamp(start.roll+dx*.12,-38,38);state.sim.pitch=clamp(start.pitch+dy*.12,-38,38);state.sim.rollRate=dx*.18;state.sim.pitchRate=dy*.18});
+ c.addEventListener('pointermove',e=>{if(!start||!state.sim.disturbMode)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;state.sim.roll=clamp(start.roll+dx*.12,-38,38);state.sim.pitch=clamp(start.pitch-dy*.12,-38,38);state.sim.rollRate=dx*.18;state.sim.pitchRate=-dy*.18});
  const end=()=>{start=null;state.sim.disturbing=false};c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end)
 }
 function rateHoldTargetRate(axis,cmd,currentAngle){
@@ -1201,16 +1299,21 @@ function simLoop(now){
  requestAnimationFrame(simLoop);const dt=Math.min(.035,(now-sLast)/1000||.016);sLast=now;const s=state.sim,q=tuneQuality(),authority=clamp((s.throttle-1050)/650,0,1);
  let uR=0,uP=0,uY=0,cmdR=s.cmdRoll,cmdP=s.cmdPitch,cmdY=s.cmdYaw;
  if(s.running){
-   const keyR=(heldKeys.has(keyMap.rollRight)?1:0)-(heldKeys.has(keyMap.rollLeft)?1:0),keyP=(heldKeys.has(keyMap.pitchForward)?1:0)-(heldKeys.has(keyMap.pitchBack)?1:0),keyY=(heldKeys.has(keyMap.yawRight)?1:0)-(heldKeys.has(keyMap.yawLeft)?1:0);
-   cmdR=keyR||s.cmdRoll;cmdP=keyP||s.cmdPitch;cmdY=keyY||s.cmdYaw;
-   if(keyR||keyP)setStickVisual('right',cmdR,-cmdP);else if(!s.cmdRoll&&!s.cmdPitch)setStickVisual('right',0,0);
-   if(keyY)setStickVisual('left',cmdY,(1500-s.throttle)/500);
+   const keyRoll=(heldKeys.has(keyMap.rollRight)?1:0)-(heldKeys.has(keyMap.rollLeft)?1:0);
+   const keyPitch=(heldKeys.has(keyMap.pitchForward)?1:0)-(heldKeys.has(keyMap.pitchBack)?1:0);
+   const keyYaw=(heldKeys.has(keyMap.yawRight)?1:0)-(heldKeys.has(keyMap.yawLeft)?1:0);
+   cmdR=keyRoll!==0?keyRoll:s.cmdRoll;cmdP=keyPitch!==0?keyPitch:s.cmdPitch;cmdY=keyYaw!==0?keyYaw:s.cmdYaw;
+   if(keyRoll||keyPitch)setStickVisual('right',cmdR,-cmdP);else if(!s.cmdRoll&&!s.cmdPitch)setStickVisual('right',0,0);
+   if(keyYaw)setStickVisual('left',cmdY,(1500-s.throttle)/500);
    let targetRR=0,targetPR=0,targetYR=cmdY*180;s.targetYawRate=targetYR;
    if(s.flightMode==='angle'){
-     s.targetRoll=s.levelTrimRoll+cmdR*26;s.targetPitch=s.levelTrimPitch-cmdP*26;
-     targetRR=outerAxis('Roll',s.targetRoll,s.roll,dt);targetPR=outerAxis('Pitch',s.targetPitch,s.pitch,dt)
+     s.targetRoll=s.levelTrimRoll+cmdR*26;
+     s.targetPitch=s.levelTrimPitch+cmdP*26;
+     targetRR=outerAxis('Roll',s.targetRoll,s.roll,dt);
+     targetPR=outerAxis('Pitch',s.targetPitch,s.pitch,dt)
    }else{
-     targetRR=rateHoldTargetRate('Roll',cmdR,s.roll);targetPR=rateHoldTargetRate('Pitch',-cmdP,s.pitch);
+     targetRR=rateHoldTargetRate('Roll',cmdR,s.roll);
+     targetPR=rateHoldTargetRate('Pitch',cmdP,s.pitch);
      s.targetRoll=s.rateHoldRoll;s.targetPitch=s.rateHoldPitch
    }
    uR=rateAxis('Roll',targetRR,s.rollRate,dt);uP=rateAxis('Pitch',targetPR,s.pitchRate,dt);uY=rateAxis('Yaw',targetYR,s.yawRate,dt);
@@ -1226,13 +1329,16 @@ function simLoop(now){
  }else{s.rollRate*=Math.exp(-2*dt);s.pitchRate*=Math.exp(-2*dt);s.yawRate*=Math.exp(-2*dt)}
 
  const vib=s.running?q.vib*(.25+.75*authority):0,jr=Math.sin(now*.052)*vib,jp=Math.sin(now*.071+1.7)*vib*.82;
- sPivot.rotation.z=-rad(s.roll+jr);sPivot.rotation.x=rad(s.pitch+jp);sPivot.rotation.y=rad(s.yaw);
+ // Explicit body-axis mapping: Roll = front/back Z axis, Pitch = left/right X axis, Yaw = vertical Y axis.
+ sPivot.rotation.set(rad(s.pitch+jp),rad(s.yaw),-rad(s.roll+jr),'YXZ');
 
  const weightFactor=1+s.payloadG/1600,thrustFactor=Math.pow(clamp(s.batteryV/12.6,.60,1),2),tn=clamp((s.throttle-1000)/1000,0,1),thrustCurve=tn*tn*thrustFactor/weightFactor,targetLift=s.running?clamp((thrustCurve-.25)*1.35,-1,1)*.34:0;
  s.liftY+=(targetLift-s.liftY)*Math.min(1,dt*2.8);sPivot.position.y=3.48+s.liftY;
 
- const base=clamp((s.throttle-1000)/10,0,100),rc=clamp(uR*.045,-30,30),pc=clamp(uP*.045,-30,30),yc=clamp(uY*.028,-20,20),cmdMix=[base+rc-pc+yc,base-rc-pc-yc,base-rc+pc+yc,base+rc+pc-yc].map(v=>clamp(v,0,100));
- const lag=Math.max(.035,s.motorLag),aLag=1-Math.exp(-dt/lag);s.motorActual=s.motorActual.map((v,i)=>v+(cmdMix[i]-v)*aLag);const mix=s.motorActual;s.lastMix=mix;
+ const base=s.running?clamp((s.throttle-1000)/10,0,100):0,rc=s.running?clamp(uR*.045,-30,30):0,pc=s.running?clamp(uP*.045,-30,30):0,yc=s.running?clamp(uY*.028,-20,20):0;
+ const cmdMix=s.running?[base+rc-pc+yc,base-rc-pc-yc,base-rc+pc+yc,base+rc+pc-yc].map(v=>clamp(v,0,100)):[0,0,0,0];
+ const lag=Math.max(.035,s.motorLag),aLag=s.running?1-Math.exp(-dt/lag):1;
+ s.motorActual=s.motorActual.map((v,i)=>s.running?v+(cmdMix[i]-v)*aLag:0);const mix=s.motorActual;s.lastMix=mix;
 
  simProps.forEach((p,i)=>{const sp=mix[i]/100;p.rotation.y+=(i%2?1:-1)*dt*(1+sp*108)});
  simPropBlurs.forEach((b,i)=>{const sp=mix[i]/100;b.material.opacity=clamp((sp-.08)*.34,0,.27);b.scale.setScalar(1+sp*.08)});
@@ -1311,15 +1417,15 @@ function simKeyUp(e){
 }
 function renderKeySettings(){const box=$('#keySettings');if(!box)return;const labels={rollLeft:'Roll left',rollRight:'Roll right',pitchForward:'Pitch forward',pitchBack:'Pitch back',throttleUp:'Throttle +',throttleDown:'Throttle −',yawLeft:'Yaw left',yawRight:'Yaw right',run:'Run / Stop'};box.innerHTML=Object.entries(labels).map(([k,l])=>`<div class="key-row"><span>${l}</span><button class="key-capture ${keyCaptureAction===k?'listening':''}" data-key-action="${k}">${keyCaptureAction===k?'PRESS KEY…':keyLabel(keyMap[k])}</button></div>`).join('');$$('.key-capture').forEach(b=>b.onclick=()=>{keyCaptureAction=b.dataset.keyAction;renderKeySettings()})}
 function downloadBlob(name,data,type='text/plain'){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)}
-function projectPayload(){return{version:'17.3',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
-function exportProjectJson(){downloadBlob('ZEBJUS_F450_Project_V17_3.json',JSON.stringify(projectPayload(),null,2),'application/json')}
-function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V173',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
+function projectPayload(){return{version:'17.4',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
+function exportProjectJson(){downloadBlob('ZEBJUS_F450_Project_V17_4.json',JSON.stringify(projectPayload(),null,2),'application/json')}
+function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V174',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
 function exportWiringSvg(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg);downloadBlob('ZEBJUS_F450_Wiring.svg',xml,'image/svg+xml')}
 function exportWiringPng(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg),img=new Image(),url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml'}));img.onload=()=>{const c=document.createElement('canvas');c.width=1500;c.height=900;const x=c.getContext('2d');x.fillStyle='#07131d';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0);URL.revokeObjectURL(url);c.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ZEBJUS_F450_Wiring.png';a.click()},'image/png')};img.src=url}
 function exportBom(){const rows=[['Item','Quantity','Rating / Notes']];products.filter(p=>state.parts.some(x=>x.type===p.type)).forEach(p=>rows.push([p.name,state.parts.filter(x=>x.type===p.type).length,Object.values(p.rating||{}).join(' • ')]));downloadBlob('ZEBJUS_F450_BOM.csv',rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n'),'text/csv')}
 function exportProgressReport(){const issues=electricalIssues?.()||[],done=steps.filter((_,i)=>stepDone(i)).length,html=`<!doctype html><meta charset="utf-8"><title>ZEBJUS F450 Build Report</title><style>body{font:14px system-ui;max-width:900px;margin:40px auto}h1{color:#087f5b}.bad{color:#b42318}.ok{color:#087f5b}li{margin:7px}</style><h1>ZEBJUS F450 Build Report</h1><p>Generated: ${new Date().toLocaleString()}</p><p>Progress: ${done}/${steps.length} (${Math.round(done/steps.length*100)}%)</p><h2>Assembly</h2><ol>${steps.map((s,i)=>`<li class="${stepDone(i)?'ok':''}">${stepDone(i)?'✓':'○'} ${s.title}</li>`).join('')}</ol><h2>Electrical validation</h2>${issues.length?`<ul>${issues.map(x=>`<li class="${x.level}">${x.text}</li>`).join('')}</ul>`:'<p class="ok">✓ No electrical issues detected.</p>'}<h2>PID</h2><pre>${JSON.stringify(state.pid,null,2)}</pre>`;downloadBlob('ZEBJUS_F450_Progress_Report.html',html,'text/html')}
 function applyPerformanceMode(){const m=$('#performanceMode')?.value||'balanced';try{localStorage.setItem('zebjus-v17-performance',m)}catch{};const ratio=m==='high'?Math.min(devicePixelRatio||1,2):m==='low'?1:Math.min(devicePixelRatio||1,1.5);if(renderer){renderer.setPixelRatio(ratio);renderer.shadowMap.enabled=m!=='low';resize3D()}if(sRenderer){sRenderer.setPixelRatio(ratio);sRenderer.shadowMap.enabled=m!=='low';resizeSim()}notify(`Graphics profile: ${m}`)}
-function updateStartupDiagnostics(){const e=$('#startupDiagnostics');if(!e)return;const lines=[`V17.3 runtime: ${window.__zebjusAppLoaded?'loaded':'starting'}`,`WebGL: ${renderer?'OK':'pending / unavailable'}`,`Local Three.js: ${THREE.REVISION}`,`Storage: ${(()=>{try{localStorage.setItem('__zj','1');localStorage.removeItem('__zj');return'OK'}catch{return'blocked'}})()}`,`Service worker: ${'serviceWorker' in navigator?'supported':'not supported'}`,`Pixel ratio: ${devicePixelRatio||1}`,`Assembly FPS: ${runtimeFps||'--'}`,`Parts installed: ${state.parts.filter(p=>!p.internal).length}`,`Connections: ${state.connections.length}`];e.textContent=lines.join('\n')}
+function updateStartupDiagnostics(){const e=$('#startupDiagnostics');if(!e)return;const lines=[`V17.4 runtime: ${window.__zebjusAppLoaded?'loaded':'starting'}`,`WebGL: ${renderer?'OK':'pending / unavailable'}`,`Local Three.js: ${THREE.REVISION}`,`Storage: ${(()=>{try{localStorage.setItem('__zj','1');localStorage.removeItem('__zj');return'OK'}catch{return'blocked'}})()}`,`Service worker: ${'serviceWorker' in navigator?'supported':'not supported'}`,`Pixel ratio: ${devicePixelRatio||1}`,`Assembly FPS: ${runtimeFps||'--'}`,`Parts installed: ${state.parts.filter(p=>!p.internal).length}`,`Connections: ${state.connections.length}`];e.textContent=lines.join('\n')}
 function registerOffline(){if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./service-worker.js').catch(()=>{})}
 function updateAudioUi(){
  const en=$('#soundEnabled'),vol=$('#soundVolume'),out=$('#soundVolumeOut'),st=$('#soundState');
@@ -1328,7 +1434,7 @@ function updateAudioUi(){
 }
 function initAudioSettings(){
  updateAudioUi();
- if($('#soundEnabled'))$('#soundEnabled').onchange=e=>{soundEnabled=e.target.checked;try{localStorage.setItem('zebjus-v171-sound',soundEnabled?'on':'off')}catch{};if(!soundEnabled){Object.keys(motorAudio).forEach(silenceMotorAudio);silenceSimMotorBank?.()}else tone(660,.06,'sine',.008);updateAudioUi()};
+ if($('#soundEnabled'))$('#soundEnabled').onchange=e=>{soundEnabled=e.target.checked;try{localStorage.setItem('zebjus-v171-sound',soundEnabled?'on':'off')}catch{};if(!soundEnabled){stopTransientTones();Object.keys(motorAudio).forEach(destroyMotorAudio);destroySimMotorBank?.()}else tone(660,.06,'sine',.008);updateAudioUi()};
  if($('#soundVolume'))$('#soundVolume').oninput=e=>{soundVolume=clamp(+e.target.value/100,0,1);try{localStorage.setItem('zebjus-v171-volume',String(soundVolume))}catch{};updateAudioUi()}
 }
 function initSettings(){renderKeySettings();initAudioSettings();$('#saveKeysBtn').onclick=()=>{try{localStorage.setItem('zebjus-v15-keys',JSON.stringify(keyMap))}catch{}notify('Keyboard mapping saved.')};$('#resetKeysBtn').onclick=()=>{keyMap={...keyDefaults};try{localStorage.removeItem('zebjus-v15-keys');localStorage.removeItem('zebjus-v10-keys');localStorage.removeItem('zebjus-v9-keys')}catch{}renderKeySettings();notify('Default key mapping restored.')};
@@ -1340,7 +1446,7 @@ function initSettings(){renderKeySettings();initAudioSettings();$('#saveKeysBtn'
 /* FC / CAL / PID / PYTHON */
 function fcLog(t){const e=$('#fcLog');e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
 function fcStatus(on){state.fc.connected=on;$('#fcBadge').textContent=on?'Connected':'Disconnected';$('#fcBadge').className='status '+(on?'good':'')}
-function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V17.3'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
+function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V17.4'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
 function disconnectFc(log=true){if(state.fc.socket)try{state.fc.socket.close()}catch{}state.fc.socket=null;fcStatus(false);if(log)fcLog('Disconnected')}
 function sendFc(o){if(state.fc.socket?.readyState===1){state.fc.socket.send(JSON.stringify(o));fcLog('TX '+JSON.stringify(o));return true}fcLog('Not connected');return false}
 function packet(raw){let d;try{d=JSON.parse(raw)}catch{d={raw}};['roll','pitch','yaw','gyroX','gyroY','gyroZ','battery'].forEach(k=>{if(Number.isFinite(+d[k]))state.telemetry[k]=+d[k]});$('#telemetryLog').textContent=(new Date().toLocaleTimeString()+' '+raw+'\n'+$('#telemetryLog').textContent).slice(0,12000);telemetryUI()}
@@ -1372,14 +1478,24 @@ print("Attitude:",json.loads(str(zebjusBridge.attitude())))
 }
 
 /* Save/load/buttons */
-function save(){try{localStorage.setItem('zebjusF450V173',JSON.stringify({guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}));$('#saveState').textContent='Saved';setTimeout(()=>$('#saveState').textContent='Ready',800)}catch(e){console.warn('[ZEBJUS] Save unavailable:',e);notify('Browser storage is unavailable in this embed/session.','bad')}}
-function load(){try{const rawCurrent=localStorage.getItem('zebjusF450V173')||localStorage.getItem('zebjusF450V152')||localStorage.getItem('zebjusF450V151'),rawLegacy=localStorage.getItem('zebjusF450V121')||localStorage.getItem('zebjusF450V12')||localStorage.getItem('zebjusF450V10')||localStorage.getItem('zebjusF450V9'),d=JSON.parse(rawCurrent||rawLegacy||'null');if(!d)return;history.restoring=true;state.guided=d.guided??true;state.step=rawCurrent?(d.step||0):0;state.doneActions=new Set(d.actions||[]);state.connections=d.connections||[];state.pid=normalizePidShape(d.pid||state.pid);wireLayout={...wireDefaultLayout,...(d.wireLayout||{})};wireNodeTransforms=d.wireNodeTransforms||{};optionalWireNodes=d.optionalWireNodes||[];if(d.sim)Object.assign(state.sim,d.sim);(d.parts||[]).filter(p=>p.type!=='fcStandoff'&&p.type!=='batteryStrap').forEach(p=>{const s=(slots[p.type]||[]).find(x=>x.id===p.slotId);if(s)install(p.type,s,false)});if(!rawCurrent){const firstIncomplete=steps.findIndex((_,i)=>!stepDone(i));state.step=firstIncomplete<0?steps.length-1:firstIncomplete}render2D();renderPid();rebuild3DWires();rebuildSolder();setPowerVisual(state.doneActions.has('xt60'),true);persistWireLayout();history.restoring=false}catch(e){console.warn(e)}}
+function save(){try{localStorage.setItem('zebjusF450V174',JSON.stringify({guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}));$('#saveState').textContent='Saved';setTimeout(()=>$('#saveState').textContent='Ready',800)}catch(e){console.warn('[ZEBJUS] Save unavailable:',e);notify('Browser storage is unavailable in this embed/session.','bad')}}
+function load(){try{const rawCurrent=localStorage.getItem('zebjusF450V174')||localStorage.getItem('zebjusF450V173')||localStorage.getItem('zebjusF450V172')||localStorage.getItem('zebjusF450V171')||localStorage.getItem('zebjusF450V17')||localStorage.getItem('zebjusF450V16')||localStorage.getItem('zebjusF450V152')||localStorage.getItem('zebjusF450V151'),rawLegacy=localStorage.getItem('zebjusF450V121')||localStorage.getItem('zebjusF450V12')||localStorage.getItem('zebjusF450V10')||localStorage.getItem('zebjusF450V9'),d=JSON.parse(rawCurrent||rawLegacy||'null');if(!d)return;history.restoring=true;state.guided=d.guided??true;state.step=rawCurrent?(d.step||0):0;state.doneActions=new Set(d.actions||[]);state.connections=d.connections||[];state.pid=normalizePidShape(d.pid||state.pid);wireLayout={...wireDefaultLayout,...(d.wireLayout||{})};wireNodeTransforms=d.wireNodeTransforms||{};optionalWireNodes=d.optionalWireNodes||[];if(d.sim)Object.assign(state.sim,d.sim);(d.parts||[]).filter(p=>p.type!=='fcStandoff'&&p.type!=='batteryStrap').forEach(p=>{const s=(slots[p.type]||[]).find(x=>x.id===p.slotId);if(s)install(p.type,s,false)});if(!rawCurrent){const firstIncomplete=steps.findIndex((_,i)=>!stepDone(i));state.step=firstIncomplete<0?steps.length-1:firstIncomplete}render2D();renderPid();rebuild3DWires();rebuildSolder();setPowerVisual(state.doneActions.has('xt60'),true);persistWireLayout();history.restoring=false}catch(e){console.warn(e)}}
+function stopInteractiveRuntime(){
+ if(state.sim.running)stopSimRuntime(true);else{destroyMotorAudio('sim');destroySimMotorBank()}
+ if(wireMotorRun){wireMotorRun=false;destroyMotorAudio('wire');render2D?.()}else destroyMotorAudio('wire');
+ heldKeys.clear()
+}
+function initRuntimeSafety(){
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){stopTransientTones();stopInteractiveRuntime()}});
+ window.addEventListener('pagehide',()=>{stopTransientTones();stopInteractiveRuntime()});
+ window.addEventListener('blur',()=>heldKeys.clear())
+}
 function initButtons(){
  $('#undoBtn').onclick=undoAction;$('#redoBtn').onclick=redoAction;
  $('#guidedModeBtn').onclick=()=>{historyPush();state.guided=true;$('#guidedModeBtn').classList.add('active');$('#freeModeBtn').classList.remove('active');renderAssemblyUI();showGuides()};$('#freeModeBtn').onclick=()=>{historyPush();state.guided=false;$('#freeModeBtn').classList.add('active');$('#guidedModeBtn').classList.remove('active');guidesRoot?.clear();renderAssemblyUI()};
  $('#prevStepBtn').onclick=()=>{historyPush();state.step=Math.max(0,state.step-1);renderAssemblyUI();showGuides()};$('#nextStepBtn').onclick=()=>{if(state.guided&&!stepDone(state.step)){notify('Complete current step first.','bad');return}historyPush();state.step=Math.min(steps.length-1,state.step+1);renderAssemblyUI();showGuides()};
  $('#objectViewBtn').onclick=()=>setWireMap(false);$('#wireMapBtn').onclick=()=>setWireMap(true);$('#xrayBtn').onclick=()=>{state.xray=!state.xray;$('#xrayBtn').classList.toggle('active',state.xray);document.body.classList.toggle('xray',state.xray)};$('#fcCaseXrayBtn').onclick=()=>{state.fcCaseXray=!state.fcCaseXray;$('#fcCaseXrayBtn').classList.toggle('active',state.fcCaseXray);applyFcCaseXray()};$('#view3dBtn').onclick=()=>setView('3d');$('#topBtn').onclick=()=>setView('top');$('#frontBtn').onclick=()=>setView('front');$('#explodeBtn').onclick=toggleExplode;$('#autoRotateBtn').onclick=()=>{state.autoRotate=!state.autoRotate;$('#autoRotateBtn').classList.toggle('active',state.autoRotate)};
- $('#saveBtn').onclick=save;$('#resetBtn').onclick=()=>{if(confirm('Reset project?')){try{localStorage.removeItem('zebjusF450V173');localStorage.removeItem('zebjusF450V152');localStorage.removeItem('zebjusF450V151');localStorage.removeItem('zebjusF450V121');localStorage.removeItem('zebjusF450V10');localStorage.removeItem('zebjusF450V9');localStorage.removeItem('zebjus-v152-wire-layout');localStorage.removeItem('zebjus-v8-wire-layout')}catch{}location.reload()}};
+ $('#saveBtn').onclick=save;$('#resetBtn').onclick=()=>{if(confirm('Reset project?')){try{localStorage.removeItem('zebjusF450V174');localStorage.removeItem('zebjusF450V173');localStorage.removeItem('zebjusF450V172');localStorage.removeItem('zebjusF450V171');localStorage.removeItem('zebjusF450V17');localStorage.removeItem('zebjusF450V16');localStorage.removeItem('zebjusF450V152');localStorage.removeItem('zebjusF450V151');localStorage.removeItem('zebjusF450V121');localStorage.removeItem('zebjusF450V10');localStorage.removeItem('zebjusF450V9');localStorage.removeItem('zebjus-v152-wire-layout');localStorage.removeItem('zebjus-v8-wire-layout')}catch{}location.reload()}};
  $('#autoWireBtn').onclick=()=>{wireRemember();historyPush();state.connections=requiredWires.map(([from,to],i)=>({from,to,new:true,id:`ref-${Date.now()}-${i}`}));['motorWire','powerWire','escFc'].forEach(x=>state.doneActions.add(x));state.doneActions.delete('xt60');setPowerVisual(false,false);render2D();rebuild3DWires();rebuildSolder();renderAssemblyUI();notify('Full correct wiring created.');setTimeout(()=>{state.connections.forEach(c=>c.new=false);render2D()},900)};$('#clearWireBtn').onclick=()=>{wireRemember();historyPush();state.connections=[];['motorWire','powerWire','escFc','xt60'].forEach(x=>state.doneActions.delete(x));setPowerVisual(false,false);render2D();rebuild3DWires();rebuildSolder();renderAssemblyUI()};
  $('#batteryConnectBtn').onclick=toggleBatteryPower;$('#connectFcBtn').onclick=connectFc;$('#disconnectFcBtn').onclick=disconnectFc;$('#pingFcBtn').onclick=()=>sendFc({type:'ping',time:Date.now()});$('#applyPidBtn').onclick=()=>{syncQuickPid();notify('PID values applied to tripod simulator.');};$('#sendPidBtn').onclick=()=>sendFc({type:'pid_set',pid:state.pid});$('#restorePidBtn').onclick=()=>{historyPush();state.pid={rateRoll:{P:.9,I:15,D:.035},ratePitch:{P:.9,I:15,D:.035},rateYaw:{P:3,I:13,D:0},angleRoll:{P:3,I:0,D:0},anglePitch:{P:3,I:0,D:0}};renderPid();syncQuickPid()};
  window.addEventListener('keydown',e=>{const cmd=e.ctrlKey||e.metaKey;if(!cmd)return;if(e.key.toLowerCase()==='z'&&!e.shiftKey){e.preventDefault();undoAction()}else if((e.key.toLowerCase()==='z'&&e.shiftKey)||e.key.toLowerCase()==='y'){e.preventDefault();redoAction()}});historyButtons()
@@ -1404,13 +1520,13 @@ function boot(){
  bootStep('Python Lab',initPython);
  bootStep('Buttons',initButtons);
  bootStep('Wiring controls',initWiringControls);
- bootStep('Settings',initSettings);registerOffline();
+ bootStep('Settings',initSettings);bootStep('Runtime safety',initRuntimeSafety);registerOffline();
  loadAssets();
  if(threeOK){bootStep('Saved project',load);bootStep('Assembly refresh',renderAssemblyUI);bootStep('3D guides',showGuides)}
  bootStep('PID quick sync',syncQuickPid);
  if(threeOK){setBootStatus('Local 3D engine ready','good');notify('3D engine ready • offline/local runtime.','good')}
  else{setBootStatus('3D unavailable • 2D tools active');notify('3D renderer unavailable — 2D tools are still active.','bad')}
  window.__zebjusAppLoaded=true;updateStartupDiagnostics?.();
- window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'17.3'}}));
+ window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'17.4'}}));
 }
 boot();

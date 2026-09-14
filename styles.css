@@ -376,3 +376,9 @@ html{scroll-behavior:smooth}body{overflow-x:hidden}.app-shell,main{width:100%;ma
 @media(max-width:1450px){.assembly-grid.active{grid-template-columns:225px minmax(650px,1fr) 295px!important}.three-wrap{min-height:680px!important}.right-workbench{grid-template-rows:minmax(350px,48vh) minmax(0,1fr)!important}.settings-grid{grid-template-columns:1fr 1fr!important}}
 @media(max-width:1180px){.assembly-grid.active{grid-template-columns:220px minmax(0,1fr)!important}.right-panel{grid-column:1/-1;min-height:auto!important}.right-workbench{grid-template-columns:1fr 1fr;grid-template-rows:auto!important}.three-wrap{height:680px!important}.wiring-layout,.python-layout{grid-template-columns:1fr!important}.wiring-side{max-height:none!important}}
 @media(max-width:850px){.assembly-grid.active{grid-template-columns:1fr!important}.left-panel,.right-panel{min-height:auto!important}.right-workbench{display:block}.three-wrap{height:600px!important;min-height:600px!important}.settings-grid{grid-template-columns:1fr!important}.zebjus-page-watermark{display:none}.zebjus-workstation-watermark{right:10px;bottom:10px}}
+
+
+/* ==================== V17.4 RUNTIME / WIRING / AXIS FIX ==================== */
+.flip-badge-2d{fill:#77e9c2;font-size:7px;font-weight:900;letter-spacing:.08em}
+.motor-pigtail-2d{opacity:.88;filter:url(#glow)}
+.sim-axis-check{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:7px 10px;border-top:1px solid #294656;background:#07151f;color:#90a8b6;font-size:8px}.sim-axis-check b{color:#6ee9c0;letter-spacing:.1em}.sim-axis-check span{border:1px solid #274354;border-radius:999px;padding:4px 7px;background:#091b27}

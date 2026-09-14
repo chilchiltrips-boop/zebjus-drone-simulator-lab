@@ -1,0 +1,54 @@
+ZEBJUS F450 DRONE LAB V17.4 — RUNTIME / WIRING / AXIS QA
+==============================================================================
+
+[PASS] Simulator STOP hard-destroys main motor audio
+[PASS] Simulator STOP destroys four-motor sound bank
+[PASS] Zero-level motor audio has zero gain
+[PASS] Stopped simulator mix is forced to zero
+[PASS] Reset uses hard simulator stop
+[PASS] 2D BLDC STOP destroys wire motor audio
+[PASS] Leaving Simulator tab stops runtime
+[PASS] Leaving Wiring tab stops BLDC runtime
+[PASS] Hidden/pagehide safety exists
+[PASS] Mute destroys continuous audio
+[PASS] Battery disconnect cancels scheduled tones
+[PASS] M1/M4 motor ports face left by default
+[PASS] M2/M3 motor ports face right by default
+[PASS] M1/M4 show inward phase pigtails
+[PASS] F flip does not mirror node group
+[PASS] Flip swaps port sides
+[PASS] Flip text remains readable
+[PASS] Roll keyboard input is isolated
+[PASS] Pitch keyboard input is isolated
+[PASS] Angle Roll uses only cmdR
+[PASS] Angle Pitch uses only cmdP
+[PASS] Rate Hold Roll/Pitch inputs are not cross-wired
+[PASS] Explicit Roll/Pitch/Yaw visual mapping
+[PASS] Simulator pivot uses YXZ rotation order
+[PASS] Manual disturbance axes isolated
+[PASS] Axis-map UI added
+[PASS] V17.3/17.2/17.1/V16 save migration
+[PASS] V17.4 cache bust
+[PASS] ZEBJUS branding retained
+[PASS] Rate Hold retained
+[PASS] Angle calibrated level retained
+[PASS] Yaw remains Rate PID only
+[PASS] app.js ES module syntax
+[PASS] service-worker syntax
+[PASS] No duplicate HTML IDs
+[PASS] Static UI IDs exist
+[PASS] All local references exist
+[PASS] Flat project folder
+[PASS] Top-level module evaluation
+
+Passed 39 / 39 checks.
+
+MAIN FIXES:
+- PID Tripod STOP destroys all continuous oscillators and zeros motor mix.
+- M1/M4 2D motor phase terminals face left toward ESC1/ESC4.
+- M2/M3 remain right-facing toward ESC2/ESC3.
+- F swaps connector facing without mirroring text.
+- Roll/Pitch input and visual axes are explicitly isolated.
+- YXZ attitude order prevents yaw from visually swapping roll/pitch.
+- Tab/page lifecycle stops active motor tests and sound.
+- Save migration and service-worker cache updated.

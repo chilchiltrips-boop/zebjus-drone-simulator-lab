@@ -1,4 +1,4 @@
-# ZEBJUS F450 Drone Engineering Lab — V17.3 Optimized UI + Power Audio
+# ZEBJUS F450 Drone Engineering Lab — V17.4 Runtime / Wiring / Axis Fix
 
 V17 corrects the control-model teaching behavior.
 
@@ -76,3 +76,34 @@ This is deliberately labelled **Rate Hold**, because pure acro/rate mode normall
 - Rebalanced assembly side panels to give the 3D workbench more screen space.
 - Optimized wiring, simulator, forms, Python, settings and responsive layouts.
 - Added a subtle clickable ZEBJUS watermark advertisement to the 3D workstation and all other tab pages.
+
+
+## V17.4 bug-fix pass
+- Simulator STOP now hard-destroys all continuous simulator oscillators instead of leaving them at a tiny non-zero gain.
+- Four individual simulated motor oscillators are also destroyed on STOP.
+- Stopped simulator motor mix is forced to zero, so props cannot continue visually spinning from a previously high throttle.
+- Leaving the PID Simulator tab stops the simulator and its audio.
+- Leaving the 2D Wiring tab stops the BLDC test and its audio.
+- Hiding / closing the page stops interactive motor audio.
+- Sound Mute destroys all active continuous sound sources immediately.
+- Battery disconnect cancels delayed startup tones and delayed spark animation.
+
+### 2D motor wiring
+- M1 and M4 now face inward, with U/V/W terminals on the LEFT toward ESC1/ESC4.
+- M2 and M3 keep U/V/W on the RIGHT toward ESC2/ESC3.
+- This makes all four ESC-to-motor phase connections face each other naturally.
+- Pressing F now swaps connector facing only. Text is never mirrored, so labels remain readable.
+
+### Simulator Roll/Pitch
+- Roll and Pitch input paths are isolated.
+- Roll changes only the Roll target/rate.
+- Pitch changes only the Pitch target/rate.
+- Three.js attitude order is now YXZ so yaw rotation does not visually exchange Roll/Pitch axes.
+- Arrow Up / forward pitch uses the corrected Pitch sign.
+- Manual disturbance Pitch sign is matched to the transmitter convention.
+- An AXIS MAP indicator was added under the simulator.
+
+### Additional bugs corrected
+- 2D BLDC STOP now hard-stops its oscillator instead of leaving a residual hum.
+- Recent V17.3 / V17.2 / V17.1 / V17 / V16 saves are included in migration lookup.
+- Service-worker cache version bumped to prevent old runtime files from being reused.
