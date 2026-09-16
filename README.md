@@ -1,4 +1,4 @@
-# ZEBJUS F450 Drone Engineering Lab — V17.5 Adaptive Multi-Screen
+# ZEBJUS F450 Drone Engineering Lab — V17.5.1 Adaptive Final
 
 V17 corrects the control-model teaching behavior.
 
@@ -145,3 +145,13 @@ The same project automatically adapts to:
 - Default graphics profile is automatic: low on constrained touch phones, balanced on normal systems, high on very large displays. User selection still overrides it.
 
 All V17.4 runtime audio, M1/M4 wiring, readable flip, Roll/Pitch axis, Rate Hold, calibrated Angle mode, branding, and electrical validation fixes are retained.
+
+
+## V17.5.1 final fixes
+- Corrected the initial loading label to V17.5.1.
+- Removed the stale V10 sentence from WIX_EMBED.txt.
+- Added explicit `touch-action:none` on 2D wiring nodes and ports so mobile node dragging does not compete with browser pan/scroll.
+- Added proper 192×192 and 512×512 ZEBJUS PWA/home-screen icons, including maskable support.
+- Added Apple touch icon and theme-color metadata.
+- Service-worker cache now includes the new icon assets.
+- V17.5 project save migration is preserved after the V17.5.1 key bump.

@@ -1,0 +1,105 @@
+ZEBJUS F450 DRONE ENGINEERING LAB V17.5.1 — FINAL QA REPORT
+==================================================================================
+
+Passed: 97/97
+
+[PASS] V17.5.1 title
+[PASS] Current initial boot label
+[PASS] Stale V10 Wix sentence removed
+[PASS] 2D node touch-action fix
+[PASS] 2D port touch-action fix
+[PASS] PWA 192 icon configured
+[PASS] PWA 512 icon configured
+[PASS] Apple touch icon linked
+[PASS] Service worker caches icons
+[PASS] Service worker v1751 cache
+[PASS] V17.5 migration retained
+[PASS] Adaptive viewport meta
+[PASS] Adaptive runtime
+[PASS] VisualViewport
+[PASS] ResizeObserver
+[PASS] Mobile breakpoint
+[PASS] Tablet breakpoint
+[PASS] Laptop breakpoint
+[PASS] Desktop breakpoint
+[PASS] TV breakpoint
+[PASS] 4K breakpoint
+[PASS] Tripod hard audio stop
+[PASS] 2D BLDC hard audio stop
+[PASS] M1/M4 inward wiring
+[PASS] Readable flip
+[PASS] Roll isolated
+[PASS] Pitch isolated
+[PASS] Rate Hold
+[PASS] Calibrated Angle
+[PASS] JS syntax: app.js
+[PASS] JS syntax: drone3d.js
+[PASS] JS syntax: learning-lab.js
+[PASS] JS syntax: service-worker.js
+[PASS] JS syntax: three.module.min.js
+[PASS] JS syntax: ui-runtime.js
+[PASS] JS syntax: wiring2d.js
+[PASS] CSS parses
+[PASS] No duplicate IDs
+[PASS] All static JS UI IDs exist
+[PASS] All HTML local refs exist
+[PASS] All app asset refs exist
+[PASS] Image valid: fc_board_reference.png
+[PASS] Image valid: fc_top_layout.png
+[PASS] Image valid: icon-192.png
+[PASS] Image valid: icon-512.png
+[PASS] Image valid: ref_a2212-motor.png
+[PASS] Image valid: ref_f450-arms.png
+[PASS] Image valid: ref_f450-complete.png
+[PASS] Image valid: ref_f450-frame-top-reference.png
+[PASS] Image valid: ref_f450-layout-reference.png
+[PASS] Image valid: ref_f450-plates.png
+[PASS] Image valid: ref_fc-pin-reference.png
+[PASS] Image valid: ref_fc-port-layout-reference.png
+[PASS] Image valid: ref_frame-assembly.png
+[PASS] Image valid: ref_full-wiring-reference.png
+[PASS] Image valid: ref_guard-motor-closeup.png
+[PASS] Image valid: ref_guarded-drone.png
+[PASS] Image valid: ref_led-matrix-16x16.png
+[PASS] Image valid: ref_lipo-2200.png
+[PASS] Image valid: ref_pdb-soldering.png
+[PASS] Image valid: ref_propeller-guards.png
+[PASS] Image valid: ref_simonk-30a-esc.png
+[PASS] Image valid: ref_zebjus-fc-gerber-top.png
+[PASS] Image valid: thumb_armRed.png
+[PASS] Image valid: thumb_armWhite.png
+[PASS] Image valid: thumb_battery.png
+[PASS] Image valid: thumb_batteryStrap.png
+[PASS] Image valid: thumb_bottomPlate.png
+[PASS] Image valid: thumb_esc.png
+[PASS] Image valid: thumb_fc.png
+[PASS] Image valid: thumb_fcStandoff.png
+[PASS] Image valid: thumb_frameScrew.png
+[PASS] Image valid: thumb_guard.png
+[PASS] Image valid: thumb_motor.png
+[PASS] Image valid: thumb_motorScrew.png
+[PASS] Image valid: thumb_prop.png
+[PASS] Image valid: thumb_receiver.png
+[PASS] Image valid: thumb_topPlate.png
+[PASS] Image valid: tripod_reference.png
+[PASS] GLB valid: a2212_1000kv_motor.glb
+[PASS] GLB valid: battery_strap.glb
+[PASS] GLB valid: esc_30a.glb
+[PASS] GLB valid: f450_arm_red.glb
+[PASS] GLB valid: f450_arm_white.glb
+[PASS] GLB valid: f450_bottom_pdb.glb
+[PASS] GLB valid: f450_prop_guard.glb
+[PASS] GLB valid: f450_top_plate.glb
+[PASS] GLB valid: fc_standoff.glb
+[PASS] GLB valid: frame_screw_m25.glb
+[PASS] GLB valid: lipo_2200_3s.glb
+[PASS] GLB valid: motor_screw_m3.glb
+[PASS] GLB valid: prop_1045_ccw.glb
+[PASS] GLB valid: prop_1045_cw.glb
+[PASS] GLB valid: receiver_module.glb
+[PASS] GLB valid: zebjus_flight_controller.glb
+[PASS] Service worker core refs exist
+[PASS] Adaptive runtime smoke
+
+All four V17.5 review findings are fixed and verified.
+Static/module/runtime-smoke validation is clean. Physical-device visual QA after deployment is still recommended.

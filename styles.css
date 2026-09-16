@@ -567,3 +567,9 @@ input[type=range]{touch-action:pan-x}
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
 @media (hover:none){.zebjus-ad-card:hover,.zebjus-top-shop:hover,.zebjus-page-watermark:hover,.zebjus-workstation-watermark:hover{transform:none!important}}
+
+
+/* V17.5.1 mobile wiring touch fix */
+#wiringSvg .wire-node-v8{touch-action:none;-webkit-user-select:none;user-select:none}
+#wiringSvg .wire-node-v8 .port-v8{touch-action:none}
+#wiringSvg .wire-node-v8 text{pointer-events:none}

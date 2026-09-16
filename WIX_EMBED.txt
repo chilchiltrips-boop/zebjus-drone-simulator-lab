@@ -1,11 +1,10 @@
 <iframe src="https://YOUR-GITHUB-USERNAME.github.io/zebjus-drone-simulator-lab/" width="100%" height="980" style="border:0;border-radius:16px" allow="fullscreen" loading="lazy"></iframe>
 
-V10 uses same-folder assets and local Three.js. Upload every file from this folder directly to the GitHub repository root.
 
 For real flight-controller connection, open the GitHub Pages URL directly in a new browser tab if the Wix iframe blocks local-network/WebSocket permissions.
 
 
-V17.5 RESPONSIVE EMBED
+V17.5.1 RESPONSIVE EMBED
 ----------------------
 Use a full-width iframe/container. Do not lock the iframe to a desktop-only width.
 
