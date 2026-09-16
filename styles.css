@@ -382,3 +382,188 @@ html{scroll-behavior:smooth}body{overflow-x:hidden}.app-shell,main{width:100%;ma
 .flip-badge-2d{fill:#77e9c2;font-size:7px;font-weight:900;letter-spacing:.08em}
 .motor-pigtail-2d{opacity:.88;filter:url(#glow)}
 .sim-axis-check{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:7px 10px;border-top:1px solid #294656;background:#07151f;color:#90a8b6;font-size:8px}.sim-axis-check b{color:#6ee9c0;letter-spacing:.1em}.sim-axis-check span{border:1px solid #274354;border-radius:999px;padding:4px 7px;background:#091b27}
+
+
+/* ==================== V17.5 ADAPTIVE MULTI-SCREEN LAYOUT ==================== */
+:root{
+ --safe-top:env(safe-area-inset-top,0px);--safe-right:env(safe-area-inset-right,0px);
+ --safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px);
+ --touch-min:40px;--panel-gap:clamp(7px,1vw,14px);--page-pad:clamp(7px,1.2vw,20px)
+}
+*{box-sizing:border-box;min-width:0}
+html,body,#app{max-width:100%;min-height:100%;margin:0}
+body{padding-left:var(--safe-left);padding-right:var(--safe-right);overscroll-behavior-y:none}
+img,video,canvas,svg{max-width:100%}
+button,input,select,textarea{font:inherit}
+button,.btn,.tab,.view-btn,.mode,.key-capture{touch-action:manipulation}
+#threeContainer,#simThree{width:100%!important;height:100%!important;touch-action:none}
+#threeContainer canvas,#simThree canvas{display:block;width:100%!important;height:100%!important;touch-action:none}
+.panel,.form-card,.editor-card,.terminal-card,.sim-card,.wiring-card,.left-panel,.right-panel{min-width:0}
+.panel-head>div,.section-toolbar>div{min-width:0}.panel-head h2,.section-toolbar b,.section-toolbar span,.micro-note,.shelf-note,.inspector,.current-step-card{overflow-wrap:anywhere}
+.adaptive-layout-badge{display:inline-flex;align-items:center;min-height:28px;padding:4px 8px;border:1px solid #2c5849;border-radius:999px;background:#081d18;color:#72eac0;font-size:7px;font-weight:900;letter-spacing:.06em;white-space:nowrap}
+.tabs{-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.tabs .tab{scroll-snap-align:center;white-space:nowrap}
+.toolbar-row,.view-switch,.camera-actions{-webkit-overflow-scrolling:touch}
+.svg-wrap{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#pythonEditor{resize:vertical}
+input[type=range]{touch-action:pan-x}
+
+/* COARSE POINTERS / TOUCH */
+@media (pointer:coarse){
+ :root{--touch-min:46px}
+ button,.btn,.tab,.view-btn,.mode,.key-capture,select,input[type=number]{min-height:var(--touch-min)}
+ .small{min-height:42px!important}
+ .stick-pad,.v15-gimbal{touch-action:none}
+ #wiringSvg{touch-action:pan-x pan-y}
+ #wiringSvg .port-v8{r:10px;stroke-width:2.4px}
+ .product-card{min-height:92px!important}
+ .shop-mini,.inspector-shop{min-height:34px;display:inline-flex;align-items:center}
+}
+
+/* MOBILE — portrait-first, full-width working surfaces */
+@media (max-width:699px){
+ :root{--page-pad:6px;--panel-gap:7px}
+ body{font-size:14px}
+ .topbar{display:grid!important;grid-template-columns:1fr!important;gap:7px!important;min-height:auto!important;padding:calc(7px + var(--safe-top)) 9px 7px!important}
+ .brand{min-width:0}.brand .logo{width:34px!important;height:34px!important;flex:0 0 34px!important}.brand b{font-size:11px!important}.brand span{font-size:7px!important;line-height:1.35}
+ .top-actions{width:100%;overflow-x:auto;justify-content:flex-start!important;gap:6px!important;padding-bottom:2px}.top-actions>*{flex:0 0 auto}
+ .zebjus-top-shop{display:none!important}
+ .tabs{position:sticky;top:0;z-index:60;display:flex!important;overflow-x:auto;scroll-snap-type:x proximity;flex-wrap:nowrap!important;min-height:48px!important;padding:5px 7px!important;background:#07131df2;backdrop-filter:blur(12px)}
+ .tab{flex:0 0 auto!important;min-height:40px!important;padding:7px 10px!important;font-size:8px!important}
+ .panel{padding:6px!important}
+ .section-toolbar{align-items:flex-start!important;flex-direction:column!important;padding:8px!important}.section-toolbar>.toolbar-row,.section-toolbar>div:last-child{width:100%}
+ .toolbar-row{display:flex!important;overflow-x:auto;flex-wrap:nowrap!important;gap:6px!important;padding-bottom:3px}.toolbar-row>*{flex:0 0 auto}
+ .panel-head{gap:7px!important}.panel-head h2{font-size:13px!important}.panel-head small{font-size:7px!important}
+ .btn,.view-btn,.mode{font-size:9px!important}
+ .assembly-grid.active{display:flex!important;flex-direction:column!important;max-width:none!important;gap:7px!important}
+ .center-stage{order:1}.right-panel{order:2}.left-panel{order:3}
+ .left-panel,.right-panel{min-height:auto!important;padding:8px!important;border-radius:12px!important}
+ .stage-toolbar{position:sticky;top:48px;z-index:45;background:#07141df5;backdrop-filter:blur(10px);padding:6px!important;gap:5px!important}
+ .view-switch,.camera-actions{width:100%;display:flex!important;overflow-x:auto;flex-wrap:nowrap!important;padding-bottom:2px}.view-switch>* ,.camera-actions>*{flex:0 0 auto}
+ .three-wrap{height:clamp(430px,62dvh,680px)!important;min-height:0!important;border-radius:12px!important}
+ .wire-legend{max-width:78vw!important;max-height:150px;overflow:auto;font-size:7px!important}
+ .virtual-chip{transform:scale(.82);transform-origin:left bottom}
+ .snap-message{max-width:72vw;font-size:8px!important}
+ .right-workbench{display:block!important}.right-shelf-section,.right-inspector-section{min-height:0!important}
+ .vertical-shelf{display:grid!important;grid-auto-flow:column!important;grid-auto-columns:minmax(215px,78vw)!important;grid-template-columns:none!important;overflow-x:auto!important;overflow-y:hidden!important;gap:7px!important;scroll-snap-type:x proximity;padding-bottom:7px!important}
+ .vertical-shelf .product-card{scroll-snap-align:start;min-height:98px!important}
+ .step-list{max-height:42dvh;overflow:auto}.step-actions{position:sticky;bottom:calc(var(--safe-bottom) + 4px);z-index:20;background:#07131dec;padding:5px}
+ .zebjus-ad-card{padding:8px!important}.zebjus-ad-images img{width:42px!important;height:34px!important}.zebjus-ad-copy span{display:none}
+ .zebjus-workstation-watermark{right:8px!important;bottom:9px!important;opacity:.18!important}.zebjus-workstation-watermark b{font-size:18px!important}
+
+ .wiring-layout{display:block!important;max-width:none!important}.wiring-card,.wiring-side{width:100%!important}
+ .wiring-card .section-toolbar{position:sticky;top:48px;z-index:40}
+ .svg-wrap{height:64dvh!important;min-height:430px!important;max-height:720px!important;overflow:auto!important;border-radius:10px}
+ #wiringSvg{width:1200px!important;max-width:none!important;height:auto!important;min-height:720px!important}
+ .wiring-side{margin-top:8px;display:grid;gap:8px}
+ .motor-test-panel,.optional-devices{padding:10px!important}
+
+ .sim-v17-grid{display:block!important;max-width:none!important}.sim-card,.sim-v17-controls{width:100%!important}
+ .sim-card #simThree{height:58dvh!important;min-height:430px!important;max-height:690px!important}
+ .sim-toolbar{position:sticky;top:48px;z-index:40}.sim-toolbar-actions{width:100%;display:flex!important;overflow-x:auto;flex-wrap:nowrap!important}
+ .sim-v17-controls{max-height:none!important;padding:9px!important;margin-top:7px}
+ .sim-metrics,.metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+ .tx-sticks{grid-template-columns:1fr 1fr!important;gap:8px!important}.gimbal-card{padding:8px!important}.stick-pad,.v15-gimbal{width:min(38vw,170px)!important;height:min(38vw,170px)!important}
+ .axis-pid-card{overflow-x:auto}.axis-pid-table{min-width:430px!important}
+ .pid-presets{overflow-x:auto;flex-wrap:nowrap!important;padding-bottom:4px}.pid-presets>*{flex:0 0 auto}
+ .pid-class-card{padding:10px!important}.pid-class-grid,.mode-lesson{grid-template-columns:1fr!important}.pid-live-equation{grid-template-columns:1fr 1fr!important}
+ .sim-chart-card{overflow:hidden}.sim-chart-card canvas{width:100%!important;height:220px!important}
+
+ .two-col,.pid-layout,.python-layout,.settings-grid{grid-template-columns:1fr!important;display:grid!important;max-width:none!important}
+ .form-card,.editor-card,.terminal-card{padding:10px!important}
+ #pythonEditor{min-height:54dvh!important;font-size:12px!important;line-height:1.5!important}
+ #pythonTerminal,.terminal{min-height:30dvh!important;max-height:55dvh;overflow:auto}
+ .cal-step{grid-template-columns:30px 1fr auto!important;gap:7px!important}.cal-step .btn{min-width:58px}
+ .pid-row{overflow-x:auto}
+ .export-grid,.sim-env-grid{grid-template-columns:1fr!important}
+ .key-row{grid-template-columns:minmax(0,1fr) minmax(110px,42%)!important}
+ .fc-reference-img{width:100%;height:auto}
+ .zebjus-page-watermark{display:none!important}
+}
+
+/* VERY SMALL PHONES */
+@media (max-width:420px){
+ .brand span{display:none}
+ .adaptive-layout-badge{display:none}
+ .three-wrap{height:56dvh!important;min-height:390px!important}
+ .sim-card #simThree{height:52dvh!important;min-height:390px!important}
+ .tx-sticks{gap:5px!important}.stick-pad,.v15-gimbal{width:42vw!important;height:42vw!important}
+ .sim-metrics,.metrics{grid-template-columns:1fr 1fr!important}
+ .view-btn{padding:6px 8px!important}
+ .zebjus-ad-images{display:none!important}
+ #wiringSvg{width:1100px!important}
+}
+
+/* TABLETS / SMALL LAPTOPS */
+@media (min-width:700px) and (max-width:1199px){
+ .topbar{padding:9px 12px!important}.tabs{overflow-x:auto;flex-wrap:nowrap!important}.tab{flex:0 0 auto}
+ .assembly-grid.active{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(280px,34vw)!important;gap:9px!important}
+ .center-stage{grid-column:1;grid-row:1}.right-panel{grid-column:2;grid-row:1;min-height:auto!important}.left-panel{grid-column:1/-1;grid-row:2;min-height:auto!important}
+ .right-workbench{display:block!important}.vertical-shelf{max-height:44dvh;overflow:auto}
+ .three-wrap{height:clamp(560px,67dvh,780px)!important;min-height:0!important}
+ .step-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;max-height:340px;overflow:auto}
+ .wiring-layout,.python-layout{grid-template-columns:1fr!important}.svg-wrap{height:68dvh!important;min-height:580px!important;overflow:auto!important}#wiringSvg{width:1400px!important;max-width:none!important}
+ .sim-v17-grid{grid-template-columns:1fr!important}.sim-card #simThree{height:66dvh!important;min-height:560px!important}.sim-v17-controls{max-height:none!important}
+ .settings-grid{grid-template-columns:1fr 1fr!important}.two-col{grid-template-columns:1fr 1fr!important}
+}
+
+/* LAPTOPS */
+@media (min-width:1200px) and (max-width:1599px){
+ .assembly-grid.active{grid-template-columns:225px minmax(620px,1fr) 300px!important}
+ .three-wrap{height:calc(100dvh - 225px)!important;min-height:620px!important}
+ .right-workbench{grid-template-rows:minmax(330px,46vh) minmax(0,1fr)!important}
+ .sim-v17-grid{grid-template-columns:minmax(0,1fr) minmax(470px,38vw)!important}
+ .sim-card #simThree{height:min(70dvh,760px)!important;min-height:600px!important}
+}
+
+/* LARGE DESKTOP */
+@media (min-width:1600px) and (max-width:2199px){
+ .app-shell,main{max-width:2100px!important}
+ .assembly-grid.active{grid-template-columns:270px minmax(850px,1fr) 350px!important}
+ .three-wrap{height:calc(100dvh - 225px)!important;min-height:760px!important}
+ .wiring-layout,.sim-v17-grid{max-width:2050px!important}
+}
+
+/* TV / 2K / 4K SCREENS */
+@media (min-width:2200px){
+ :root{--touch-min:48px}
+ body{font-size:17px}
+ .app-shell,main{max-width:2800px!important}
+ .topbar{min-height:88px!important;padding:13px 30px!important}.brand .logo{width:52px!important;height:52px!important}.brand b{font-size:18px!important}.brand span{font-size:10px!important}
+ .tabs{min-height:64px!important;padding:9px 24px!important}.tab{font-size:11px!important;padding:11px 16px!important}
+ .panel{padding:15px 25px!important}
+ .assembly-grid.active{grid-template-columns:340px minmax(1200px,1fr) 430px!important;gap:16px!important;max-width:2750px!important}
+ .left-panel,.right-panel{padding:16px!important}.three-wrap{height:calc(100dvh - 260px)!important;min-height:900px!important}
+ .stage-toolbar .view-btn,.btn,.mode{font-size:12px!important;min-height:44px!important}
+ .panel-head h2{font-size:19px!important}.panel-head small{font-size:10px!important}
+ .vertical-shelf .product-card{min-height:112px!important}
+ .wiring-layout{grid-template-columns:minmax(0,1fr) 470px!important;max-width:2700px!important}.svg-wrap,#wiringSvg{min-height:920px!important}
+ .sim-v17-grid{grid-template-columns:minmax(0,1fr) 760px!important;max-width:2700px!important}.sim-card #simThree{height:min(76dvh,1050px)!important;min-height:900px!important}
+ .sim-v17-controls{font-size:15px!important}.stick-pad,.v15-gimbal{width:210px!important;height:210px!important}
+ .form-card,.editor-card,.terminal-card{padding:22px!important}.two-col,.pid-layout,.python-layout,.settings-grid{max-width:2300px!important}
+ .zebjus-workstation-watermark b{font-size:34px!important}.zebjus-page-watermark b{font-size:58px!important}
+}
+
+@media (min-width:3200px){
+ body{font-size:19px}.app-shell,main{max-width:3300px!important}
+ .assembly-grid.active{grid-template-columns:400px minmax(1500px,1fr) 500px!important;max-width:3250px!important}
+ .three-wrap{min-height:1080px!important}.sim-card #simThree{min-height:1050px!important}
+ .tab{font-size:13px!important}.btn,.view-btn,.mode{font-size:13px!important}
+}
+
+/* PHONE / TABLET LANDSCAPE */
+@media (max-width:950px) and (orientation:landscape){
+ .topbar{display:none!important}
+ .tabs{top:0!important;min-height:44px!important}
+ .stage-toolbar,.wiring-card .section-toolbar,.sim-toolbar{top:44px!important}
+ .three-wrap{height:calc(100dvh - 108px)!important;min-height:420px!important}
+ .sim-card #simThree{height:calc(100dvh - 112px)!important;min-height:420px!important}
+ .assembly-grid.active{display:flex!important;flex-direction:column!important}.center-stage{order:1}.right-panel{order:2}.left-panel{order:3}
+ .wire-legend{max-height:110px}
+}
+
+/* ACCESSIBILITY / PERFORMANCE */
+@media (prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+@media (hover:none){.zebjus-ad-card:hover,.zebjus-top-shop:hover,.zebjus-page-watermark:hover,.zebjus-workstation-watermark:hover{transform:none!important}}

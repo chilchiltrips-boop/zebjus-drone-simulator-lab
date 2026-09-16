@@ -1,4 +1,4 @@
-# ZEBJUS F450 Drone Engineering Lab — V17.4 Runtime / Wiring / Axis Fix
+# ZEBJUS F450 Drone Engineering Lab — V17.5 Adaptive Multi-Screen
 
 V17 corrects the control-model teaching behavior.
 
@@ -107,3 +107,41 @@ This is deliberately labelled **Rate Hold**, because pure acro/rate mode normall
 - 2D BLDC STOP now hard-stops its oscillator instead of leaving a residual hum.
 - Recent V17.3 / V17.2 / V17.1 / V17 / V16 saves are included in migration lookup.
 - Service-worker cache version bumped to prevent old runtime files from being reused.
+
+
+## V17.5 Adaptive multi-screen update
+
+The same project automatically adapts to:
+- phones (portrait and landscape)
+- tablets
+- laptops
+- desktop monitors
+- 2K / 4K TV and large-screen displays
+
+### Mobile / touch
+- Full-width 3D workbench first, component shelf and guided panels below it.
+- Horizontal swipe component shelf.
+- Sticky, swipeable tabs and 3D toolbar.
+- Larger touch targets and larger 2D wiring ports on coarse-pointer devices.
+- Touch-safe 3D canvas and PID joysticks.
+- 2D wiring becomes a scrollable engineering canvas instead of shrinking labels until unreadable.
+- Safe-area support for iPhone/Android notches and browser UI.
+- Portrait and landscape layouts are independently tuned.
+
+### Tablet / laptop
+- Tablet layout uses the 3D workbench plus a compact component/inspector column.
+- Guided steps move below the primary workspace.
+- Laptop layout keeps the three-column engineering workflow while reducing fixed-width pressure.
+
+### Desktop / TV
+- Desktop retains the full engineering workstation.
+- 2K/4K screens use wider panels, larger controls, larger typography and larger 3D/PID canvases.
+- Project content is capped at a useful engineering width instead of stretching without limit.
+
+### Runtime adaptation
+- Device class is detected dynamically: Mobile / Tablet / Desktop / TV.
+- Orientation and visual-viewport changes trigger safe WebGL resize.
+- ResizeObserver keeps the Assembly 3D, Tripod Simulator and 2D wiring layout synchronized with CSS changes.
+- Default graphics profile is automatic: low on constrained touch phones, balanced on normal systems, high on very large displays. User selection still overrides it.
+
+All V17.4 runtime audio, M1/M4 wiring, readable flip, Roll/Pitch axis, Rate Hold, calibrated Angle mode, branding, and electrical validation fixes are retained.

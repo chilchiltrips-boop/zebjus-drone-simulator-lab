@@ -1,0 +1,77 @@
+ZEBJUS F450 DRONE ENGINEERING LAB V17.5 — ADAPTIVE MULTI-SCREEN QA
+====================================================================================
+
+[PASS] V17.5 title and cache busting
+[PASS] Adaptive viewport meta
+[PASS] Adaptive runtime init
+[PASS] Dynamic device classes
+[PASS] VisualViewport resize support
+[PASS] ResizeObserver support
+[PASS] WebGL assembly adaptive resize
+[PASS] Tripod adaptive resize
+[PASS] Automatic performance recommendation
+[PASS] Mobile breakpoint
+[PASS] Very-small phone breakpoint
+[PASS] Tablet breakpoint
+[PASS] Laptop breakpoint
+[PASS] Desktop breakpoint
+[PASS] TV / 4K breakpoint
+[PASS] Phone/tablet landscape breakpoint
+[PASS] Safe-area support
+[PASS] Swipeable mobile tabs
+[PASS] Mobile assembly prioritizes 3D center
+[PASS] Mobile horizontal component shelf
+[PASS] Mobile 3D dynamic viewport
+[PASS] Touch-friendly targets
+[PASS] Larger touch wiring ports
+[PASS] Scrollable readable 2D canvas
+[PASS] Touch-safe 3D canvases
+[PASS] Touch-safe PID sticks
+[PASS] Mobile PID tables remain readable
+[PASS] Mobile Python editor sizing
+[PASS] Mobile settings single column
+[PASS] Tablet two-zone assembly
+[PASS] Laptop engineering three-column layout
+[PASS] Large desktop wider engineering layout
+[PASS] TV enlarged assembly layout
+[PASS] 4K typography enlargement
+[PASS] Reduced-motion support
+[PASS] V17.4 hard audio stop retained
+[PASS] M1/M4 inward wiring retained
+[PASS] Readable connector flip retained
+[PASS] Roll/Pitch isolation retained
+[PASS] ZEBJUS branding retained
+[PASS] Rate Hold retained
+[PASS] Calibrated Angle mode retained
+[PASS] PWA orientation any
+[PASS] PWA standalone display
+[PASS] Service worker cache bumped
+[PASS] app.js ES module syntax
+[PASS] service-worker.js syntax
+[PASS] No duplicate HTML IDs
+[PASS] Static JS UI IDs exist
+[PASS] All local references exist
+[PASS] Flat deploy folder
+[PASS] CSS parses without top-level errors
+[PASS] Adaptive device-mode smoke test
+
+Passed 53 / 53 checks.
+
+TARGET LAYOUTS:
+- Mobile phone portrait / landscape
+- Tablet portrait / landscape
+- Laptop
+- Desktop
+- 2K / 4K TV / large display
+
+ADAPTIVE FEATURES:
+- Safe-area / notch support
+- Swipeable navigation and component shelf on mobile
+- Coarse-pointer touch targets
+- Touch-safe Assembly 3D and PID joysticks
+- Scrollable, readable 2D wiring canvas on small screens
+- ResizeObserver + VisualViewport WebGL resizing
+- Automatic default graphics profile by device class
+- Larger UI/canvas treatment for TV screens
+
+NOTE: static/module/adaptive runtime smoke tests passed. Full visual testing on every physical device/browser is not available in this sandbox.
