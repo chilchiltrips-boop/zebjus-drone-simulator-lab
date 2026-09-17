@@ -1,8 +1,8 @@
 {
-  "name": "zebjus-f450-school-cloud-v18",
-  "version": "18.0.0",
+  "name": "zebjus-f450-easy-access-v18-2",
+  "version": "18.2.0",
   "private": true,
-  "description": "ZEBJUS F450 V18 school/lab WebSocket router and static server",
+  "description": "ZEBJUS F450 V18.2 easy-access auto discovery, single-controller lock, captive setup and kit recovery",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

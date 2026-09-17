@@ -1,69 +1,46 @@
-# V18 School Cloud Setup
+# V18.2 Easy Access Server Setup
 
-## 1. Run locally for testing
+The webapp and Node.js WebSocket server are in the same folder.
+
+## Install / run
 
 ```bash
-cd cloud-server
 npm install
-INSTRUCTOR_PIN=2468 DEVICE_SHARED_TOKEN=my-device-token npm start
+DEVICE_SHARED_TOKEN=zebjus-lab-device npm start
 ```
 
-Open `http://localhost:8787` on the instructor and student computers.
+The browser automatically connects to `/ws` on the same webapp host. There is no Instructor PIN, role, School ID, Lab ID or classroom code.
 
-Instructor:
-- Role: Instructor
-- same School ID / Lab ID / Session code
-- enter the configured Instructor PIN
+## Local school-lab test
 
-Students:
-- Role: Student - View only
-- same School ID / Lab ID / Session code
-- no instructor PIN
+If the server computer LAN IP is `192.168.1.5`, use this in the ESP32 firmware:
 
-## 2. Production hosting
-Deploy the `cloud-server` Node application behind HTTPS so the WebSocket endpoint becomes `wss://YOUR-DOMAIN/ws`. The same Node server can serve the V18 webapp files.
+```cpp
+const char* CLOUD_HOST = "192.168.1.5";
+const uint16_t CLOUD_PORT = 8787;
+const bool CLOUD_TLS = false;
+```
 
-Set environment variables:
+Students on the same Wi-Fi open:
 
-- `PORT` - supplied by the host, or 8787 locally
-- `INSTRUCTOR_PIN` - change from the demo default
-- `DEVICE_SHARED_TOKEN` - change from the demo default
-- `ALLOW_REMOTE_BENCH_RC=false` - recommended
+`http://192.168.1.5:8787`
 
-For a production school rollout, replace the simple shared instructor PIN / device token with your real ZEBJUS user-account and per-device authentication service.
+The kit and browser are grouped by their observed network, so same-network kits appear automatically.
 
-## 3. Multiple modules on one school Wi-Fi
-All boards may use the same SSID. Each board connects outward to the cloud and registers its unique Device ID. Local DHCP addresses are informational only.
+## Production
 
-Example:
+Deploy the folder on a Node.js-capable host, then configure the ESP32 for the production host. The web page and WebSocket endpoint should share the same host when possible.
 
-- `ZJ-DRONE-A10001` / F450 Team 1 / 192.168.1.21
-- `ZJ-DRONE-A10002` / F450 Team 2 / 192.168.1.42
-- `ZJ-DRONE-A10003` / F450 Team 3 / 192.168.1.87
+## Hardware control lock
 
-The webapp selects and locks by Device ID, not IP.
+Only one browser may send hardware-changing commands to a kit at a time. Other browsers are View Only for real hardware. Lock ownership is server-side and automatically expires if browser heartbeat stops.
 
-## 4. One drone, one instructor, many student computers
-The instructor clicks **Lock & Connect**. The server grants a single control lock. Students in the same class session are view-only and receive:
+## Optional supervised bench RC
 
-- instructor tab changes when Follow Instructor is enabled
-- PID values
-- selected module
-- live telemetry
-- simulator attitude / motor response
-- web joystick CH1-CH10 state
-- instructor activity feed
+Real-hardware Internet joystick is disabled by default. To enable it only for supervised prop-off bench testing:
 
-A second instructor cannot control the same module until the first instructor releases it or disconnects.
+```bash
+ALLOW_REMOTE_BENCH_RC=true DEVICE_SHARED_TOKEN=zebjus-lab-device npm start
+```
 
-## 5. Flight network behavior
-Recommended firmware behavior remains:
-
-- phone connected to drone AP -> AP-only flight mode; STA off
-- AP settings page may temporarily enable STA only to scan/save school Wi-Fi
-- no AP client + drone disarmed -> try saved STA school Wi-Fi
-- STA connected -> register to cloud by Device ID
-- STA unavailable -> return to AP fallback
-- never change AP/STA mode while armed
-
-The Internet joystick in V18 is for simulator / supervised prop-off bench use, not the primary free-flight transmitter.
+This setting does not change the recommendation that actual free flight use the direct AP control path.

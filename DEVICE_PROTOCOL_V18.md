@@ -1,87 +1,53 @@
-# ZEBJUS V18 Device / School Cloud Protocol
+# ZEBJUS V18.2 Device / Browser Protocol
 
-## Why Device ID instead of IP
-Every flight-controller module uses a permanent ID derived from the ESP32 eFuse MAC, for example `ZJ-DRONE-C5C641`. DHCP may change the local school IP, but the Device ID stays the same.
+WebSocket endpoint: `/ws`
 
-## Device -> cloud hello
-The ESP32 opens an outbound WebSocket to `/ws` after STA connects and sends:
+## Device hello
 
 ```json
-{
-  "type": "hello",
-  "clientType": "device",
-  "deviceId": "ZJ-DRONE-C5C641",
-  "deviceName": "F450 - Team 3",
-  "schoolId": "STMARYS-HSS",
-  "labId": "ROBOTICS-LAB",
-  "firmware": "18.0.0",
-  "mode": "STA / INTERNET",
-  "ssid": "School_WiFi",
-  "rssi": -61,
-  "ip": "192.168.1.24",
-  "token": "<device token>"
-}
+{"type":"hello","clientType":"device","deviceId":"ZJ-DRONE-936314","deviceName":"F450-Team-3","firmware":"18.2.0","mode":"STA / INTERNET","ssid":"SchoolWiFi","rssi":-58,"token":"..."}
 ```
 
-## Status heartbeat
-Recommended every 3-5 seconds:
+## Browser hello
 
 ```json
-{
-  "type": "status",
-  "deviceId": "ZJ-DRONE-C5C641",
-  "mode": "STA / INTERNET",
-  "ssid": "School_WiFi",
-  "rssi": -61,
-  "ip": "192.168.1.24",
-  "armed": false
-}
+{"type":"hello","clientType":"browser"}
 ```
 
-## Telemetry
-The device can send existing telemetry fields. The cloud adds the Device ID before forwarding to browsers.
+## Auto discovery
 
 ```json
-{
-  "type": "telemetry",
-  "roll": 1.2,
-  "pitch": -0.4,
-  "yaw": 92.1,
-  "gyroX": 0.2,
-  "gyroY": -0.1,
-  "gyroZ": 0.4,
-  "battery": 11.8
-}
+{"type":"list_devices","query":""}
 ```
 
-## Cloud -> device command
-Only the instructor who owns the server-side device lock can send commands.
+Device list entries include `online`, `locked`, and `lockMine`.
+
+## Single-controller lock
+
+Acquire:
 
 ```json
-{
-  "type": "device_command",
-  "deviceId": "ZJ-DRONE-C5C641",
-  "from": {
-    "clientId": "...",
-    "userName": "Instructor",
-    "sessionId": "CLASS-A"
-  },
-  "command": {
-    "type": "pid_set",
-    "pid": {"rateRoll":{"P":0.9,"I":15,"D":0.035}}
-  }
-}
+{"type":"acquire_lock","deviceId":"ZJ-DRONE-936314"}
 ```
 
-Supported application commands include `ping`, `pid_set`, calibration commands, coding/device commands and `set_identity`.
+Heartbeat:
 
-`rc_frame` exists only for supervised prop-off bench testing. It is blocked by the included server unless `ALLOW_REMOTE_BENCH_RC=true`. Free flight must use the direct AP control path.
+```json
+{"type":"lock_heartbeat","deviceId":"ZJ-DRONE-936314"}
+```
 
-## Classroom sharing
-Instructor browser -> cloud:
-- `presentation_state` - selected tab, selected module and PID
-- `sim_state` - simulator state at about 10 Hz
-- `joystick_state` - CH1-CH10 state
-- `activity` - classroom action feed
+Release:
 
-Student browsers in the same School + Lab + Session receive these messages view-only.
+```json
+{"type":"release_lock","deviceId":"ZJ-DRONE-936314"}
+```
+
+Hardware-changing `device_command` messages are accepted only from the browser holding the lock. `ping` is allowed without the lock.
+
+## Device command
+
+```json
+{"type":"device_command","deviceId":"ZJ-DRONE-936314","command":{"type":"pid_set","pid":{}}}
+```
+
+The server routes commands by permanent Device ID, never by Kit Name or DHCP IP.

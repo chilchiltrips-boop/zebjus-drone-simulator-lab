@@ -1,13 +1,3 @@
-ZEBJUS F450 Drone Engineering Lab V18 — WIX / HOSTED EMBED
+ZEBJUS F450 V18.2 Easy Access
 
-Recommended production setup:
-1. Deploy the included Node cloud server behind HTTPS.
-2. Let that server host the V18 webapp and `/ws` on the same domain when possible.
-3. Embed the HTTPS V18 page in Wix using an iframe / embed element.
-4. In School / Modules, the default WSS endpoint will be `wss://<same-host>/ws`.
-
-If the webapp is hosted separately from the cloud server, enter the full cloud endpoint in the V18 Classroom Session card, for example:
-
-wss://cloud.zebjus.com/ws
-
-The School Cloud connection requires an outbound WebSocket. Student browsers are view-only. Actual free-flight control remains the direct drone AP/mobile path rather than the Wix/Internet path.
+Deploy this folder on a Node.js-capable host. The webapp connects automatically to /ws on the same host.

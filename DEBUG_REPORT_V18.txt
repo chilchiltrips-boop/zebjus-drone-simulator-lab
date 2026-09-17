@@ -1,40 +1,12 @@
-ZEBJUS F450 DRONE ENGINEERING LAB V18 — UPDATE QA REPORT
+ZEBJUS F450 Drone Engineering Lab V18.2 Easy Access
 
-[PASS] Version title updated to V18
-[PASS] Existing Assembly / Wiring / Simulator / Calibration / PID / Python / Telemetry / Settings tabs retained
-[PASS] JOYSTICK tab added
-[PASS] SCHOOL / MODULES tab added
-[PASS] Unique Device ID architecture implemented
-[PASS] Device Name + School/Lab metadata UI implemented
-[PASS] Multiple module selector implemented
-[PASS] Online / Offline module state implemented
-[PASS] Individual Device ID selection implemented
-[PASS] Server-side single-instructor device lock implemented
-[PASS] STA / Internet and AP / Flight indicators implemented
-[PASS] PID/calibration/device commands route through selected Device ID
-[PASS] Telemetry routed back with Device ID
-[PASS] Instructor / student classroom session implemented
-[PASS] Student VIEW ONLY UI enforcement implemented
-[PASS] Follow-instructor tab sharing implemented
-[PASS] PID state sharing implemented
-[PASS] Simulator state sharing implemented
-[PASS] 10-channel joystick sharing implemented
-[PASS] Existing simulator retained
-[PASS] Remote simulator follower added
-[PASS] Legacy local WebSocket retained under Advanced
-[PASS] Node WebSocket cloud server added
-[PASS] Static server added
-[PASS] Demo instructor PIN authentication added
-[PASS] Device shared-token authentication added
-[PASS] Remote hardware RC blocked by default
-[PASS] ESP32 AP/STA/cloud companion example added
-[PASS] Service-worker cache bumped to V18
-[PASS] app.js syntax check
-[PASS] school-lab.js syntax check
-[PASS] server.js syntax check
-[PASS] no duplicate HTML element IDs
-
-Production note:
-Replace demo PIN/shared-token authentication with the final ZEBJUS account/per-device authentication service before wide deployment.
-
-[PASS] V18.0.1 flat package: server.js + package.json moved into webapp root; no cloud-server folder.
+Updated features:
+- Single-user server-side real-kit control lock
+- Auto kit discovery
+- Wi-Fi Save & Test before credential persistence
+- Improved captive portal
+- Automatic lock release by disconnect / heartbeat timeout
+- Clear Simulator vs Real Hardware separation
+- Factory reset and BOOT recovery
+- Simple connection/error status
+- AP-selected Kit Name persists to webapp; permanent Device ID guarantees exact kit selection

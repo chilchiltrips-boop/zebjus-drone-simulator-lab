@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V18</title>
-<link rel="stylesheet" href="styles.css?v=18.0.0"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V18.2</title>
+<link rel="stylesheet" href="styles.css?v=18.2.0"><link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="theme-color" content="#07111b">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18 • School Cloud • multi-module • instructor/student classroom • shared joystick simulation</span></div></div>
- <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="assetStatus" class="status">Loading V18 school-lab module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.2 • Auto Kit Discovery • Single Controller • Easy Recovery • Joystick Simulation</span></div></div>
+ <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="assetStatus" class="status">Loading V18.2 easy-access module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
-<button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="joystick">JOYSTICK</button><button class="tab" data-tab="connect">SCHOOL / MODULES</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
+<button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="joystick">JOYSTICK</button><button class="tab" data-tab="connect">KIT CONNECT</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
 </nav>
 <main>
 <section id="tab-assembly" class="panel tab-panel active assembly-grid">
@@ -191,15 +191,15 @@
  <div class="joystick-page-grid">
   <section class="form-card joystick-main-card">
    <div class="panel-head"><div><small>WEB APP CONTROL</small><h2>10-Channel Joystick Lab</h2></div><span id="webJoyRoleBadge" class="status">LOCAL</span></div>
-   <div class="safety-banner"><b>SIMULATION / BENCH CONTROL</b><span>Use this Internet/STA joystick for classroom simulation and supervised bench tests. Actual free-flight control should use the direct AP mobile link.</span></div>
+   <div class="target-separation"><div class="target-card sim"><b>SIMULATOR</b><span>Safe local practice. Always available to every student.</span></div><div class="target-card real"><b>REAL HARDWARE</b><span>Requires the single-user control lock. Supervised prop-off bench only.</span></div></div><div class="safety-banner"><b>FREE-FLIGHT SAFETY</b><span>Actual free-flight control should use the direct AP mobile link, not the Internet/STA web joystick.</span></div>
    <div class="form-grid compact-form-grid">
-    <label>Target<select id="webJoyTarget"><option value="sim">Tripod Simulator</option><option value="device">Selected Module • Bench</option></select></label>
+    <label>Target<select id="webJoyTarget"><option value="sim">SIMULATOR • Safe / Local</option><option value="device">REAL KIT • Prop-off Bench</option></select></label>
     <label>Send rate<select id="webJoyRate"><option value="20">20 Hz</option><option value="10">10 Hz</option><option value="5">5 Hz</option></select></label>
    </div>
    <div class="web-tx-shell">
     <div class="web-gimbal-card"><small>LEFT • THROTTLE / YAW</small><div id="webLeftStick" class="web-stick"><i id="webLeftKnob"></i></div><b id="webLeftRead">T 1000 • Y 0</b></div>
     <div class="web-tx-center">
-      <div class="web-tx-title"><b>ZEBJUS TX10</b><span>Instructor control • students mirror view-only</span></div>
+      <div class="web-tx-title"><b>ZEBJUS TX10</b><span id="joyTargetNote">Safe local simulation. No real kit commands are sent.</span><em id="joyTargetBadge" class="target-mode-badge sim">SIMULATOR</em></div>
       <button id="webArmBtn" class="btn danger full">CH5 DISARMED</button>
       <label>CH6 Flight mode<select id="webMode"><option value="1000">ANGLE</option><option value="1500">RATE</option><option value="2000">ALT / AUX</option></select></label>
       <label class="toggle-line"><input id="webAltHold" type="checkbox"> CH7 Alt Hold</label>
@@ -213,10 +213,10 @@
    <div id="webChannelGrid" class="channel-grid"></div>
   </section>
   <aside class="form-card">
-   <div class="panel-head"><div><small>CLASSROOM SHARE</small><h2>Live control mirror</h2></div><span id="shareStateBadge" class="status">Offline</span></div>
-   <p class="micro-note">When an instructor joins a classroom session, joystick and simulator state are broadcast to students in that same School / Lab / Session. Students cannot transmit commands.</p>
-   <div class="metrics classroom-mini-metrics"><div><span>ROLE</span><b id="joyClassRole">Local</b></div><div><span>MODULE</span><b id="joySelectedModule">None</b></div><div><span>SESSION</span><b id="joySession">--</b></div><div><span>LOCK</span><b id="joyLock">--</b></div></div>
-   <div id="joyEventFeed" class="class-feed">No classroom events yet.</div>
+   <div class="panel-head"><div><small>EASY ACCESS</small><h2>Selected Kit</h2></div><span id="shareStateBadge" class="status">Offline</span></div>
+   <p class="micro-note">Every student uses the same web app. Kits are discovered automatically. One browser controls a real kit at a time; everyone else can still view telemetry and use their own simulator.</p>
+   <div class="metrics classroom-mini-metrics"><div><span>ACCESS</span><b>OPEN</b></div><div><span>KIT</span><b id="joySelectedModule">None</b></div><div><span>CONTROL</span><b>SIMULATION</b></div><div><span>HARDWARE</span><b id="joyLock">--</b></div></div>
+   <div class="callout"><b>Flight safety</b><p>The web joystick defaults to the simulator. Real hardware joystick remains disabled unless the server is explicitly configured for supervised prop-off bench testing.</p></div>
   </aside>
  </div>
 </section>
@@ -224,56 +224,46 @@
 <section id="tab-connect" class="panel tab-panel">
  <div class="school-grid">
   <section class="form-card school-connect-card">
-   <div class="panel-head"><div><small>V18 SCHOOL CLOUD</small><h2>Classroom Session</h2></div><span id="schoolCloudBadge" class="status">Offline</span></div>
+   <div class="panel-head"><div><small>V18.2 EASY ACCESS</small><h2>Your Kits</h2></div><span id="schoolCloudBadge" class="status">Connecting</span></div>
+   <div class="callout"><b>No login. No IP address. No manual WebSocket.</b><p>Connect this computer to the same Wi-Fi used by the kit. Online kits appear automatically. You can optionally filter by the exact Kit Name or permanent Device ID.</p></div>
+   <div class="easy-status-strip"><div><span>WEBAPP</span><b id="simpleServiceStatus">CONNECTING</b></div><div><span>KIT</span><b id="simpleKitStatus">NOT SELECTED</b></div><div><span>CONTROL</span><b id="simpleControlStatus">--</b></div><div><span>NETWORK</span><b id="simpleNetworkStatus">--</b></div></div>
+   <div id="simpleErrorStatus" class="simple-error" hidden></div>
    <div class="form-grid">
-    <label>Role<select id="schoolRole" class="viewer-allowed"><option value="instructor">Instructor</option><option value="student">Student • View only</option></select></label>
-    <label>Your name<input id="schoolUserName" class="viewer-allowed" value="Instructor"></label>
-    <label>School ID<input id="schoolId" class="viewer-allowed" value="SCHOOL-01" placeholder="e.g. STMARYS-HSS"></label>
-    <label>Lab ID<input id="labId" class="viewer-allowed" value="F450-LAB" placeholder="e.g. ROBOTICS-LAB"></label>
-    <label>Session code<input id="sessionId" class="viewer-allowed" value="CLASS-A" placeholder="Teacher shares this code"></label>
-    <label id="instructorPinLabel">Instructor PIN<input id="instructorPin" class="viewer-allowed" type="password" placeholder="Server instructor PIN"></label>
-    <label class="span-2">Cloud WebSocket<input id="cloudWsUrl" class="viewer-allowed" placeholder="wss://your-domain/ws"></label>
+    <label class="span-2">Filter by Kit Name or Device ID<input id="kitSearchInput" autocomplete="off" placeholder="Optional: F450-Team-3 or ZJ-DRONE-936314"></label>
    </div>
-   <div class="button-row"><button id="schoolConnectBtn" class="btn primary viewer-allowed">Join Classroom</button><button id="schoolDisconnectBtn" class="btn ghost viewer-allowed">Leave</button><label class="follow-toggle viewer-allowed"><input id="followInstructor" class="viewer-allowed" type="checkbox" checked> Follow instructor tab / simulator</label></div>
-   <div class="classroom-status-row"><span id="classRoleBadge" class="role-badge">LOCAL</span><span id="classSessionBadge" class="pill">No session</span><span id="classShareBadge" class="status">Share off</span></div>
-   <pre id="schoolLog" class="terminal mini">Ready. Connect to the V18 School Cloud server.</pre>
+   <div class="button-row"><button id="kitSearchBtn" class="btn primary">Filter Kits</button><button id="refreshModulesBtn" class="btn ghost">Refresh Now</button><span id="networkGroupBadge" class="pill">Same network</span></div>
+   <pre id="schoolLog" class="terminal mini">Auto discovery starting…</pre>
   </section>
 
   <section class="form-card module-list-card">
-   <div class="panel-head"><div><small>SAME SCHOOL / LAB</small><h2>Available Modules</h2></div><button id="refreshModulesBtn" class="btn ghost small viewer-allowed">Refresh</button></div>
-   <div class="module-filter-row"><span>Each board uses a permanent Device ID; DHCP IP changes do not change identity.</span><span id="moduleCountBadge" class="pill">0 modules</span></div>
-   <div id="moduleList" class="module-list"><div class="empty-module">Join a classroom to discover modules.</div></div>
+   <div class="panel-head"><div><small>AUTO DISCOVERY • SAME NETWORK</small><h2>Available Kits</h2></div><span id="moduleCountBadge" class="pill">0 kits</span></div>
+   <div class="module-filter-row"><span>Each board has a permanent Device ID. Its IP address may change without affecting access.</span></div>
+   <div id="moduleList" class="module-list"><div class="empty-module">Connecting to kit service…</div></div>
   </section>
 
   <section class="form-card selected-module-card">
-   <div class="panel-head"><div><small>SELECTED MODULE</small><h2 id="selectedDeviceName">No module selected</h2></div><span id="selectedDeviceOnline" class="status">Offline</span></div>
+   <div class="panel-head"><div><small>SELECTED KIT</small><h2 id="selectedDeviceName">No kit selected</h2></div><span id="selectedDeviceOnline" class="status">Offline</span></div>
    <div class="device-detail-grid">
-    <div><span>Device ID</span><b id="selectedDeviceId">--</b></div><div><span>School / Lab</span><b id="selectedDeviceSchool">--</b></div>
-    <div><span>Mode</span><b id="selectedDeviceMode">--</b></div><div><span>Network</span><b id="selectedDeviceNetwork">--</b></div>
+    <div><span>Device ID</span><b id="selectedDeviceId">--</b></div><div><span>Access</span><b id="selectedDeviceSchool">Open</b></div>
+    <div><span>Mode</span><b id="selectedDeviceMode">--</b></div><div><span>Wi-Fi</span><b id="selectedDeviceNetwork">--</b></div>
     <div><span>RSSI</span><b id="selectedDeviceRssi">--</b></div><div><span>Firmware</span><b id="selectedDeviceFirmware">--</b></div>
-    <div><span>Last seen</span><b id="selectedDeviceLastSeen">--</b></div><div><span>Control lock</span><b id="selectedDeviceLock">--</b></div>
+    <div><span>Last seen</span><b id="selectedDeviceLastSeen">--</b></div><div><span>Control</span><b id="selectedDeviceLock">--</b></div>
    </div>
-   <div class="instructor-only device-edit-row"><input id="deviceRenameInput" placeholder="New device name"><button id="renameDeviceBtn" class="btn ghost">Rename module</button></div>
-   <div class="button-row instructor-only"><button id="lockDeviceBtn" class="btn primary">Lock & Connect</button><button id="releaseDeviceBtn" class="btn ghost">Release</button><button id="pingSelectedDeviceBtn" class="btn ghost">Ping</button></div>
-   <div class="student-only view-only-callout"><b>VIEW ONLY</b><span>The instructor owns the control lock. You can watch telemetry, PID values, calibration events and the shared simulator.</span></div>
-   <div class="device-mode-strip"><span><i class="net-dot ap"></i>AP / Flight indicator <b id="apModeIndicator">--</b></span><span><i class="net-dot sta"></i>STA / Internet indicator <b id="staModeIndicator">--</b></span></div>
+   <p id="selectedControlNote" class="micro-note">Select a kit.</p>
+   <div class="device-edit-row"><input id="deviceRenameInput" placeholder="New kit name"><button id="renameDeviceBtn" class="btn ghost">Rename Kit</button></div>
+   <div class="button-row"><button id="takeControlBtn" class="btn primary">Take Control</button><button id="releaseControlBtn" class="btn danger ghost" hidden>Release Kit</button><button id="pingSelectedDeviceBtn" class="btn ghost">Ping Kit</button></div>
+   <div class="device-mode-strip"><span><i class="net-dot ap"></i>AP / Setup <b id="apModeIndicator">--</b></span><span><i class="net-dot sta"></i>STA / Webapp <b id="staModeIndicator">--</b></span></div>
   </section>
 
   <aside class="form-card participant-card">
-   <div class="panel-head"><div><small>CLASSROOM</small><h2>Participants</h2></div><span id="participantCount" class="pill">0</span></div>
-   <div id="participantList" class="participant-list"><div class="empty-module">No participants.</div></div>
-   <div class="panel-head compact"><div><small>LIVE ACTIVITY</small><h2>Instructor actions</h2></div></div>
-   <div id="classActivity" class="class-feed">Waiting for classroom activity.</div>
+   <div class="panel-head"><div><small>FIRST-TIME SETUP</small><h2>3 Simple Steps</h2></div></div>
+   <ol class="tuning-lesson">
+    <li>Power the kit and connect to its <b>ZEBJUS_...</b> Wi-Fi.</li>
+    <li>The captive setup page opens automatically. Choose <b>Kit Name</b>, school Wi-Fi and password, then tap <b>Save & Test Wi-Fi</b>. Wrong passwords are not saved.</li>
+    <li>After Wi-Fi is verified, the kit switches to STA and the browser redirects to this web app with the <b>same permanent Device ID</b>. That exact kit is selected automatically.</li>
+   </ol>
+   <p class="micro-note">If the captive portal does not open automatically, open <b>192.168.4.1</b>. Hold the kit BOOT button for 5 seconds to recover AP setup; hold 10 seconds for factory reset.</p>
   </aside>
-
-  <details class="form-card legacy-direct-card">
-   <summary>Advanced • local direct WebSocket (legacy / development)</summary>
-   <p class="micro-note">This is retained for bench development. School deployment should use Device ID + cloud WSS above.</p>
-   <div class="form-grid"><label>IP<input id="fcIp" value="192.168.4.1"></label><label>WebSocket path<input id="fcPath" value="/ws/telemetry"></label><label>Protocol<select id="fcProtocol"><option value="auto">Auto</option><option value="wss">WSS</option><option value="ws">WS</option></select></label><label>Kit name<input value="ZEBJUS-DRONE-01"></label></div>
-   <div class="button-row"><button id="connectFcBtn" class="btn primary">Connect local</button><button id="disconnectFcBtn" class="btn ghost">Disconnect</button><button id="pingFcBtn" class="btn ghost">Ping</button></div>
-   <div class="panel-head compact"><div><small>LOCAL FC STATUS</small><h2>Direct link</h2></div><span id="fcBadge" class="status">Disconnected</span></div>
-   <pre id="fcLog" class="terminal mini">Ready to connect…</pre>
-  </details>
  </div>
 </section>
 <section id="tab-cal" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>STEP-BY-STEP</small><h2>Calibration wizard</h2></div></div><div id="calSteps" class="cal-steps"></div></div><div class="form-card"><div class="panel-head"><div><small>LIVE</small><h2>Sensor status</h2></div></div><div class="metrics"><div><span>GYRO X</span><b id="gyroX">0.000</b></div><div><span>GYRO Y</span><b id="gyroY">0.000</b></div><div><span>GYRO Z</span><b id="gyroZ">0.000</b></div><div><span>LEVEL</span><b id="levelState">Waiting</b></div></div><div class="orientation-card">↑<span>Match the ZEBJUS FC FRONT arrow to the red-arm front.</span></div></div></div></section>
@@ -286,7 +276,7 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.0.0"></script>
-<script type="module" src="app.js?v=18.0.0"></script>
-<script src="school-lab.js?v=18.0.0"></script>
+<script src="ui-runtime.js?v=18.2.0"></script>
+<script type="module" src="app.js?v=18.2.0"></script>
+<script src="school-lab.js?v=18.2.0"></script>
 </body></html>
