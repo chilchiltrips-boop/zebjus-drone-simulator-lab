@@ -1,157 +1,168 @@
-# ZEBJUS F450 Drone Engineering Lab — V17.5.1 Adaptive Final
+# ZEBJUS F450 Drone Engineering Lab — V18 School Cloud
 
-V17 corrects the control-model teaching behavior.
+V18 upgrades the V17.5.1 adaptive F450 engineering lab into a school-ready multi-module classroom system while retaining the existing 3D assembly, 2D wiring, tripod simulator, PID lesson, calibration, Python Lab, telemetry, PWA/offline assets and responsive layouts.
 
-## Rate Mode
-Roll, Pitch and Yaw use Rate PID only. Stick centre commands 0°/s. If the student manually tilts the drone and releases it, the controller stops the rotation but does not return to level. This is intentional Rate-mode behavior.
+## V18 requested features
 
-## Angle Mode
-Roll and Pitch use Angle PID outer loops feeding the Roll/Pitch Rate PID inner loops. A manual Roll/Pitch disturbance returns to the commanded angle when tuning is stable.
+- Unique Module ID
+- Device Name
+- School / Lab association
+- Multiple module selector
+- Online / Offline status
+- Individual Connect
+- Server-enforced Device lock
+- STA / Internet indicator
+- AP / Flight indicator
+- PID commands routed by Device ID
+- Calibration commands routed by Device ID
+- Telemetry routed by Device ID
+- Coding / device command route
+- Instructor / student classroom sessions
+- Student view-only mode
+- Instructor live tab sharing
+- Shared PID values
+- Shared simulator state
+- Shared 10-channel joystick state
+- Existing simulator retained
+- Legacy direct local WebSocket retained under Advanced
 
-Yaw is Rate PID in both modes. There is no Yaw Angle PID or heading lock.
+## School architecture
 
-## Student PID lesson
-The simulator now shows:
-- P, I and D meaning
-- live P / I / D contribution values
-- live target / actual / error
-- Rate-loop or Angle-loop teaching selection
-- Low P / High P / Low I / High I / Low D / High D / Stable presets
-- diagnosis for under-tuned, over-tuned and near-stable values
-- practical tuning steps
-- setpoint-vs-response graph
-- individual motor response and sound during correction
+### Flight / AP
+Actual free flight remains a direct phone-to-drone path:
 
-The stable example uses the working ZEBJUS baseline:
-Rate Roll/Pitch P=0.9, I=15, D=0.035; Rate Yaw P=3, I=13, D=0; Angle Roll/Pitch P=3.
+`Phone -> ZEBJUS_DRONE_xxxxxx AP -> flight controller`
 
-All V16 assembly, wiring, electrical validation, round workbench, export, offline and diagnostics features remain.
+Internet/STA is not the primary free-flight control path.
 
+### School / STA / Cloud
+For classroom work:
 
-## V17.1 Audio comfort update
-- Battery / XT60 power-up no longer starts continuous motor or propeller audio in the 3D assembly workspace.
-- Slow propeller idle remains as a visual indication only.
-- ESC startup uses soft sine-wave chimes instead of harsh square-wave beeps.
-- Component placement, screw, connector, battery and FC effects use lower volume and softer waveforms.
-- PID simulator and 2D BLDC test retain speed-dependent motor sound because those sounds are educational, but their gain and high-frequency content are reduced.
-- Settings now include a Sound ON/MUTE control and master volume slider.
+`ESP32 -> School Wi-Fi (STA) -> Internet -> ZEBJUS School Cloud`
 
+and
 
-## V17.2 ZEBJUS branding
-- First-party component-purchase branding links to https://www.zebjus.com.
-- Header shop CTA.
-- Assembly component-shelf advertisement with local product images.
-- Every component shelf card includes a ZEBJUS purchase/find link.
-- Inspector includes a ZEBJUS hardware link.
-- Wiring, PID learning and real-FC connection areas include small branded hardware cards.
-- No third-party ad network is used.
+`Instructor / Students -> Webapp -> ZEBJUS School Cloud`
 
-## V17.2 Roll / Pitch hold behaviour
-The course simulator now provides the requested **Rate Hold** training behaviour:
-- Move Roll/Pitch stick to rotate/tilt the drone.
-- On stick release, the simulator captures the current Roll/Pitch attitude.
-- Wind or manual disturbance is corrected back to that captured attitude through a fixed capture helper feeding the Rate PID.
-- Poor Rate PID values create slow recovery, drift/steady error, overshoot or oscillation.
+Every module registers with a permanent Device ID such as `ZJ-DRONE-C5C641`. The local DHCP IP can change without changing module identity.
 
-This is deliberately labelled **Rate Hold**, because pure acro/rate mode normally controls angular rate only and does not hold an absolute angle after disturbance.
+## Instructor / student behavior
 
-### Angle Mode
-- A `Calibrate level` button stores the current Roll/Pitch level reference.
-- Roll/Pitch stick commands angles relative to that calibrated level.
-- On stick release, target returns to the calibrated level.
-- Wind/manual disturbance is corrected back to calibrated level using Angle PID → Rate PID.
-- Yaw remains Rate PID only; there is no yaw-angle lock.
+An instructor joins a School + Lab + Session and may **Lock & Connect** one online module. The lock is enforced on the server. A second instructor cannot issue commands to that module until the first releases it or disconnects.
 
+Students joining the same session are automatically **VIEW ONLY**. They may navigate/read the lab, select modules for viewing, see telemetry, and—when **Follow instructor** is enabled—follow the instructor's current tab, selected module, PID values, shared simulator state and 10-channel joystick state.
 
-## V17.3 update
-- Increased component pick/drop feedback volume while keeping soft waveforms.
-- Added a more realistic synthetic ESC power-up sequence with rising startup tones and individual ESC confirmation tones.
-- XT60 connection now has a stronger spark, expanding power-wave animation and brighter animated current pulses.
-- FC now includes dedicated PWR and STATUS LED geometry in addition to the RGB indicator.
-- PWR LED remains ON whenever the battery is connected; STATUS remains visibly active after boot.
-- Added an on-screen FC PWR / BOOT / READY indicator beside the battery power state.
-- Fixed keyboard pitch-stick direction: Arrow Up moves the virtual pitch stick upward; Arrow Down moves it downward.
-- Keyboard pitch/roll commands are momentary instead of accumulating after key release.
-- Enlarged the round assembly workstation and increased the 3D canvas area.
-- Rebalanced assembly side panels to give the 3D workbench more screen space.
-- Optimized wiring, simulator, forms, Python, settings and responsive layouts.
-- Added a subtle clickable ZEBJUS watermark advertisement to the 3D workstation and all other tab pages.
+The simulator continues running locally in the browser, but student browsers can enter a remote-follower mode where the instructor's attitude, motor mix, targets and joystick inputs are mirrored.
 
+## Web joystick
 
-## V17.4 bug-fix pass
-- Simulator STOP now hard-destroys all continuous simulator oscillators instead of leaving them at a tiny non-zero gain.
-- Four individual simulated motor oscillators are also destroyed on STOP.
-- Stopped simulator motor mix is forced to zero, so props cannot continue visually spinning from a previously high throttle.
-- Leaving the PID Simulator tab stops the simulator and its audio.
-- Leaving the 2D Wiring tab stops the BLDC test and its audio.
-- Hiding / closing the page stops interactive motor audio.
-- Sound Mute destroys all active continuous sound sources immediately.
-- Battery disconnect cancels delayed startup tones and delayed spark animation.
+V18 adds a dedicated **JOYSTICK** tab:
 
-### 2D motor wiring
-- M1 and M4 now face inward, with U/V/W terminals on the LEFT toward ESC1/ESC4.
-- M2 and M3 keep U/V/W on the RIGHT toward ESC2/ESC3.
-- This makes all four ESC-to-motor phase connections face each other naturally.
-- Pressing F now swaps connector facing only. Text is never mirrored, so labels remain readable.
+- Left gimbal: CH3 Throttle + CH4 Yaw
+- Right gimbal: CH1 Roll + CH2 Pitch
+- CH5 Arm
+- CH6 Flight Mode
+- CH7 Alt Hold
+- CH8 Beeper
+- CH9 Camera / AUX
+- CH10 LED / AUX
+- Live CH1-CH10 monitor
+- Simulator target
+- Selected-module bench target
+- Student mirror / view-only behavior
 
-### Simulator Roll/Pitch
-- Roll and Pitch input paths are isolated.
-- Roll changes only the Roll target/rate.
-- Pitch changes only the Pitch target/rate.
-- Three.js attitude order is now YXZ so yaw rotation does not visually exchange Roll/Pitch axes.
-- Arrow Up / forward pitch uses the corrected Pitch sign.
-- Manual disturbance Pitch sign is matched to the transmitter convention.
-- An AXIS MAP indicator was added under the simulator.
+Remote Internet RC is disabled by default in the included cloud server. The joystick therefore works immediately with the simulator. To permit a supervised prop-off hardware bench test, the server operator must explicitly set `ALLOW_REMOTE_BENCH_RC=true`, and the device firmware must also deliberately accept `rc_frame` commands.
 
-### Additional bugs corrected
-- 2D BLDC STOP now hard-stops its oscillator instead of leaving a residual hum.
-- Recent V17.3 / V17.2 / V17.1 / V17 / V16 saves are included in migration lookup.
-- Service-worker cache version bumped to prevent old runtime files from being reused.
+## Cloud server
 
+The `cloud-server/` directory contains a small Node.js + WebSocket server that also serves the V18 webapp files.
 
-## V17.5 Adaptive multi-screen update
+### Local test
 
-The same project automatically adapts to:
-- phones (portrait and landscape)
-- tablets
-- laptops
-- desktop monitors
-- 2K / 4K TV and large-screen displays
+```bash
+cd cloud-server
+npm install
+INSTRUCTOR_PIN=2468 DEVICE_SHARED_TOKEN=my-device-token npm start
+```
 
-### Mobile / touch
-- Full-width 3D workbench first, component shelf and guided panels below it.
-- Horizontal swipe component shelf.
-- Sticky, swipeable tabs and 3D toolbar.
-- Larger touch targets and larger 2D wiring ports on coarse-pointer devices.
-- Touch-safe 3D canvas and PID joysticks.
-- 2D wiring becomes a scrollable engineering canvas instead of shrinking labels until unreadable.
-- Safe-area support for iPhone/Android notches and browser UI.
-- Portrait and landscape layouts are independently tuned.
+Then open:
 
-### Tablet / laptop
-- Tablet layout uses the 3D workbench plus a compact component/inspector column.
-- Guided steps move below the primary workspace.
-- Laptop layout keeps the three-column engineering workflow while reducing fixed-width pressure.
+`http://localhost:8787`
 
-### Desktop / TV
-- Desktop retains the full engineering workstation.
-- 2K/4K screens use wider panels, larger controls, larger typography and larger 3D/PID canvases.
-- Project content is capped at a useful engineering width instead of stretching without limit.
+The WebSocket endpoint is:
 
-### Runtime adaptation
-- Device class is detected dynamically: Mobile / Tablet / Desktop / TV.
-- Orientation and visual-viewport changes trigger safe WebGL resize.
-- ResizeObserver keeps the Assembly 3D, Tripod Simulator and 2D wiring layout synchronized with CSS changes.
-- Default graphics profile is automatic: low on constrained touch phones, balanced on normal systems, high on very large displays. User selection still overrides it.
+`ws://localhost:8787/ws`
 
-All V17.4 runtime audio, M1/M4 wiring, readable flip, Roll/Pitch axis, Rate Hold, calibrated Angle mode, branding, and electrical validation fixes are retained.
+For production, deploy behind HTTPS and use:
 
+`wss://YOUR-DOMAIN/ws`
 
-## V17.5.1 final fixes
-- Corrected the initial loading label to V17.5.1.
-- Removed the stale V10 sentence from WIX_EMBED.txt.
-- Added explicit `touch-action:none` on 2D wiring nodes and ports so mobile node dragging does not compete with browser pan/scroll.
-- Added proper 192×192 and 512×512 ZEBJUS PWA/home-screen icons, including maskable support.
-- Added Apple touch icon and theme-color metadata.
-- Service-worker cache now includes the new icon assets.
-- V17.5 project save migration is preserved after the V17.5.1 key bump.
+Environment variables:
+
+- `PORT`
+- `INSTRUCTOR_PIN`
+- `DEVICE_SHARED_TOKEN`
+- `ALLOW_REMOTE_BENCH_RC=false` recommended
+
+The built-in default instructor PIN (`1234`) and device token are only for local/demo use. Change them before deployment. For a real commercial/school rollout, replace this simple gate with ZEBJUS account authentication and per-device credentials.
+
+## ESP32 companion example
+
+`esp32/ZEBJUS_F450_V18_STA_Cloud_Client.ino` demonstrates:
+
+- eFuse-MAC based permanent Device ID
+- unique AP SSID
+- AP provisioning
+- temporary AP+STA only for Wi-Fi scanning
+- NVS Wi-Fi + identity storage
+- no AP client + disarmed -> saved STA connection
+- STA -> School Cloud device registration
+- online status / RSSI / IP / firmware metadata
+- cloud PID/calibration/device commands
+- cloud telemetry scaffold
+- AP fallback if STA fails
+- no network-mode switching while armed
+
+Libraries required by the example:
+
+- Arduino-ESP32
+- WebSockets by Markus Sattler
+- ArduinoJson 7.x
+
+The telemetry/PID/calibration hooks in that example are integration points for your actual flight-controller code.
+
+## Files added / changed in V18
+
+- `index.html` — School/Modules UI + Joystick tab
+- `styles.css` — classroom, module, joystick and view-only layouts
+- `app.js` — V18 bridge, cloud command routing and remote simulator follower
+- `school-lab.js` — classroom sessions, roles, locks, module discovery, sharing and joystick
+- `cloud-server/server.js` — WebSocket router, lock enforcement and static hosting
+- `cloud-server/package.json`
+- `DEVICE_PROTOCOL_V18.md`
+- `V18_SCHOOL_CLOUD_SETUP.md`
+- `esp32/ZEBJUS_F450_V18_STA_Cloud_Client.ino`
+- `service-worker.js` — V18 cache
+
+## Existing V17 lab retained
+
+The following remain from V17.5.1:
+
+- full F450 3D assembly workstation
+- interactive 2D wiring and electrical validation
+- F450 tripod physics simulator
+- Rate Hold teaching mode
+- calibrated Angle mode
+- Rate and Angle PID learning tools
+- PID P/I/D contribution lesson and presets
+- motor mix visualization and audio
+- calibration wizard
+- Python/Pyodide lab
+- live telemetry page
+- responsive phone/tablet/laptop/desktop/TV layout
+- PWA icons/offline cache
+- ZEBJUS component branding and references
+
+## Important safety separation
+
+The School Cloud is suitable for configuration, teaching, simulation, telemetry, PID/calibration and supervised bench actions. Actual flight control should remain the direct low-latency AP/mobile path with flight-controller-owned failsafe logic.

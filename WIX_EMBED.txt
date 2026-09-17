@@ -1,21 +1,13 @@
-<iframe src="https://YOUR-GITHUB-USERNAME.github.io/zebjus-drone-simulator-lab/" width="100%" height="980" style="border:0;border-radius:16px" allow="fullscreen" loading="lazy"></iframe>
+ZEBJUS F450 Drone Engineering Lab V18 — WIX / HOSTED EMBED
 
+Recommended production setup:
+1. Deploy the included Node cloud server behind HTTPS.
+2. Let that server host the V18 webapp and `/ws` on the same domain when possible.
+3. Embed the HTTPS V18 page in Wix using an iframe / embed element.
+4. In School / Modules, the default WSS endpoint will be `wss://<same-host>/ws`.
 
-For real flight-controller connection, open the GitHub Pages URL directly in a new browser tab if the Wix iframe blocks local-network/WebSocket permissions.
+If the webapp is hosted separately from the cloud server, enter the full cloud endpoint in the V18 Classroom Session card, for example:
 
+wss://cloud.zebjus.com/ws
 
-V17.5.1 RESPONSIVE EMBED
-----------------------
-Use a full-width iframe/container. Do not lock the iframe to a desktop-only width.
-
-Recommended desktop/tablet:
-- width: 100%
-- height: 900px or 90vh minimum
-
-Recommended mobile:
-- width: 100%
-- height: 100vh / dynamic viewport height where Wix permits
-- allow fullscreen
-- avoid an additional horizontal-scroll wrapper around the iframe
-
-The app itself detects phone/tablet/laptop/desktop/TV width and orientation automatically.
+The School Cloud connection requires an outbound WebSocket. Student browsers are view-only. Actual free-flight control remains the direct drone AP/mobile path rather than the Wix/Internet path.
