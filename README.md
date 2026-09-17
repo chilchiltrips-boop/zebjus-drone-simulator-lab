@@ -1,75 +1,56 @@
-# ZEBJUS F450 Drone Engineering Lab V18.2 Easy Access
+# ZEBJUS F450 Drone Engineering Lab V18.3
 
-V18.2 is designed for school labs where students should not type IP addresses, WebSocket paths, instructor PINs, school IDs, or session codes.
+## What changed
+V18.3 removes the cloud/WebSocket requirement for normal school-lab kit access and uses the same proven local connection model as ZEBJUS Python Lab.
 
-## Student flow
+- ESP32 joins the school Wi-Fi directly.
+- Kit advertises its chosen Kit Name with mDNS (`kit-name.local`).
+- Browser connects directly to the ESP32 HTTP API on the same LAN.
+- Browser tries the last verified DHCP IP first, then mDNS fallback.
+- Every connection verifies permanent `Device ID` before accepting cached IP.
+- One browser has the real-hardware control lock; other browsers are view-only.
+- Lock heartbeat auto-releases after 10 s if the controlling tab disappears.
+- 1–4 transient health misses keep the UI connected; the 5th miss marks the kit offline and background reconnect starts.
+- Simulator remains independent and available to everyone.
+- Python Lab commands use the same selected local kit bridge.
 
+## First-time student flow
 1. Power the kit.
-2. Connect to its `ZEBJUS_...` Wi-Fi AP.
-3. Captive setup opens automatically on most devices. Fallback: `http://192.168.4.1`.
-4. Choose a Kit Name, school Wi-Fi and password.
-5. Tap **SAVE & TEST WI-FI**. Credentials are saved only after a successful connection test.
-6. The kit switches to STA mode and the browser redirects to the web app with the permanent Device ID in the URL.
-7. The web app auto-discovers same-network kits, auto-selects the exact configured kit, and attempts to take the single-controller lock.
+2. If it has no working saved Wi-Fi, connect to `ZEBJUS-SETUP-xxxxxx` (or the Kit Name based setup AP).
+3. Captive setup should open automatically. Fallback: `http://192.168.4.1`.
+4. Enter a unique Kit Name, select school Wi-Fi, enter password, then press **SAVE & TEST WI-FI**.
+5. The firmware connects before saving. Wrong passwords are not saved. Duplicate Kit Names on the same Wi-Fi are rejected.
+6. Reconnect the computer/phone to the same school Wi-Fi.
+7. Open Drone Lab -> **KIT CONNECT** -> enter the exact same Kit Name -> **CONNECT KIT**.
+8. After one successful connection, this browser remembers the verified IP + Device ID and reconnects automatically.
 
-## V18.2 updates
+## Example
+AP setup Kit Name: `F450-Team-3`
 
-- Single-user real-kit control lock.
-- Other browsers remain View Only for hardware but can view telemetry and use their own simulator.
-- Automatic lock release on browser disconnect or heartbeat timeout.
-- Auto kit discovery every few seconds.
-- Wi-Fi Save & Test before writing credentials.
-- Improved captive portal detection endpoints.
-- Exact AP-configured Kit Name is sent to the web app together with the permanent Device ID.
-- Simulator and Real Hardware are visually separated.
-- Factory reset from captive portal.
-- BOOT recovery: ~5 s forces AP setup; ~10 s factory resets.
-- Simple Webapp / Kit / Control / Network status indicators.
-- Offline kits remain visible briefly with last-seen state.
+Normal local hostname: `http://f450-team-3.local`
 
-## Permanent identity
+Permanent identity example: `ZJ-DRONE-936314`
 
-The displayed Kit Name can change, but the permanent Device ID does not:
+The display name may be changed, but the permanent Device ID never changes.
 
-`ZJ-DRONE-936314`
-
-Server routing and exact auto-selection use Device ID. The Kit Name is the student-friendly label.
-
-## Server
-
-All webapp and server files are in this same folder.
+## Local webapp test
+No npm package install is required:
 
 ```bash
-npm install
-DEVICE_SHARED_TOKEN=zebjus-lab-device npm start
+npm start
 ```
 
-Default port: `8787`.
+Then open `http://localhost:8787`.
 
-For local testing the ESP32 should use the Mac/server LAN IP and TLS disabled, for example:
+A hosted static copy (GitHub Pages/Wix/custom host) can also connect to the kit directly. Chrome/Edge may request Local Network Access permission; allow it. The connection helper uses the browser local-address-space request mode used by the Python Lab project.
 
-```cpp
-const char* CLOUD_HOST = "192.168.1.5";
-const uint16_t CLOUD_PORT = 8787;
-const bool CLOUD_TLS = false;
-```
+## Firmware
+Upload:
 
-Production example:
+`ZEBJUS_F450_V18_3_LOCAL_WIFI.ino`
 
-```cpp
-const char* CLOUD_HOST = "lab.zebjus.com";
-const uint16_t CLOUD_PORT = 443;
-const bool CLOUD_TLS = true;
-```
+Board tested target: ESP32-C3 Dev Module / Arduino-ESP32 3.3.x.
 
-`DEVICE_TOKEN` in the ESP32 code must match `DEVICE_SHARED_TOKEN` on the server.
-
-## Single-controller rule
-
-The first browser that selects an available online kit receives the hardware control lock. A second browser sees the same kit as **VIEW ONLY**. The lock is released when the controller presses Release Kit, disconnects, or stops sending lock heartbeat for the configured timeout.
-
-This is server-side enforcement; changing browser buttons with Developer Tools does not bypass it.
-
-## Real flight safety
-
-The Internet/STA joystick defaults to the simulator. Real hardware joystick remains disabled unless the server is explicitly started with supervised bench RC enabled. Actual free-flight control should use the direct AP/mobile flight-control path.
+## Recovery
+- BOOT hold ~5 s, then release: force setup AP once.
+- BOOT hold ~10 s: factory reset Kit Name and Wi-Fi.

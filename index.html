@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V18.2</title>
-<link rel="stylesheet" href="styles.css?v=18.2.0"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V18.3</title>
+<link rel="stylesheet" href="styles.css?v=18.3.0"><link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="theme-color" content="#07111b">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.2 • Auto Kit Discovery • Single Controller • Easy Recovery • Joystick Simulation</span></div></div>
- <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="assetStatus" class="status">Loading V18.2 easy-access module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3 • Same-Wi-Fi Local Kit Access • Single Controller • Easy Recovery • Python + Simulator</span></div></div>
+ <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="assetStatus" class="status">Loading V18.3 local-kit module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
 <button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="joystick">JOYSTICK</button><button class="tab" data-tab="connect">KIT CONNECT</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
@@ -216,7 +216,7 @@
    <div class="panel-head"><div><small>EASY ACCESS</small><h2>Selected Kit</h2></div><span id="shareStateBadge" class="status">Offline</span></div>
    <p class="micro-note">Every student uses the same web app. Kits are discovered automatically. One browser controls a real kit at a time; everyone else can still view telemetry and use their own simulator.</p>
    <div class="metrics classroom-mini-metrics"><div><span>ACCESS</span><b>OPEN</b></div><div><span>KIT</span><b id="joySelectedModule">None</b></div><div><span>CONTROL</span><b>SIMULATION</b></div><div><span>HARDWARE</span><b id="joyLock">--</b></div></div>
-   <div class="callout"><b>Flight safety</b><p>The web joystick defaults to the simulator. Real hardware joystick remains disabled unless the server is explicitly configured for supervised prop-off bench testing.</p></div>
+   <div class="callout"><b>Flight safety</b><p>The web joystick defaults to the simulator. Real hardware joystick remains disabled unless the ESP32 firmware flag is intentionally enabled for supervised prop-off bench testing.</p></div>
   </aside>
  </div>
 </section>
@@ -224,21 +224,21 @@
 <section id="tab-connect" class="panel tab-panel">
  <div class="school-grid">
   <section class="form-card school-connect-card">
-   <div class="panel-head"><div><small>V18.2 EASY ACCESS</small><h2>Your Kits</h2></div><span id="schoolCloudBadge" class="status">Connecting</span></div>
-   <div class="callout"><b>No login. No IP address. No manual WebSocket.</b><p>Connect this computer to the same Wi-Fi used by the kit. Online kits appear automatically. You can optionally filter by the exact Kit Name or permanent Device ID.</p></div>
-   <div class="easy-status-strip"><div><span>WEBAPP</span><b id="simpleServiceStatus">CONNECTING</b></div><div><span>KIT</span><b id="simpleKitStatus">NOT SELECTED</b></div><div><span>CONTROL</span><b id="simpleControlStatus">--</b></div><div><span>NETWORK</span><b id="simpleNetworkStatus">--</b></div></div>
+   <div class="panel-head"><div><small>V18.3 LOCAL EASY ACCESS</small><h2>Connect Your Kit</h2></div><span id="schoolCloudBadge" class="status">Local Link</span></div>
+   <div class="callout"><b>No login. No cloud server. No IP address needed.</b><p>Connect this computer to the same Wi-Fi as the kit. Enter the same <b>Kit Name</b> chosen in AP setup. The web app connects directly through <b>KitName.local</b>, verifies the permanent Device ID, and remembers the last good IP for fast reconnect.</p></div>
+   <div class="easy-status-strip"><div><span>LOCAL LINK</span><b id="simpleServiceStatus">READY</b></div><div><span>KIT</span><b id="simpleKitStatus">NOT SELECTED</b></div><div><span>CONTROL</span><b id="simpleControlStatus">--</b></div><div><span>NETWORK</span><b id="simpleNetworkStatus">--</b></div></div>
    <div id="simpleErrorStatus" class="simple-error" hidden></div>
    <div class="form-grid">
-    <label class="span-2">Filter by Kit Name or Device ID<input id="kitSearchInput" autocomplete="off" placeholder="Optional: F450-Team-3 or ZJ-DRONE-936314"></label>
+    <label class="span-2">Kit Name or known Device ID<input id="kitSearchInput" autocomplete="off" placeholder="Example: F450-Team-3"></label>
    </div>
-   <div class="button-row"><button id="kitSearchBtn" class="btn primary">Filter Kits</button><button id="refreshModulesBtn" class="btn ghost">Refresh Now</button><span id="networkGroupBadge" class="pill">Same network</span></div>
-   <pre id="schoolLog" class="terminal mini">Auto discovery starting…</pre>
+   <div class="button-row"><button id="kitSearchBtn" class="btn primary">CONNECT KIT</button><button id="refreshModulesBtn" class="btn ghost">SCAN KNOWN KITS</button><span id="networkGroupBadge" class="pill">Same Wi-Fi • mDNS</span></div>
+   <pre id="schoolLog" class="terminal mini">Enter the Kit Name used in AP setup. Known kits reconnect automatically.</pre>
   </section>
 
   <section class="form-card module-list-card">
-   <div class="panel-head"><div><small>AUTO DISCOVERY • SAME NETWORK</small><h2>Available Kits</h2></div><span id="moduleCountBadge" class="pill">0 kits</span></div>
-   <div class="module-filter-row"><span>Each board has a permanent Device ID. Its IP address may change without affecting access.</span></div>
-   <div id="moduleList" class="module-list"><div class="empty-module">Connecting to kit service…</div></div>
+   <div class="panel-head"><div><small>KNOWN / DISCOVERED • SAME WI-FI</small><h2>Available Kits</h2></div><span id="moduleCountBadge" class="pill">0 kits</span></div>
+   <div class="module-filter-row"><span>First connection uses KitName.local. The browser then caches the verified IP + Device ID, so DHCP address changes are recovered through mDNS.</span></div>
+   <div id="moduleList" class="module-list"><div class="empty-module">Enter your Kit Name above and press CONNECT KIT.</div></div>
   </section>
 
   <section class="form-card selected-module-card">
@@ -262,7 +262,7 @@
     <li>The captive setup page opens automatically. Choose <b>Kit Name</b>, school Wi-Fi and password, then tap <b>Save & Test Wi-Fi</b>. Wrong passwords are not saved.</li>
     <li>After Wi-Fi is verified, the kit switches to STA and the browser redirects to this web app with the <b>same permanent Device ID</b>. That exact kit is selected automatically.</li>
    </ol>
-   <p class="micro-note">If the captive portal does not open automatically, open <b>192.168.4.1</b>. Hold the kit BOOT button for 5 seconds to recover AP setup; hold 10 seconds for factory reset.</p>
+   <p class="micro-note">If captive setup does not open automatically, open <b>192.168.4.1</b>. Hold BOOT about 5 seconds then release to force setup AP; hold about 10 seconds for factory reset. Kit Name is verified against the permanent Device ID when the web app connects.</p>
   </aside>
  </div>
 </section>
@@ -276,7 +276,8 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.2.0"></script>
-<script type="module" src="app.js?v=18.2.0"></script>
-<script src="school-lab.js?v=18.2.0"></script>
+<script src="ui-runtime.js?v=18.3.0"></script>
+<script src="kit-local.js?v=18.3.0"></script>
+<script type="module" src="app.js?v=18.3.0"></script>
+<script src="school-lab.js?v=18.3.0"></script>
 </body></html>

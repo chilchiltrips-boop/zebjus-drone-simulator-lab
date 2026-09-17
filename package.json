@@ -1,13 +1,8 @@
 {
-  "name": "zebjus-f450-easy-access-v18-2",
-  "version": "18.2.0",
+  "name": "zebjus-f450-local-lab-v18-3",
+  "version": "18.3.0",
   "private": true,
-  "description": "ZEBJUS F450 V18.2 easy-access auto discovery, single-controller lock, captive setup and kit recovery",
+  "description": "ZEBJUS F450 V18.3 static webapp with same-Wi-Fi direct ESP32 access by Kit Name/mDNS",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "ws": "^8.18.0"
-  }
+  "scripts": {"start": "node server.js"}
 }

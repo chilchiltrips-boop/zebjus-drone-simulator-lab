@@ -1,53 +1,32 @@
-# ZEBJUS V18.2 Device / Browser Protocol
+# ZEBJUS F450 V18.3 Local Device Protocol
 
-WebSocket endpoint: `/ws`
+All endpoints are local HTTP on the ESP32 (port 80).
 
-## Device hello
+## Identity/status
+`GET /api/status?clientId=<browser-session>`
 
-```json
-{"type":"hello","clientType":"device","deviceId":"ZJ-DRONE-936314","deviceName":"F450-Team-3","firmware":"18.2.0","mode":"STA / INTERNET","ssid":"SchoolWiFi","rssi":-58,"token":"..."}
-```
+Important fields: `kit`, `name`, `deviceId`, `hostname`, `ssid`, `ip`, `rssi`, `mode`, `locked`, `lockMine`, `benchRc`, `firmware`.
 
-## Browser hello
+## Telemetry
+`GET /api/telemetry`
 
-```json
-{"type":"hello","clientType":"browser"}
-```
+Returns roll/pitch/yaw, gyro and battery placeholder fields until the real FC telemetry source is connected.
 
-## Auto discovery
+## Control lock
+- `POST /api/control/acquire` (`clientId`)
+- `POST /api/control/ping` (`clientId`)
+- `POST /api/control/release` (`clientId`)
 
-```json
-{"type":"list_devices","query":""}
-```
+Lock expires after 10 seconds without heartbeat.
 
-Device list entries include `online`, `locked`, and `lockMine`.
+## Commands
+`POST /api/command`
 
-## Single-controller lock
+Form fields: `clientId`, `type`, plus command-specific values.
 
-Acquire:
+Non-read-only hardware commands require the local control lock. PID/calibration changes are rejected while armed. Real web joystick is disabled by default in firmware.
 
-```json
-{"type":"acquire_lock","deviceId":"ZJ-DRONE-936314"}
-```
+## Rename
+`POST /api/name` with `clientId`, `name`.
 
-Heartbeat:
-
-```json
-{"type":"lock_heartbeat","deviceId":"ZJ-DRONE-936314"}
-```
-
-Release:
-
-```json
-{"type":"release_lock","deviceId":"ZJ-DRONE-936314"}
-```
-
-Hardware-changing `device_command` messages are accepted only from the browser holding the lock. `ping` is allowed without the lock.
-
-## Device command
-
-```json
-{"type":"device_command","deviceId":"ZJ-DRONE-936314","command":{"type":"pid_set","pid":{}}}
-```
-
-The server routes commands by permanent Device ID, never by Kit Name or DHCP IP.
+Requires control lock. Duplicate mDNS/kit names on the same Wi-Fi are rejected.
