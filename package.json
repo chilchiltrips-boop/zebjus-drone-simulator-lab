@@ -1,8 +1,8 @@
 {
   "name": "zebjus-f450-local-lab-v18-3",
-  "version": "18.3.9",
+  "version": "18.3.13",
   "private": true,
-  "description": "ZEBJUS F450 V18.3.9 static webapp with same-Wi-Fi direct ESP32 access by Kit Name/mDNS",
+  "description": "ZEBJUS F450 V18.3.13 static webapp with same-Wi-Fi direct ESP32 access by Kit Name/mDNS",
   "main": "server.js",
   "scripts": {"start": "node server.js"}
 }

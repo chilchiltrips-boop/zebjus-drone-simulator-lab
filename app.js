@@ -7,7 +7,7 @@ window.__zebjusModuleParsed=true;
 window.__zebjusAppLoaded=false;
 window.__zebjus3DReady=false;
 function setBootStatus(text,kind=''){const s=$('#assetStatus');if(s){s.textContent=text;s.className='status'+(kind?' '+kind:'')}}
-setBootStatus('V18.3.9 local-kit module loaded • starting engineering runtime…');
+setBootStatus('V18.3.13 local-kit module loaded • starting engineering runtime…');
 
 /* V9: local camera controls. No network add-on is required for 3D startup. */
 class MiniOrbitControls {
@@ -1241,12 +1241,12 @@ function initSim(){
  sPivot=new THREE.Group();sPivot.position.set(0,3.48,0);sPivot.rotation.order='YXZ';sScene.add(sPivot);sDrone=buildFinalSimDrone();sPivot.add(sDrone);sPivot.add(buildDownwash());const clampG=new THREE.Group();simCylinderBetween([-.30,0,0],[.30,0,0],.09,0x161c20,clampG);sPivot.add(clampG);
  syncQuickPid();$('#simFlightMode').value=state.sim.flightMode;updateSimPidModeUI();
  $('#simRunBtn').onclick=toggleSimRun;$('#simResetBtn').onclick=resetSim;$('#simDisturbBtn').onclick=toggleDisturbMode;$('#simCalibrateLevelBtn').onclick=calibrateSimLevel;$('#simFlightMode').onchange=e=>{state.sim.flightMode=e.target.value;if(state.sim.flightMode==='rate'){state.sim.rateHoldRoll=state.sim.roll;state.sim.rateHoldPitch=state.sim.pitch;state.sim.rateRollStickActive=false;state.sim.ratePitchStickActive=false}updateSimPidModeUI();resetSimControllersOnly();chart=[]};$('#simApplyPidBtn').onclick=applyQuickPid;
- initSticks();initManualDisturbance();initSimEnvironmentControls();initPidLearning();renderKeySettings();window.addEventListener('resize',resizeSim);window.addEventListener('keydown',simKeyDown);window.addEventListener('keyup',simKeyUp);requestAnimationFrame(simLoop)
+ initSticks();initManualDisturbance();initSimEnvironmentControls();initPidLearning();renderKeySettings();window.addEventListener('resize',resizeSim);window.addEventListener('keydown',simKeyDown);window.addEventListener('keyup',simKeyUp);window.addEventListener('blur',releaseSimDirectionalInput);document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseSimDirectionalInput()});requestAnimationFrame(simLoop)
 }
 function pidInput(id){return +($(id)?.value||0)}
 function applyQuickPid(){
  [['rateRoll','simRateRoll'],['ratePitch','simRatePitch'],['rateYaw','simRateYaw'],['angleRoll','simAngleRoll'],['anglePitch','simAnglePitch']].forEach(([k,p])=>Object.assign(state.pid[k],{P:pidInput('#'+p+'P'),I:pidInput('#'+p+'I'),D:pidInput('#'+p+'D')}));
- resetSimControllersOnly();renderPid();updatePidCoach();notify(`${state.sim.flightMode==='rate'?'Rate Hold capture + Rate PID':'Calibrated Angle + Rate PID; Yaw Rate PID'} applied.`)
+ markPidDirty();resetSimControllersOnly();renderPid();updatePidCoach();notify(`${state.sim.flightMode==='rate'?'Rate Hold capture + Rate PID':'Calibrated Angle + Rate PID; Yaw Rate PID'} applied.`)
 }
 function syncQuickPid(){
  const map=[['rateRoll','simRateRoll'],['ratePitch','simRatePitch'],['rateYaw','simRateYaw'],['angleRoll','simAngleRoll'],['anglePitch','simAnglePitch']];
@@ -1414,7 +1414,7 @@ function applyPidPreset(name){
  if(name==='highI'){p.rateRoll.I=p.ratePitch.I=34;p.rateYaw.I=30;p.angleRoll.I=p.anglePitch.I=2.5}
  if(name==='lowD'){p.rateRoll.D=p.ratePitch.D=0}
  if(name==='highD'){p.rateRoll.D=p.ratePitch.D=.12}
- state.pid=p;syncQuickPid();resetSimDynamics(false);renderPid();updatePidCoach();notify(`PID lesson preset: ${name}`,'good')
+ state.pid=p;markPidDirty();syncQuickPid();resetSimDynamics(false);renderPid();updatePidCoach();notify(`PID lesson preset: ${name}`,'good')
 }
 function pidLessonDiagnosis(){
  const axis=state.sim.teachAxis,k='rate'+axis[0].toUpperCase()+axis.slice(1),r=state.pid[k],a=axis==='yaw'?null:state.pid['angle'+axis[0].toUpperCase()+axis.slice(1)],notes=[];let label='STABLE RANGE';
@@ -1449,7 +1449,20 @@ function initPidLearning(){
  updatePidCoach()
 }
 function initSticks(){bindStick($('#rightStick'),'right');bindStick($('#leftStick'),'left');setStickVisual('right',0,0);setStickVisual('left',0,1)}
-function bindStick(el,which){let drag=false;const update=e=>{const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=(e.clientX-cx)/(r.width*.38),dy=(e.clientY-cy)/(r.height*.38),mag=Math.hypot(dx,dy),sc=mag>1?1/mag:1,x=clamp(dx*sc,-1,1),y=clamp(dy*sc,-1,1);if(which==='right'){state.sim.cmdRoll=x;state.sim.cmdPitch=-y;setStickVisual('right',x,y)}else{state.sim.cmdYaw=x;state.sim.throttle=Math.round(clamp(1500-y*500,1000,2000));setStickVisual('left',x,y)}updateStickText()};el.onpointerdown=e=>{drag=true;el.setPointerCapture?.(e.pointerId);update(e)};el.onpointermove=e=>{if(drag)update(e)};el.onpointerup=()=>{drag=false;if(which==='right'){state.sim.cmdRoll=0;state.sim.cmdPitch=0;setStickVisual('right',0,0)}else{state.sim.cmdYaw=0;setStickVisual('left',0,(1500-state.sim.throttle)/500)}updateStickText()}}
+function bindStick(el,which){
+ if(!el)return;let drag=false,pointerId=null;
+ const spring=()=>{if(which==='right'){state.sim.cmdRoll=0;state.sim.cmdPitch=0;setStickVisual('right',0,0)}else{state.sim.cmdYaw=0;setStickVisual('left',0,(1500-state.sim.throttle)/500)}updateStickText()};
+ const finish=()=>{if(!drag)return;drag=false;const id=pointerId;pointerId=null;if(id!==null){try{el.releasePointerCapture?.(id)}catch{}}spring()};
+ const outside=e=>{const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,rad=Math.min(r.width,r.height)/2;return e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom||Math.hypot(e.clientX-cx,e.clientY-cy)>rad};
+ const update=e=>{if(!drag||e.pointerId!==pointerId)return;if(outside(e)){finish();return}const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=(e.clientX-cx)/(r.width*.38),dy=(e.clientY-cy)/(r.height*.38),mag=Math.hypot(dx,dy),sc=mag>1?1/mag:1,x=clamp(dx*sc,-1,1),y=clamp(dy*sc,-1,1);if(which==='right'){state.sim.cmdRoll=x;state.sim.cmdPitch=-y;setStickVisual('right',x,y)}else{state.sim.cmdYaw=x;state.sim.throttle=Math.round(clamp(1500-y*500,1000,2000));setStickVisual('left',x,y)}updateStickText()};
+ el.onpointerdown=e=>{drag=true;pointerId=e.pointerId;try{el.setPointerCapture?.(e.pointerId)}catch{}update(e)};
+ el.onpointermove=update;el.onpointerup=finish;el.onpointercancel=finish;el.onpointerleave=e=>{if(drag)finish()};el.addEventListener('lostpointercapture',finish);
+ window.addEventListener('pointermove',e=>{if(drag&&e.pointerId===pointerId)update(e)},{capture:true});
+ window.addEventListener('pointerup',e=>{if(drag&&(pointerId===null||e.pointerId===pointerId))finish()},{capture:true});
+ window.addEventListener('pointercancel',finish,{capture:true});window.addEventListener('blur',finish);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)finish()});
+}
+function releaseSimDirectionalInput(){heldKeys.clear();state.sim.cmdRoll=0;state.sim.cmdPitch=0;state.sim.cmdYaw=0;setStickVisual('right',0,0);setStickVisual('left',0,(1500-state.sim.throttle)/500);updateStickText()}
 function setStickVisual(which,x,y){const k=$(which==='right'?'#rightStickKnob':'#leftStickKnob');if(k){k.style.left=`${50+x*30}%`;k.style.top=`${50+y*30}%`}}
 function updateStickText(){if($('#rightStickRead'))$('#rightStickRead').textContent=`P ${Math.round(state.sim.cmdPitch*100)} • R ${Math.round(state.sim.cmdRoll*100)}`;if($('#leftStickRead'))$('#leftStickRead').textContent=`T ${state.sim.throttle} • Y ${Math.round(state.sim.cmdYaw*100)}`}
 function simKeyDown(e){if(window.__zebjusViewOnly)return;if(keyCaptureAction){e.preventDefault();keyMap[keyCaptureAction]=e.key;keyCaptureAction=null;renderKeySettings();return}if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))return;if(!$('#tab-sim')?.classList.contains('active'))return;const relevant=Object.values(keyMap).includes(e.key);if(!relevant)return;e.preventDefault();if(e.key===keyMap.run&&!e.repeat){toggleSimRun();return}heldKeys.add(e.key);if(e.key===keyMap.throttleUp)state.sim.throttle=clamp(state.sim.throttle+25,1000,2000);if(e.key===keyMap.throttleDown)state.sim.throttle=clamp(state.sim.throttle-25,1000,2000);setStickVisual('left',state.sim.cmdYaw,(1500-state.sim.throttle)/500)}
@@ -1460,7 +1473,7 @@ function simKeyUp(e){
 }
 function renderKeySettings(){const box=$('#keySettings');if(!box)return;const labels={rollLeft:'Roll left',rollRight:'Roll right',pitchForward:'Pitch forward',pitchBack:'Pitch back',throttleUp:'Throttle +',throttleDown:'Throttle −',yawLeft:'Yaw left',yawRight:'Yaw right',run:'Run / Stop'};box.innerHTML=Object.entries(labels).map(([k,l])=>`<div class="key-row"><span>${l}</span><button class="key-capture ${keyCaptureAction===k?'listening':''}" data-key-action="${k}">${keyCaptureAction===k?'PRESS KEY…':keyLabel(keyMap[k])}</button></div>`).join('');$$('.key-capture').forEach(b=>b.onclick=()=>{keyCaptureAction=b.dataset.keyAction;renderKeySettings()})}
 function downloadBlob(name,data,type='text/plain'){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)}
-function projectPayload(){return{version:'18.3.9',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
+function projectPayload(){return{version:'18.3.13',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
 function exportProjectJson(){downloadBlob('ZEBJUS_F450_Project_V18.json',JSON.stringify(projectPayload(),null,2),'application/json')}
 function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V18',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
 function exportWiringSvg(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg);downloadBlob('ZEBJUS_F450_Wiring.svg',xml,'image/svg+xml')}
@@ -1472,7 +1485,7 @@ function updateStartupDiagnostics(){const e=$('#startupDiagnostics');if(!e)retur
 function registerOffline(){
  if(!('serviceWorker' in navigator)||!location.protocol.startsWith('http'))return;
  let reloading=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloading)return;reloading=true;location.reload()});
- navigator.serviceWorker.register('./service-worker.js?v=18.3.9',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
+ navigator.serviceWorker.register('./service-worker.js?v=18.3.13',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
 }
 function updateAudioUi(){
  const en=$('#soundEnabled'),vol=$('#soundVolume'),out=$('#soundVolumeOut'),st=$('#soundState');
@@ -1493,17 +1506,24 @@ function initSettings(){renderKeySettings();initAudioSettings();$('#saveKeysBtn'
 /* FC / CAL / PID / PYTHON */
 function fcLog(t){const e=$('#fcLog');if(!e)return;e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
 function fcStatus(on){state.fc.connected=on;const e=$('#fcBadge');if(e){e.textContent=on?'Connected':'Disconnected';e.className='status '+(on?'good':'')}}
-function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3.9'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
+function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3.13'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
 function disconnectFc(log=true){if(state.fc.socket)try{state.fc.socket.close()}catch{}state.fc.socket=null;fcStatus(false);if(log)fcLog('Disconnected')}
 function sendFc(o){if(window.zebjusSchool?.isViewOnly?.()){fcLog('VIEW ONLY • command blocked');return false}if(window.zebjusSchool?.isCloudActive?.()){if(window.zebjusSchool.sendDeviceCommand?.(o)){fcLog('LOCAL KIT TX '+JSON.stringify(o));return true}fcLog('Select an online kit first');return false}if(state.fc.socket?.readyState===1){state.fc.socket.send(JSON.stringify(o));fcLog('TX '+JSON.stringify(o));return true}fcLog('Not connected');return false}
-function packet(raw){let d,text;if(typeof raw==='string'){text=raw;try{d=JSON.parse(raw)}catch{d={raw}}}else{d=raw||{};text=JSON.stringify(d)};['roll','pitch','yaw','gyroX','gyroY','gyroZ','battery'].forEach(k=>{if(Number.isFinite(+d[k]))state.telemetry[k]=+d[k]});$('#telemetryLog').textContent=(new Date().toLocaleTimeString()+' '+text+'\n'+$('#telemetryLog').textContent).slice(0,12000);telemetryUI()}
+function packet(raw){let d,text;if(typeof raw==='string'){text=raw;try{d=JSON.parse(raw)}catch{d={raw}}}else{d=raw||{};text=JSON.stringify(d)};['roll','pitch','yaw','gyroX','gyroY','gyroZ','battery'].forEach(k=>{if(Number.isFinite(+d[k]))state.telemetry[k]=+d[k]});if(d?.type==='ack'&&d?.command==='pid_set'){pidDirty=false;updatePidSaveState?.('saved')}$('#telemetryLog').textContent=(new Date().toLocaleTimeString()+' '+text+'\n'+$('#telemetryLog').textContent).slice(0,12000);telemetryUI()}
 function telemetryUI(){const t=state.telemetry;$('#telRoll').textContent=t.roll.toFixed(2)+'°';$('#telPitch').textContent=t.pitch.toFixed(2)+'°';$('#telYaw').textContent=t.yaw.toFixed(2)+'°';$('#telBatt').textContent=t.battery?t.battery.toFixed(2)+' V':'-- V';$('#gyroX').textContent=t.gyroX.toFixed(3);$('#gyroY').textContent=t.gyroY.toFixed(3);$('#gyroZ').textContent=t.gyroZ.toFixed(3);$('#levelState').textContent=(Math.abs(t.roll)<2&&Math.abs(t.pitch)<2)?'LEVEL':'TILTED'}
 function initCal(){const a=[['Gyro zero','Keep level and still','calibrate_gyro'],['Accel +Z','Normal top-up','acc_zp'],['Accel +X','Right side','acc_xp'],['Accel −X','Left side','acc_xn'],['Accel +Y','Nose up','acc_yp'],['Accel −Y','Nose down','acc_yn'],['Level trim','Return level','calibrate_level'],['Motor order','REMOVE PROPELLERS','motor_order_test']];$('#calSteps').innerHTML=a.map((v,i)=>`<div class="cal-step"><i>${i+1}</i><div><b>${v[0]}</b><span>${v[1]}</span></div><button class="btn ghost small" data-c="${v[2]}">Run</button></div>`).join('');$$('#calSteps button').forEach(b=>b.onclick=()=>state.fc.connected?sendFc({type:b.dataset.c}):(b.textContent='Sim ✓',setTimeout(()=>b.textContent='Run',800)))}
+let pidDirty=false;
+function updatePidSaveState(stateName='saved'){
+ const b=$('#pidSaveBadge'),n=$('#pidSaveNote');if(!b||!n)return;if(stateName==='pending'){b.textContent='SENDING';b.className='status pending';n.textContent='Waiting for acknowledgement from the real flight controller.';n.className='micro-note'}else if(stateName==='dirty'){b.textContent='UNSAVED';b.className='status warn';n.textContent='PID values changed in the browser and are not yet saved to the real FC.';n.className='micro-note warn'}else{b.textContent='SAVED';b.className='status good';n.textContent='PID values match the last acknowledged real-FC send in this session.';n.className='micro-note'}
+}
+function markPidDirty(){pidDirty=true;updatePidSaveState('dirty')}
+function setSimFlightModeExternal(mode){ensureSim();const wanted=String(mode||'').toLowerCase(),next=wanted==='rate'?'rate':'angle';if(state.sim.flightMode===next)return true;state.sim.flightMode=next;if(next==='rate'){state.sim.rateHoldRoll=state.sim.roll;state.sim.rateHoldPitch=state.sim.pitch;state.sim.rateRollStickActive=false;state.sim.ratePitchStickActive=false}const sel=$('#simFlightMode');if(sel)sel.value=next;updateSimPidModeUI();resetSimControllersOnly();chart=[];return true}
+window.addEventListener('zebjus-device-command-result',e=>{const d=e.detail||{};if(d.type!=='pid_set')return;if(d.ok){pidDirty=false;updatePidSaveState('saved')}else{pidDirty=true;updatePidSaveState('dirty')}});
 function renderPid(){
  state.pid=normalizePidShape(state.pid);
  const g=[['Rate PID',[['Roll','rateRoll'],['Pitch','ratePitch'],['Yaw','rateYaw']]],['Angle PID • Roll/Pitch only',[['Roll','angleRoll'],['Pitch','anglePitch']]]];
  $('#pidEditor').innerHTML=g.map(x=>`<div class="pid-section"><h3>${x[0]}</h3>${x[1].map(([n,k])=>`<div class="pid-row"><span>${n}</span>${['P','I','D'].map(v=>`<label>${v}<input type="number" step=".001" data-p="${k}" data-k="${v}" value="${state.pid[k][v]}"></label>`).join('')}</div>`).join('')}</div>`).join('');
- $$('#pidEditor input').forEach(i=>i.onchange=()=>{state.pid[i.dataset.p][i.dataset.k]=+i.value;syncQuickPid?.();updatePidCoach?.()})
+ $$('#pidEditor input').forEach(i=>i.onchange=()=>{state.pid[i.dataset.p][i.dataset.k]=+i.value;markPidDirty();syncQuickPid?.();updatePidCoach?.()})
 }
 let py=null,pyodidePromise=null;
 function ensurePyodide(){
@@ -1546,7 +1566,7 @@ function initButtons(){
  $('#objectViewBtn').onclick=()=>setWireMap(false);$('#wireMapBtn').onclick=()=>setWireMap(true);$('#xrayBtn').onclick=()=>{state.xray=!state.xray;$('#xrayBtn').classList.toggle('active',state.xray);document.body.classList.toggle('xray',state.xray)};$('#fcCaseXrayBtn').onclick=()=>{state.fcCaseXray=!state.fcCaseXray;$('#fcCaseXrayBtn').classList.toggle('active',state.fcCaseXray);applyFcCaseXray()};$('#view3dBtn').onclick=()=>setView('3d');$('#topBtn').onclick=()=>setView('top');$('#frontBtn').onclick=()=>setView('front');$('#explodeBtn').onclick=toggleExplode;$('#autoRotateBtn').onclick=()=>{state.autoRotate=!state.autoRotate;$('#autoRotateBtn').classList.toggle('active',state.autoRotate)};
  $('#saveBtn').onclick=save;$('#resetBtn').onclick=()=>{if(confirm('Reset project?')){try{localStorage.removeItem('zebjusF450V18');localStorage.removeItem('zebjusF450V1751');localStorage.removeItem('zebjusF450V175');localStorage.removeItem('zebjusF450V173');localStorage.removeItem('zebjusF450V172');localStorage.removeItem('zebjusF450V171');localStorage.removeItem('zebjusF450V17');localStorage.removeItem('zebjusF450V16');localStorage.removeItem('zebjusF450V152');localStorage.removeItem('zebjusF450V151');localStorage.removeItem('zebjusF450V121');localStorage.removeItem('zebjusF450V10');localStorage.removeItem('zebjusF450V9');localStorage.removeItem('zebjus-v152-wire-layout');localStorage.removeItem('zebjus-v8-wire-layout')}catch{}location.reload()}};
  $('#autoWireBtn').onclick=()=>{wireRemember();historyPush();state.connections=requiredWires.map(([from,to],i)=>({from,to,new:true,id:`ref-${Date.now()}-${i}`}));['motorWire','powerWire','escFc'].forEach(x=>state.doneActions.add(x));state.doneActions.delete('xt60');setPowerVisual(false,false);render2D();rebuild3DWires();rebuildSolder();renderAssemblyUI();notify('Full correct wiring created.');setTimeout(()=>{state.connections.forEach(c=>c.new=false);render2D()},900)};$('#clearWireBtn').onclick=()=>{wireRemember();historyPush();state.connections=[];['motorWire','powerWire','escFc','xt60'].forEach(x=>state.doneActions.delete(x));setPowerVisual(false,false);render2D();rebuild3DWires();rebuildSolder();renderAssemblyUI()};
- $('#batteryConnectBtn').onclick=toggleBatteryPower;$('#connectFcBtn').onclick=connectFc;$('#disconnectFcBtn').onclick=disconnectFc;$('#pingFcBtn').onclick=()=>sendFc({type:'ping',time:Date.now()});$('#applyPidBtn').onclick=()=>{syncQuickPid();notify('PID values applied to tripod simulator.');};$('#sendPidBtn').onclick=()=>sendFc({type:'pid_set',pid:state.pid});$('#restorePidBtn').onclick=()=>{historyPush();state.pid={rateRoll:{P:.9,I:15,D:.035},ratePitch:{P:.9,I:15,D:.035},rateYaw:{P:3,I:13,D:0},angleRoll:{P:3,I:0,D:0},anglePitch:{P:3,I:0,D:0}};renderPid();syncQuickPid()};
+ $('#batteryConnectBtn').onclick=toggleBatteryPower;$('#connectFcBtn').onclick=connectFc;$('#disconnectFcBtn').onclick=disconnectFc;$('#pingFcBtn').onclick=()=>sendFc({type:'ping',time:Date.now()});$('#applyPidBtn').onclick=()=>{syncQuickPid();notify('PID values applied to tripod simulator.');};$('#sendPidBtn').onclick=()=>{updatePidSaveState('pending');if(!sendFc({type:'pid_set',pid:state.pid}))markPidDirty()};$('#restorePidBtn').onclick=()=>{historyPush();state.pid={rateRoll:{P:.9,I:15,D:.035},ratePitch:{P:.9,I:15,D:.035},rateYaw:{P:3,I:13,D:0},angleRoll:{P:3,I:0,D:0},anglePitch:{P:3,I:0,D:0}};markPidDirty();renderPid();syncQuickPid()};
  window.addEventListener('keydown',e=>{if(window.__zebjusViewOnly)return;const cmd=e.ctrlKey||e.metaKey;if(!cmd)return;if(e.key.toLowerCase()==='z'&&!e.shiftKey){e.preventDefault();undoAction()}else if((e.key.toLowerCase()==='z'&&e.shiftKey)||e.key.toLowerCase()==='y'){e.preventDefault();redoAction()}});historyButtons()
 }
 function bootStep(name,fn){
@@ -1558,11 +1578,12 @@ function showAssembly3DError(e){
 }
 // V18.3 public bridge used by same-Wi-Fi Local Kit runtime.
 window.zebjusLabAPI={
- version:'18.3.9',
+ version:'18.3.13',
  getSimState:()=>{const x=state.sim;return{running:x.running,flightMode:x.flightMode,roll:x.roll,pitch:x.pitch,yaw:x.yaw,rollRate:x.rollRate,pitchRate:x.pitchRate,yawRate:x.yawRate,throttle:x.throttle,cmdRoll:x.cmdRoll,cmdPitch:x.cmdPitch,cmdYaw:x.cmdYaw,targetRoll:x.targetRoll,targetPitch:x.targetPitch,targetYawRate:x.targetYawRate,liftY:x.liftY,lastMix:[...(x.lastMix||[0,0,0,0])],batteryV:x.batteryV,payloadG:x.payloadG,cgX:x.cgX,cgY:x.cgY,wind:x.wind,motorLag:x.motorLag,levelTrimRoll:x.levelTrimRoll,levelTrimPitch:x.levelTrimPitch,rateHoldRoll:x.rateHoldRoll,rateHoldPitch:x.rateHoldPitch}},
  applyRemoteSimState:d=>{window.__zebjusRemoteSimState=d?{...d,lastMix:Array.isArray(d.lastMix)?[...d.lastMix]:[0,0,0,0]}:null},
  setRemoteFollower:on=>{window.__zebjusRemoteFollower=!!on;if(!on)window.__zebjusRemoteSimState=null},
  controlSim:c=>{if(window.__zebjusViewOnly)return false;ensureSim();if(c.roll!=null)state.sim.cmdRoll=clamp(+c.roll,-1,1);if(c.pitch!=null)state.sim.cmdPitch=clamp(+c.pitch,-1,1);if(c.yaw!=null)state.sim.cmdYaw=clamp(+c.yaw,-1,1);if(c.throttle!=null)state.sim.throttle=clamp(Math.round(+c.throttle),1000,2000);setStickVisual('right',state.sim.cmdRoll,-state.sim.cmdPitch);setStickVisual('left',state.sim.cmdYaw,(1500-state.sim.throttle)/500);updateStickText();return true},
+ setSimFlightMode:m=>setSimFlightModeExternal(m),
  setSimRunning:on=>{if(window.__zebjusViewOnly)return false;ensureSim();if(!!on!==state.sim.running){if(on){state.sim.running=true;$('#simRunBtn').textContent='STOP';$('#simRunBtn').classList.add('danger');ensureMotorAudio('sim');ensureSimMotorBank()}else stopSimRuntime(true)}return true},
  getPid:()=>JSON.parse(JSON.stringify(state.pid)),
  applyPid:p=>{state.pid=normalizePidShape(JSON.parse(JSON.stringify(p||state.pid)));renderPid();syncQuickPid();updatePidCoach?.()},
@@ -1586,7 +1607,7 @@ function boot(){
  bootStep('Assembly UI',renderAssemblyUI);
  bootStep('2D Wiring',render2D);
  bootStep('Calibration',initCal);
- bootStep('PID editor',renderPid);
+ bootStep('PID editor',()=>{renderPid();updatePidSaveState(pidDirty?'dirty':'saved')});
  bootStep('Python Lab',initPython);
  bootStep('Buttons',initButtons);
  bootStep('Wiring controls',initWiringControls);
@@ -1597,6 +1618,6 @@ function boot(){
  if(threeOK){setBootStatus('Local 3D engine ready','good');notify('3D engine ready • offline/local runtime.','good')}
  else{setBootStatus('3D unavailable • 2D tools active');notify('3D renderer unavailable — 2D tools are still active.','bad')}
  window.__zebjusAppLoaded=true;updateStartupDiagnostics?.();
- window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.9'}}));
+ window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.13'}}));
 }
 boot();

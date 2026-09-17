@@ -30,3 +30,15 @@ Non-read-only hardware commands require the local control lock. PID/calibration 
 `POST /api/name` with `clientId`, `name`.
 
 Requires control lock. Duplicate mDNS/kit names on the same Wi-Fi are rejected.
+
+## V18.3.13 live health / physical receiver telemetry
+
+`GET /api/telemetry` may now include:
+
+- `rc`: 10 receiver channel pulse values (1000–2000 µs)
+- `rcSource`: currently `PPM`
+- `rcAgeMs`: age of the latest valid receiver frame
+- `receiverHealth`: `OK`, `STALE`, or `NOT_FOUND`
+- `sensorHealth`: object with `imu`, `barometer`, `lidar`, and `receiver`
+
+The webapp mirrors a fresh physical receiver into the Tripod Simulator. Receiver loss centers Roll/Pitch/Yaw and stops the simulator. Throttle is not rewritten by the web input watchdog.

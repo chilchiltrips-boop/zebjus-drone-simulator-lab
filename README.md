@@ -1,12 +1,12 @@
 
-### V18.3.9 additions
+### V18.3.13 additions
 - Larger, higher-contrast Kit Connect controls and visible select options.
 - Automatic default-kit scan fills Kit Name and cached IP.
 - Top toolbar now shows KIT CONNECTED / KIT OFFLINE.
 - TX10 ARM always requires throttle <=1050, including Altitude mode.
 - Altitude throttle no longer springs to center; X forces DISARM + throttle 1000.
 
-## V18.3.9 update
+## V18.3.13 update
 
 - TX10 transmitter ON/OFF, keyboard control and visual LED status indicators.
 - Arm interlocks: Angle/Rate require low throttle; Altitude requires centered throttle.
@@ -79,3 +79,6 @@ Board tested target: ESP32-C3 Dev Module / Arduino-ESP32 3.3.x.
 
 ## V18.3.6 Assembly layout
 CURRENT STEP and BUILD CHECK now span the full width below the Assembly workspace for better readability and a shorter right-side panel.
+
+### V18.3.13
+Adds physical PPM transmitter mirroring, separate command-stream freshness, sensor health indicators, configurable joystick inactivity watchdog, and PID UNSAVED/SENDING/SAVED state tracking. The included local bridge reports the real PPM receiver on GPIO18; IMU/barometer/LiDAR health remains NOT FOUND until actual sensor-driver telemetry is integrated.

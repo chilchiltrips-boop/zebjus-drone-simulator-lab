@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V18.3.9</title>
-<link rel="stylesheet" href="styles.css?v=18.3.9"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V18.3.13</title>
+<link rel="stylesheet" href="styles.css?v=18.3.13"><link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="theme-color" content="#07111b">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.9 • Same-Wi-Fi Auto Discovery • TX10 Safety • Local Kit Access • Python + Simulator</span></div></div>
- <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="topKitStatus" class="top-kit-status offline" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span><span id="assetStatus" class="status">Loading V18.3.9 local-kit module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.13 • Same-Wi-Fi Auto Discovery • TX10 Safety • Local Kit Access • Python + Simulator</span></div></div>
+ <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="topKitStatus" class="top-kit-status offline" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span><span id="assetStatus" class="status">Loading V18.3.13 local-kit module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
 <button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="joystick">JOYSTICK</button><button class="tab" data-tab="connect">KIT CONNECT</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
@@ -119,10 +119,10 @@
     <div><span>RESPONSE</span><b id="simTuneState">READY</b><small id="simDiagnosis">Adjust PID and disturb the drone</small></div>
    </div>
 
-   <div class="tx-title"><b>VIRTUAL TRANSMITTER</b><span>Mouse / touch + keyboard</span></div>
+   <div class="tx-title"><div><b>VIRTUAL TRANSMITTER</b><span>Mouse / touch + keyboard</span></div><div class="rx-mirror-state"><i id="simRxMirrorLed" class="health-dot lost"></i><span><b id="simRxMirrorBadge">REAL RX WAITING</b><em id="simRxMirrorText">Connect a PPM receiver to mirror the physical transmitter.</em></span></div></div>
    <div class="tx-sticks v15-sticks">
-    <div class="gimbal-card"><small>THROTTLE / YAW RATE</small><div id="leftStick" class="stick-pad v15-gimbal"><i id="leftStickKnob"></i></div><span id="leftStickRead">T 1000 • Y 0</span></div>
-    <div class="gimbal-card"><small>PITCH / ROLL</small><div id="rightStick" class="stick-pad v15-gimbal"><i id="rightStickKnob"></i></div><span id="rightStickRead">P 0 • R 0</span></div>
+    <div class="gimbal-card"><small>THROTTLE / YAW RATE</small><div id="leftStick" class="web-stick v15-gimbal tripod-stick"><i id="leftStickKnob"></i></div><span id="leftStickRead">T 1000 • Y 0</span><span class="stick-hint">W/S throttle • A/D yaw</span></div>
+    <div class="gimbal-card"><small>PITCH / ROLL</small><div id="rightStick" class="web-stick v15-gimbal tripod-stick"><i id="rightStickKnob"></i></div><span id="rightStickRead">P 0 • R 0</span><span class="stick-hint">Arrow keys • pitch / roll</span></div>
    </div>
 
    <div class="sim-pid-box v17-pid-box">
@@ -228,8 +228,10 @@
   <aside class="form-card joystick-side-card">
    <div class="panel-head"><div><small>LIVE TARGET</small><h2>Selected Kit</h2></div><span id="shareStateBadge" class="status">Offline</span></div>
    <div class="metrics classroom-mini-metrics"><div><span>ACCESS</span><b>OPEN</b></div><div><span>KIT</span><b id="joySelectedModule">None</b></div><div><span>TARGET</span><b id="joyTargetSummary">SIMULATOR</b></div><div><span>HARDWARE</span><b id="joyLock">--</b></div></div>
+   <div class="joystick-stream-health"><i id="joyCommandDot" class="health-dot lost"></i><div><span>REAL-KIT COMMAND STREAM</span><b id="joyCommandState">LOST</b><small id="joyCommandAge">Kit offline</small></div></div>
    <div class="joystick-safety-card"><b>ARM INTERLOCK</b><p><strong>All flight modes:</strong> ARM is enabled only when throttle is low (≤1050).</p><p><strong>Altitude:</strong> low throttle is allowed and stays where you leave it. Raise it manually after arming when required.</p><p><strong>X key:</strong> immediately disarms and holds throttle at 1000.</p></div>
    <div class="joystick-safety-card keyboard"><b>NO AUDIO ALERTS</b><p>This transmitter uses only LED/status indications. CH8 stays reserved at its safe value.</p></div>
+   <div class="watchdog-card"><div class="watchdog-head"><div><b>INPUT WATCHDOG</b><span>Back-up protection for missed pointer / key release events.</span></div><span id="joyWatchdogBadge" class="health-badge ok">READY</span></div><label>Directional timeout<select id="joyWatchdogMs"><option value="750">0.75 s</option><option value="1000">1.0 s</option><option value="1500" selected>1.5 s</option><option value="2500">2.5 s</option><option value="4000">4.0 s</option></select></label><label class="toggle-line"><input id="joyWatchdogWarnArmed" type="checkbox" checked> Show warning if watchdog centers while armed</label><p>Roll, Pitch and Yaw return to center after inactivity. Throttle is never changed by this watchdog.</p></div>
    <div class="callout"><b>Real-hardware safety</b><p>Web control is for supervised prop-off bench testing. Free flight should continue to use the dedicated direct-AP flight link.</p></div>
   </aside>
  </div>
@@ -255,6 +257,16 @@
   <section class="form-card selected-module-card">
    <div class="panel-head"><div><small>CONNECTED KIT DETAILS</small><h2 id="selectedDeviceName">No kit selected</h2></div><span id="selectedDeviceOnline" class="status">Offline</span></div>
    <div class="easy-status-strip"><div><span>LOCAL LINK</span><b id="simpleServiceStatus">READY</b></div><div><span>KIT</span><b id="simpleKitStatus">NOT SELECTED</b></div><div><span>CONTROL</span><b id="simpleControlStatus">--</b></div><div><span>NETWORK</span><b id="simpleNetworkStatus">--</b></div></div>
+   <div class="kit-health-panel">
+    <div class="health-title"><div><small>LIVE DATA PATH</small><b>Command & Sensor Health</b></div><span>Kit online and command freshness are monitored separately.</span></div>
+    <div class="kit-health-grid">
+     <div><i id="healthCommandDot" class="health-dot lost"></i><span>COMMAND</span><b id="healthCommand" class="lost">LOST</b><small id="healthCommandAge">No live stream</small></div>
+     <div><i id="healthImuDot" class="health-dot lost"></i><span>IMU</span><b id="healthImu" class="not-found">NOT FOUND</b><small>Gyro + accelerometer</small></div>
+     <div><i id="healthBarometerDot" class="health-dot lost"></i><span>BAROMETER</span><b id="healthBarometer" class="not-found">NOT FOUND</b><small>Altitude pressure</small></div>
+     <div><i id="healthLidarDot" class="health-dot lost"></i><span>LIDAR</span><b id="healthLidar" class="not-found">NOT FOUND</b><small>Range sensor</small></div>
+     <div><i id="healthReceiverDot" class="health-dot lost"></i><span>RECEIVER</span><b id="healthReceiver" class="not-found">NOT FOUND</b><small id="healthReceiverAge">PPM / RC input</small></div>
+    </div>
+   </div>
    <div class="device-detail-grid">
     <div><span>Device ID</span><b id="selectedDeviceId">--</b></div><div><span>Access</span><b id="selectedDeviceSchool">Open</b></div>
     <div><span>Mode</span><b id="selectedDeviceMode">--</b></div><div><span>Wi-Fi</span><b id="selectedDeviceNetwork">--</b></div>
@@ -293,7 +305,7 @@
  </div>
 </section>
 <section id="tab-cal" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>STEP-BY-STEP</small><h2>Calibration wizard</h2></div></div><div id="calSteps" class="cal-steps"></div></div><div class="form-card"><div class="panel-head"><div><small>LIVE</small><h2>Sensor status</h2></div></div><div class="metrics"><div><span>GYRO X</span><b id="gyroX">0.000</b></div><div><span>GYRO Y</span><b id="gyroY">0.000</b></div><div><span>GYRO Z</span><b id="gyroZ">0.000</b></div><div><span>LEVEL</span><b id="levelState">Waiting</b></div></div><div class="orientation-card">↑<span>Match the ZEBJUS FC FRONT arrow to the red-arm front.</span></div></div></div></section>
-<section id="tab-pid" class="panel tab-panel"><div class="pid-layout"><div id="pidEditor" class="form-card"></div><aside class="form-card"><div class="panel-head"><div><small>ACTIONS</small><h2>Apply tuning</h2></div></div><button id="applyPidBtn" class="btn primary full">Apply to tripod simulator</button><button id="sendPidBtn" class="btn ghost full">Send to real FC</button><button id="restorePidBtn" class="btn ghost full">Restore defaults</button><div class="callout"><b>Rate + Angle</b><p>Rate loop controls angular rate. Angle mode cascades an angle controller into the rate loop. Use the tripod simulator before free flight.</p></div></aside></div></section>
+<section id="tab-pid" class="panel tab-panel"><div class="pid-layout"><div id="pidEditor" class="form-card"></div><aside class="form-card"><div class="panel-head"><div><small>ACTIONS</small><h2>Apply tuning</h2></div><span id="pidSaveBadge" class="status good">SAVED</span></div><p id="pidSaveNote" class="micro-note">No unsaved PID changes.</p><button id="applyPidBtn" class="btn primary full">Apply to tripod simulator</button><button id="sendPidBtn" class="btn ghost full">Send to real FC</button><button id="restorePidBtn" class="btn ghost full">Restore defaults</button><div class="callout"><b>Rate + Angle</b><p>Rate loop controls angular rate. Angle mode cascades an angle controller into the rate loop. Use the tripod simulator before free flight.</p></div></aside></div></section>
 <section id="tab-python" class="panel tab-panel"><div class="python-layout"><div class="editor-card"><div class="section-toolbar"><div><b>Python Drone Lab</b><span>Simulator or real-drone target</span></div><div><select id="pythonTarget"><option value="sim">Simulator</option><option value="real">Real drone</option></select><button id="runPythonBtn" class="btn primary small">Run</button></div></div><textarea id="pythonEditor" spellcheck="false"></textarea></div><div class="terminal-card"><div class="section-toolbar"><div><b>Output</b><span id="pyStatus">Pyodide loads on first run</span></div><button id="clearTerminalBtn" class="btn ghost small">Clear</button></div><pre id="pythonTerminal" class="terminal"></pre></div></div></section>
 <section id="tab-telemetry" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>ATTITUDE</small><h2>Live telemetry</h2></div></div><div class="metrics"><div><span>ROLL</span><b id="telRoll">0.00°</b></div><div><span>PITCH</span><b id="telPitch">0.00°</b></div><div><span>YAW</span><b id="telYaw">0.00°</b></div><div><span>BATTERY</span><b id="telBatt">-- V</b></div></div></div><div class="form-card"><div class="panel-head"><div><small>RAW</small><h2>Telemetry stream</h2></div></div><pre id="telemetryLog" class="terminal"></pre></div></div></section>
 <section id="tab-settings" class="panel tab-panel"><div class="settings-grid"><div class="form-card"><div class="panel-head"><div><small>KEYBOARD</small><h2>Simulator key mapping</h2></div></div><p class="micro-note">Click a key field, then press the key you want. Save settings to keep the mapping on this browser.</p><div id="keySettings" class="key-settings"></div><div class="button-row"><button id="saveKeysBtn" class="btn primary">Save key mapping</button><button id="resetKeysBtn" class="btn ghost">Restore defaults</button></div></div><div class="form-card"><div class="panel-head"><div><small>FC CASE / EXPANSION</small><h2>Accessible case headers</h2></div></div><div class="io-guide"><div><b>FC MOUNT</b><span>Double-side foam tape directly on the top plate • NO spacer / standoff.</span></div><div><b>ESC1–ESC4</b><span>Upward 2.54 mm male header pins. Source row • +5V centre row • GND bottom row. ESC female plug comes down from above.</span></div><div><b>External GPIO ×3</b><span>Source / +5V / GND. Use for servo, LED, LED matrix, GPS/control or sensors as appropriate.</span></div><div><b>RX / PPM header</b><span>Optional. PPM signal / +5V / GND. When RX is not used, the source pin can be used as another compatible I/O.</span></div><div><b>I²C 4-pin</b><span>VCC • GND • SCL • SDA remains user accessible.</span></div></div><img class="fc-reference-img" src="fc_board_reference.png" alt="ZEBJUS FC accessible pin reference"></div>
@@ -302,8 +314,8 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.9"></script>
-<script src="kit-local.js?v=18.3.9"></script>
-<script type="module" src="app.js?v=18.3.9"></script>
-<script src="school-lab.js?v=18.3.9"></script>
+<script src="ui-runtime.js?v=18.3.13"></script>
+<script src="kit-local.js?v=18.3.13"></script>
+<script type="module" src="app.js?v=18.3.13"></script>
+<script src="school-lab.js?v=18.3.13"></script>
 </body></html>
