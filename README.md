@@ -1,3 +1,7 @@
+## V18.3.3 update
+
+Automatic local kit naming/discovery now follows the Python Lab pattern using `zebjus_drone_N`. See `V18_3_3_AUTO_DISCOVERY.md`.
+
 # ZEBJUS F450 Drone Engineering Lab V18.3
 
 ## What changed

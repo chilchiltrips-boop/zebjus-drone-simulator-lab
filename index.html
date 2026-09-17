@@ -224,7 +224,7 @@
 <section id="tab-connect" class="panel tab-panel">
  <div class="school-grid">
   <section class="form-card school-connect-card">
-   <div class="panel-head"><div><small>V18.3.1 • PYTHON LAB STYLE LOCAL LINK</small><h2>Kit Connection</h2></div><span id="kitConnBadge" class="status">Not connected</span></div>
+   <div class="panel-head"><div><small>V18.3.3 • AUTO DISCOVERY • LOCAL LINK</small><h2>Kit Connection</h2></div><span id="kitConnBadge" class="status">Not connected</span></div>
    <p class="micro-note">Same-Wi-Fi local connection. Cached IP is tried first, then <b>kit-name.local</b>. The permanent Device ID is verified before a cached address is accepted.</p>
    <label class="switch-row"><div><strong>Demo mode</strong><span>ON = simulation only. OFF = use the selected ESP32 kit when connected and fall back to Offline Simulation when disconnected.</span></div><input id="demoMode" type="checkbox"></label>
    <div class="form-grid">
@@ -234,7 +234,7 @@
    <div class="button-row"><button id="kitSearchBtn" class="btn primary">Connect Kit</button><button id="refreshModulesBtn" class="btn ghost">Scan Default Kits</button><button id="disconnectKitBtn" class="btn ghost">Disconnect</button></div>
    <label>Kits found on this Wi-Fi<select id="kitSelect"><option value="">No scan yet</option></select></label>
    <div id="kitInfo" class="callout">Select or enter a kit name, then connect.</div>
-   <p class="micro-note">The browser scans predictable default names <b>zebjus_drone_1, zebjus_drone_2…</b> plus kits previously used on this device. Custom names are remembered after the first successful connection.</p>
+   <p class="micro-note">New kits automatically choose the first free name <b>zebjus_drone_1, zebjus_drone_2…</b>. The browser scans those names automatically plus kits previously used on this device. Display names use underscores; the mDNS hostname uses the browser-safe hyphen form, for example <b>zebjus-drone-1.local</b>.</p>
    <div id="simpleErrorStatus" class="simple-error" hidden></div>
    <pre id="schoolLog" class="terminal mini">Background discovery ready.</pre>
   </section>
@@ -256,7 +256,7 @@
   <section class="form-card module-list-card">
    <div class="panel-head"><div><small>AUTOMATIC DISCOVERY • SAME WI-FI</small><h2>Available Kits</h2></div><span id="moduleCountBadge" class="pill">0 kits</span></div>
    <span id="networkGroupBadge" class="pill">Same Wi-Fi • cached IP → mDNS</span>
-   <div id="moduleList" class="module-list"><div class="empty-module">Scanning default and previously used kit names…</div></div>
+   <div id="moduleList" class="module-list"><div class="empty-module">Scanning zebjus_drone_1, zebjus_drone_2… on this Wi-Fi…</div></div>
   </section>
 
   <section class="form-card">

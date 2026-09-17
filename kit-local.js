@@ -72,11 +72,21 @@ async function connect(query,ipHint='',expectedDeviceId='',clientId=''){
   }
   throw new Error(last?.name==='AbortError'?'Kit connection timed out.':(last?.message||'Kit not found on this Wi-Fi.'));
 }
-async function scanDefaultKits({max=18,extraNames=[]}={}){
-  const candidates=[];loadKnown().forEach(k=>candidates.push(k.name));extraNames.forEach(n=>candidates.push(n));
-  for(let i=1;i<=max;i++)candidates.push(`zebjus-drone-${i}`,`zebjus_drone_${i}`,`f450-team-${i}`,`f450_team_${i}`,`zebjus-kit-${i}`,`zebjus_kit_${i}`);
-  const names=[...new Set(candidates.map(normalizeKitName).filter(Boolean))],found=[];let cursor=0;
-  async function worker(){while(cursor<names.length){const name=names[cursor++];try{const r=await connect(name);if(!found.some(x=>x.status.deviceId===r.status.deviceId))found.push(r)}catch(_){}}}
+async function scanDefaultKits({max=30,extraNames=[],onProgress=null}={}){
+  max=Math.max(1,Math.min(80,Number(max)||30));
+  const candidates=[];
+  for(let i=1;i<=max;i++)candidates.push(`zebjus_drone_${i}`);
+  loadKnown().forEach(k=>candidates.push(k.name));
+  extraNames.forEach(n=>candidates.push(n));
+  const names=[...new Set(candidates.map(n=>String(n||'').trim()).filter(Boolean))],found=[];
+  let cursor=0,done=0;
+  async function worker(){
+    while(cursor<names.length){
+      const name=names[cursor++];
+      try{const r=await connect(name);if(!found.some(x=>x.status.deviceId===r.status.deviceId))found.push(r)}catch(_){}
+      done++;if(onProgress)onProgress(done,names.length,found.length);
+    }
+  }
   await Promise.all(Array.from({length:Math.min(8,names.length)},worker));
   return found.sort((a,b)=>String(a.status.name).localeCompare(String(b.status.name),undefined,{numeric:true}));
 }
