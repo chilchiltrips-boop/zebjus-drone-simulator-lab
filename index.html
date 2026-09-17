@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V18.3</title>
-<link rel="stylesheet" href="styles.css?v=18.3.1"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V18.3.4</title>
+<link rel="stylesheet" href="styles.css?v=18.3.4"><link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="theme-color" content="#07111b">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3 • Same-Wi-Fi Local Kit Access • Single Controller • Easy Recovery • Python + Simulator</span></div></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.4 • Same-Wi-Fi Local Kit Access • Single Controller • Easy Recovery • Python + Simulator</span></div></div>
  <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="assetStatus" class="status">Loading V18.3 local-kit module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
@@ -46,11 +46,18 @@
 </a>
    <div id="componentShelf" class="component-shelf vertical-shelf"></div>
   </section>
-  <section class="right-inspector-section">
-   <div class="panel-head"><div><small>SMART INSPECTOR</small><h2>Selected item</h2></div></div>
-   <div id="inspector" class="inspector"><div class="empty"><div>◎</div><p>Select a component, screw, solder pad, connector or wire.</p></div></div>
-   <div class="panel-head compact"><div><small>CURRENT STEP</small><h2 id="currentStepTitle">Start assembly</h2></div></div><div id="currentStepCard" class="current-step-card"></div>
-   <div class="panel-head compact"><div><small>BUILD CHECK</small><h2>Completion</h2></div></div><div id="buildChecks" class="checks"></div>
+  <section class="right-inspector-section compact-build-panel">
+   <div id="inspector" class="inspector hidden-inspector" aria-hidden="true"></div>
+   <div class="build-bottom-grid">
+    <div class="current-step-compact">
+     <div class="panel-head compact"><div><small>CURRENT STEP</small><h2 id="currentStepTitle">Start assembly</h2></div></div>
+     <div id="currentStepCard" class="current-step-card"></div>
+    </div>
+    <div class="build-check-compact">
+     <div class="panel-head compact"><div><small>BUILD CHECK</small><h2>Completion</h2></div></div>
+     <div id="buildChecks" class="checks"></div>
+    </div>
+   </div>
   </section>
  </aside>
 </section>

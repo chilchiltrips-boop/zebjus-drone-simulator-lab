@@ -594,3 +594,36 @@ body.student-view-only #undoBtn,body.student-view-only #redoBtn,body.student-vie
    ========================================================== */
 .easy-status-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}.easy-status-strip>div{border:1px solid #29475a;border-radius:10px;background:#081824;padding:9px}.easy-status-strip span,.easy-status-strip b{display:block}.easy-status-strip span{font-size:7px;color:#6f8fa3;letter-spacing:.06em}.easy-status-strip b{font-size:9px;color:#d8eaf4;margin-top:3px;overflow-wrap:anywhere}.easy-status-strip b.good{color:#70edbd}.easy-status-strip b.warn{color:#ffc46f}.simple-error{margin:8px 0;border:1px solid #7a4a38;background:#2b160f;color:#ffc3a9;border-radius:10px;padding:10px;font-size:9px}.module-card>i.mine{color:#72efc0}.module-card>i.busy{color:#ffc36a}.target-separation{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:8px 0 12px}.target-card{border:1px solid #2e4b5d;border-radius:11px;padding:10px;background:#091822}.target-card b,.target-card span{display:block}.target-card b{font-size:9px;letter-spacing:.06em}.target-card span{font-size:8px;color:#8fa8b7;line-height:1.4;margin-top:4px}.target-card.sim{border-color:#286d58;background:#0a211b}.target-card.sim b{color:#74edc1}.target-card.real{border-color:#765b2b;background:#241c0b}.target-card.real b{color:#ffd173}.target-mode-badge{display:inline-flex!important;width:max-content;margin:6px auto 0!important;padding:4px 7px;border-radius:999px;border:1px solid #2c5e4f;font-size:7px!important;font-style:normal;font-weight:900;letter-spacing:.06em}.target-mode-badge.sim{color:#72edc0;background:#0b241d;border-color:#2b725c}.target-mode-badge.real{color:#ffd173;background:#2a1e09;border-color:#7d602a}
 @media(max-width:760px){.easy-status-strip{grid-template-columns:1fr 1fr}.target-separation{grid-template-columns:1fr}}
+
+
+/* V18.3.4 Assembly Lab right-panel cleanup */
+.hidden-inspector{display:none!important}
+.right-workbench{grid-template-rows:minmax(520px,68vh) auto!important}
+.right-shelf-section{padding-bottom:10px!important}
+.vertical-shelf{max-height:calc(68vh - 118px)!important}
+.compact-build-panel{padding:10px 12px!important;overflow:auto!important}
+.build-bottom-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.78fr);gap:10px;align-items:start}
+.build-bottom-grid .panel-head.compact{margin-top:0!important}
+.build-bottom-grid .current-step-card{margin-top:6px;padding:8px!important}
+.build-bottom-grid .checks{margin-top:6px;gap:4px}
+.build-bottom-grid .check{padding:5px 7px;font-size:8px}
+.shelf-group-title{padding:8px 10px!important;font-size:9px!important}
+@media (min-width:1200px) and (max-width:1599px){
+ .right-workbench{grid-template-rows:minmax(500px,66vh) auto!important}
+ .vertical-shelf{max-height:calc(66vh - 118px)!important}
+}
+@media (min-width:1600px){
+ .right-workbench{grid-template-rows:minmax(600px,70vh) auto!important}
+ .vertical-shelf{max-height:calc(70vh - 122px)!important}
+}
+@media (min-width:700px) and (max-width:1199px){
+ .right-workbench{display:block!important}
+ .vertical-shelf{max-height:54dvh!important}
+ .compact-build-panel{margin-top:8px}
+ .build-bottom-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:699px){
+ .build-bottom-grid{grid-template-columns:1fr!important}
+ .compact-build-panel{padding:8px!important}
+ .vertical-shelf{max-height:none!important}
+}
