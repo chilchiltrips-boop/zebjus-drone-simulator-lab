@@ -58,3 +58,7 @@ Board tested target: ESP32-C3 Dev Module / Arduino-ESP32 3.3.x.
 ## Recovery
 - BOOT hold ~5 s, then release: force setup AP once.
 - BOOT hold ~10 s: factory reset Kit Name and Wi-Fi.
+
+
+## V18.3.6 Assembly layout
+CURRENT STEP and BUILD CHECK now span the full width below the Assembly workspace for better readability and a shorter right-side panel.

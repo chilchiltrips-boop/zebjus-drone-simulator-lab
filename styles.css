@@ -627,3 +627,90 @@ body.student-view-only #undoBtn,body.student-view-only #redoBtn,body.student-vie
  .compact-build-panel{padding:8px!important}
  .vertical-shelf{max-height:none!important}
 }
+
+/* ==========================================================
+   V18.3.6 Assembly Lab — full-width horizontal build guidance
+   ========================================================== */
+#tab-assembly.assembly-grid.active{
+  display:grid!important;
+  grid-template-columns:250px minmax(720px,1fr) 325px!important;
+  grid-template-areas:
+    "left center right"
+    "bottom bottom bottom"!important;
+  gap:10px!important;
+  align-items:start!important;
+}
+#tab-assembly .left-panel{grid-area:left}
+#tab-assembly .center-stage{grid-area:center}
+#tab-assembly .right-panel{grid-area:right}
+#tab-assembly .assembly-bottom-panel{
+  grid-area:bottom;
+  width:100%;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,#0a1724,#07131e);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+  padding:12px 14px;
+  overflow:hidden;
+}
+#tab-assembly .right-workbench{
+  display:block!important;
+  min-height:auto!important;
+}
+#tab-assembly .vertical-shelf{
+  max-height:calc(100vh - 300px)!important;
+  min-height:420px;
+}
+#tab-assembly .build-bottom-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.35fr) minmax(420px,.95fr)!important;
+  gap:16px!important;
+  align-items:start!important;
+}
+#tab-assembly .current-step-compact,
+#tab-assembly .build-check-compact{
+  min-width:0;
+}
+#tab-assembly .current-step-card{
+  margin-top:8px!important;
+  padding:12px 14px!important;
+}
+#tab-assembly .current-step-card p{
+  margin:7px 0;
+  line-height:1.55;
+}
+#tab-assembly .checks{
+  margin-top:8px!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px!important;
+}
+#tab-assembly .check{
+  padding:8px 10px!important;
+  font-size:9px!important;
+  line-height:1.35;
+}
+#tab-assembly .panel-head.compact{margin-top:0!important}
+#tab-assembly .assembly-bottom-panel .panel-head h2{font-size:16px}
+#tab-assembly .assembly-bottom-panel .panel-head small{font-size:9px}
+
+@media (max-width:1250px){
+  #tab-assembly.assembly-grid.active{
+    grid-template-columns:220px minmax(0,1fr)!important;
+    grid-template-areas:
+      "left center"
+      "right right"
+      "bottom bottom"!important;
+  }
+  #tab-assembly .vertical-shelf{max-height:520px!important;min-height:0}
+  #tab-assembly .build-bottom-grid{grid-template-columns:1fr 1fr!important}
+}
+@media (max-width:850px){
+  #tab-assembly.assembly-grid.active{
+    grid-template-columns:1fr!important;
+    grid-template-areas:"center" "right" "left" "bottom"!important;
+  }
+  #tab-assembly .build-bottom-grid{grid-template-columns:1fr!important}
+  #tab-assembly .checks{grid-template-columns:1fr!important}
+  #tab-assembly .assembly-bottom-panel{padding:10px}
+}
