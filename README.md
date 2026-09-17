@@ -73,14 +73,13 @@ V18 adds a dedicated **JOYSTICK** tab:
 
 Remote Internet RC is disabled by default in the included cloud server. The joystick therefore works immediately with the simulator. To permit a supervised prop-off hardware bench test, the server operator must explicitly set `ALLOW_REMOTE_BENCH_RC=true`, and the device firmware must also deliberately accept `rc_frame` commands.
 
-## Cloud server
+## Webapp + server files in one folder
 
-The `cloud-server/` directory contains a small Node.js + WebSocket server that also serves the V18 webapp files.
+V18 now keeps the webapp frontend and Node.js/WebSocket backend together in the same project root. There is no separate `cloud-server/` folder. `server.js` serves the webapp files from this same directory.
 
 ### Local test
 
 ```bash
-cd cloud-server
 npm install
 INSTRUCTOR_PIN=2468 DEVICE_SHARED_TOKEN=my-device-token npm start
 ```
@@ -137,8 +136,8 @@ The telemetry/PID/calibration hooks in that example are integration points for y
 - `styles.css` — classroom, module, joystick and view-only layouts
 - `app.js` — V18 bridge, cloud command routing and remote simulator follower
 - `school-lab.js` — classroom sessions, roles, locks, module discovery, sharing and joystick
-- `cloud-server/server.js` — WebSocket router, lock enforcement and static hosting
-- `cloud-server/package.json`
+- `server.js` — WebSocket router, lock enforcement and static hosting
+- `package.json` — Node.js dependencies/start command
 - `DEVICE_PROTOCOL_V18.md`
 - `V18_SCHOOL_CLOUD_SETUP.md`
 - `esp32/ZEBJUS_F450_V18_STA_Cloud_Client.ino`

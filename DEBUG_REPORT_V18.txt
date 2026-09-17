@@ -31,8 +31,10 @@ ZEBJUS F450 DRONE ENGINEERING LAB V18 — UPDATE QA REPORT
 [PASS] Service-worker cache bumped to V18
 [PASS] app.js syntax check
 [PASS] school-lab.js syntax check
-[PASS] cloud-server/server.js syntax check
+[PASS] server.js syntax check
 [PASS] no duplicate HTML element IDs
 
 Production note:
 Replace demo PIN/shared-token authentication with the final ZEBJUS account/per-device authentication service before wide deployment.
+
+[PASS] V18.0.1 flat package: server.js + package.json moved into webapp root; no cloud-server folder.

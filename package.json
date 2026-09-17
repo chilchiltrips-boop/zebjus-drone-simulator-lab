@@ -1,0 +1,13 @@
+{
+  "name": "zebjus-f450-school-cloud-v18",
+  "version": "18.0.0",
+  "private": true,
+  "description": "ZEBJUS F450 V18 school/lab WebSocket router and static server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
