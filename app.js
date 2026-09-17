@@ -1487,8 +1487,8 @@ function initSettings(){renderKeySettings();initAudioSettings();$('#saveKeysBtn'
 
 
 /* FC / CAL / PID / PYTHON */
-function fcLog(t){const e=$('#fcLog');e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
-function fcStatus(on){state.fc.connected=on;$('#fcBadge').textContent=on?'Connected':'Disconnected';$('#fcBadge').className='status '+(on?'good':'')}
+function fcLog(t){const e=$('#fcLog');if(!e)return;e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
+function fcStatus(on){state.fc.connected=on;const e=$('#fcBadge');if(e){e.textContent=on?'Connected':'Disconnected';e.className='status '+(on?'good':'')}}
 function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
 function disconnectFc(log=true){if(state.fc.socket)try{state.fc.socket.close()}catch{}state.fc.socket=null;fcStatus(false);if(log)fcLog('Disconnected')}
 function sendFc(o){if(window.zebjusSchool?.isViewOnly?.()){fcLog('VIEW ONLY • command blocked');return false}if(window.zebjusSchool?.isCloudActive?.()){if(window.zebjusSchool.sendDeviceCommand?.(o)){fcLog('LOCAL KIT TX '+JSON.stringify(o));return true}fcLog('Select an online kit first');return false}if(state.fc.socket?.readyState===1){state.fc.socket.send(JSON.stringify(o));fcLog('TX '+JSON.stringify(o));return true}fcLog('Not connected');return false}

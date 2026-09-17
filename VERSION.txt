@@ -1,2 +1,1 @@
-18.3.0
-Same-Wi-Fi Local mDNS Easy Access
+18.3.1 LOCAL EASY ACCESS — Python Lab style kit discovery/settings

@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="theme-color" content="#07111b">
 <title>ZEBJUS F450 Drone Engineering Lab V18.3</title>
-<link rel="stylesheet" href="styles.css?v=18.3.0"><link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css?v=18.3.1"><link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="theme-color" content="#07111b">
 </head>
@@ -224,46 +224,59 @@
 <section id="tab-connect" class="panel tab-panel">
  <div class="school-grid">
   <section class="form-card school-connect-card">
-   <div class="panel-head"><div><small>V18.3 LOCAL EASY ACCESS</small><h2>Connect Your Kit</h2></div><span id="schoolCloudBadge" class="status">Local Link</span></div>
-   <div class="callout"><b>No login. No cloud server. No IP address needed.</b><p>Connect this computer to the same Wi-Fi as the kit. Enter the same <b>Kit Name</b> chosen in AP setup. The web app connects directly through <b>KitName.local</b>, verifies the permanent Device ID, and remembers the last good IP for fast reconnect.</p></div>
-   <div class="easy-status-strip"><div><span>LOCAL LINK</span><b id="simpleServiceStatus">READY</b></div><div><span>KIT</span><b id="simpleKitStatus">NOT SELECTED</b></div><div><span>CONTROL</span><b id="simpleControlStatus">--</b></div><div><span>NETWORK</span><b id="simpleNetworkStatus">--</b></div></div>
-   <div id="simpleErrorStatus" class="simple-error" hidden></div>
+   <div class="panel-head"><div><small>V18.3.1 • PYTHON LAB STYLE LOCAL LINK</small><h2>Kit Connection</h2></div><span id="kitConnBadge" class="status">Not connected</span></div>
+   <p class="micro-note">Same-Wi-Fi local connection. Cached IP is tried first, then <b>kit-name.local</b>. The permanent Device ID is verified before a cached address is accepted.</p>
+   <label class="switch-row"><div><strong>Demo mode</strong><span>ON = simulation only. OFF = use the selected ESP32 kit when connected and fall back to Offline Simulation when disconnected.</span></div><input id="demoMode" type="checkbox"></label>
    <div class="form-grid">
-    <label class="span-2">Kit Name or known Device ID<input id="kitSearchInput" autocomplete="off" placeholder="Example: F450-Team-3"></label>
+    <label>Kit name<input id="kitSearchInput" autocomplete="off" placeholder="zebjus_drone_1"></label>
+    <label>Cached IP (primary)<input id="kitCachedIp" autocomplete="off" inputmode="decimal" placeholder="192.168.1.7"></label>
    </div>
-   <div class="button-row"><button id="kitSearchBtn" class="btn primary">CONNECT KIT</button><button id="refreshModulesBtn" class="btn ghost">SCAN KNOWN KITS</button><span id="networkGroupBadge" class="pill">Same Wi-Fi • mDNS</span></div>
-   <pre id="schoolLog" class="terminal mini">Enter the Kit Name used in AP setup. Known kits reconnect automatically.</pre>
-  </section>
-
-  <section class="form-card module-list-card">
-   <div class="panel-head"><div><small>KNOWN / DISCOVERED • SAME WI-FI</small><h2>Available Kits</h2></div><span id="moduleCountBadge" class="pill">0 kits</span></div>
-   <div class="module-filter-row"><span>First connection uses KitName.local. The browser then caches the verified IP + Device ID, so DHCP address changes are recovered through mDNS.</span></div>
-   <div id="moduleList" class="module-list"><div class="empty-module">Enter your Kit Name above and press CONNECT KIT.</div></div>
+   <div class="button-row"><button id="kitSearchBtn" class="btn primary">Connect Kit</button><button id="refreshModulesBtn" class="btn ghost">Scan Default Kits</button><button id="disconnectKitBtn" class="btn ghost">Disconnect</button></div>
+   <label>Kits found on this Wi-Fi<select id="kitSelect"><option value="">No scan yet</option></select></label>
+   <div id="kitInfo" class="callout">Select or enter a kit name, then connect.</div>
+   <p class="micro-note">The browser scans predictable default names <b>zebjus_drone_1, zebjus_drone_2…</b> plus kits previously used on this device. Custom names are remembered after the first successful connection.</p>
+   <div id="simpleErrorStatus" class="simple-error" hidden></div>
+   <pre id="schoolLog" class="terminal mini">Background discovery ready.</pre>
   </section>
 
   <section class="form-card selected-module-card">
-   <div class="panel-head"><div><small>SELECTED KIT</small><h2 id="selectedDeviceName">No kit selected</h2></div><span id="selectedDeviceOnline" class="status">Offline</span></div>
+   <div class="panel-head"><div><small>CONNECTED KIT DETAILS</small><h2 id="selectedDeviceName">No kit selected</h2></div><span id="selectedDeviceOnline" class="status">Offline</span></div>
+   <div class="easy-status-strip"><div><span>LOCAL LINK</span><b id="simpleServiceStatus">READY</b></div><div><span>KIT</span><b id="simpleKitStatus">NOT SELECTED</b></div><div><span>CONTROL</span><b id="simpleControlStatus">--</b></div><div><span>NETWORK</span><b id="simpleNetworkStatus">--</b></div></div>
    <div class="device-detail-grid">
     <div><span>Device ID</span><b id="selectedDeviceId">--</b></div><div><span>Access</span><b id="selectedDeviceSchool">Open</b></div>
     <div><span>Mode</span><b id="selectedDeviceMode">--</b></div><div><span>Wi-Fi</span><b id="selectedDeviceNetwork">--</b></div>
     <div><span>RSSI</span><b id="selectedDeviceRssi">--</b></div><div><span>Firmware</span><b id="selectedDeviceFirmware">--</b></div>
-    <div><span>Last seen</span><b id="selectedDeviceLastSeen">--</b></div><div><span>Control</span><b id="selectedDeviceLock">--</b></div>
+    <div><span>IP</span><b id="selectedDeviceIp">--</b></div><div><span>Control</span><b id="selectedDeviceLock">--</b></div>
    </div>
    <p id="selectedControlNote" class="micro-note">Select a kit.</p>
-   <div class="device-edit-row"><input id="deviceRenameInput" placeholder="New kit name"><button id="renameDeviceBtn" class="btn ghost">Rename Kit</button></div>
    <div class="button-row"><button id="takeControlBtn" class="btn primary">Take Control</button><button id="releaseControlBtn" class="btn danger ghost" hidden>Release Kit</button><button id="pingSelectedDeviceBtn" class="btn ghost">Ping Kit</button></div>
    <div class="device-mode-strip"><span><i class="net-dot ap"></i>AP / Setup <b id="apModeIndicator">--</b></span><span><i class="net-dot sta"></i>STA / Webapp <b id="staModeIndicator">--</b></span></div>
   </section>
 
-  <aside class="form-card participant-card">
-   <div class="panel-head"><div><small>FIRST-TIME SETUP</small><h2>3 Simple Steps</h2></div></div>
-   <ol class="tuning-lesson">
-    <li>Power the kit and connect to its <b>ZEBJUS_...</b> Wi-Fi.</li>
-    <li>The captive setup page opens automatically. Choose <b>Kit Name</b>, school Wi-Fi and password, then tap <b>Save & Test Wi-Fi</b>. Wrong passwords are not saved.</li>
-    <li>After Wi-Fi is verified, the kit switches to STA and the browser redirects to this web app with the <b>same permanent Device ID</b>. That exact kit is selected automatically.</li>
-   </ol>
-   <p class="micro-note">If captive setup does not open automatically, open <b>192.168.4.1</b>. Hold BOOT about 5 seconds then release to force setup AP; hold about 10 seconds for factory reset. Kit Name is verified against the permanent Device ID when the web app connects.</p>
-  </aside>
+  <section class="form-card module-list-card">
+   <div class="panel-head"><div><small>AUTOMATIC DISCOVERY • SAME WI-FI</small><h2>Available Kits</h2></div><span id="moduleCountBadge" class="pill">0 kits</span></div>
+   <span id="networkGroupBadge" class="pill">Same Wi-Fi • cached IP → mDNS</span>
+   <div id="moduleList" class="module-list"><div class="empty-module">Scanning default and previously used kit names…</div></div>
+  </section>
+
+  <section class="form-card">
+   <div class="panel-head"><div><small>KIT IDENTITY</small><h2>Change unique kit name</h2></div></div>
+   <div class="device-edit-row"><input id="deviceRenameInput" placeholder="example: class_a_drone_3"><button id="renameDeviceBtn" class="btn ghost">Check & Save Name</button></div>
+   <div class="button-row"><button id="resetKitNameBtn" class="btn ghost">Reset Auto Name</button></div>
+   <span id="kitNameMessage" class="micro-note">The browser remembers the verified Kit Name, IP and permanent Device ID.</span>
+  </section>
+
+  <section class="form-card">
+   <div class="panel-head"><div><small>NETWORK</small><h2>Change Wi-Fi network</h2></div></div>
+   <div class="button-row"><button id="scanWifiBtn" class="btn ghost">Scan Wi-Fi</button><button id="resetWifiBtn" class="btn danger ghost">Forget All Wi-Fi</button></div>
+   <label>Wi-Fi network<select id="wifiSelect"><option value="">Connect kit first</option></select></label>
+   <label>Wi-Fi password<input id="wifiPassword" type="password" autocomplete="new-password" placeholder="Password"></label>
+   <button id="saveWifiBtn" class="btn primary full">Save & Connect to This Wi-Fi</button>
+   <div class="callout"><b>Saved Wi-Fi profiles on this kit</b><p>SSID + password are stored separately inside this ESP32 kit. Passwords are never shown back to the browser.</p></div>
+   <label>Saved network<select id="savedWifiSelect"><option value="">Connect kit first</option></select></label>
+   <div class="button-row"><button id="refreshSavedWifiBtn" class="btn ghost">Refresh Saved</button><button id="useSavedWifiBtn" class="btn ghost">Use Selected</button><button id="forgetSavedWifiBtn" class="btn ghost">Forget Selected</button></div>
+   <span id="wifiMessage" class="micro-note"></span>
+  </section>
  </div>
 </section>
 <section id="tab-cal" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>STEP-BY-STEP</small><h2>Calibration wizard</h2></div></div><div id="calSteps" class="cal-steps"></div></div><div class="form-card"><div class="panel-head"><div><small>LIVE</small><h2>Sensor status</h2></div></div><div class="metrics"><div><span>GYRO X</span><b id="gyroX">0.000</b></div><div><span>GYRO Y</span><b id="gyroY">0.000</b></div><div><span>GYRO Z</span><b id="gyroZ">0.000</b></div><div><span>LEVEL</span><b id="levelState">Waiting</b></div></div><div class="orientation-card">↑<span>Match the ZEBJUS FC FRONT arrow to the red-arm front.</span></div></div></div></section>
@@ -276,8 +289,8 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.0"></script>
-<script src="kit-local.js?v=18.3.0"></script>
-<script type="module" src="app.js?v=18.3.0"></script>
-<script src="school-lab.js?v=18.3.0"></script>
+<script src="ui-runtime.js?v=18.3.1"></script>
+<script src="kit-local.js?v=18.3.1"></script>
+<script type="module" src="app.js?v=18.3.1"></script>
+<script src="school-lab.js?v=18.3.1"></script>
 </body></html>

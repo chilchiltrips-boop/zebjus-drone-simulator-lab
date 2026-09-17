@@ -74,7 +74,7 @@ async function connect(query,ipHint='',expectedDeviceId='',clientId=''){
 }
 async function scanDefaultKits({max=18,extraNames=[]}={}){
   const candidates=[];loadKnown().forEach(k=>candidates.push(k.name));extraNames.forEach(n=>candidates.push(n));
-  for(let i=1;i<=max;i++)candidates.push(`f450-team-${i}`,`f450_team_${i}`,`zebjus-drone-${i}`,`zebjus_kit_${i}`);
+  for(let i=1;i<=max;i++)candidates.push(`zebjus-drone-${i}`,`zebjus_drone_${i}`,`f450-team-${i}`,`f450_team_${i}`,`zebjus-kit-${i}`,`zebjus_kit_${i}`);
   const names=[...new Set(candidates.map(normalizeKitName).filter(Boolean))],found=[];let cursor=0;
   async function worker(){while(cursor<names.length){const name=names[cursor++];try{const r=await connect(name);if(!found.some(x=>x.status.deviceId===r.status.deviceId))found.push(r)}catch(_){}}}
   await Promise.all(Array.from({length:Math.min(8,names.length)},worker));
@@ -96,6 +96,13 @@ class LocalKitClient{
   async release({keepalive=false}={}){if(!this.base)return{ok:true};try{return await requestBase(this.base,'/api/control/release',{method:'POST',data:{clientId:this.clientId},timeout:1200,keepalive})}finally{if(this.status)this.status.lockMine=false}}
   async command(command){if(!this.base)throw new Error('Kit not connected.');const c=command||{},data={clientId:this.clientId,type:String(c.type||'')};Object.entries(c).forEach(([k,v])=>{if(k==='type')return;data[k]=Array.isArray(v)?v.join(','):(typeof v==='object'&&v!==null?JSON.stringify(v):v)});return requestBase(this.base,'/api/command',{method:'POST',data,timeout:2200})}
   async rename(name){const r=await requestBase(this.base,'/api/name',{method:'POST',data:{clientId:this.clientId,name},timeout:3200});if(r?.status){const ip=r.status.ip||this.ipHint,base=ip?`http://${ip}`:this.base;return this._accept(r.status,base)}return this.refresh()}
+  async resetName(){return requestBase(this.base,'/api/name/reset',{method:'POST',data:{clientId:this.clientId},timeout:4200})}
+  async scanWifi(){return requestBase(this.base,'/api/wifi/scan',{timeout:9000})}
+  async savedWifi(){return requestBase(this.base,'/api/wifi/saved',{timeout:2200})}
+  async setWifi(ssid,password){return requestBase(this.base,'/api/wifi/set',{method:'POST',data:{clientId:this.clientId,ssid,password},timeout:2600})}
+  async useWifi(ssid){return requestBase(this.base,'/api/wifi/use',{method:'POST',data:{clientId:this.clientId,ssid},timeout:2200})}
+  async forgetWifi(ssid){return requestBase(this.base,'/api/wifi/forget',{method:'POST',data:{clientId:this.clientId,ssid},timeout:2200})}
+  async resetWifi(){return requestBase(this.base,'/api/wifi/reset',{method:'POST',data:{clientId:this.clientId},timeout:2200})}
 }
 
 global.ZebjusDroneKit={normalizeKitName,hostFromName,baseFromName,loadKnown,rememberKit,connect,scanDefaultKits,LocalKitClient};
