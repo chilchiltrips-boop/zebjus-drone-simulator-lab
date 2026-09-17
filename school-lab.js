@@ -39,6 +39,11 @@ function serviceStatus(){
  const c=$('#simpleControlStatus');if(c){c.textContent=!d?'--':d.lockMine?'YOU CONTROL':d.locked?'VIEW ONLY':'AVAILABLE';c.className=d?.lockMine?'good':d?.locked?'warn':''}
  const n=$('#simpleNetworkStatus');if(n)n.textContent=d?(d.ssid||'Same Wi-Fi'):'--';
 }
+function updateTopKitStatus(){
+ const el=$('#topKitStatus'),d=selected();if(!el)return;
+ if(d?.online){const mode=d.lockMine?'CONTROL':d.locked?'VIEW ONLY':'CONNECTED';el.className='top-kit-status online';el.innerHTML=`<i></i><span><b>KIT CONNECTED</b><em>${esc(d.deviceName||d.deviceId)} • ${mode}</em></span>`;}
+ else{el.className='top-kit-status offline';el.innerHTML='<i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span>';}
+}
 function targetUi(){
  const devOpt=$('#webJoyTarget option[value="device"]');if(devOpt){devOpt.disabled=!(st.remoteBenchRc&&ownsLock());devOpt.textContent=st.remoteBenchRc?(ownsLock()?'REAL KIT • PROP-OFF BENCH':'REAL KIT • TAKE CONTROL FIRST'):'REAL KIT • BENCH DISABLED'}
  const target=$('#webJoyTarget')?.value||'sim',tb=$('#joyTargetBadge');if(tb){tb.textContent=target==='sim'?'SIMULATOR':'REAL HARDWARE';tb.className='target-mode-badge '+(target==='sim'?'sim':'real')}
@@ -52,7 +57,7 @@ function statusUi(){
  const ng=$('#networkGroupBadge');if(ng)ng.textContent='Same Wi-Fi • mDNS';
  const wr=$('#webJoyRoleBadge');if(wr){wr.textContent='OPEN ACCESS';wr.className='status good'}
  const ss=$('#shareStateBadge');if(ss){const d=selected();ss.textContent=d?.lockMine?'CONTROL':d?.online?'VIEW ONLY':ready()?'READY':'OFFLINE';ss.className='status '+(d?.lockMine?'good':'')}
- renderModules();renderSelected();serviceStatus();targetUi();
+ renderModules();renderSelected();serviceStatus();targetUi();updateTopKitStatus();
 }
 function renderModules(){
  const box=$('#moduleList'),list=st.query?st.devices.filter(d=>String(d.deviceName||'').toLowerCase().includes(st.query.toLowerCase())||String(d.deviceId||'').toLowerCase().includes(st.query.toLowerCase())):st.devices;
@@ -105,8 +110,8 @@ function modeName(){return st.joy[5]>=1900?'ALTITUDE':st.joy[5]>=1400?'RATE':'AN
 function altitudeMode(){return modeName()==='ALTITUDE'}
 function armGate(){
  if(!st.txOn)return{ok:false,title:'TRANSMITTER OFF',text:'Turn the transmitter on before arming.'};
- if(altitudeMode()){const ok=Math.abs(st.joy[2]-1500)<=50;return{ok,title:ok?'READY TO ARM • ALTITUDE':'CENTER THROTTLE FOR ALTITUDE',text:ok?'Throttle is centered at 1500. Arm is available.':`Move throttle to center (1500). Current: ${st.joy[2]}.`}}
- const ok=st.joy[2]<=1050;return{ok,title:ok?'READY TO ARM':'THROTTLE LOW REQUIRED',text:ok?'Throttle is at minimum. Arm is available.':`Lower throttle to 1000 before arming. Current: ${st.joy[2]}.`};
+ const ok=st.joy[2]<=1050,mode=modeName();
+ return{ok,title:ok?(mode==='ALTITUDE'?'READY TO ARM • ALTITUDE':'READY TO ARM'):'THROTTLE LOW REQUIRED',text:ok?`Throttle is low (${st.joy[2]}). Arm is available in ${mode} mode.`:`Lower throttle to 1000 before arming. Current: ${st.joy[2]}.`};
 }
 function setTxSafe({keepMode=true}={}){const mode=keepMode?st.joy[5]:1000;st.joy=[1500,1500,1000,1500,1000,mode,mode>=1900?2000:1000,1000,1500,1000];st.joyKeys.clear()}
 function updateArmGuidance(){
@@ -117,7 +122,7 @@ function updateArmGuidance(){
 function updateTxIndicators(){
  const mode=modeName(),armed=st.joy[4]>1500,power=$('#webTxLedPower'),arm=$('#webTxLedArm'),m=$('#webTxLedMode'),alt=$('#webTxLedAlt');
  if(power)power.className='tx-led '+(st.txOn?'on':'');if(arm)arm.className='tx-led '+(armed?'danger':'');if(m)m.className='tx-led mode '+(st.txOn?'on':'');if(alt)alt.className='tx-led '+(mode==='ALTITUDE'?'warn':'');
- setText('webTxPowerText',st.txOn?'ON':'OFF');setText('webTxArmText',armed?'ARMED':'SAFE');setText('webTxModeText',mode);setText('webTxAltText',mode==='ALTITUDE'?'CENTER':'OFF');
+ setText('webTxPowerText',st.txOn?'ON':'OFF');setText('webTxArmText',armed?'ARMED':'SAFE');setText('webTxModeText',mode);setText('webTxAltText',mode==='ALTITUDE'?(armed?'ACTIVE':'READY'):'OFF');
  const p=$('#webTxPowerBtn');if(p){p.className='tx-power-btn '+(st.txOn?'on':'off');const span=p.querySelector('span');if(span)span.textContent=st.txOn?'TRANSMITTER ON':'TRANSMITTER OFF'}
  ['#webLeftStick','#webRightStick'].forEach(id=>$(id)?.classList.toggle('disabled',!st.txOn));
  const lamp=$('#webLedOutputLamp');if(lamp)lamp.className='mini-led '+(st.txOn&&st.joy[9]>1500?'on':'');
@@ -131,12 +136,12 @@ function renderJoy(){
 }
 function setTransmitter(on){
  on=!!on;if(on===st.txOn)return;st.txOn=on;
- if(!on){setTxSafe();api()?.setSimRunning?.(false);log('Joystick transmitter OFF • channels returned to safe values.')}else{if(altitudeMode()){st.joy[2]=1500;st.joy[6]=2000}else{st.joy[2]=1000;st.joy[6]=1000}log('Joystick transmitter ON.');}
+ if(!on){setTxSafe();api()?.setSimRunning?.(false);log('Joystick transmitter OFF • channels returned to safe values.')}else{st.joy[2]=1000;st.joy[6]=altitudeMode()?2000:1000;log('Joystick transmitter ON • throttle held low.');}
  renderJoy();
 }
 function setFlightMode(value){
  if(st.joy[4]>1500){log('DISARM before changing flight mode.');const m=$('#webMode');if(m)m.value=String(st.joy[5]);return false}
- const v=+value;st.joy[5]=v;st.joy[6]=v>=1900?2000:1000;st.joy[2]=v>=1900?1500:1000;st.joy[3]=1500;renderJoy();return true;
+ const v=+value;st.joy[5]=v;st.joy[6]=v>=1900?2000:1000;st.joy[2]=1000;st.joy[3]=1500;renderJoy();log(`${modeName()} mode selected • throttle held low for arming.`);return true;
 }
 function tryToggleArm(){
  if(st.joy[4]>1500){st.joy[4]=1000;renderJoy();log('DISARMED');return}
@@ -146,23 +151,23 @@ function tryToggleArm(){
 }
 function bindWebStick(el,which){
  if(!el)return;let drag=false;const update=e=>{if(!st.txOn)return;const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=(e.clientX-cx)/(r.width*.39),dy=(e.clientY-cy)/(r.height*.39),mag=Math.hypot(dx,dy),sc=mag>1?1/mag:1,x=clamp(dx*sc,-1,1),y=clamp(dy*sc,-1,1);if(which==='left'){st.joy[3]=Math.round(1500+x*500);st.joy[2]=Math.round(clamp(1500-y*500,1000,2000))}else{st.joy[0]=Math.round(1500+x*500);st.joy[1]=Math.round(1500-y*500)}renderJoy()};
- el.onpointerdown=e=>{if(!st.txOn)return;drag=true;try{el.setPointerCapture(e.pointerId)}catch{}update(e)};el.onpointermove=e=>{if(drag)update(e)};const up=()=>{if(!drag)return;drag=false;if(which==='left'){st.joy[3]=1500;if(altitudeMode())st.joy[2]=1500}else{st.joy[0]=1500;st.joy[1]=1500}renderJoy()};el.onpointerup=up;el.onpointercancel=up;
+ el.onpointerdown=e=>{if(!st.txOn)return;drag=true;try{el.setPointerCapture(e.pointerId)}catch{}update(e)};el.onpointermove=e=>{if(drag)update(e)};const up=()=>{if(!drag)return;drag=false;if(which==='left'){st.joy[3]=1500}else{st.joy[0]=1500;st.joy[1]=1500}renderJoy()};el.onpointerup=up;el.onpointercancel=up;
 }
-function centerJoy(){const mode=st.joy[5];st.joy=[1500,1500,mode>=1900?1500:1000,1500,1000,mode,mode>=1900?2000:1000,1000,1500,st.joy[9]>1500?2000:1000];renderJoy()}
+function centerJoy(){const mode=st.joy[5];st.joy=[1500,1500,1000,1500,1000,mode,mode>=1900?2000:1000,1000,1500,st.joy[9]>1500?2000:1000];renderJoy();log('Sticks centered • throttle held low at 1000.')}
 function joyTypingTarget(el){return !!(el&&(el.matches?.('input,textarea,select')||el.isContentEditable))}
 function joystickKeyDown(e){
  if(api()?.getActiveTab?.()!=='joystick'||joyTypingTarget(e.target))return;const k=e.key.toLowerCase();
- if(k==='t'){e.preventDefault();if(!e.repeat)setTransmitter(!st.txOn);return}if(k==='x'){e.preventDefault();st.joy[4]=1000;st.joy[0]=1500;st.joy[1]=1500;st.joy[3]=1500;st.joy[2]=altitudeMode()?1500:1000;renderJoy();return}if(k==='m'){e.preventDefault();if(e.repeat)return;const seq=[1000,1500,2000],i=seq.indexOf(st.joy[5]);setFlightMode(seq[(i+1)%seq.length]);return}
+ if(k==='t'){e.preventDefault();if(!e.repeat)setTransmitter(!st.txOn);return}if(k==='x'){e.preventDefault();st.joy[4]=1000;st.joy[0]=1500;st.joy[1]=1500;st.joy[3]=1500;st.joy[2]=1000;st.joyKeys.delete('w');st.joyKeys.delete('s');renderJoy();log('X SAFE • DISARMED • throttle held at 1000.');return}if(k==='m'){e.preventDefault();if(e.repeat)return;const seq=[1000,1500,2000],i=seq.indexOf(st.joy[5]);setFlightMode(seq[(i+1)%seq.length]);return}
  if(!st.txOn)return;const handled=['arrowleft','arrowright','arrowup','arrowdown','w','s','a','d'];if(!handled.includes(k))return;e.preventDefault();st.joyKeys.add(k);
  if(k==='arrowleft')st.joy[0]=1000;if(k==='arrowright')st.joy[0]=2000;if(k==='arrowup')st.joy[1]=2000;if(k==='arrowdown')st.joy[1]=1000;if(k==='a')st.joy[3]=1000;if(k==='d')st.joy[3]=2000;
- if(k==='w')st.joy[2]=altitudeMode()?1650:clamp(st.joy[2]+25,1000,2000);if(k==='s')st.joy[2]=altitudeMode()?1350:clamp(st.joy[2]-25,1000,2000);renderJoy();
+ if(k==='w')st.joy[2]=clamp(st.joy[2]+25,1000,2000);if(k==='s')st.joy[2]=clamp(st.joy[2]-25,1000,2000);renderJoy();
 }
 function joystickKeyUp(e){
- const k=e.key.toLowerCase();if(!st.joyKeys.has(k))return;st.joyKeys.delete(k);if(k==='arrowleft'||k==='arrowright')st.joy[0]=1500;if(k==='arrowup'||k==='arrowdown')st.joy[1]=1500;if(k==='a'||k==='d')st.joy[3]=1500;if((k==='w'||k==='s')&&altitudeMode())st.joy[2]=1500;renderJoy();
+ const k=e.key.toLowerCase();if(!st.joyKeys.has(k))return;st.joyKeys.delete(k);if(k==='arrowleft'||k==='arrowright')st.joy[0]=1500;if(k==='arrowup'||k==='arrowdown')st.joy[1]=1500;if(k==='a'||k==='d')st.joy[3]=1500;renderJoy();
 }
 function initJoystick(){
  bindWebStick($('#webLeftStick'),'left');bindWebStick($('#webRightStick'),'right');renderJoy();
- $('#webTxPowerBtn')?.addEventListener('click',()=>setTransmitter(!st.txOn));$('#webArmBtn')?.addEventListener('click',tryToggleArm);$('#webJoyDisarmBtn')?.addEventListener('click',()=>{st.joy[4]=1000;st.joy[0]=1500;st.joy[1]=1500;st.joy[3]=1500;st.joy[2]=altitudeMode()?1500:1000;renderJoy();log('DISARM / SAFE')});
+ $('#webTxPowerBtn')?.addEventListener('click',()=>setTransmitter(!st.txOn));$('#webArmBtn')?.addEventListener('click',tryToggleArm);$('#webJoyDisarmBtn')?.addEventListener('click',()=>{st.joy[4]=1000;st.joy[0]=1500;st.joy[1]=1500;st.joy[3]=1500;st.joy[2]=1000;renderJoy();log('DISARM / SAFE • throttle held low')});
  $('#webMode')?.addEventListener('change',e=>setFlightMode(e.target.value));$('#webCh9')?.addEventListener('input',e=>{if(!st.txOn)return;st.joy[8]=+e.target.value;renderJoy()});$('#webLed')?.addEventListener('change',e=>{if(!st.txOn){e.target.checked=false;return}st.joy[9]=e.target.checked?2000:1000;renderJoy()});$('#webJoyCenterBtn')?.addEventListener('click',centerJoy);
  $('#webJoyTarget')?.addEventListener('change',e=>{if(e.target.value==='device'&&!ownsLock()){e.target.value='sim';log('Real kit target requires Take Control.')}renderJoy()});window.addEventListener('keydown',joystickKeyDown);window.addEventListener('keyup',joystickKeyUp);
 }
@@ -175,9 +180,13 @@ async function scanKitsUi(){
    const extras=[st.preferredDeviceName,st.query].filter(x=>x&&!/^ZJ-DRONE-/i.test(x));
    const found=await window.ZebjusDroneKit.scanDefaultKits({max:30,extraNames:extras,onProgress:(done,total,count)=>{if(sel&&sel.options.length===1)sel.options[0].textContent=`Scanning ${done}/${total} — ${count} found`;}});
    found.forEach(r=>upsertStatus(r.status,r.base));reconcileSelection();clearError();statusUi();
-   const list=st.devices.filter(d=>d.online);
-   if(sel){sel.innerHTML='';if(!list.length)sel.innerHTML='<option value="">No default kits found</option>';else list.forEach(d=>{const o=document.createElement('option');o.value=d.deviceName;o.dataset.ip=d.ip||'';o.dataset.id=d.deviceId||'';o.textContent=`${d.deviceName} — ${d.ip||'local'}`;sel.appendChild(o)})}
-   setText('kitNameMessage',list.length?`${list.length} kit(s) found on this Wi-Fi.`:'No zebjus_drone_N kit found yet. Make sure the kit has V18.3.3+ local firmware and is on the same Wi-Fi.');
+   const list=st.devices.filter(d=>d.online).sort((a,b)=>String(a.deviceName).localeCompare(String(b.deviceName),undefined,{numeric:true}));
+   if(sel){sel.innerHTML='';if(!list.length)sel.innerHTML='<option value="">No default kits found</option>';else list.forEach(d=>{const o=document.createElement('option');o.value=d.deviceName;o.dataset.ip=d.ip||'';o.dataset.id=d.deviceId||'';o.textContent=`${d.deviceName}  •  ${d.deviceId}  •  ${d.ip||'local'}`;sel.appendChild(o)})}
+   if(list.length){
+     const q=$('#kitSearchInput'),ip=$('#kitCachedIp');let chosen=list.find(d=>d.deviceId===st.selectedDeviceId)||list.find(d=>d.deviceName===st.query)||list.find(d=>d.deviceName===st.preferredDeviceName)||list[0];
+     st.query=chosen.deviceName;if(q&&document.activeElement!==q)q.value=chosen.deviceName;if(ip&&document.activeElement!==ip)ip.value=chosen.ip||'';if(sel)sel.value=chosen.deviceName;savePrefs();
+     setText('kitNameMessage',`${list.length} kit(s) found. ${chosen.deviceName} is ready to connect.`);
+   }else setText('kitNameMessage','No zebjus_drone_N kit found yet. Make sure the kit is powered and connected to this same Wi-Fi.');
    if(list.length===1&&!st.selectedDeviceId){await connectExact(list[0].deviceName,true).catch(()=>{});}
  }finally{if(btn)btn.disabled=false}
 }
@@ -191,7 +200,7 @@ async function forgetSavedWifi(){if(!canControl())return setText('wifiMessage','
 async function resetWifi(){if(!canControl())return setText('wifiMessage','Take Control first.');if(!confirm('Forget all saved Wi-Fi networks on this kit?'))return;try{const r=await client.resetWifi();setText('wifiMessage',r.message||'Saved Wi-Fi cleared; kit restarting in setup mode.');disconnectKit()}catch(e){setText('wifiMessage','Wi-Fi reset failed: '+e.message)}}
 function initUi(){
  loadPrefs();initJoystick();const q=$('#kitSearchInput');if(q){q.value=st.query;q.addEventListener('keydown',e=>{if(e.key==='Enter')searchModules()})}const demo=$('#demoMode');if(demo){demo.checked=st.demoMode;demo.onchange=()=>{st.demoMode=demo.checked;savePrefs();if(st.demoMode)api()?.setFcConnected?.(false);statusUi()}}
- $('#kitSearchBtn')?.addEventListener('click',searchModules);$('#refreshModulesBtn')?.addEventListener('click',scanKitsUi);$('#disconnectKitBtn')?.addEventListener('click',disconnectKit);$('#renameDeviceBtn')?.addEventListener('click',renameDevice);$('#resetKitNameBtn')?.addEventListener('click',resetKitName);$('#pingSelectedDeviceBtn')?.addEventListener('click',()=>sendDeviceCommand({type:'ping',time:Date.now()}));$('#takeControlBtn')?.addEventListener('click',()=>acquireLock(false));$('#releaseControlBtn')?.addEventListener('click',()=>releaseLock(false));$('#scanWifiBtn')?.addEventListener('click',scanWifi);$('#saveWifiBtn')?.addEventListener('click',saveWifi);$('#resetWifiBtn')?.addEventListener('click',resetWifi);$('#refreshSavedWifiBtn')?.addEventListener('click',refreshSavedWifi);$('#useSavedWifiBtn')?.addEventListener('click',useSavedWifi);$('#forgetSavedWifiBtn')?.addEventListener('click',forgetSavedWifi);$('#kitSelect')?.addEventListener('change',e=>{const o=e.target.selectedOptions?.[0];if(!o?.value)return;if(q)q.value=o.value;const ip=$('#kitCachedIp');if(ip)ip.value=o.dataset.ip||'';st.query=o.value;connectExact(o.value,true).then(refreshSavedWifi).catch(err=>simpleError(err.message))});
+ $('#kitSearchBtn')?.addEventListener('click',searchModules);$('#refreshModulesBtn')?.addEventListener('click',scanKitsUi);$('#disconnectKitBtn')?.addEventListener('click',disconnectKit);$('#renameDeviceBtn')?.addEventListener('click',renameDevice);$('#resetKitNameBtn')?.addEventListener('click',resetKitName);$('#pingSelectedDeviceBtn')?.addEventListener('click',()=>sendDeviceCommand({type:'ping',time:Date.now()}));$('#takeControlBtn')?.addEventListener('click',()=>acquireLock(false));$('#releaseControlBtn')?.addEventListener('click',()=>releaseLock(false));$('#scanWifiBtn')?.addEventListener('click',scanWifi);$('#saveWifiBtn')?.addEventListener('click',saveWifi);$('#resetWifiBtn')?.addEventListener('click',resetWifi);$('#refreshSavedWifiBtn')?.addEventListener('click',refreshSavedWifi);$('#useSavedWifiBtn')?.addEventListener('click',useSavedWifi);$('#forgetSavedWifiBtn')?.addEventListener('click',forgetSavedWifi);$('#kitSelect')?.addEventListener('change',e=>{const o=e.target.selectedOptions?.[0];if(!o?.value)return;if(q)q.value=o.value;const ip=$('#kitCachedIp');if(ip)ip.value=o.dataset.ip||'';st.query=o.value;savePrefs();setText('kitNameMessage',`${o.value} selected from automatic discovery.`);connectExact(o.value,true).then(refreshSavedWifi).catch(err=>simpleError(err.message))});
  window.addEventListener('pagehide',()=>{if(ownsLock())client.release({keepalive:true}).catch(()=>{})});statusUi();
  if(st.preferredDeviceName||st.query){connectExact(st.preferredDeviceName||st.query,st.autoAcquire).then(refreshSavedWifi).catch(e=>{log('Auto-connect: '+e.message);scanKitsUi()})}else scanKitsUi();
 }

@@ -1,4 +1,12 @@
-## V18.3.8 update
+
+### V18.3.9 additions
+- Larger, higher-contrast Kit Connect controls and visible select options.
+- Automatic default-kit scan fills Kit Name and cached IP.
+- Top toolbar now shows KIT CONNECTED / KIT OFFLINE.
+- TX10 ARM always requires throttle <=1050, including Altitude mode.
+- Altitude throttle no longer springs to center; X forces DISARM + throttle 1000.
+
+## V18.3.9 update
 
 - TX10 transmitter ON/OFF, keyboard control and visual LED status indicators.
 - Arm interlocks: Angle/Rate require low throttle; Altitude requires centered throttle.

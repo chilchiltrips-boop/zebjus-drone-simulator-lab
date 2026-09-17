@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V18.3.8</title>
-<link rel="stylesheet" href="styles.css?v=18.3.8"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V18.3.9</title>
+<link rel="stylesheet" href="styles.css?v=18.3.9"><link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="theme-color" content="#07111b">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.8 • Same-Wi-Fi Local Kit Access • Single Controller • Easy Recovery • Python + Simulator</span></div></div>
- <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="assetStatus" class="status">Loading V18.3 local-kit module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.9 • Same-Wi-Fi Auto Discovery • TX10 Safety • Local Kit Access • Python + Simulator</span></div></div>
+ <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="topKitStatus" class="top-kit-status offline" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span><span id="assetStatus" class="status">Loading V18.3.9 local-kit module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
 <button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="joystick">JOYSTICK</button><button class="tab" data-tab="connect">KIT CONNECT</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
@@ -218,17 +218,17 @@
       <div class="web-tx-title"><b>ZEBJUS TX10</b><span id="joyTargetNote">Transmitter is OFF. Outputs are held safe.</span><em id="joyTargetBadge" class="target-mode-badge sim">SIMULATOR</em></div>
       <button id="webArmBtn" class="btn ghost full" disabled>ARM • THROTTLE LOW REQUIRED</button>
       <div class="tx-aux-grid"><label>CH9 Camera / AUX <output id="webCh9Out">1500</output><input id="webCh9" type="range" min="1000" max="2000" value="1500" step="10"></label><label class="toggle-line led-output-toggle"><input id="webLed" type="checkbox"> CH10 LED Output <i class="mini-led" id="webLedOutputLamp"></i></label></div>
-      <div class="tx-action-row"><button id="webJoyCenterBtn" class="btn ghost full">Center sticks / safe throttle</button><button id="webJoyDisarmBtn" class="btn danger ghost full">DISARM / SAFE</button></div>
+      <div class="tx-action-row"><button id="webJoyCenterBtn" class="btn ghost full">Center sticks / throttle low</button><button id="webJoyDisarmBtn" class="btn danger ghost full">DISARM / SAFE</button></div>
     </div>
     <div class="web-gimbal-card"><small>RIGHT • PITCH / ROLL</small><div id="webRightStick" class="web-stick disabled"><i id="webRightKnob"></i></div><b id="webRightRead">P 0 • R 0</b><span class="stick-hint">Arrow keys • pitch / roll</span></div>
    </div>
-   <div class="keyboard-strip"><b>KEYBOARD</b><span><kbd>↑ ↓ ← →</kbd> Pitch / Roll</span><span><kbd>W S</kbd> Throttle</span><span><kbd>A D</kbd> Yaw</span><span><kbd>T</kbd> TX On/Off</span><span><kbd>M</kbd> Mode</span><span><kbd>X</kbd> Disarm</span></div>
+   <div class="keyboard-strip"><b>KEYBOARD</b><span><kbd>↑ ↓ ← →</kbd> Pitch / Roll</span><span><kbd>W S</kbd> Throttle</span><span><kbd>A D</kbd> Yaw</span><span><kbd>T</kbd> TX On/Off</span><span><kbd>M</kbd> Mode</span><span><kbd>X</kbd> Disarm + throttle low</span></div>
    <div id="webChannelGrid" class="channel-grid"></div>
   </section>
   <aside class="form-card joystick-side-card">
    <div class="panel-head"><div><small>LIVE TARGET</small><h2>Selected Kit</h2></div><span id="shareStateBadge" class="status">Offline</span></div>
    <div class="metrics classroom-mini-metrics"><div><span>ACCESS</span><b>OPEN</b></div><div><span>KIT</span><b id="joySelectedModule">None</b></div><div><span>TARGET</span><b id="joyTargetSummary">SIMULATOR</b></div><div><span>HARDWARE</span><b id="joyLock">--</b></div></div>
-   <div class="joystick-safety-card"><b>ARM INTERLOCK</b><p><strong>Angle / Rate:</strong> throttle must be at minimum (≤1050).</p><p><strong>Altitude:</strong> throttle automatically centers at 1500 and must remain near center before arming.</p></div>
+   <div class="joystick-safety-card"><b>ARM INTERLOCK</b><p><strong>All flight modes:</strong> ARM is enabled only when throttle is low (≤1050).</p><p><strong>Altitude:</strong> low throttle is allowed and stays where you leave it. Raise it manually after arming when required.</p><p><strong>X key:</strong> immediately disarms and holds throttle at 1000.</p></div>
    <div class="joystick-safety-card keyboard"><b>NO AUDIO ALERTS</b><p>This transmitter uses only LED/status indications. CH8 stays reserved at its safe value.</p></div>
    <div class="callout"><b>Real-hardware safety</b><p>Web control is for supervised prop-off bench testing. Free flight should continue to use the dedicated direct-AP flight link.</p></div>
   </aside>
@@ -238,15 +238,15 @@
 <section id="tab-connect" class="panel tab-panel">
  <div class="school-grid">
   <section class="form-card school-connect-card pro-connect-card">
-   <div class="connect-hero"><div><span class="connect-kicker">SAME-WI-FI • ZERO IP SETUP</span><h2>Connect Your ZEBJUS Kit</h2><p>The page automatically scans <b>zebjus_drone_1, zebjus_drone_2…</b>. Select a detected kit or enter its name once. Cached IP is used first, then verified mDNS fallback.</p></div><span id="kitConnBadge" class="status connection-badge">Not connected</span></div>
-   <div class="connect-steps"><div><i>1</i><b>Same Wi-Fi</b><span>Computer and kit on one network</span></div><div><i>2</i><b>Discover</b><span>Automatic local kit scan</span></div><div><i>3</i><b>Verify</b><span>Permanent Device ID checked</span></div></div>
+   <div class="connect-hero"><div><span class="connect-kicker">SAME-WI-FI • AUTOMATIC DISCOVERY</span><h2>Connect Your ZEBJUS Kit</h2><p>No IP address knowledge is required. The browser scans the default names <b>zebjus_drone_1, zebjus_drone_2…</b>, fills the detected Kit Name automatically, verifies the permanent Device ID, then remembers the verified kit for fast reconnect.</p></div><span id="kitConnBadge" class="status connection-badge">Not connected</span></div>
+   <div class="connect-steps"><div><i>1</i><b>Same Wi-Fi</b><span>Connect this computer and the drone kit to the same Wi-Fi network.</span></div><div><i>2</i><b>Auto Discover</b><span>Default kit names are scanned automatically in the background.</span></div><div><i>3</i><b>Verified Connect</b><span>The permanent Device ID is checked before the address is trusted.</span></div></div>
    <label class="switch-row pro-demo-row"><div><strong>Demo mode</strong><span>ON forces on-screen simulation. OFF uses the connected kit and automatically falls back to Offline Simulation if the kit disconnects.</span></div><input id="demoMode" type="checkbox"></label>
    <div class="kit-connect-fields">
-    <label><span>Kit name</span><small>Usually zebjus_drone_1, zebjus_drone_2…</small><input id="kitSearchInput" autocomplete="off" placeholder="zebjus_drone_1"></label>
-    <label><span>Cached IP</span><small>Optional fast reconnect path</small><input id="kitCachedIp" autocomplete="off" inputmode="decimal" placeholder="192.168.1.7"></label>
+    <label class="kit-name-field"><span>Kit name</span><small>Auto-filled after discovery. You can also type a known name.</small><input id="kitSearchInput" autocomplete="off" placeholder="Scanning for zebjus_drone_1…"></label>
+    <label><span>Cached IP</span><small>Filled automatically after a verified connection.</small><input id="kitCachedIp" autocomplete="off" inputmode="decimal" placeholder="Auto after discovery"></label>
    </div>
-   <div class="connect-actions"><button id="kitSearchBtn" class="btn primary">Connect Kit</button><button id="refreshModulesBtn" class="btn ghost">Scan This Wi-Fi</button><button id="disconnectKitBtn" class="btn ghost">Disconnect</button></div>
-   <div class="detected-kit-field"><label><span>Kits found on this Wi-Fi</span><select id="kitSelect"><option value="">Scanning will start automatically…</option></select></label><i class="scan-pulse" aria-hidden="true"></i></div>
+   <div class="connect-actions"><button id="kitSearchBtn" class="btn primary">Connect Selected Kit</button><button id="refreshModulesBtn" class="btn ghost">Rescan This Wi-Fi</button><button id="disconnectKitBtn" class="btn ghost">Disconnect</button></div>
+   <div class="detected-kit-field"><label><span>Kits found on this Wi-Fi</span><small>Detected default names appear here. Selecting one fills the Kit Name and verified cached IP.</small><select id="kitSelect"><option value="">Scanning default kit names…</option></select></label><i class="scan-pulse" aria-hidden="true"></i></div>
    <div id="kitInfo" class="connection-help"><b>Automatic connection order</b><span>Cached IP → Device ID verification → <code>kit-name.local</code> → Device ID verification.</span></div>
    <div id="simpleErrorStatus" class="simple-error" hidden></div>
    <details class="connection-log"><summary>Connection activity</summary><pre id="schoolLog" class="terminal mini">Background discovery ready.</pre></details>
@@ -302,8 +302,8 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.8"></script>
-<script src="kit-local.js?v=18.3.8"></script>
-<script type="module" src="app.js?v=18.3.8"></script>
-<script src="school-lab.js?v=18.3.8"></script>
+<script src="ui-runtime.js?v=18.3.9"></script>
+<script src="kit-local.js?v=18.3.9"></script>
+<script type="module" src="app.js?v=18.3.9"></script>
+<script src="school-lab.js?v=18.3.9"></script>
 </body></html>
