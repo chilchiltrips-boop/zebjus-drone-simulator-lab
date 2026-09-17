@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V18.3.4</title>
-<link rel="stylesheet" href="styles.css?v=18.3.4"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V18.3.8</title>
+<link rel="stylesheet" href="styles.css?v=18.3.8"><link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="theme-color" content="#07111b">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.4 • Same-Wi-Fi Local Kit Access • Single Controller • Easy Recovery • Python + Simulator</span></div></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.8 • Same-Wi-Fi Local Kit Access • Single Controller • Easy Recovery • Python + Simulator</span></div></div>
  <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="assetStatus" class="status">Loading V18.3 local-kit module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
@@ -196,54 +196,60 @@
 </section>
 <section id="tab-joystick" class="panel tab-panel">
  <div class="joystick-page-grid">
-  <section class="form-card joystick-main-card">
-   <div class="panel-head"><div><small>WEB APP CONTROL</small><h2>10-Channel Joystick Lab</h2></div><span id="webJoyRoleBadge" class="status">LOCAL</span></div>
-   <div class="target-separation"><div class="target-card sim"><b>SIMULATOR</b><span>Safe local practice. Always available to every student.</span></div><div class="target-card real"><b>REAL HARDWARE</b><span>Requires the single-user control lock. Supervised prop-off bench only.</span></div></div><div class="safety-banner"><b>FREE-FLIGHT SAFETY</b><span>Actual free-flight control should use the direct AP mobile link, not the Internet/STA web joystick.</span></div>
-   <div class="form-grid compact-form-grid">
-    <label>Target<select id="webJoyTarget"><option value="sim">SIMULATOR • Safe / Local</option><option value="device">REAL KIT • Prop-off Bench</option></select></label>
+  <section class="form-card joystick-main-card joystick-console">
+   <div class="panel-head joystick-head"><div><small>10-CHANNEL CONTROL LAB</small><h2>Virtual Transmitter</h2><p>Mouse, touch or keyboard control with visual safety interlocks.</p></div><div class="tx-power-wrap"><span id="webJoyRoleBadge" class="status">LOCAL</span><button id="webTxPowerBtn" class="tx-power-btn off" type="button"><i></i><span>TRANSMITTER OFF</span></button></div></div>
+   <div class="tx-led-strip" aria-label="Transmitter status indicators">
+    <div><i id="webTxLedPower" class="tx-led"></i><span>POWER</span><b id="webTxPowerText">OFF</b></div>
+    <div><i id="webTxLedLink" class="tx-led"></i><span>LINK</span><b id="webTxLinkText">SIM</b></div>
+    <div><i id="webTxLedArm" class="tx-led"></i><span>ARM</span><b id="webTxArmText">SAFE</b></div>
+    <div><i id="webTxLedMode" class="tx-led mode"></i><span>MODE</span><b id="webTxModeText">ANGLE</b></div>
+    <div><i id="webTxLedAlt" class="tx-led"></i><span>ALT</span><b id="webTxAltText">OFF</b></div>
+   </div>
+   <div class="target-separation"><div class="target-card sim"><b>SIMULATOR</b><span>Safe local practice. No kit command is sent.</span></div><div class="target-card real"><b>REAL KIT</b><span>Single-controller lock • supervised prop-off bench only.</span></div></div>
+   <div class="form-grid compact-form-grid tx-top-controls">
+    <label>Control target<select id="webJoyTarget"><option value="sim">SIMULATOR • Safe / Local</option><option value="device">REAL KIT • Prop-off Bench</option></select></label>
+    <label>Flight mode<select id="webMode"><option value="1000">ANGLE</option><option value="1500">RATE</option><option value="2000">ALTITUDE</option></select></label>
     <label>Send rate<select id="webJoyRate"><option value="20">20 Hz</option><option value="10">10 Hz</option><option value="5">5 Hz</option></select></label>
    </div>
+   <div id="webArmMessage" class="arm-guidance safe"><b>TRANSMITTER OFF</b><span>Turn the transmitter on to enable controls.</span></div>
    <div class="web-tx-shell">
-    <div class="web-gimbal-card"><small>LEFT • THROTTLE / YAW</small><div id="webLeftStick" class="web-stick"><i id="webLeftKnob"></i></div><b id="webLeftRead">T 1000 • Y 0</b></div>
+    <div class="web-gimbal-card"><small>LEFT • THROTTLE / YAW</small><div id="webLeftStick" class="web-stick disabled"><i id="webLeftKnob"></i></div><b id="webLeftRead">T 1000 • Y 0</b><span class="stick-hint">W/S throttle • A/D yaw</span></div>
     <div class="web-tx-center">
-      <div class="web-tx-title"><b>ZEBJUS TX10</b><span id="joyTargetNote">Safe local simulation. No real kit commands are sent.</span><em id="joyTargetBadge" class="target-mode-badge sim">SIMULATOR</em></div>
-      <button id="webArmBtn" class="btn danger full">CH5 DISARMED</button>
-      <label>CH6 Flight mode<select id="webMode"><option value="1000">ANGLE</option><option value="1500">RATE</option><option value="2000">ALT / AUX</option></select></label>
-      <label class="toggle-line"><input id="webAltHold" type="checkbox"> CH7 Alt Hold</label>
-      <label class="toggle-line"><input id="webBeeper" type="checkbox"> CH8 Beeper</label>
-      <label>CH9 Camera / AUX <output id="webCh9Out">1500</output><input id="webCh9" type="range" min="1000" max="2000" value="1500" step="10"></label>
-      <label class="toggle-line"><input id="webLed" type="checkbox"> CH10 LED / AUX</label>
-      <button id="webJoyCenterBtn" class="btn ghost full">Center sticks / throttle minimum</button>
+      <div class="web-tx-title"><b>ZEBJUS TX10</b><span id="joyTargetNote">Transmitter is OFF. Outputs are held safe.</span><em id="joyTargetBadge" class="target-mode-badge sim">SIMULATOR</em></div>
+      <button id="webArmBtn" class="btn ghost full" disabled>ARM • THROTTLE LOW REQUIRED</button>
+      <div class="tx-aux-grid"><label>CH9 Camera / AUX <output id="webCh9Out">1500</output><input id="webCh9" type="range" min="1000" max="2000" value="1500" step="10"></label><label class="toggle-line led-output-toggle"><input id="webLed" type="checkbox"> CH10 LED Output <i class="mini-led" id="webLedOutputLamp"></i></label></div>
+      <div class="tx-action-row"><button id="webJoyCenterBtn" class="btn ghost full">Center sticks / safe throttle</button><button id="webJoyDisarmBtn" class="btn danger ghost full">DISARM / SAFE</button></div>
     </div>
-    <div class="web-gimbal-card"><small>RIGHT • PITCH / ROLL</small><div id="webRightStick" class="web-stick"><i id="webRightKnob"></i></div><b id="webRightRead">P 0 • R 0</b></div>
+    <div class="web-gimbal-card"><small>RIGHT • PITCH / ROLL</small><div id="webRightStick" class="web-stick disabled"><i id="webRightKnob"></i></div><b id="webRightRead">P 0 • R 0</b><span class="stick-hint">Arrow keys • pitch / roll</span></div>
    </div>
+   <div class="keyboard-strip"><b>KEYBOARD</b><span><kbd>↑ ↓ ← →</kbd> Pitch / Roll</span><span><kbd>W S</kbd> Throttle</span><span><kbd>A D</kbd> Yaw</span><span><kbd>T</kbd> TX On/Off</span><span><kbd>M</kbd> Mode</span><span><kbd>X</kbd> Disarm</span></div>
    <div id="webChannelGrid" class="channel-grid"></div>
   </section>
-  <aside class="form-card">
-   <div class="panel-head"><div><small>EASY ACCESS</small><h2>Selected Kit</h2></div><span id="shareStateBadge" class="status">Offline</span></div>
-   <p class="micro-note">Every student uses the same web app. Kits are discovered automatically. One browser controls a real kit at a time; everyone else can still view telemetry and use their own simulator.</p>
-   <div class="metrics classroom-mini-metrics"><div><span>ACCESS</span><b>OPEN</b></div><div><span>KIT</span><b id="joySelectedModule">None</b></div><div><span>CONTROL</span><b>SIMULATION</b></div><div><span>HARDWARE</span><b id="joyLock">--</b></div></div>
-   <div class="callout"><b>Flight safety</b><p>The web joystick defaults to the simulator. Real hardware joystick remains disabled unless the ESP32 firmware flag is intentionally enabled for supervised prop-off bench testing.</p></div>
+  <aside class="form-card joystick-side-card">
+   <div class="panel-head"><div><small>LIVE TARGET</small><h2>Selected Kit</h2></div><span id="shareStateBadge" class="status">Offline</span></div>
+   <div class="metrics classroom-mini-metrics"><div><span>ACCESS</span><b>OPEN</b></div><div><span>KIT</span><b id="joySelectedModule">None</b></div><div><span>TARGET</span><b id="joyTargetSummary">SIMULATOR</b></div><div><span>HARDWARE</span><b id="joyLock">--</b></div></div>
+   <div class="joystick-safety-card"><b>ARM INTERLOCK</b><p><strong>Angle / Rate:</strong> throttle must be at minimum (≤1050).</p><p><strong>Altitude:</strong> throttle automatically centers at 1500 and must remain near center before arming.</p></div>
+   <div class="joystick-safety-card keyboard"><b>NO AUDIO ALERTS</b><p>This transmitter uses only LED/status indications. CH8 stays reserved at its safe value.</p></div>
+   <div class="callout"><b>Real-hardware safety</b><p>Web control is for supervised prop-off bench testing. Free flight should continue to use the dedicated direct-AP flight link.</p></div>
   </aside>
  </div>
 </section>
 
 <section id="tab-connect" class="panel tab-panel">
  <div class="school-grid">
-  <section class="form-card school-connect-card">
-   <div class="panel-head"><div><small>V18.3.3 • AUTO DISCOVERY • LOCAL LINK</small><h2>Kit Connection</h2></div><span id="kitConnBadge" class="status">Not connected</span></div>
-   <p class="micro-note">Same-Wi-Fi local connection. Cached IP is tried first, then <b>kit-name.local</b>. The permanent Device ID is verified before a cached address is accepted.</p>
-   <label class="switch-row"><div><strong>Demo mode</strong><span>ON = simulation only. OFF = use the selected ESP32 kit when connected and fall back to Offline Simulation when disconnected.</span></div><input id="demoMode" type="checkbox"></label>
-   <div class="form-grid">
-    <label>Kit name<input id="kitSearchInput" autocomplete="off" placeholder="zebjus_drone_1"></label>
-    <label>Cached IP (primary)<input id="kitCachedIp" autocomplete="off" inputmode="decimal" placeholder="192.168.1.7"></label>
+  <section class="form-card school-connect-card pro-connect-card">
+   <div class="connect-hero"><div><span class="connect-kicker">SAME-WI-FI • ZERO IP SETUP</span><h2>Connect Your ZEBJUS Kit</h2><p>The page automatically scans <b>zebjus_drone_1, zebjus_drone_2…</b>. Select a detected kit or enter its name once. Cached IP is used first, then verified mDNS fallback.</p></div><span id="kitConnBadge" class="status connection-badge">Not connected</span></div>
+   <div class="connect-steps"><div><i>1</i><b>Same Wi-Fi</b><span>Computer and kit on one network</span></div><div><i>2</i><b>Discover</b><span>Automatic local kit scan</span></div><div><i>3</i><b>Verify</b><span>Permanent Device ID checked</span></div></div>
+   <label class="switch-row pro-demo-row"><div><strong>Demo mode</strong><span>ON forces on-screen simulation. OFF uses the connected kit and automatically falls back to Offline Simulation if the kit disconnects.</span></div><input id="demoMode" type="checkbox"></label>
+   <div class="kit-connect-fields">
+    <label><span>Kit name</span><small>Usually zebjus_drone_1, zebjus_drone_2…</small><input id="kitSearchInput" autocomplete="off" placeholder="zebjus_drone_1"></label>
+    <label><span>Cached IP</span><small>Optional fast reconnect path</small><input id="kitCachedIp" autocomplete="off" inputmode="decimal" placeholder="192.168.1.7"></label>
    </div>
-   <div class="button-row"><button id="kitSearchBtn" class="btn primary">Connect Kit</button><button id="refreshModulesBtn" class="btn ghost">Scan Default Kits</button><button id="disconnectKitBtn" class="btn ghost">Disconnect</button></div>
-   <label>Kits found on this Wi-Fi<select id="kitSelect"><option value="">No scan yet</option></select></label>
-   <div id="kitInfo" class="callout">Select or enter a kit name, then connect.</div>
-   <p class="micro-note">New kits automatically choose the first free name <b>zebjus_drone_1, zebjus_drone_2…</b>. The browser scans those names automatically plus kits previously used on this device. Display names use underscores; the mDNS hostname uses the browser-safe hyphen form, for example <b>zebjus-drone-1.local</b>.</p>
+   <div class="connect-actions"><button id="kitSearchBtn" class="btn primary">Connect Kit</button><button id="refreshModulesBtn" class="btn ghost">Scan This Wi-Fi</button><button id="disconnectKitBtn" class="btn ghost">Disconnect</button></div>
+   <div class="detected-kit-field"><label><span>Kits found on this Wi-Fi</span><select id="kitSelect"><option value="">Scanning will start automatically…</option></select></label><i class="scan-pulse" aria-hidden="true"></i></div>
+   <div id="kitInfo" class="connection-help"><b>Automatic connection order</b><span>Cached IP → Device ID verification → <code>kit-name.local</code> → Device ID verification.</span></div>
    <div id="simpleErrorStatus" class="simple-error" hidden></div>
-   <pre id="schoolLog" class="terminal mini">Background discovery ready.</pre>
+   <details class="connection-log"><summary>Connection activity</summary><pre id="schoolLog" class="terminal mini">Background discovery ready.</pre></details>
   </section>
 
   <section class="form-card selected-module-card">
@@ -296,8 +302,8 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.1"></script>
-<script src="kit-local.js?v=18.3.1"></script>
-<script type="module" src="app.js?v=18.3.1"></script>
-<script src="school-lab.js?v=18.3.1"></script>
+<script src="ui-runtime.js?v=18.3.8"></script>
+<script src="kit-local.js?v=18.3.8"></script>
+<script type="module" src="app.js?v=18.3.8"></script>
+<script src="school-lab.js?v=18.3.8"></script>
 </body></html>

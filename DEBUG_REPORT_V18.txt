@@ -1,2 +1,2 @@
-ZEBJUS F450 Drone Engineering Lab V18.3 Local Easy Access
+ZEBJUS F450 Drone Engineering Lab V18.3.8 Local Easy Access
 Connection: same-Wi-Fi direct HTTP + cached IP + mDNS fallback + permanent Device ID verification.

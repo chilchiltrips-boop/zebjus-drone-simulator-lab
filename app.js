@@ -7,7 +7,7 @@ window.__zebjusModuleParsed=true;
 window.__zebjusAppLoaded=false;
 window.__zebjus3DReady=false;
 function setBootStatus(text,kind=''){const s=$('#assetStatus');if(s){s.textContent=text;s.className='status'+(kind?' '+kind:'')}}
-setBootStatus('V18.3 local-kit module loaded • starting engineering runtime…');
+setBootStatus('V18.3.8 local-kit module loaded • starting engineering runtime…');
 
 /* V9: local camera controls. No network add-on is required for 3D startup. */
 class MiniOrbitControls {
@@ -677,10 +677,10 @@ function init3D(){
  const e=$('#threeContainer');if(!e)throw new Error('3D container missing');
  const w=Math.max(1,e.clientWidth||e.getBoundingClientRect().width||900),h=Math.max(1,e.clientHeight||e.getBoundingClientRect().height||600);
  scene=new THREE.Scene();scene.background=new THREE.Color(0x0b1720);
- camera=new THREE.PerspectiveCamera(40,w/h,.1,1000);camera.position.set(8.9,7.1,10.6);
+ camera=new THREE.PerspectiveCamera(38,w/h,.1,1000);camera.position.set(8.7,7.6,11.5);
  renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(w,h);
  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.38;e.appendChild(renderer.domElement);
- controls=new MiniOrbitControls(camera,renderer.domElement);controls.target.set(0,.95,0);controls.enableDamping=true;controls.minDistance=4;controls.maxDistance=23;
+ controls=new MiniOrbitControls(camera,renderer.domElement);controls.target.set(0,.58,0);controls.enableDamping=true;controls.minDistance=4;controls.maxDistance=26;
  scene.add(new THREE.AmbientLight(0xffffff,.75));
  scene.add(new THREE.HemisphereLight(0xe7f5ff,0x63717c,1.65));
  const key=new THREE.DirectionalLight(0xffffff,2.8);key.position.set(6,10,8);key.castShadow=true;scene.add(key);
@@ -689,10 +689,10 @@ function init3D(){
  const warm=new THREE.PointLight(0xffd7a8,1.25,18);warm.position.set(4.8,5.8,1.8);scene.add(warm);
  const frontFill=new THREE.PointLight(0xa9dcff,.95,16);frontFill.position.set(-4.5,3.8,5.5);scene.add(frontFill);
  // V16 round engineering workbench instead of the old square bed.
- const benchMat=mat(0x354550,.16,.52);bench=M(new THREE.CylinderGeometry(8.8,8.8,.38,112),benchMat,[0,-.18,0],[0,0,0],scene);
- const topDisc=M(new THREE.CylinderGeometry(8.55,8.55,.038,112),mat(0x1d2a32,.08,.44),[0,.018,0],[0,0,0],scene);
- [1.5,3.0,4.5,6.0,7.4,8.25].forEach(r=>{const ring=new THREE.Mesh(new THREE.TorusGeometry(r,.012,6,96),new THREE.MeshBasicMaterial({color:0x3b6072,transparent:true,opacity:.46}));ring.rotation.x=Math.PI/2;ring.position.y=.041;scene.add(ring)});
- for(let a=0;a<Math.PI*2;a+=Math.PI/8){const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,.042,0),new THREE.Vector3(Math.cos(a)*8.25,.042,Math.sin(a)*8.25)]);scene.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x2f4e5e,transparent:true,opacity:.32})))}
+ const benchMat=mat(0x354550,.16,.52);bench=M(new THREE.CylinderGeometry(6.7,6.7,.34,112),benchMat,[0,-.16,0],[0,0,0],scene);
+ const topDisc=M(new THREE.CylinderGeometry(6.48,6.48,.036,112),mat(0x1d2a32,.08,.44),[0,.018,0],[0,0,0],scene);
+ [1.25,2.5,3.75,5.0,6.15].forEach(r=>{const ring=new THREE.Mesh(new THREE.TorusGeometry(r,.012,6,96),new THREE.MeshBasicMaterial({color:0x3b6072,transparent:true,opacity:.46}));ring.rotation.x=Math.PI/2;ring.position.y=.041;scene.add(ring)});
+ for(let a=0;a<Math.PI*2;a+=Math.PI/8){const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,.042,0),new THREE.Vector3(Math.cos(a)*6.2,.042,Math.sin(a)*6.2)]);scene.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x2f4e5e,transparent:true,opacity:.32})))}
  snapPreview=new THREE.Mesh(new THREE.RingGeometry(.28,.42,36),new THREE.MeshBasicMaterial({color:C.green,transparent:true,opacity:.85,side:THREE.DoubleSide,depthWrite:false}));snapPreview.rotation.x=-Math.PI/2;snapPreview.visible=false;scene.add(snapPreview);
  partsRoot=new THREE.Group();wiresRoot=new THREE.Group();guidesRoot=new THREE.Group();extrasRoot=new THREE.Group();labelsRoot=new THREE.Group();solderRoot=new THREE.Group();powerPulseRoot=new THREE.Group();
  [partsRoot,wiresRoot,guidesRoot,extrasRoot,labelsRoot,solderRoot,powerPulseRoot].forEach(g=>g.position.y=0);scene.add(partsRoot,wiresRoot,guidesRoot,extrasRoot,labelsRoot,solderRoot,powerPulseRoot);
@@ -845,10 +845,10 @@ function loop3D(t){
 }
 function setView(v){
  if(!camera||!controls)return;
- if(v==='3d')camera.position.set(8.9,7.1,10.6);
- if(v==='top')camera.position.set(0,14,.01);
- if(v==='front')camera.position.set(0,3.8,12);
- controls.target.set(0,.95,0);
+ if(v==='3d')camera.position.set(8.7,7.6,11.5);
+ if(v==='top')camera.position.set(0,19,.01);
+ if(v==='front')camera.position.set(0,4.2,15.8);
+ controls.target.set(0,.58,0);
  const active={'3d':'view3dBtn',top:'topBtn',front:'frontBtn'}[v];
  ['view3dBtn','topBtn','frontBtn'].forEach(id=>$('#'+id)?.classList.toggle('active',id===active))
 }
@@ -1460,7 +1460,7 @@ function simKeyUp(e){
 }
 function renderKeySettings(){const box=$('#keySettings');if(!box)return;const labels={rollLeft:'Roll left',rollRight:'Roll right',pitchForward:'Pitch forward',pitchBack:'Pitch back',throttleUp:'Throttle +',throttleDown:'Throttle −',yawLeft:'Yaw left',yawRight:'Yaw right',run:'Run / Stop'};box.innerHTML=Object.entries(labels).map(([k,l])=>`<div class="key-row"><span>${l}</span><button class="key-capture ${keyCaptureAction===k?'listening':''}" data-key-action="${k}">${keyCaptureAction===k?'PRESS KEY…':keyLabel(keyMap[k])}</button></div>`).join('');$$('.key-capture').forEach(b=>b.onclick=()=>{keyCaptureAction=b.dataset.keyAction;renderKeySettings()})}
 function downloadBlob(name,data,type='text/plain'){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)}
-function projectPayload(){return{version:'18.3.0',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
+function projectPayload(){return{version:'18.3.8',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
 function exportProjectJson(){downloadBlob('ZEBJUS_F450_Project_V18.json',JSON.stringify(projectPayload(),null,2),'application/json')}
 function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V18',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
 function exportWiringSvg(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg);downloadBlob('ZEBJUS_F450_Wiring.svg',xml,'image/svg+xml')}
@@ -1469,7 +1469,11 @@ function exportBom(){const rows=[['Item','Quantity','Rating / Notes']];products.
 function exportProgressReport(){const issues=electricalIssues?.()||[],done=steps.filter((_,i)=>stepDone(i)).length,html=`<!doctype html><meta charset="utf-8"><title>ZEBJUS F450 Build Report</title><style>body{font:14px system-ui;max-width:900px;margin:40px auto}h1{color:#087f5b}.bad{color:#b42318}.ok{color:#087f5b}li{margin:7px}</style><h1>ZEBJUS F450 Build Report</h1><p>Generated: ${new Date().toLocaleString()}</p><p>Progress: ${done}/${steps.length} (${Math.round(done/steps.length*100)}%)</p><h2>Assembly</h2><ol>${steps.map((s,i)=>`<li class="${stepDone(i)?'ok':''}">${stepDone(i)?'✓':'○'} ${s.title}</li>`).join('')}</ol><h2>Electrical validation</h2>${issues.length?`<ul>${issues.map(x=>`<li class="${x.level}">${x.text}</li>`).join('')}</ul>`:'<p class="ok">✓ No electrical issues detected.</p>'}<h2>PID</h2><pre>${JSON.stringify(state.pid,null,2)}</pre>`;downloadBlob('ZEBJUS_F450_Progress_Report.html',html,'text/html')}
 function applyPerformanceMode(){const m=$('#performanceMode')?.value||'balanced';try{localStorage.setItem('zebjus-v17-performance',m)}catch{};const ratio=m==='high'?Math.min(devicePixelRatio||1,2):m==='low'?1:Math.min(devicePixelRatio||1,1.5);if(renderer){renderer.setPixelRatio(ratio);renderer.shadowMap.enabled=m!=='low';resize3D()}if(sRenderer){sRenderer.setPixelRatio(ratio);sRenderer.shadowMap.enabled=m!=='low';resizeSim()}notify(`Graphics profile: ${m}`)}
 function updateStartupDiagnostics(){const e=$('#startupDiagnostics');if(!e)return;const lines=[`V18 runtime: ${window.__zebjusAppLoaded?'loaded':'starting'}`,`WebGL: ${renderer?'OK':'pending / unavailable'}`,`Local Three.js: ${THREE.REVISION}`,`Storage: ${(()=>{try{localStorage.setItem('__zj','1');localStorage.removeItem('__zj');return'OK'}catch{return'blocked'}})()}`,`Service worker: ${'serviceWorker' in navigator?'supported':'not supported'}`,`Layout: ${adaptiveMode||adaptiveDeviceMode()}`,`Viewport: ${window.innerWidth}×${window.innerHeight}`,`Pixel ratio: ${devicePixelRatio||1}`,`Assembly FPS: ${runtimeFps||'--'}`,`Parts installed: ${state.parts.filter(p=>!p.internal).length}`,`Connections: ${state.connections.length}`];e.textContent=lines.join('\n')}
-function registerOffline(){if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./service-worker.js').catch(()=>{})}
+function registerOffline(){
+ if(!('serviceWorker' in navigator)||!location.protocol.startsWith('http'))return;
+ let reloading=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloading)return;reloading=true;location.reload()});
+ navigator.serviceWorker.register('./service-worker.js?v=18.3.8',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
+}
 function updateAudioUi(){
  const en=$('#soundEnabled'),vol=$('#soundVolume'),out=$('#soundVolumeOut'),st=$('#soundState');
  if(en)en.checked=soundEnabled;if(vol)vol.value=Math.round(soundVolume*100);if(out)out.textContent=Math.round(soundVolume*100)+'%';
@@ -1489,7 +1493,7 @@ function initSettings(){renderKeySettings();initAudioSettings();$('#saveKeysBtn'
 /* FC / CAL / PID / PYTHON */
 function fcLog(t){const e=$('#fcLog');if(!e)return;e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
 function fcStatus(on){state.fc.connected=on;const e=$('#fcBadge');if(e){e.textContent=on?'Connected':'Disconnected';e.className='status '+(on?'good':'')}}
-function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
+function connectFc(){disconnectFc(false);const ip=$('#fcIp').value.trim(),path=$('#fcPath').value.trim(),pref=$('#fcProtocol').value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3.8'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false)}catch(e){fcLog(e.message)}}
 function disconnectFc(log=true){if(state.fc.socket)try{state.fc.socket.close()}catch{}state.fc.socket=null;fcStatus(false);if(log)fcLog('Disconnected')}
 function sendFc(o){if(window.zebjusSchool?.isViewOnly?.()){fcLog('VIEW ONLY • command blocked');return false}if(window.zebjusSchool?.isCloudActive?.()){if(window.zebjusSchool.sendDeviceCommand?.(o)){fcLog('LOCAL KIT TX '+JSON.stringify(o));return true}fcLog('Select an online kit first');return false}if(state.fc.socket?.readyState===1){state.fc.socket.send(JSON.stringify(o));fcLog('TX '+JSON.stringify(o));return true}fcLog('Not connected');return false}
 function packet(raw){let d,text;if(typeof raw==='string'){text=raw;try{d=JSON.parse(raw)}catch{d={raw}}}else{d=raw||{};text=JSON.stringify(d)};['roll','pitch','yaw','gyroX','gyroY','gyroZ','battery'].forEach(k=>{if(Number.isFinite(+d[k]))state.telemetry[k]=+d[k]});$('#telemetryLog').textContent=(new Date().toLocaleTimeString()+' '+text+'\n'+$('#telemetryLog').textContent).slice(0,12000);telemetryUI()}
@@ -1554,7 +1558,7 @@ function showAssembly3DError(e){
 }
 // V18.3 public bridge used by same-Wi-Fi Local Kit runtime.
 window.zebjusLabAPI={
- version:'18.3.0',
+ version:'18.3.8',
  getSimState:()=>{const x=state.sim;return{running:x.running,flightMode:x.flightMode,roll:x.roll,pitch:x.pitch,yaw:x.yaw,rollRate:x.rollRate,pitchRate:x.pitchRate,yawRate:x.yawRate,throttle:x.throttle,cmdRoll:x.cmdRoll,cmdPitch:x.cmdPitch,cmdYaw:x.cmdYaw,targetRoll:x.targetRoll,targetPitch:x.targetPitch,targetYawRate:x.targetYawRate,liftY:x.liftY,lastMix:[...(x.lastMix||[0,0,0,0])],batteryV:x.batteryV,payloadG:x.payloadG,cgX:x.cgX,cgY:x.cgY,wind:x.wind,motorLag:x.motorLag,levelTrimRoll:x.levelTrimRoll,levelTrimPitch:x.levelTrimPitch,rateHoldRoll:x.rateHoldRoll,rateHoldPitch:x.rateHoldPitch}},
  applyRemoteSimState:d=>{window.__zebjusRemoteSimState=d?{...d,lastMix:Array.isArray(d.lastMix)?[...d.lastMix]:[0,0,0,0]}:null},
  setRemoteFollower:on=>{window.__zebjusRemoteFollower=!!on;if(!on)window.__zebjusRemoteSimState=null},
@@ -1593,6 +1597,6 @@ function boot(){
  if(threeOK){setBootStatus('Local 3D engine ready','good');notify('3D engine ready • offline/local runtime.','good')}
  else{setBootStatus('3D unavailable • 2D tools active');notify('3D renderer unavailable — 2D tools are still active.','bad')}
  window.__zebjusAppLoaded=true;updateStartupDiagnostics?.();
- window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.0'}}));
+ window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.8'}}));
 }
 boot();

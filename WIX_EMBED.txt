@@ -1,9 +1,1 @@
-ZEBJUS F450 V18.3 Local Easy Access
-
-The webapp can be hosted as static files. Real kit access is direct from the browser to the ESP32 on the same Wi-Fi.
-
-Important for embedded Wix/browser use:
-- Allow Local Network Access when the browser asks.
-- If an embedded frame blocks local access, open Drone Lab in a new tab.
-- Kit lookup uses cached verified IP first, then <kit-name>.local mDNS fallback.
-- No cloud WebSocket/device registry is required for normal same-Wi-Fi lab use.
+ZEBJUS F450 V18.3.8 Local Easy Access

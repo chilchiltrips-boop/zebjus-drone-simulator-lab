@@ -1,3 +1,12 @@
+## V18.3.8 update
+
+- TX10 transmitter ON/OFF, keyboard control and visual LED status indicators.
+- Arm interlocks: Angle/Rate require low throttle; Altitude requires centered throttle.
+- Altitude mode automatically centers CH3 and CH7 follows altitude mode.
+- Joystick CH8 audio/beeper control removed; CH8 remains at safe reserve value.
+- Kit Connection page refreshed for clearer same-Wi-Fi discovery and verified connection status.
+- Service-worker/cache strategy fixed so normal refresh no longer falls back to an older build after the new worker is installed.
+
 ## V18.3.3 update
 
 Automatic local kit naming/discovery now follows the Python Lab pattern using `zebjus_drone_N`. See `V18_3_3_AUTO_DISCOVERY.md`.
