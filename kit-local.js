@@ -113,6 +113,8 @@ class LocalKitClient{
   async useWifi(ssid){return requestBase(this.base,'/api/wifi/use',{method:'POST',data:{clientId:this.clientId,ssid},timeout:2200})}
   async forgetWifi(ssid){return requestBase(this.base,'/api/wifi/forget',{method:'POST',data:{clientId:this.clientId,ssid},timeout:2200})}
   async resetWifi(){return requestBase(this.base,'/api/wifi/reset',{method:'POST',data:{clientId:this.clientId},timeout:2200})}
+  async firmwareInfo(){return requestBase(this.base,'/api/firmware/info',{timeout:2200})}
+  async reboot(){return requestBase(this.base,'/api/reboot',{method:'POST',data:{clientId:this.clientId},timeout:2200})}
 }
 
 global.ZebjusDroneKit={normalizeKitName,hostFromName,baseFromName,loadKnown,rememberKit,connect,scanDefaultKits,LocalKitClient};

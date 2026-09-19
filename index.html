@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="theme-color" content="#07111b">
-<title>ZEBJUS F450 Drone Engineering Lab V18.3.13</title>
-<link rel="stylesheet" href="styles.css?v=18.3.13"><link rel="manifest" href="manifest.webmanifest">
+<title>ZEBJUS F450 Drone Engineering Lab V18.3.14</title>
+<link rel="stylesheet" href="styles.css?v=18.3.14"><link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="theme-color" content="#07111b">
 </head>
 <body>
 <div id="app">
 <header class="topbar">
- <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.13 • Same-Wi-Fi Auto Discovery • TX10 Safety • Local Kit Access • Python + Simulator</span></div></div>
- <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="topKitStatus" class="top-kit-status offline" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span><span id="assetStatus" class="status">Loading V18.3.13 local-kit module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
+ <div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.14 • Same-Wi-Fi Auto Discovery • TX10 Safety • Local Kit Access • Python + Simulator</span></div></div>
+ <div class="top-actions"><span id="adaptiveLayoutBadge" class="adaptive-layout-badge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" target="_blank" rel="noopener"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span id="topKitStatus" class="top-kit-status offline" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span><span id="assetStatus" class="status">Loading V18.3.14 local-kit module…</span><span id="saveState" class="status good">Ready</span><button id="undoBtn" class="btn ghost" disabled>↶ Undo</button><button id="redoBtn" class="btn ghost" disabled>↷ Redo</button><button id="saveBtn" class="btn ghost">Save</button><button id="resetBtn" class="btn danger ghost">Reset</button></div>
 </header>
 <nav class="tabs">
-<button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="joystick">JOYSTICK</button><button class="tab" data-tab="connect">KIT CONNECT</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
+<button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="joystick">JOYSTICK</button><button class="tab" data-tab="connect">KIT CONNECT</button><button class="tab" data-tab="firmware">FIRMWARE UPDATE</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
 </nav>
 <main>
 <section id="tab-assembly" class="panel tab-panel active assembly-grid">
@@ -304,6 +304,45 @@
   </section>
  </div>
 </section>
+
+<section id="tab-firmware" class="panel tab-panel firmware-page">
+  <div class="firmware-hero">
+    <div><span class="connect-kicker">WEB FLASH • WIFI OTA • USB RECOVERY</span><h2>Flight Controller Firmware Center</h2><p>Update the ZEBJUS flight controller without opening Arduino IDE. Load a saved or bundled firmware automatically, import a compiled <b>.bin</b>, flash an online kit over Wi-Fi, or recover/first-flash an ESP board over USB Web Serial.</p></div>
+    <div class="firmware-hero-badges"><span id="fwKitBadge" class="firmware-badge offline">KIT OFFLINE</span><span id="fwSerialBadge" class="firmware-badge offline">USB NOT CONNECTED</span></div>
+  </div>
+  <div class="firmware-grid">
+    <div class="form-card firmware-source-card">
+      <div class="panel-head"><div><small>STEP 1 • FIRMWARE SOURCE</small><h2>Choose firmware</h2></div><span id="fwSourceBadge" class="status">NO FILE</span></div>
+      <div class="firmware-source-actions"><button id="fwAutoLoadBtn" class="btn primary">Auto Load Latest</button><label class="btn ghost firmware-file-label">Import .bin<input id="fwFileInput" type="file" accept=".bin,application/octet-stream"></label><button id="fwForgetBtn" class="btn ghost">Forget Cached</button></div>
+      <div id="fwDropZone" class="firmware-drop-zone"><b>Drop firmware .bin here</b><span>Application image: Wi-Fi OTA or USB @ 0x10000 • Factory/Merged image: USB @ 0x0</span></div>
+      <div class="firmware-file-info">
+        <div><span>FILE</span><b id="fwFileName">No firmware loaded</b></div><div><span>VERSION</span><b id="fwFileVersion">--</b></div><div><span>SIZE</span><b id="fwFileSize">--</b></div><div><span>SHA-256</span><b id="fwFileHash" class="mono">--</b></div>
+      </div>
+      <div class="firmware-config-row"><label>Image type<select id="fwImageType"><option value="app">Application / OTA image</option><option value="factory">Factory / merged image</option></select></label><label>Target chip<select id="fwChipFamily"><option value="ESP32-C3">ESP32-C3</option><option value="ESP32-C6">ESP32-C6</option></select></label></div>
+      <p id="fwSourceMessage" class="micro-note">Automatic load checks the bundled Web_Flash package first, then the last firmware cached in this browser.</p>
+    </div>
+
+    <div class="form-card firmware-target-card">
+      <div class="panel-head"><div><small>STEP 2 • TARGET</small><h2>Connect controller</h2></div></div>
+      <div class="firmware-target-option wifi"><div class="firmware-target-icon">Wi-Fi</div><div><b>Online Kit OTA</b><span>Fast update through the selected same-Wi-Fi kit. Requires Take Control, DISARMED state, and an application .bin.</span></div><button id="fwRefreshKitBtn" class="btn ghost small">Check Kit</button></div>
+      <div class="firmware-target-option usb"><div class="firmware-target-icon">USB</div><div><b>USB Web Serial</b><span>First flash / recovery / factory image. Chrome or Edge on HTTPS/localhost. The browser will ask you to select the ESP serial port.</span></div><button id="fwConnectUsbBtn" class="btn primary small">Connect USB</button></div>
+      <div class="firmware-usb-info"><div><span>Detected chip</span><b id="fwUsbChip">--</b></div><div><span>USB status</span><b id="fwUsbState">Not connected</b></div><div><span>Baud</span><select id="fwUsbBaud"><option value="115200">115200</option><option value="460800" selected>460800</option><option value="921600">921600</option></select></div></div>
+      <label class="firmware-check"><input id="fwEraseUsb" type="checkbox"> Erase entire flash before USB factory flash <small>Only available for Factory/Merged images. Never erase when flashing an app-only image.</small></label>
+      <div class="firmware-target-actions"><button id="fwWifiFlashBtn" class="btn primary full">Flash Selected Kit over Wi-Fi</button><button id="fwUsbFlashBtn" class="btn ghost full">Flash Connected ESP over USB</button></div>
+    </div>
+
+    <div class="form-card firmware-control-card">
+      <div class="panel-head"><div><small>STEP 3 • UPDATE MONITOR</small><h2>Flash, reboot & reconnect</h2></div><span id="fwOverallBadge" class="status">READY</span></div>
+      <div class="firmware-progress-wrap"><div class="firmware-progress-head"><b id="fwProgressTitle">Waiting for firmware</b><span id="fwProgressPct">0%</span></div><div class="firmware-progress"><i id="fwProgressBar"></i></div></div>
+      <div class="firmware-stages"><div id="fwStagePrepare"><i></i><span>Prepare</span></div><div id="fwStageFlash"><i></i><span>Flash</span></div><div id="fwStageVerify"><i></i><span>Verify</span></div><div id="fwStageReboot"><i></i><span>Reboot</span></div><div id="fwStageReconnect"><i></i><span>Reconnect</span></div></div>
+      <div class="firmware-live-status"><div><span>Current kit firmware</span><b id="fwCurrentVersion">--</b></div><div><span>Device ID</span><b id="fwDeviceId">--</b></div><div><span>Kit state</span><b id="fwKitState">OFFLINE</b></div></div>
+      <div class="firmware-recovery-actions"><button id="fwRebootBtn" class="btn ghost">Reboot Online Kit</button><button id="fwReconnectBtn" class="btn ghost">Reconnect Kit</button><button id="fwDisconnectUsbBtn" class="btn ghost">Disconnect USB</button></div>
+      <pre id="fwLog" class="terminal firmware-log">Firmware Center ready.</pre>
+    </div>
+  </div>
+  <div class="firmware-safety-strip"><b>FLIGHT SAFETY</b><span>Firmware write and reboot are blocked while the kit reports ARMED. Wi-Fi OTA requires the browser to own the hardware control lock. Keep propellers removed during bench firmware work.</span></div>
+</section>
+
 <section id="tab-cal" class="panel tab-panel"><div class="two-col"><div class="form-card"><div class="panel-head"><div><small>STEP-BY-STEP</small><h2>Calibration wizard</h2></div></div><div id="calSteps" class="cal-steps"></div></div><div class="form-card"><div class="panel-head"><div><small>LIVE</small><h2>Sensor status</h2></div></div><div class="metrics"><div><span>GYRO X</span><b id="gyroX">0.000</b></div><div><span>GYRO Y</span><b id="gyroY">0.000</b></div><div><span>GYRO Z</span><b id="gyroZ">0.000</b></div><div><span>LEVEL</span><b id="levelState">Waiting</b></div></div><div class="orientation-card">↑<span>Match the ZEBJUS FC FRONT arrow to the red-arm front.</span></div></div></div></section>
 <section id="tab-pid" class="panel tab-panel"><div class="pid-layout"><div id="pidEditor" class="form-card"></div><aside class="form-card"><div class="panel-head"><div><small>ACTIONS</small><h2>Apply tuning</h2></div><span id="pidSaveBadge" class="status good">SAVED</span></div><p id="pidSaveNote" class="micro-note">No unsaved PID changes.</p><button id="applyPidBtn" class="btn primary full">Apply to tripod simulator</button><button id="sendPidBtn" class="btn ghost full">Send to real FC</button><button id="restorePidBtn" class="btn ghost full">Restore defaults</button><div class="callout"><b>Rate + Angle</b><p>Rate loop controls angular rate. Angle mode cascades an angle controller into the rate loop. Use the tripod simulator before free flight.</p></div></aside></div></section>
 <section id="tab-python" class="panel tab-panel"><div class="python-layout"><div class="editor-card"><div class="section-toolbar"><div><b>Python Drone Lab</b><span>Simulator or real-drone target</span></div><div><select id="pythonTarget"><option value="sim">Simulator</option><option value="real">Real drone</option></select><button id="runPythonBtn" class="btn primary small">Run</button></div></div><textarea id="pythonEditor" spellcheck="false"></textarea></div><div class="terminal-card"><div class="section-toolbar"><div><b>Output</b><span id="pyStatus">Pyodide loads on first run</span></div><button id="clearTerminalBtn" class="btn ghost small">Clear</button></div><pre id="pythonTerminal" class="terminal"></pre></div></div></section>
@@ -314,8 +353,9 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option value="balanced" selected>Balanced</option><option value="low">Low-end laptop</option></select></label><button id="applyPerformanceBtn" class="btn ghost full">Apply graphics profile</button><pre id="startupDiagnostics" class="terminal mini">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.13"></script>
-<script src="kit-local.js?v=18.3.13"></script>
-<script type="module" src="app.js?v=18.3.13"></script>
-<script src="school-lab.js?v=18.3.13"></script>
+<script src="ui-runtime.js?v=18.3.14"></script>
+<script src="kit-local.js?v=18.3.14"></script>
+<script type="module" src="app.js?v=18.3.14"></script>
+<script src="school-lab.js?v=18.3.14"></script>
+<script src="firmware-updater.js?v=18.3.14"></script>
 </body></html>

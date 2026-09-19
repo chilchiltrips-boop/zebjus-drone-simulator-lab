@@ -1,6 +1,6 @@
-const CACHE='zebjus-f450-v18-3-13';
-const CORE=['./','./index.html','./styles.css','./app.js','./kit-local.js','./school-lab.js','./ui-runtime.js','./three.module.min.js','./fc_top_layout.png','./fc_board_reference.png','./icon-192.png','./icon-512.png'];
-const CODE_RE=/\.(?:html|js|css|webmanifest)$/i;
+const CACHE='zebjus-f450-v18-3-14';
+const CORE=['./','./index.html','./styles.css','./app.js','./kit-local.js','./school-lab.js','./ui-runtime.js','./firmware-updater.js','./three.module.min.js','./fc_top_layout.png','./fc_board_reference.png','./icon-192.png','./icon-512.png'];
+const CODE_RE=/\.(?:html|js|css|json|webmanifest)$/i;
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()));
 });
