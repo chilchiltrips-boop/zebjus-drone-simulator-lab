@@ -1,0 +1,10 @@
+{
+  "name": "zebjus-flightcore-drone-lab",
+  "version": "18.3.22",
+  "private": true,
+  "description": "ZEBJUS FlightCore Drone Lab V18.3.22 with board-aware firmware catalog, same-Wi-Fi local kit access and browser firmware update center",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
