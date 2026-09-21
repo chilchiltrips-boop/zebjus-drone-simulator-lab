@@ -1,4 +1,4 @@
-const CACHE='zebjus-flightcore-v18-3-22';
+const CACHE='zebjus-flightcore-v18-3-23';
 const CORE=['./','./index.html','./styles.css','./app.js','./kit-local.js','./school-lab.js','./ui-runtime.js','./firmware-updater.js','./three.module.min.js','./fc_top_layout.png','./fc_board_reference.png','./icon-192.png','./icon-512.png'];
 const OPTIONAL=['./FlightCore_Firmware/catalog.json','./FlightCore_Firmware/latest.json','./firmware-catalog.json','./firmware-latest.json'];
 const CODE_RE=/\.(?:html|js|css|json|webmanifest)$/i;

@@ -1,8 +1,16 @@
-# GitHub Upload Ready — V18.3.22
+# GitHub upload — V18.3.23
 
-This package contains the runnable web app, assets, firmware catalog/source, build tools, and GitHub workflow, while historical release-note/audit files were removed so the project stays below GitHub web upload's 100-file batch limit.
+Upload the contents of this folder to the **repository root** so `index.html` is at the top level.
 
-- Total files in this package: see FILE_COUNT.txt
-- Runtime features are unchanged from V18.3.21 except version/cache bump to 18.3.22.
-- Keep the folder structure when uploading. `.github/workflows` is required for the automatic firmware build workflow.
-- `FlightCore_Firmware` contains the single firmware distribution/source folder.
+After the first commit, `.github/workflows/build-flightcore-firmware.yml` automatically:
+1. installs Arduino CLI,
+2. installs Arduino-ESP32 3.3.7,
+3. builds ZFC-A1 / ZFC-A2 application binaries,
+4. updates `FlightCore_Firmware/catalog.json`, and
+5. commits the generated `.bin` files back to the repository.
+
+For the current ESP32-C3 controller, Firmware Center expects:
+
+`FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_23_APP.bin`
+
+If the workflow is still running, Firmware Center can temporarily show **No bundled binary**. Refresh after the GitHub Actions build completes and the generated firmware commit appears.

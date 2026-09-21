@@ -777,7 +777,7 @@ body.student-view-only #undoBtn,body.student-view-only #redoBtn,body.student-vie
 /* ==================== V18.3.15 • RELEASE AUDIT SAFETY NOTES ==================== */
 .bridge-audit-note{display:flex;align-items:flex-start;gap:12px;margin:0 0 12px;padding:11px 14px;border:1px solid rgba(255,190,75,.32);background:rgba(255,174,42,.07);border-radius:12px;color:#d8e7ef;font-size:11px;line-height:1.45}.bridge-audit-note b{flex:0 0 auto;color:#ffc76b;font-size:10px;letter-spacing:.08em}.bridge-audit-note span{color:#bcd0dc}@media(max-width:780px){.bridge-audit-note{flex-direction:column;gap:5px;font-size:11px}}
 
-/* ==================== V18.3.16 • BOARD AUTO-DETECT + READABILITY POLISH ==================== */
+/* ==================== V18.3.23 • BOARD AUTO-DETECT + READABILITY POLISH ==================== */
 /* Shared card rhythm: headings should never visually collide with the first action/control. */
 .tab-panel .form-card{padding:16px}.tab-panel .form-card>.panel-head{margin-bottom:15px}.tab-panel .panel-head small{font-size:10px;line-height:1.25}.tab-panel .panel-head h2{margin-top:5px;line-height:1.22}.tab-panel .micro-note{font-size:11px;line-height:1.55}.tab-panel .callout{padding:12px}.tab-panel .callout b{font-size:11px}.tab-panel .callout p{font-size:10px;line-height:1.55}.tab-panel input,.tab-panel select,.tab-panel textarea{font-size:12px;min-height:38px}.tab-panel .btn{min-height:38px;font-size:11.5px}.tab-panel .btn.small{min-height:34px;font-size:10.5px}.tab-panel .status{font-size:10.5px}.tab-panel label{line-height:1.4}
 /* Requested Firmware Source spacing */
@@ -787,9 +787,9 @@ body.student-view-only #undoBtn,body.student-view-only #redoBtn,body.student-vie
 #tab-cal .metrics span,#tab-telemetry .metrics span{font-size:9px}#tab-cal .metrics b,#tab-telemetry .metrics b{font-size:16px}.bridge-audit-note{font-size:10.5px;line-height:1.5}.key-row span{font-size:10.5px}.key-capture{font-size:10px}.io-guide b{font-size:10px}.io-guide span{font-size:9.5px}
 @media(max-width:980px){.firmware-board-detect{grid-template-columns:1fr 1fr}.firmware-live-status{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.firmware-board-detect,.firmware-live-status{grid-template-columns:1fr}.tab-panel .form-card{padding:14px}.firmware-source-actions{margin-top:4px}}
-/* Additional V18.3.16 dense-page readability pass */
+/* Additional V18.3.23 dense-page readability pass */
 .build-step b{font-size:11px}.build-step span{font-size:9.5px;line-height:1.35}.build-step .n{font-size:11px}.product-card b{font-size:10.5px}.product-card span{font-size:9.5px;line-height:1.3}.count-badge{font-size:8.5px}.current-step-card b{font-size:11px}.current-step-card p{font-size:10px}.current-step-card .targets{font-size:9px}.check{font-size:10px}.section-toolbar b{font-size:13px}.section-toolbar span{font-size:10px}.wire-gauge-guide>b{font-size:10px}.wire-gauge-guide>span{font-size:10px}.sim-stand-badge{font-size:9.5px}.key-settings{row-gap:10px}
-/* V18.3.16 final text legibility overrides for ordinary UI (diagram pin labels intentionally stay compact). */
+/* V18.3.23 final text legibility overrides for ordinary UI (diagram pin labels intentionally stay compact). */
 .brand span{font-size:10px!important}.tab{font-size:11px!important}.adaptive-layout-badge{font-size:9px!important}.zebjus-top-shop span{font-size:8.5px!important}.top-kit-status b{font-size:9.5px!important}.top-kit-status em{font-size:8.5px!important}
 .module-filter-row{font-size:10px!important}.module-card b{font-size:10.5px!important}.module-card small{font-size:9px!important}.module-card em,.module-card>i{font-size:8.5px!important}.device-detail-grid span,.device-mode-strip span{font-size:9px!important}.participant-row small,.participant-row i{font-size:8.5px!important}.view-only-callout span,.safety-banner span{font-size:9.5px!important}
 .joystick-head p{font-size:10px!important}.tx-power-btn{font-size:10px!important}.tx-led-strip span{font-size:8.5px!important}.tx-led-strip b{font-size:9.5px!important}.arm-guidance b{font-size:10px!important}.arm-guidance span{font-size:9px!important}.stick-hint{font-size:8.5px!important}.keyboard-strip>b,.keyboard-strip span{font-size:9px!important}.joystick-safety-card b{font-size:10px!important}.joystick-safety-card p{font-size:9.5px!important}.channel-grid span{font-size:8.5px!important}
@@ -798,7 +798,7 @@ body.student-view-only #undoBtn,body.student-view-only #redoBtn,body.student-vie
 .rx-mirror-state b{font-size:9.5px!important}.rx-mirror-state em{font-size:8.5px!important}.health-badge{font-size:9px!important}.watchdog-head span,.watchdog-card label,.watchdog-card p{font-size:9.5px!important}.health-title small,.health-title>span{font-size:9px!important}.kit-health-grid span{font-size:8.5px!important}.kit-health-grid small{font-size:8px!important}.joystick-stream-health span,.joystick-stream-health small{font-size:8.5px!important}
 
 
-/* ==================== V18.3.22 • UNIVERSAL BUTTON FEEDBACK ==================== */
+/* ==================== V18.3.23 • UNIVERSAL BUTTON FEEDBACK ==================== */
 button,.btn,.view-btn,.mode,.key-capture,.firmware-file-label{
   transition:transform .09s ease,filter .12s ease,box-shadow .14s ease,border-color .14s ease,background-color .14s ease;
   -webkit-tap-highlight-color:transparent;
@@ -818,3 +818,8 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed!important;filter:satur
 @keyframes zjClickWave{0%{transform:scale(0);opacity:.95}100%{transform:scale(1.55);opacity:0}}
 .firmware-busy .firmware-file-label{pointer-events:none;opacity:.58}.firmware-busy select:disabled,.firmware-busy input:disabled{cursor:not-allowed;opacity:.62}
 @media (prefers-reduced-motion:reduce){button,.btn,.view-btn,.mode,.key-capture,.firmware-file-label{transition:none!important}.zj-click-wave{display:none!important}.zj-pressing{transform:none!important}}
+
+/* V18.3.23 Python Lab smart editor */
+.python-editor-card{display:flex;flex-direction:column}.python-toolbar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.python-editor-shell{position:relative;flex:1;min-height:610px;background:#06101a;border-top:1px solid #1f3342;border-bottom:1px solid #1f3342;overflow:hidden}.python-editor-shell #pythonMonaco{position:absolute;inset:0;display:block}.python-editor-shell #pythonMonaco[hidden]{display:none}.python-editor-shell #pythonEditor{position:absolute;inset:0;width:100%;height:100%;min-height:0!important;resize:none;padding:14px 16px;background:#06101a;color:#d8e2ea;border:0;outline:0;font:13px/1.62 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;tab-size:4}.python-editor-footer{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between;padding:8px 12px;color:#7890a3;background:#081521;font-size:9px;border-top:1px solid #152838}.python-editor-footer span:last-child{color:#79dcb8}.python-layout .terminal-card{display:flex;flex-direction:column}.python-layout .terminal-card .terminal{flex:1;height:auto!important;min-height:610px}.python-editor-shell .monaco-editor,.python-editor-shell .overflow-guard{border-radius:0}.python-editor-shell .monaco-editor .suggest-widget{box-shadow:0 16px 38px #0008!important}.python-editor-shell .monaco-editor .margin{background:#06101a!important}
+@media(max-width:1180px){.python-editor-shell,.python-layout .terminal-card .terminal{min-height:540px}.python-toolbar-actions{justify-content:flex-end}}
+@media(max-width:760px){.python-editor-shell,.python-layout .terminal-card .terminal{min-height:62dvh}.python-editor-footer{gap:6px;justify-content:flex-start}.python-toolbar-actions{width:100%;justify-content:flex-start}.python-toolbar-actions select{flex:1;min-width:130px}}

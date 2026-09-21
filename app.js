@@ -7,7 +7,7 @@ window.__zebjusModuleParsed=true;
 window.__zebjusAppLoaded=false;
 window.__zebjus3DReady=false;
 function setBootStatus(text,kind=''){const s=$('#assetStatus');if(s){s.textContent=text;s.className='status'+(kind?' '+kind:'')}}
-setBootStatus('V18.3.22 local-kit module loaded • starting engineering runtime…');
+setBootStatus('V18.3.23 local-kit module loaded • starting engineering runtime…');
 
 /* V9: local camera controls. No network add-on is required for 3D startup. */
 class MiniOrbitControls {
@@ -1473,7 +1473,7 @@ function simKeyUp(e){
 }
 function renderKeySettings(){const box=$('#keySettings');if(!box)return;const labels={rollLeft:'Roll left',rollRight:'Roll right',pitchForward:'Pitch forward',pitchBack:'Pitch back',throttleUp:'Throttle +',throttleDown:'Throttle −',yawLeft:'Yaw left',yawRight:'Yaw right',run:'Run / Stop'};box.innerHTML=Object.entries(labels).map(([k,l])=>`<div class="key-row"><span>${l}</span><button class="key-capture ${keyCaptureAction===k?'listening':''}" data-key-action="${k}">${keyCaptureAction===k?'PRESS KEY…':keyLabel(keyMap[k])}</button></div>`).join('');$$('.key-capture').forEach(b=>b.onclick=()=>{keyCaptureAction=b.dataset.keyAction;renderKeySettings()})}
 function downloadBlob(name,data,type='text/plain'){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)}
-function projectPayload(){return{version:'18.3.22',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
+function projectPayload(){return{version:'18.3.23',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
 function exportProjectJson(){downloadBlob('ZEBJUS_F450_Project_V18.json',JSON.stringify(projectPayload(),null,2),'application/json')}
 function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V18',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
 function exportWiringSvg(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg);downloadBlob('ZEBJUS_F450_Wiring.svg',xml,'image/svg+xml')}
@@ -1485,7 +1485,7 @@ function updateStartupDiagnostics(){const e=$('#startupDiagnostics');if(!e)retur
 function registerOffline(){
  if(!('serviceWorker' in navigator)||!location.protocol.startsWith('http'))return;
  let reloading=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloading)return;reloading=true;location.reload()});
- navigator.serviceWorker.register('./service-worker.js?v=18.3.22',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
+ navigator.serviceWorker.register('./service-worker.js?v=18.3.23',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
 }
 function updateAudioUi(){
  const en=$('#soundEnabled'),vol=$('#soundVolume'),out=$('#soundVolumeOut'),st=$('#soundState');
@@ -1506,7 +1506,7 @@ function initSettings(){renderKeySettings();initAudioSettings();$('#saveKeysBtn'
 /* FC / CAL / PID / PYTHON */
 function fcLog(t){const e=$('#fcLog');if(!e)return;e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
 function fcStatus(on){state.fc.connected=on;const e=$('#fcBadge');if(e){e.textContent=on?'Connected':'Disconnected';e.className='status '+(on?'good':'')}}
-function connectFc(){const ipEl=$('#fcIp'),pathEl=$('#fcPath'),protoEl=$('#fcProtocol');if(!ipEl||!pathEl||!protoEl){fcLog('Legacy WebSocket connector is not present in this UI. Use Kit Connect.');return false}disconnectFc(false);const ip=ipEl.value.trim(),path=pathEl.value.trim(),pref=protoEl.value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3.22'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false);return true}catch(e){fcLog(e.message);return false}}
+function connectFc(){const ipEl=$('#fcIp'),pathEl=$('#fcPath'),protoEl=$('#fcProtocol');if(!ipEl||!pathEl||!protoEl){fcLog('Legacy WebSocket connector is not present in this UI. Use Kit Connect.');return false}disconnectFc(false);const ip=ipEl.value.trim(),path=pathEl.value.trim(),pref=protoEl.value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3.23'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false);return true}catch(e){fcLog(e.message);return false}}
 function disconnectFc(log=true){if(state.fc.socket)try{state.fc.socket.close()}catch{}state.fc.socket=null;fcStatus(false);if(log)fcLog('Disconnected')}
 function sendFc(o){if(window.zebjusSchool?.isViewOnly?.()){fcLog('VIEW ONLY • command blocked');return false}if(window.zebjusSchool?.isCloudActive?.()){if(window.zebjusSchool.sendDeviceCommand?.(o)){fcLog('LOCAL KIT TX '+JSON.stringify(o));return true}fcLog('Select an online kit first');return false}if(state.fc.socket?.readyState===1){state.fc.socket.send(JSON.stringify(o));fcLog('TX '+JSON.stringify(o));return true}fcLog('Not connected');return false}
 function packet(raw){let d,text;if(typeof raw==='string'){text=raw;try{d=JSON.parse(raw)}catch{d={raw}}}else{d=raw||{};text=JSON.stringify(d)};['roll','pitch','yaw','gyroX','gyroY','gyroZ','battery'].forEach(k=>{if(Number.isFinite(+d[k]))state.telemetry[k]=+d[k]});if(d?.type==='ack'&&d?.command==='pid_set'){pidDirty=false;updatePidSaveState?.('saved')}$('#telemetryLog').textContent=(new Date().toLocaleTimeString()+' '+text+'\n'+$('#telemetryLog').textContent).slice(0,12000);telemetryUI()}
@@ -1525,25 +1525,83 @@ function renderPid(){
  $('#pidEditor').innerHTML=g.map(x=>`<div class="pid-section"><h3>${x[0]}</h3>${x[1].map(([n,k])=>`<div class="pid-row"><span>${n}</span>${['P','I','D'].map(v=>`<label>${v}<input type="number" step=".001" data-p="${k}" data-k="${v}" value="${state.pid[k][v]}"></label>`).join('')}</div>`).join('')}</div>`).join('');
  $$('#pidEditor input').forEach(i=>i.onchange=()=>{state.pid[i.dataset.p][i.dataset.k]=+i.value;markPidDirty();syncQuickPid?.();updatePidCoach?.()})
 }
-let py=null,pyodidePromise=null;
+let py=null,pyodidePromise=null,pythonMonaco=null,monacoPromise=null;
+const PYODIDE_URL='https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';
+const MONACO_VERSION='0.52.2',MONACO_BASE=`https://cdn.jsdelivr.net/npm/monaco-editor@${MONACO_VERSION}/min/`;
+const PY_I2C_EXAMPLE=`from zebjus import Drone
+
+drone = Drone()
+
+print("Target:", drone.target())
+scan = await drone.i2c_scan()
+`;
+const ZEBJUS_PY_PRELUDE=`import sys, types, json\nfrom js import zebjusBridge as _zebjus_bridge\n\n_zebjus_module = types.ModuleType("zebjus")\n\nclass Drone:\n    def target(self):\n        return str(_zebjus_bridge.target())\n\n    async def status(self):\n        raw = await _zebjus_bridge.status()\n        return json.loads(str(raw))\n\n    async def i2c_scan(self):\n        if self.target() != "real":\n            raise RuntimeError("Select Real drone in Python Lab before scanning the physical I2C bus.")\n        raw = await _zebjus_bridge.i2cScan()\n        data = json.loads(str(raw))\n        print(f"I2C bus: SDA GPIO{data.get('sda', '?')} • SCL GPIO{data.get('scl', '?')} • {data.get('clockHz', 0)} Hz")\n        print("Scanning I2C bus...\\n")\n        devices = data.get("devices", [])\n        errors = data.get("errors", [])\n        for item in devices:\n            hint = item.get("hint", "")\n            suffix = f"  ({hint})" if hint else ""\n            print(f"✔ Found device at {item.get('addressHex', '??')}{suffix}")\n        for item in errors:\n            print(f"⚠ Unknown error at {item.get('addressHex', '??')}")\n        if not devices:\n            print("❌ No I2C devices found.\\n")\n        else:\n            print(f"\\n✅ Total I2C devices found: {len(devices)}")\n        print(f"Scan time: {data.get('durationMs', 0)} ms")\n        print("\\n-----------------------------\\n")\n        return data\n\n_zebjus_module.Drone = Drone\nsys.modules["zebjus"] = _zebjus_module\n`;
 function ensurePyodide(){
  if(window.loadPyodide)return Promise.resolve();
  if(pyodidePromise)return pyodidePromise;
  $('#pyStatus').textContent='Loading Python runtime on demand…';
- pyodidePromise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';s.async=true;s.onload=resolve;s.onerror=()=>reject(new Error('Python CDN unavailable. The rest of Drone Lab works offline; connect to internet only when using Python Lab.'));document.head.appendChild(s)});
+ pyodidePromise=new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src=PYODIDE_URL;sc.async=true;sc.onload=resolve;sc.onerror=()=>reject(new Error('Python CDN unavailable. Connect to the internet once to load Pyodide.'));document.head.appendChild(sc)});
  return pyodidePromise
 }
+function getPythonCode(){return pythonMonaco?pythonMonaco.getValue():($('#pythonEditor')?.value||'')}
+function setPythonCode(code){if(pythonMonaco)pythonMonaco.setValue(String(code||''));else if($('#pythonEditor'))$('#pythonEditor').value=String(code||'')}
+function monacoCompletions(monaco,model,position){
+ const word=model.getWordUntilPosition(position),range={startLineNumber:position.lineNumber,endLineNumber:position.lineNumber,startColumn:word.startColumn,endColumn:word.endColumn},K=monaco.languages.CompletionItemKind;
+ const items=[
+  ['from zebjus import Drone','from zebjus import Drone',K.Module,'Import the ZEBJUS Drone Python API'],
+  ['Drone','Drone()',K.Class,'Create a drone API object'],
+  ['drone','drone = Drone()',K.Variable,'Create the default drone object'],
+  ['i2c_scan','await drone.i2c_scan()',K.Method,'Scan the real FlightCore I²C bus and print detected addresses'],
+  ['status','await drone.status()',K.Method,'Read the selected ZEBJUS kit status'],
+  ['print','print()',K.Function,'Print to the WebApp terminal'],
+  ['json','import json',K.Module,'Import Python JSON support'],
+  ['asyncio','import asyncio',K.Module,'Import Python asyncio']
+ ];
+ return{suggestions:items.map(([label,insertText,kind,documentation])=>({label,kind,insertText,documentation,range}))}
+}
+function ensureMonaco(){
+ if(pythonMonaco)return Promise.resolve(pythonMonaco);
+ if(monacoPromise)return monacoPromise;
+ const host=$('#pythonMonaco'),fallback=$('#pythonEditor');if(!host||!fallback)return Promise.resolve(null);
+ monacoPromise=new Promise((resolve,reject)=>{
+  const start=()=>{
+   const amd=window.require;if(typeof amd!=='function'){reject(new Error('Monaco loader unavailable'));return}
+   window.MonacoEnvironment={getWorkerUrl:()=>`data:text/javascript;charset=utf-8,${encodeURIComponent(`self.MonacoEnvironment={baseUrl:'${MONACO_BASE}'};importScripts('${MONACO_BASE}vs/base/worker/workerMain.js');`)}`};
+   amd.config({paths:{vs:MONACO_BASE+'vs'}});
+   amd(['vs/editor/editor.main'],()=>{
+    try{
+     const m=window.monaco;m.editor.defineTheme('zebjus-pycharm',{base:'vs-dark',inherit:true,rules:[{token:'comment',foreground:'7F8C98',fontStyle:'italic'},{token:'keyword',foreground:'CC78FA'},{token:'string',foreground:'A5C261'},{token:'number',foreground:'6897BB'},{token:'type.identifier',foreground:'FFC66D'},{token:'identifier',foreground:'D8E2EA'}],colors:{'editor.background':'#06101A','editor.foreground':'#D8E2EA','editorLineNumber.foreground':'#52697A','editorLineNumber.activeForeground':'#A8C7D9','editorCursor.foreground':'#69E6B5','editor.selectionBackground':'#214B5B88','editorSuggestWidget.background':'#0B1824','editorSuggestWidget.border':'#29475B'}});
+     pythonMonaco=m.editor.create(host,{value:fallback.value||PY_I2C_EXAMPLE,language:'python',theme:'zebjus-pycharm',automaticLayout:true,fontSize:13,lineHeight:21,fontFamily:'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',minimap:{enabled:false},scrollBeyondLastLine:false,tabSize:4,insertSpaces:true,wordWrap:'off',quickSuggestions:{other:true,comments:false,strings:true},suggestOnTriggerCharacters:true,acceptSuggestionOnEnter:'on',tabCompletion:'on',autoClosingBrackets:'always',autoClosingQuotes:'always',autoIndent:'full',formatOnType:true,parameterHints:{enabled:true},bracketPairColorization:{enabled:true},guides:{bracketPairs:true,indentation:true},padding:{top:12,bottom:12}});
+     m.languages.registerCompletionItemProvider('python',{triggerCharacters:['.',' ','_'],provideCompletionItems:(model,position)=>monacoCompletions(m,model,position)});
+     pythonMonaco.addCommand(m.KeyMod.CtrlCmd|m.KeyCode.Enter,()=>$('#runPythonBtn')?.click());
+     fallback.hidden=true;host.hidden=false;$('#pyStatus').textContent='Smart Python editor ready';resolve(pythonMonaco)
+    }catch(e){reject(e)}
+   },reject)
+  };
+  if(typeof window.require==='function'&&window.monaco){start();return}
+  const sc=document.createElement('script');sc.src=MONACO_BASE+'vs/loader.js';sc.async=true;sc.onload=start;sc.onerror=()=>reject(new Error('Smart editor CDN unavailable'));document.head.appendChild(sc)
+ }).catch(e=>{console.warn('[ZEBJUS] Monaco fallback:',e);host.hidden=true;fallback.hidden=false;$('#pyStatus').textContent='Basic editor fallback active';return null});
+ return monacoPromise
+}
+async function runPythonLab(){
+ const term=$('#pythonTerminal');try{
+  await ensurePyodide();if(!py){$('#pyStatus').textContent='Starting Python…';py=await window.loadPyodide();py.setStdout({batched:x=>{term.textContent+=x+'\n';term.scrollTop=term.scrollHeight}});py.setStderr({batched:x=>{term.textContent+='ERR: '+x+'\n';term.scrollTop=term.scrollHeight}})}
+  $('#pyStatus').textContent='Running…';const code=getPythonCode();await py.runPythonAsync(ZEBJUS_PY_PRELUDE+'\n'+code);$('#pyStatus').textContent='Finished'
+ }catch(e){term.textContent+='ERR: '+(e?.message||String(e))+'\n';term.scrollTop=term.scrollHeight;$('#pyStatus').textContent='Run failed'}
+}
 function initPython(){
- $('#pythonEditor').value=`from js import zebjusBridge
-import json
-print("Target:",zebjusBridge.target())
-print("Attitude:",json.loads(str(zebjusBridge.attitude())))
-# For a locked real module, commands route directly to the kit on the same Wi-Fi:
-# zebjusBridge.command("ping", "{}")
-`;
- window.zebjusBridge={target:()=>$('#pythonTarget').value,attitude:()=>JSON.stringify({roll:state.telemetry.roll,pitch:state.telemetry.pitch,yaw:state.telemetry.yaw}),command:(type,payload='{}')=>{let data={};try{data=JSON.parse(String(payload||'{}'))}catch{}return sendFc({type:String(type),...data})}};
- $('#runPythonBtn').onclick=async()=>{try{await ensurePyodide();if(!py){$('#pyStatus').textContent='Starting Python…';py=await window.loadPyodide();py.setStdout({batched:s=>$('#pythonTerminal').textContent+=s+'\n'});py.setStderr({batched:s=>$('#pythonTerminal').textContent+='ERR: '+s+'\n'})}$('#pyStatus').textContent='Running';await py.runPythonAsync($('#pythonEditor').value);$('#pyStatus').textContent='Finished'}catch(e){$('#pythonTerminal').textContent+=String(e)+'\n';$('#pyStatus').textContent='Python unavailable'} };
- $('#clearTerminalBtn').onclick=()=>$('#pythonTerminal').textContent=''
+ const fallback=$('#pythonEditor');if(fallback)fallback.value=PY_I2C_EXAMPLE;
+ window.zebjusBridge={
+  target:()=>$('#pythonTarget')?.value||'sim',
+  attitude:()=>JSON.stringify({roll:state.telemetry.roll,pitch:state.telemetry.pitch,yaw:state.telemetry.yaw}),
+  status:async()=>JSON.stringify(window.zebjusSchool?.getSelectedDevice?.()||{}),
+  i2cScan:async()=>{if(($('#pythonTarget')?.value||'sim')!=='real')throw new Error('Select Real drone before I2C scan.');if(!window.zebjusSchool?.isKitActive?.())throw new Error('Connect the ZEBJUS kit first.');const r=await window.zebjusSchool.i2cScan();return JSON.stringify(r)},
+  command:(type,payload='{}')=>{let data={};try{data=JSON.parse(String(payload||'{}'))}catch{}return sendFc({type:String(type),...data})}
+ };
+ $('#runPythonBtn').onclick=runPythonLab;
+ $('#clearTerminalBtn').onclick=()=>$('#pythonTerminal').textContent='';
+ $('#loadI2cExampleBtn').onclick=()=>{setPythonCode(PY_I2C_EXAMPLE);if($('#pythonTarget'))$('#pythonTarget').value='real';$('#pythonTerminal').textContent='I²C example loaded. Real drone target selected.\n';ensureMonaco()};
+ ensureMonaco();
 }
 
 /* Save/load/buttons */
@@ -1578,7 +1636,7 @@ function showAssembly3DError(e){
 }
 // V18.3 public bridge used by same-Wi-Fi Local Kit runtime.
 window.zebjusLabAPI={
- version:'18.3.22',
+ version:'18.3.23',
  getSimState:()=>{const x=state.sim;return{running:x.running,flightMode:x.flightMode,roll:x.roll,pitch:x.pitch,yaw:x.yaw,rollRate:x.rollRate,pitchRate:x.pitchRate,yawRate:x.yawRate,throttle:x.throttle,cmdRoll:x.cmdRoll,cmdPitch:x.cmdPitch,cmdYaw:x.cmdYaw,targetRoll:x.targetRoll,targetPitch:x.targetPitch,targetYawRate:x.targetYawRate,liftY:x.liftY,lastMix:[...(x.lastMix||[0,0,0,0])],batteryV:x.batteryV,payloadG:x.payloadG,cgX:x.cgX,cgY:x.cgY,wind:x.wind,motorLag:x.motorLag,levelTrimRoll:x.levelTrimRoll,levelTrimPitch:x.levelTrimPitch,rateHoldRoll:x.rateHoldRoll,rateHoldPitch:x.rateHoldPitch}},
  applyRemoteSimState:d=>{window.__zebjusRemoteSimState=d?{...d,lastMix:Array.isArray(d.lastMix)?[...d.lastMix]:[0,0,0,0]}:null},
  setRemoteFollower:on=>{window.__zebjusRemoteFollower=!!on;if(!on)window.__zebjusRemoteSimState=null},
@@ -1618,6 +1676,6 @@ function boot(){
  if(threeOK){setBootStatus('Local 3D engine ready','good');notify('3D engine ready • offline/local runtime.','good')}
  else{setBootStatus('3D unavailable • 2D tools active');notify('3D renderer unavailable — 2D tools are still active.','bad')}
  window.__zebjusAppLoaded=true;updateStartupDiagnostics?.();
- window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.22'}}));
+ window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.23'}}));
 }
 boot();
