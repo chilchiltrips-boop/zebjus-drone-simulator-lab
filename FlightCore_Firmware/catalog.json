@@ -1,0 +1,68 @@
+{
+  "schema": 2,
+  "product": "ZEBJUS_FLIGHTCORE",
+  "version": "18.3.23",
+  "defaultBoardId": "ZFC-A1",
+  "boards": [
+    {
+      "id": "ZFC-A1",
+      "name": "ZEBJUS FlightCore A1",
+      "appAddress": "0x10000",
+      "flashMode": "dio",
+      "flashFreq": "80m",
+      "flashSize": "4MB",
+      "latest": {
+        "version": "18.3.23",
+        "app": {
+          "available": false,
+          "file": "ZEBJUS_FLIGHTCORE_A1_V18_3_23_APP.bin",
+          "sha256": ""
+        },
+        "factory": {
+          "available": false,
+          "file": "ZEBJUS_FLIGHTCORE_A1_V18_3_23_FACTORY.bin",
+          "sha256": ""
+        }
+      },
+      "usbMatch": [
+        "ESP32-C3",
+        "ESP32C3"
+      ],
+      "flasher": "serial-loader-v1",
+      "build": {
+        "builder": "arduino-cli",
+        "fqbn": "esp32:esp32:esp32c3"
+      }
+    },
+    {
+      "id": "ZFC-A2",
+      "name": "ZEBJUS FlightCore A2",
+      "appAddress": "0x10000",
+      "flashMode": "dio",
+      "flashFreq": "80m",
+      "flashSize": "4MB",
+      "latest": {
+        "version": "18.3.23",
+        "app": {
+          "available": false,
+          "file": "ZEBJUS_FLIGHTCORE_A2_V18_3_23_APP.bin",
+          "sha256": ""
+        },
+        "factory": {
+          "available": false,
+          "file": "ZEBJUS_FLIGHTCORE_A2_V18_3_23_FACTORY.bin",
+          "sha256": ""
+        }
+      },
+      "usbMatch": [
+        "ESP32-C6",
+        "ESP32C6"
+      ],
+      "flasher": "serial-loader-v1",
+      "build": {
+        "builder": "arduino-cli",
+        "fqbn": "esp32:esp32:esp32c6"
+      }
+    }
+  ]
+}
