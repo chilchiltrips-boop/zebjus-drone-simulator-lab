@@ -1,10 +1,11 @@
 {
   "name": "zebjus-flightcore-drone-lab",
-  "version": "18.3.24",
+  "version": "18.3.25",
   "private": true,
-  "description": "ZEBJUS FlightCore Drone Lab V18.3.24 with board-aware firmware catalog, same-Wi-Fi local kit access and browser firmware update center",
+  "description": "ZEBJUS FlightCore Drone Lab V18.3.25 with offline GLB components, stable firmware filenames, same-Wi-Fi kit access and browser firmware update center",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "check": "python3 tools/validate_project.py"
   }
 }

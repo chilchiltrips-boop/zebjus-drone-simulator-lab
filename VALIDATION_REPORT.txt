@@ -1,0 +1,21 @@
+ZEBJUS F450 Drone Engineering Lab V18.3.25 - FINAL VALIDATION
+
+PASS - Project JSON files parse correctly.
+PASS - All root JavaScript files pass node --check.
+PASS - index.html local src/href references exist.
+PASS - 15 active component GLB files referenced by app.js exist.
+PASS - 13 component thumbnail/reference images declared by app.js exist.
+PASS - All 15 active GLBs are glTF 2.0 binary files supported by the bundled offline loader.
+PASS - Runtime GLB parse test over local HTTP: 15/15 models loaded, 163 meshes, 24,314 vertices.
+PASS - .glb is served as model/gltf-binary by server.js.
+PASS - Root/subfolder firmware catalogs match.
+PASS - Root firmware-latest.json points to firmware-catalog.json.
+PASS - Stable firmware source: FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino.
+PASS - Stable A1 output: FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin.
+PASS - No versioned/duplicate .ino remains in FlightCore_Firmware.
+PASS - Stale V18.3.23 A1 application binary removed.
+PASS - Service worker includes glb-loader.js and all active component models for offline cache.
+PASS - GitHub Actions workflow uses Arduino-ESP32 3.3.12 and stable output names.
+PASS - tools/validate_project.py passes.
+
+NOTE - A compiled .bin is intentionally not fabricated in this package because Arduino CLI/toolchain is not installed in the build sandbox. After upload to GitHub, the included workflow compiles the current .ino and commits/overwrites ZEBJUS_FLIGHTCORE_A1_APP.bin with SHA-256 metadata.

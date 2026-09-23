@@ -91,3 +91,7 @@ Example response:
 - `GET /api/i2c/scan` → raw JSON data; Python decides what to print.
 - `GET /api/imu` → real LSM6DS3 scaled accelerometer (g), gyroscope (dps), raw counts and WHO_AM_I.
 - IMU bench I²C operations are blocked while armed.
+
+## V18.3.25 packaging / update note
+
+The wire/API protocol remains compatible with V18.3.24. Packaging changed to stable replace-in-place firmware names: `ZEBJUS_FLIGHTCORE.ino` and board-specific `ZEBJUS_FLIGHTCORE_<board>_APP.bin`. Firmware semantic version remains available through the existing `FW_VERSION` / firmware-info fields.

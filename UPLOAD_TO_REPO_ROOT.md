@@ -1,20 +1,15 @@
-# ZEBJUS V18.3.23 A1 Actual BIN Build Pack
+# Upload to repository root — V18.3.25
 
-This pack contains the minimum files required for GitHub Actions to compile the real
-ESP32-C3 / ZEBJUS FlightCore A1 application binary.
+This package is already arranged for repository-root drag/drop.
 
-Expected generated file:
+On macOS press `Cmd + Shift + .` first so `.github` is visible, then select the **contents** of this folder and upload them to the existing repository root. Same-name files are intended to replace the earlier copies.
 
-`FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_23_APP.bin`
+Do not create a second version-named firmware source. Keep:
 
-Upload the CONTENTS of this folder into the ROOT of the GitHub repository.
+`FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino`
 
-Important on macOS:
-- `.github` is hidden.
-- In Finder press `Cmd + Shift + .` so the `.github` folder is visible before dragging files.
+GitHub Actions builds/replaces:
 
-After upload:
-1. GitHub -> Actions
-2. `Build ZEBJUS FlightCore A1 Firmware`
-3. Wait for the green check.
-4. The workflow also commits the actual `.bin` into `FlightCore_Firmware/`.
+`FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin`
+
+After upload, open **Actions → Build ZEBJUS FlightCore A1 Firmware** if you want to run it manually. A normal push that changes the stable firmware source also triggers it automatically.
