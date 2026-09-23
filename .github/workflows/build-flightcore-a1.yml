@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino'
+      - 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h'
       - 'FlightCore_Firmware/catalog.json'
       - 'VERSION.txt'
       - 'tools/build_firmware.py'
