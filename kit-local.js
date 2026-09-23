@@ -128,6 +128,7 @@ class LocalKitClient{
   async reconnect(retries=4){if(this._reconnectPromise)return this._reconnectPromise;this._reconnectPromise=(async()=>{let last;const waits=[0,350,800,1500,2500];for(let i=0;i<Math.max(1,retries);i++){if(waits[i])await new Promise(r=>setTimeout(r,waits[i]));try{return await this.connect(this.name||this.deviceId,this.ipHint,this.deviceId)}catch(e){last=e}}throw last||new Error('Kit reconnect failed.')})();try{return await this._reconnectPromise}finally{this._reconnectPromise=null}}
   async telemetry(){return requestBase(this.base,'/api/telemetry',{timeout:1400})}
   async i2cScan(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/i2c/scan',{timeout:6500})}
+  async imuRead(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/imu',{timeout:2200})}
   async acquire(){const r=await requestBase(this.base,'/api/control/acquire',{method:'POST',data:{clientId:this.clientId},timeout:1800});await this.refresh();return r}
   async heartbeat(){return requestBase(this.base,'/api/control/ping',{method:'POST',data:{clientId:this.clientId},timeout:1500})}
   async release({keepalive=false}={}){if(!this.base)return{ok:true};try{return await requestBase(this.base,'/api/control/release',{method:'POST',data:{clientId:this.clientId},timeout:1200,keepalive})}finally{if(this.status)this.status.lockMine=false}}

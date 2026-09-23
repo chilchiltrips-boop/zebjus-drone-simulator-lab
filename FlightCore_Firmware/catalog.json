@@ -1,7 +1,7 @@
 {
   "schema": 2,
   "product": "ZEBJUS_FLIGHTCORE",
-  "version": "18.3.23",
+  "version": "18.3.24",
   "defaultBoardId": "ZFC-A1",
   "boards": [
     {
@@ -12,15 +12,15 @@
       "flashFreq": "80m",
       "flashSize": "4MB",
       "latest": {
-        "version": "18.3.23",
+        "version": "18.3.24",
         "app": {
-          "available": true,
-          "file": "ZEBJUS_FLIGHTCORE_A1_V18_3_23_APP.bin",
-          "sha256": "c71470c1573c2e9dd78f10946f73f9acca00048fa2bc29d58fab86c993a63ea1"
+          "available": false,
+          "file": "ZEBJUS_FLIGHTCORE_A1_V18_3_24_APP.bin",
+          "sha256": ""
         },
         "factory": {
           "available": false,
-          "file": "ZEBJUS_FLIGHTCORE_A1_V18_3_23_FACTORY.bin",
+          "file": "ZEBJUS_FLIGHTCORE_A1_V18_3_24_FACTORY.bin",
           "sha256": ""
         }
       },
@@ -42,15 +42,15 @@
       "flashFreq": "80m",
       "flashSize": "4MB",
       "latest": {
-        "version": "18.3.23",
+        "version": "18.3.24",
         "app": {
           "available": false,
-          "file": "ZEBJUS_FLIGHTCORE_A2_V18_3_23_APP.bin",
+          "file": "ZEBJUS_FLIGHTCORE_A2_V18_3_24_APP.bin",
           "sha256": ""
         },
         "factory": {
           "available": false,
-          "file": "ZEBJUS_FLIGHTCORE_A2_V18_3_23_FACTORY.bin",
+          "file": "ZEBJUS_FLIGHTCORE_A2_V18_3_24_FACTORY.bin",
           "sha256": ""
         }
       },

@@ -3,7 +3,7 @@ import argparse, hashlib, json, shutil, subprocess, tempfile
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
-SRC=ROOT/'FlightCore_Firmware'/'ZEBJUS_FLIGHTCORE_V18_3_23.ino'
+SRC=ROOT/'FlightCore_Firmware'/'ZEBJUS_FLIGHTCORE_V18_3_24.ino'
 OUT=ROOT/'FlightCore_Firmware'
 CAT=OUT/'catalog.json'
 CORE_VERSION='3.3.7'
@@ -42,7 +42,7 @@ def main():
     for b in targets:
         cfg=b['build']; pkg=b['latest']['app']; filename=pkg['file']
         with tempfile.TemporaryDirectory(prefix='zfc-build-') as td:
-            td=Path(td); sketch=td/'ZEBJUS_FLIGHTCORE_V18_3_23'; sketch.mkdir(); shutil.copy2(SRC,sketch/'ZEBJUS_FLIGHTCORE_V18_3_23.ino')
+            td=Path(td); sketch=td/'ZEBJUS_FLIGHTCORE_V18_3_24'; sketch.mkdir(); shutil.copy2(SRC,sketch/'ZEBJUS_FLIGHTCORE_V18_3_24.ino')
             build=td/'build'; build.mkdir()
             run([cli,'compile','--fqbn',cfg['fqbn'],'--output-dir',str(build),str(sketch)])
             srcbin=find_app_bin(build); dst=OUT/filename; shutil.copy2(srcbin,dst); digest=sha(dst)

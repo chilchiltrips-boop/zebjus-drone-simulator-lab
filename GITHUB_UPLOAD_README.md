@@ -1,4 +1,4 @@
-# GitHub upload — V18.3.23
+# GitHub upload — V18.3.24
 
 Upload the contents of this folder to the **repository root** so `index.html` is at the top level.
 
@@ -11,6 +11,6 @@ After the first commit, `.github/workflows/build-flightcore-firmware.yml` automa
 
 For the current ESP32-C3 controller, Firmware Center expects:
 
-`FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_23_APP.bin`
+`FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_24_APP.bin`
 
 If the workflow is still running, Firmware Center can temporarily show **No bundled binary**. Refresh after the GitHub Actions build completes and the generated firmware commit appears.

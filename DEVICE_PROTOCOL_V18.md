@@ -43,7 +43,7 @@ Requires control lock. Duplicate mDNS/kit names on the same Wi-Fi are rejected.
 
 The webapp mirrors a fresh physical receiver into the Tripod Simulator. Receiver loss centers Roll/Pitch/Yaw and stops the simulator. Throttle is not rewritten by the web input watchdog.
 
-## V18.3.23 board identity / updater fields
+## V18.3.24 board identity / updater fields
 
 `GET /api/status` additionally returns:
 - `boardId` — stable ZEBJUS board profile ID, e.g. `ZFC-A1`.
@@ -53,7 +53,7 @@ The webapp mirrors a fresh physical receiver into the Tripod Simulator. Receiver
 
 The browser USB recovery path maps the low-level bootloader signature internally to the same board profile. Low-level silicon names are not shown as the product identity in the UI or API.
 
-## V18.3.23 I2C scan
+## V18.3.24 I2C scan
 
 ### `GET /api/i2c/scan`
 Performs an on-demand scan of I2C addresses 1..126. The operation is blocked while the controller reports ARMED.
@@ -84,3 +84,10 @@ Example response:
 `hint` is informational only. Multiple I2C devices can share the same default address across product families, so model identity must be verified separately when required.
 
 `/api/status` and `/api/firmware/info` also expose `i2cScan`, `i2cSda`, and `i2cScl` capability fields.
+
+
+## V18.3.24 Python / IMU endpoints
+
+- `GET /api/i2c/scan` → raw JSON data; Python decides what to print.
+- `GET /api/imu` → real LSM6DS3 scaled accelerometer (g), gyroscope (dps), raw counts and WHO_AM_I.
+- IMU bench I²C operations are blocked while armed.

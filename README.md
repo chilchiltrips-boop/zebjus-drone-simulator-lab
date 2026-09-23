@@ -1,8 +1,8 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.23
+# ZEBJUS F450 Drone Engineering Lab V18.3.24
 
 ## Current release
 
-V18.3.23 adds a real FlightCore I²C scanner and a smarter Python Lab editor while keeping the existing same-Wi-Fi kit connection, simulator, firmware updater, and safety guards.
+V18.3.24 adds synchronized 2D Wiring → Guided Assembly progress, a three-pane PyCharm-style Python learning IDE, browser `input()` support, local student `.py` files, and real LSM6DS3 accelerometer/gyro reads through the ZEBJUS Python API. Same-Wi-Fi kit connection, simulator, firmware updater, and existing safety guards are retained.
 
 ### I²C / Python Lab
 - New FlightCore endpoint: `GET /api/i2c/scan`.
@@ -34,7 +34,7 @@ The WebApp terminal prints detected addresses and the total count.
 
 Expected A1 application binary:
 
-`FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_23_APP.bin`
+`FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_24_APP.bin`
 
 The source ZIP itself does not contain a fabricated binary. If you upload the project to GitHub, the included Actions workflow builds the real binary from the included source.
 
@@ -51,9 +51,9 @@ The source ZIP itself does not contain a fabricated binary. If you upload the pr
 1. Upload the initial bootstrap once by USB/Arduino IDE.
 2. Connect the kit to Wi-Fi and verify Kit Connect.
 3. Upload this WebApp project to the repository.
-4. GitHub Actions builds and publishes the V18.3.23 `.bin` automatically.
+4. GitHub Actions builds and publishes the V18.3.24 `.bin` automatically.
 5. Open Firmware Update -> Auto Load Latest -> update the connected `ZFC-A1` kit.
 6. After reboot, open Python Lab -> **I²C Scan Example** -> **Run**.
 
 ## Safety
-The current V18.3.23 firmware is still a local bridge / educational firmware, not the final complete Angle/Rate flight-control core. I²C scanning is intentionally blocked while armed. Keep propellers removed during firmware and sensor bench work.
+The current V18.3.24 firmware is still a local bridge / educational firmware, not the final complete Angle/Rate flight-control core. I²C scanning is intentionally blocked while armed. Keep propellers removed during firmware and sensor bench work.
