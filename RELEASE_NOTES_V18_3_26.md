@@ -1,4 +1,4 @@
-# ZEBJUS F450 Drone Lab V18.3.26
+# ZEBJUS F450 Drone Lab V18.3.27
 
 Corrective release for browser startup and ESP32-C3 firmware CI.
 

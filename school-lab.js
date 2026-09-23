@@ -137,7 +137,7 @@ async function i2cScan(){
  const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');
  log(`I2C scan requested • SDA GPIO${d.i2cSda??4} / SCL GPIO${d.i2cScl??5}`);
  try{const r=await client.i2cScan();log(`I2C scan complete • ${Number(r?.count||0)} device(s) • ${Number(r?.durationMs||0)} ms`);return r}
- catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.26 first.');throw e}
+ catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.27 first.');throw e}
 }
 async function imuRead(){
  const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');

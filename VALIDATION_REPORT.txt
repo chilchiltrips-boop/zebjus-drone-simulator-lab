@@ -1,26 +1,35 @@
-ZEBJUS F450 Drone Engineering Lab V18.3.26 - FINAL VALIDATION
+ZEBJUS F450 Drone Engineering Lab V18.3.27 - DETAILED VALIDATION
 
-PASS - Project JSON files parse correctly.
-PASS - app.js parses in true ES-module mode (not CommonJS fallback checking).
-PASS - glb-loader.js and three.module.min.js parse in ES-module mode.
-PASS - school-lab.js, ui-runtime.js, kit-local.js and other classic scripts pass syntax checks.
-PASS - app.js Python bridge object closing-brace regression is fixed.
-PASS - school-lab.js exposes separate parsed/ready diagnostics.
-PASS - index.html local src/href references exist.
-PASS - 15 active component GLB files referenced by app.js exist.
+PASS - Project JSON files parse correctly and all active version metadata is 18.3.27.
+PASS - app.js parses in true ES-module mode.
+PASS - school-lab.js, ui-runtime.js, kit-local.js, firmware-updater.js and service-worker.js pass classic-script syntax checks.
+PASS - app.js Python bridge missing-brace regression remains fixed.
+PASS - school-lab.js has independent parsed/ready startup diagnostics.
+PASS - HTML local src/href references exist.
+PASS - CSS local URL references exist.
+PASS - JavaScript local import references exist.
+PASS - Service-worker local pre-cache references exist.
+PASS - Service-worker cache namespace is zebjus-flightcore-v18-3-27, preventing stale V18.3.26 runtime reuse.
+PASS - 15 active component GLB files referenced by app.js exist and use supported packaged GLB features.
 PASS - 13 component thumbnail/reference images declared by app.js exist.
-PASS - Runtime GLB parse test over local HTTP: 15/15 models loaded, 163 meshes, 24,314 vertices.
-PASS - .glb is served as model/gltf-binary by server.js.
-PASS - Root/subfolder firmware catalogs match and use version 18.3.26.
-PASS - Stable firmware source: FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino.
-PASS - Arduino auto-prototype custom-type issue fixed using FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h.
-PASS - Firmware builder copies companion .h/.hpp/.c/.cpp files into the temporary sketch.
+PASS - GLB model bounds inspected; component origins are intentionally mount anchors (not visual centers).
+PASS - Assembly snapping now uses screen-space target distance, eliminating elevated-target ray/bench parallax drift.
+PASS - Snap preview uses the same canonical slot coordinates as final installation.
+PASS - Assembly lighting/exposure recalibrated to reduce washed-out component colours.
+PASS - Base material opacity/transparency/depth-write state is preserved and restored across X-ray modes.
+PASS - Unused legacy drone3d.js, wiring2d.js and learning-lab.js copies removed; active integrated runtime is app.js.
+PASS - Root/subfolder firmware catalogs match and use version 18.3.27.
+PASS - Stable firmware source remains FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino.
+PASS - Arduino auto-prototype custom-type issue remains fixed using FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h.
+PASS - Firmware builder copies companion .h/.hpp/.c/.cpp files into the temporary Arduino sketch.
 PASS - Stable A1 output remains FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin.
-PASS - No versioned/duplicate .ino remains in FlightCore_Firmware.
-PASS - Stale V18.3.23 A1 application binary remains removed.
-PASS - Service worker includes glb-loader.js and all active component models for offline cache.
-PASS - GitHub Actions workflow uses Arduino-ESP32 3.3.12 and stable output names.
-PASS - GitHub Actions workflow watches both stable .ino and companion header changes.
-PASS - tools/validate_project.py passes and now performs module-aware JavaScript syntax checks.
+PASS - No versioned/duplicate .ino source remains in FlightCore_Firmware.
+PASS - Stale V18.3.23 application binary remains removed.
+PASS - GitHub Actions uses Arduino-ESP32 3.3.12.
+PASS - GitHub Actions pins stable Arduino CLI 1.5.1 instead of floating 1.x / 1.5.2-rc.1.
+PASS - GitHub Actions watches the stable .ino and companion header paths.
+PASS - Local server health endpoint returns version 18.3.27.
+PASS - Local server serves HTML/JS/JSON and GLB with correct MIME families; .glb is model/gltf-binary.
+PASS - tools/validate_project.py passes with module-aware JS, service-worker, assembly, GLB, catalog and firmware-name checks.
 
-NOTE - A compiled .bin is intentionally not fabricated in this package because Arduino CLI/toolchain is not installed in this build sandbox. The previous GitHub Actions log was inspected: core 3.3.12 installed successfully and compilation stopped specifically at the Arduino-generated `readLsm6ds3(ImuSample&)` prototype. V18.3.26 removes that root cause by declaring ImuSample in an included header before Arduino prototype generation. After upload, GitHub Actions will compile the current stable .ino and overwrite ZEBJUS_FLIGHTCORE_A1_APP.bin if compilation succeeds.
+NOTE - No application .bin is fabricated locally. The GitHub Actions compile must run after this package is uploaded. The previous failing run installed ESP32 core 3.3.12 successfully and stopped on ImuSample prototype generation; the companion-header fix addresses that exact compiler error. The next workflow also uses stable Arduino CLI 1.5.1.

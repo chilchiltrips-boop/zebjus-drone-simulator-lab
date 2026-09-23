@@ -117,8 +117,22 @@ for rel in assets:
                 if 'POSITION' not in prim.get('attributes',{}): fail(f'{rel} primitive missing POSITION')
     except Exception as e: fail(f'invalid GLB {rel}: {e}')
 
+
+# Assembly interaction invariants: screen-space snapping avoids camera/bench parallax,
+# and base material state must survive X-ray toggles without permanent fade.
+if 'nearestFreeSlotFromPointer' not in app or 'snapPixelLimits' not in app:
+    fail('assembly magnetic snapping is not screen-space / parallax-safe')
+if 'zebjusBaseVisual' not in app or 'restoreMaterialBase' not in app:
+    fail('assembly material base state is not preserved across X-ray/selection states')
+if 'renderer.toneMappingExposure=1.10' not in app:
+    warn('assembly renderer exposure differs from calibrated V18.3.27 value')
+for legacy in ['drone3d.js','wiring2d.js','learning-lab.js']:
+    if (ROOT/legacy).exists(): warn(f'unused legacy runtime file still present: {legacy}')
+
 # Service worker must know the loader and every GLB so offline use is deterministic.
 sw=read('service-worker.js')
+expected_cache='zebjus-flightcore-v'+version.replace('.', '-')
+if expected_cache not in sw: fail(f'service worker cache namespace is stale; expected {expected_cache}')
 if './glb-loader.js' not in sw: fail('service worker does not cache glb-loader.js')
 for rel in assets:
     if f'./{rel}' not in sw: fail(f'service worker does not pre-cache component model: {rel}')
@@ -129,6 +143,7 @@ if "ZEBJUS_FLIGHTCORE.ino" not in build or "CORE_VERSION='3.3.12'" not in build:
 if 'ZEBJUS_FLIGHTCORE_TYPES.h' not in ino or 'ImuSample' not in read('FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h'): fail('firmware ImuSample type is not safely declared in companion header')
 if "('*.h','*.hpp','*.c','*.cpp')" not in build: fail('firmware build script does not copy companion headers/sources into temporary Arduino sketch')
 if 'ZEBJUS_FLIGHTCORE_A1_APP.bin' not in workflow or '_V18_' in workflow: fail('workflow still uses a versioned A1 application filename')
+if 'version: 1.5.1' not in workflow: fail('workflow must pin stable Arduino CLI 1.5.1 instead of floating 1.x / prerelease')
 if 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h' not in workflow: fail('workflow does not rebuild when firmware companion header changes')
 
 if warnings:
