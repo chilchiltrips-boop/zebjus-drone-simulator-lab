@@ -14,15 +14,17 @@
       "latest": {
         "version": "18.3.30",
         "app": {
-          "available": false,
+          "available": true,
           "file": "ZEBJUS_FLIGHTCORE_A1_APP.bin",
-          "sha256": ""
+          "sha256": "72399da2e59df18a0ea565c6023d6c6042780f262f70df3409f47b72d29272f6",
+          "builtAt": "2026-09-23T21:00:19Z"
         },
         "factory": {
           "available": false,
           "file": "ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
           "sha256": ""
-        }
+        },
+        "builtAt": "2026-09-23T21:00:19Z"
       },
       "usbMatch": [
         "ESP32-C3",
@@ -64,5 +66,6 @@
         "fqbn": "esp32:esp32:esp32c6"
       }
     }
-  ]
+  ],
+  "builtAt": "2026-09-23T21:00:19Z"
 }
