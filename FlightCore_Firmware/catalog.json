@@ -14,9 +14,9 @@
       "latest": {
         "version": "18.3.27",
         "app": {
-          "available": false,
+          "available": true,
           "file": "ZEBJUS_FLIGHTCORE_A1_APP.bin",
-          "sha256": ""
+          "sha256": "8eabea4e30804d72134e9db47b1e8c327712cf8b5621a8f2d1fc48cd98b3c0f1"
         },
         "factory": {
           "available": false,
