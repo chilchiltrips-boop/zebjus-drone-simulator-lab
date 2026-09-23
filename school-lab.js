@@ -1,5 +1,7 @@
 (function(){
 'use strict';
+window.__zebjusSchoolParsed=true;
+window.__zebjusSchoolReady=false;
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -135,7 +137,7 @@ async function i2cScan(){
  const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');
  log(`I2C scan requested • SDA GPIO${d.i2cSda??4} / SCL GPIO${d.i2cScl??5}`);
  try{const r=await client.i2cScan();log(`I2C scan complete • ${Number(r?.count||0)} device(s) • ${Number(r?.durationMs||0)} ms`);return r}
- catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.25 first.');throw e}
+ catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.26 first.');throw e}
 }
 async function imuRead(){
  const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');
@@ -306,6 +308,6 @@ function initUi(){
  if(st.preferredDeviceName||st.query){connectExact(st.preferredDeviceName||st.query,st.autoAcquire).then(refreshSavedWifi).catch(e=>{log('Auto-connect: '+e.message);scanKitsUi()})}else scanKitsUi();
 }
 function loop(t){joystickTick(t);joystickWatchdogTick();telemetryTick(t);lockTick(t);updateHealthUi();requestAnimationFrame(loop)}
-function start(){if(st.booted)return;st.booted=true;initUi();requestAnimationFrame(loop);setInterval(()=>{refreshLastSeenText();healthRefresh();reconnectTick();requestModules(false)},1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){healthRefresh(true);reconnectTick(true)}});window.addEventListener('online',()=>{healthRefresh(true);reconnectTick(true)});window.zebjusSchool={sendDeviceCommand,i2cScan,imuRead,isViewOnly,isCloudActive:()=>!!selected()?.online,isKitActive:()=>!!selected()?.online,getSelectedDevice:selected,canControl,ownsLock,requestModules,acquireLock,releaseLock,state:st,client,markOffline:markSelectedOffline,refreshNow:async()=>{await healthRefresh(true);return selected()},reconnectNow:async()=>{const d=selected();if(!d)return null;if(d.online&&client?.connected){await healthRefresh(true);return selected()}if(d.online)markSelectedOffline('Reconnect requested');await reconnectTick(true);return selected()}}}
+function start(){if(st.booted)return;st.booted=true;window.__zebjusSchoolReady=true;initUi();requestAnimationFrame(loop);setInterval(()=>{refreshLastSeenText();healthRefresh();reconnectTick();requestModules(false)},1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){healthRefresh(true);reconnectTick(true)}});window.addEventListener('online',()=>{healthRefresh(true);reconnectTick(true)});window.zebjusSchool={sendDeviceCommand,i2cScan,imuRead,isViewOnly,isCloudActive:()=>!!selected()?.online,isKitActive:()=>!!selected()?.online,getSelectedDevice:selected,canControl,ownsLock,requestModules,acquireLock,releaseLock,state:st,client,markOffline:markSelectedOffline,refreshNow:async()=>{await healthRefresh(true);return selected()},reconnectNow:async()=>{const d=selected();if(!d)return null;if(d.online&&client?.connected){await healthRefresh(true);return selected()}if(d.online)markSelectedOffline('Reconnect requested');await reconnectTick(true);return selected()}}}
 window.addEventListener('zebjus-app-ready',start,{once:true});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{if(window.__zebjusAppLoaded)start()},0));else setTimeout(()=>{if(window.__zebjusAppLoaded)start()},0);
 })();

@@ -17,6 +17,7 @@ Keep these names stable between releases so GitHub drag/drop/push updates the ex
 - `firmware-catalog.json`
 - `firmware-latest.json`
 - `FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino`
+- `FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h`
 - `FlightCore_Firmware/catalog.json`
 - `FlightCore_Firmware/latest.json`
 - `FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin` (generated)

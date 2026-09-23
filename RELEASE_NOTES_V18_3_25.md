@@ -1,4 +1,4 @@
-# V18.3.25 — Component Loader + Stable Firmware Files
+# V18.3.26 — Component Loader + Stable Firmware Files
 
 ## Fixed
 

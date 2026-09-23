@@ -18,7 +18,7 @@ version=read('VERSION.txt').strip()
 print(f'ZEBJUS project validation • {version}')
 
 # Required active files and stable mutable names.
-required=['index.html','styles.css','app.js','glb-loader.js','three.module.min.js','service-worker.js','kit-local.js','school-lab.js','ui-runtime.js','firmware-updater.js','FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json','firmware-catalog.json','firmware-latest.json','.github/workflows/build-flightcore-a1.yml','tools/build_firmware.py']
+required=['index.html','styles.css','app.js','glb-loader.js','three.module.min.js','service-worker.js','kit-local.js','school-lab.js','ui-runtime.js','firmware-updater.js','FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino','FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json','firmware-catalog.json','firmware-latest.json','.github/workflows/build-flightcore-a1.yml','tools/build_firmware.py']
 for rel in required:
     if not (ROOT/rel).is_file(): fail(f'missing required file: {rel}')
 for p in (ROOT/'FlightCore_Firmware').glob('*.ino'):
@@ -58,11 +58,16 @@ for b in cat.get('boards',[]):
             if not fp.is_file(): fail(f'{b.get("id")} {kind} marked available but file missing: {fp.name}')
             elif pkg.get('sha256') and sha256(fp).lower()!=str(pkg['sha256']).lower(): fail(f'{fp.name} checksum mismatch')
 
-# JavaScript syntax.
+# JavaScript syntax. ES modules must be parsed in module mode; plain `node --check file.js`
+# can treat .js as CommonJS and miss module-only grammar failures in this package.
 node=subprocess.run(['bash','-lc','command -v node'],capture_output=True,text=True)
 if node.returncode==0:
+    module_files={'app.js','glb-loader.js','three.module.min.js'}
     for p in sorted(ROOT.glob('*.js')):
-        r=subprocess.run(['node','--check',str(p)],capture_output=True,text=True)
+        if p.name in module_files:
+            r=subprocess.run(['node','--input-type=module','--check'],input=p.read_text(errors='replace'),capture_output=True,text=True)
+        else:
+            r=subprocess.run(['node','--check',str(p)],capture_output=True,text=True)
         if r.returncode: fail(f'JS syntax error {p.name}: {(r.stderr or r.stdout).strip()}')
 else: warn('node not installed; JavaScript syntax check skipped')
 
@@ -121,7 +126,10 @@ for rel in assets:
 # Build/update references must use stable firmware names and current supported core.
 build=read('tools/build_firmware.py'); workflow=read('.github/workflows/build-flightcore-a1.yml')
 if "ZEBJUS_FLIGHTCORE.ino" not in build or "CORE_VERSION='3.3.12'" not in build: fail('firmware build script is not on stable source name/core 3.3.12')
+if 'ZEBJUS_FLIGHTCORE_TYPES.h' not in ino or 'ImuSample' not in read('FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h'): fail('firmware ImuSample type is not safely declared in companion header')
+if "('*.h','*.hpp','*.c','*.cpp')" not in build: fail('firmware build script does not copy companion headers/sources into temporary Arduino sketch')
 if 'ZEBJUS_FLIGHTCORE_A1_APP.bin' not in workflow or '_V18_' in workflow: fail('workflow still uses a versioned A1 application filename')
+if 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h' not in workflow: fail('workflow does not rebuild when firmware companion header changes')
 
 if warnings:
     for x in warnings: print('WARN:',x)

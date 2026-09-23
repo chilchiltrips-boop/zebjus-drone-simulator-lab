@@ -59,8 +59,9 @@
   },true);
   window.addEventListener('unhandledrejection',function(e){report('Promise error',e.reason||'Unhandled promise rejection')});
   setTimeout(function(){
+    if(!window.__zebjusSchoolParsed){setStatus('school-lab.js failed to load/parse • check browser console',true);return;}
     if(window.__zebjusAppLoaded)return;
-    if(window.__zebjusModuleParsed)setStatus('App startup did not finish • check runtime error',true);
-    else setStatus('V18 app.js failed to load/parse • check app.js and school-lab.js',true);
+    if(window.__zebjusModuleParsed)setStatus('app.js parsed • startup did not finish • check runtime error',true);
+    else setStatus('app.js ES module failed to load/parse • check app.js imports and syntax',true);
   },7000);
 })();

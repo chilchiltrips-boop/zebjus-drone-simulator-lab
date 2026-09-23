@@ -72,6 +72,8 @@ def main():
         cfg=b['build']; pkg=b['latest']['app']; filename=pkg['file']
         with tempfile.TemporaryDirectory(prefix='zfc-build-') as td:
             td=Path(td); sketch=td/'ZEBJUS_FLIGHTCORE'; sketch.mkdir(); shutil.copy2(SRC,sketch/'ZEBJUS_FLIGHTCORE.ino')
+            for pattern in ('*.h','*.hpp','*.c','*.cpp'):
+                for extra in OUT.glob(pattern): shutil.copy2(extra,sketch/extra.name)
             build=td/'build'; build.mkdir()
             run([cli,'compile','--fqbn',cfg['fqbn'],'--output-dir',str(build),str(sketch)])
             srcbin=find_app_bin(build); dst=OUT/filename; shutil.copy2(srcbin,dst); digest=sha(dst)
