@@ -8,6 +8,7 @@ on:
       - 'FlightCore_Firmware/catalog.json'
       - 'VERSION.txt'
       - 'tools/build_firmware.py'
+      - 'tools/cleanup_repo.py'
       - '.github/workflows/build-flightcore-a1.yml'
 
 permissions:
@@ -27,6 +28,9 @@ jobs:
 
       - name: Compile ESP32-C3 application binary
         run: python3 tools/build_firmware.py --board ZFC-A1
+
+      - name: Clean obsolete release leftovers and refresh inventory
+        run: python3 tools/cleanup_repo.py
 
       - name: Validate produced firmware
         run: |
@@ -51,12 +55,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin \
-            FlightCore_Firmware/catalog.json \
-            FlightCore_Firmware/latest.json \
-            firmware-catalog.json \
-            firmware-latest.json
+          # -A is intentional: publish the stable firmware, refreshed inventory,
+          # and deletions of obsolete files left behind by GitHub web uploads.
+          git add -A
           if git diff --cached --quiet; then
             echo "No firmware output changes to publish."
           else
