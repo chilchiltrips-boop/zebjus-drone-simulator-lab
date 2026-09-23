@@ -170,6 +170,11 @@ try:
 except Exception as e: fail(f'could not validate arm mechanical datums: {e}')
 
 school=read('school-lab.js')
+
+# OTA post-flash reconnect must tolerate slow DHCP/mDNS return after reboot.
+if 'reconnectAfterFirmware' not in school or 'totalMs=120000' not in school or 'clearKnownAddress' not in read('kit-local.js'): fail('firmware reboot reconnect is missing staged cached-IP → mDNS discovery recovery')
+fu=read('firmware-updater.js')
+if 'FLASH SUCCESS • RECONNECT PENDING' not in fu or 'startPostFlashWatch' not in fu or '300000' not in fu: fail('Firmware Center does not preserve flash-success state with background reconnect verification')
 if 'const FAILURE_LIMIT=5;' not in school or 'OFFLINE_AFTER_MS=10000' not in school: fail('school-lab reconnect/heartbeat policy is not 5 failures + 10 s offline timeout')
 
 # Browser local-kit API literals must exist in firmware routes.

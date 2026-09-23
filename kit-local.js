@@ -68,6 +68,15 @@ function isCompatibleKit(status){
   if(['ZEBJUS_F450','ZEBJUS_FLIGHTCORE','ZEBJUS_FLIGHTCORE_BOOTSTRAP'].includes(kit))return true;
   return kit.startsWith('ZEBJUS_FLIGHTCORE_')&&/^ZFC-[A-Z0-9-]+$/.test(boardId);
 }
+
+function clearKnownAddress(identity=''){
+  const key=String(identity||'').trim().toLowerCase();if(!key)return;
+  const list=loadKnown().map(x=>{
+    const match=String(x.deviceId||'').toLowerCase()===key||normalizeKitName(x.name)===normalizeKitName(identity);
+    return match?{...x,ip:'',base:baseFromName(x.name)}:x;
+  });
+  saveKnown(list);
+}
 function candidateKnown(query){
   const q=String(query||'').trim().toLowerCase();
   if(!q)return null;
@@ -145,5 +154,5 @@ class LocalKitClient{
   async reboot(){return requestBase(this.base,'/api/reboot',{method:'POST',data:{clientId:this.clientId},timeout:2200})}
 }
 
-global.ZebjusDroneKit={normalizeKitName,hostFromName,baseFromName,loadKnown,rememberKit,isDeviceId,sameDeviceIdentity,isCompatibleKit,connect,scanDefaultKits,LocalKitClient};
+global.ZebjusDroneKit={normalizeKitName,hostFromName,baseFromName,loadKnown,rememberKit,clearKnownAddress,isDeviceId,sameDeviceIdentity,isCompatibleKit,connect,scanDefaultKits,LocalKitClient};
 })(window);

@@ -138,7 +138,7 @@ async function i2cScan(){
  const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');
  log(`I2C scan requested • SDA GPIO${d.i2cSda??4} / SCL GPIO${d.i2cScl??5}`);
  try{const r=await client.i2cScan();log(`I2C scan complete • ${Number(r?.count||0)} device(s) • ${Number(r?.durationMs||0)} ms`);return r}
- catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.30 first.');throw e}
+ catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.32 first.');throw e}
 }
 async function imuRead(){
  const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');
@@ -183,6 +183,53 @@ async function reconnectTick(force=false){
    const s=await client.reconnect(1);st.failures=0;upsertStatus(s,client.base);st.remoteBenchRc=!!s.benchRc;clearError();log('Kit is online again • reconnected automatically.');statusUi();
  }catch(_){/* stay OFFLINE; next watchdog pass retries */}
  finally{st.reconnectBusy=false}
+}
+
+async function reconnectAfterFirmware({totalMs=120000,onProgress=null}={}){
+ const before=selected(),expectedId=before?.deviceId||st.preferredDeviceId||client?.deviceId||'',expectedName=before?.deviceName||st.preferredDeviceName||st.query||client?.name||'';
+ if(!expectedId&&!expectedName)return null;
+ const started=Date.now(),report=(phase,detail='')=>{try{onProgress?.({phase,detail,elapsedMs:Date.now()-started,totalMs})}catch{}};
+ st.manualDisconnect=false;st.reconnectBusy=true;let lastErr=null;
+ const accept=async status=>{
+   const d=upsertStatus(status,client.base);if(!d)return null;
+   st.selectedDeviceId=d.deviceId;st.preferredDeviceId=d.deviceId;st.preferredDeviceName=d.deviceName;st.query=d.deviceName;st.failures=0;savePrefs();clearError();statusUi();
+   try{await acquireLock(true)}catch{}return d;
+ };
+ try{
+   // Phase 1: a few quick attempts using the cached address. This is fast when DHCP kept the same IP.
+   for(let i=0;i<3&&Date.now()-started<totalMs;i++){
+     report('cached',`Cached address attempt ${i+1}/3`);
+     try{return await accept(await client.reconnect(1))}catch(e){lastErr=e}
+     await new Promise(r=>setTimeout(r,1100+i*500));
+   }
+   // Firmware reboot can obtain a new DHCP address. Stop repeatedly preferring the stale IP and switch to mDNS/discovery.
+   try{window.ZebjusDroneKit.clearKnownAddress?.(expectedId||expectedName)}catch{}
+   if(client){client.ipHint='';client.base='';client.status=null}
+   log('Firmware reconnect • cached address released • switching to mDNS / same-Wi-Fi discovery.');
+   let round=0;
+   while(Date.now()-started<totalMs){
+     round++;report('mdns',`mDNS reconnect round ${round}`);
+     try{
+       const stt=await client.connect(expectedName||expectedId,'',expectedId);
+       return await accept(stt);
+     }catch(e){lastErr=e}
+     // Every second round also scan the normal zebjus_drone_N names. This catches renamed DHCP addresses and slow mDNS registration.
+     if(round%2===0&&Date.now()-started<totalMs){
+       report('discovery',`Same-Wi-Fi discovery round ${Math.ceil(round/2)}`);
+       try{
+         const found=await window.ZebjusDroneKit.scanDefaultKits({max:30,extraNames:[expectedName,st.query,st.preferredDeviceName].filter(Boolean)});
+         const hit=found.find(r=>window.ZebjusDroneKit.sameDeviceIdentity?.(r.status?.deviceId,expectedId))||found.find(r=>window.ZebjusDroneKit.normalizeKitName(r.status?.name)===window.ZebjusDroneKit.normalizeKitName(expectedName));
+         if(hit){const stt=await client.connect(hit.status.name,hit.status.ip||'',expectedId||hit.status.deviceId);return await accept(stt)}
+       }catch(e){lastErr=e}
+     }
+     await new Promise(r=>setTimeout(r,2200));
+   }
+   report('timeout','Reconnect window elapsed');
+   return null;
+ }finally{
+   st.reconnectBusy=false;st.lastReconnectAt=0;
+   if(!selected()?.online&&lastErr)log('Firmware reconnect still waiting • '+(lastErr.message||lastErr));
+ }
 }
 async function telemetryTick(now){
  const d=selected();
@@ -309,6 +356,6 @@ function initUi(){
  if(st.preferredDeviceName||st.query){connectExact(st.preferredDeviceName||st.query,st.autoAcquire).then(refreshSavedWifi).catch(e=>{log('Auto-connect: '+e.message);scanKitsUi()})}else scanKitsUi();
 }
 function loop(t){joystickTick(t);joystickWatchdogTick();telemetryTick(t);lockTick(t);updateHealthUi();requestAnimationFrame(loop)}
-function start(){if(st.booted)return;st.booted=true;window.__zebjusSchoolReady=true;initUi();requestAnimationFrame(loop);setInterval(()=>{refreshLastSeenText();healthRefresh();reconnectTick();requestModules(false)},1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){healthRefresh(true);reconnectTick(true)}});window.addEventListener('online',()=>{healthRefresh(true);reconnectTick(true)});window.zebjusSchool={sendDeviceCommand,i2cScan,imuRead,isViewOnly,isCloudActive:()=>!!selected()?.online,isKitActive:()=>!!selected()?.online,getSelectedDevice:selected,canControl,ownsLock,requestModules,acquireLock,releaseLock,state:st,client,markOffline:markSelectedOffline,refreshNow:async()=>{await healthRefresh(true);return selected()},reconnectNow:async()=>{const d=selected();if(!d)return null;if(d.online&&client?.connected){await healthRefresh(true);return selected()}if(d.online)markSelectedOffline('Reconnect requested');await reconnectTick(true);return selected()}}}
+function start(){if(st.booted)return;st.booted=true;window.__zebjusSchoolReady=true;initUi();requestAnimationFrame(loop);setInterval(()=>{refreshLastSeenText();healthRefresh();reconnectTick();requestModules(false)},1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){healthRefresh(true);reconnectTick(true)}});window.addEventListener('online',()=>{healthRefresh(true);reconnectTick(true)});window.zebjusSchool={sendDeviceCommand,i2cScan,imuRead,isViewOnly,isCloudActive:()=>!!selected()?.online,isKitActive:()=>!!selected()?.online,getSelectedDevice:selected,canControl,ownsLock,requestModules,acquireLock,releaseLock,state:st,client,markOffline:markSelectedOffline,refreshNow:async()=>{await healthRefresh(true);return selected()},reconnectNow:async()=>{const d=selected();if(!d)return null;if(d.online&&client?.connected){await healthRefresh(true);return selected()}if(d.online)markSelectedOffline('Reconnect requested');await reconnectTick(true);return selected()},reconnectAfterFirmware} }
 window.addEventListener('zebjus-app-ready',start,{once:true});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{if(window.__zebjusAppLoaded)start()},0));else setTimeout(()=>{if(window.__zebjusAppLoaded)start()},0);
 })();

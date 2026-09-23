@@ -1,8 +1,10 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.31
+# ZEBJUS F450 Drone Engineering Lab V18.3.33
 
 Browser-based F450 assembly, 2D wiring, Python learning, simulator, local-kit control and firmware update environment for ZEBJUS FlightCore.
 
-## V18.3.31 corrective reliability update
+## V18.3.33 corrective reliability update
+
+OTA firmware reboot recovery now waits up to 120 seconds, drops a stale cached DHCP address after quick retries, then falls back to kit-name.local and same-Wi-Fi discovery. A successful flash remains marked successful while reconnect is pending; a 5-minute background watch verifies the new firmware when the kit comes back.
 
 - Fixed the `app.js` ES-module parse regression in the Python bridge object (missing closing brace), which caused the V18 startup guard to report `app.js failed to load/parse`.
 - Verified `school-lab.js` separately and added independent parsed/ready markers so startup diagnostics no longer mix app-module and school-lab failures.
@@ -62,7 +64,7 @@ npm run check
 
 If `catalog.json` says an application image is unavailable, Firmware Center will not pretend an old binary is current. After GitHub Actions builds the new stable binary, the catalog becomes available with its SHA-256 and the updater can auto-load it. Browser-imported `.bin` files remain supported.
 
-The V18.3.31 firmware is still the local bridge / educational firmware represented by the source in this repository; it is not a claim that the final complete Angle/Rate flight-control core is present. Keep propellers removed during firmware, I²C and sensor bench work.
+The V18.3.33 firmware is still the local bridge / educational firmware represented by the source in this repository; it is not a claim that the final complete Angle/Rate flight-control core is present. Keep propellers removed during firmware, I²C and sensor bench work.
 
 See `FILE_REPLACEMENT_POLICY.md` for future drag/drop replacement rules, `RELEASE_NOTES.md` for the replace-in-place current notes, and `RELEASE_NOTES_V18_3_27.md` for this historical release snapshot.
 

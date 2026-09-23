@@ -1,6 +1,5 @@
-# ZEBJUS F450 Drone Lab V18.3.31
+# ZEBJUS F450 Drone Lab V18.3.33
 
-- Fixed Python Lab toolbar/editor spacing so Run/Stop/Rerun no longer touch the editor.
-- Firmware Center build date/time cards now wrap and show the full timestamp clearly.
-- Tripod simulator airflow, prop-speed differential, yaw/roll/pitch motor mixing, and ground-dust visuals improved.
-- Slightly brighter tripod scene lighting and stronger prop blur / downwash visibility.
+- Python Lab toolbar reflowed so Run / Stop / Rerun are clearly visible above the editor.
+- Python terminal panel height locked; new output scrolls inside the terminal instead of stretching the panel.
+- Minor Python Lab spacing polish for wide and medium screens.

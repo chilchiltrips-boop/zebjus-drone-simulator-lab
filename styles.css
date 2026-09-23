@@ -887,7 +887,7 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 @media(max-width:620px){.firmware-file-info,.firmware-live-status{grid-template-columns:1fr!important}}
 
 
-/* ==================== V18.3.31 UI polish ==================== */
+/* ==================== V18.3.32 UI polish ==================== */
 .python-editor-card .section-toolbar{padding-bottom:14px!important;align-items:flex-start!important}
 .python-editor-card .python-toolbar-actions{row-gap:12px!important;column-gap:10px!important;margin-top:4px}
 .python-editor-card .python-editor-shell{margin-top:10px}
@@ -898,3 +898,19 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 #fwBuildTime,#fwCurrentBuildTime,.firmware-file-info b,.firmware-live-status b{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;word-break:break-word;line-height:1.35}
 #fwBuildTime,#fwCurrentBuildTime{font-size:11px}
 @media(max-width:980px){.firmware-file-info{grid-template-columns:1fr 1fr!important}.firmware-live-status{grid-template-columns:1fr!important}}
+
+
+/* ==================== V18.3.33 Python lab toolbar + terminal lock ==================== */
+.python-editor-card .section-toolbar{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;gap:10px;min-height:auto!important;height:auto!important;padding-bottom:12px!important}
+.python-editor-card .section-toolbar>div:first-child{width:100%}
+.python-editor-card .section-toolbar>div:first-child b{display:block}
+.python-editor-card .python-toolbar-actions{width:100%;display:flex!important;justify-content:flex-start!important;align-items:center;align-content:flex-start;gap:10px 10px!important;flex-wrap:wrap!important;margin-top:0!important;padding-top:0!important;position:relative;z-index:3}
+.python-editor-card .python-toolbar-actions select{min-width:220px;max-width:360px;flex:0 1 280px}
+#runPythonBtn,#stopPythonBtn,#rerunPythonBtn{order:10;min-width:104px}
+.python-editor-card .python-editor-shell{margin-top:6px!important}
+.python-ide-layout .python-terminal-card{display:flex!important;flex-direction:column!important;height:calc(100vh - 154px)!important;max-height:calc(100vh - 154px)!important;min-height:calc(100vh - 154px)!important;overflow:hidden!important}
+.python-terminal-card .section-toolbar{flex:0 0 auto}
+.python-runtime-help{flex:0 0 auto}
+.python-ide-layout .python-terminal-card .terminal,#pythonTerminal{flex:1 1 auto!important;height:0!important;min-height:0!important;max-height:none!important;overflow:auto!important;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:1350px){.python-editor-card .python-toolbar-actions select{min-width:180px;flex:1 1 220px}.python-ide-layout .python-terminal-card{height:380px!important;max-height:380px!important;min-height:380px!important}}
+@media(max-width:760px){.python-editor-card .python-toolbar-actions{justify-content:flex-start!important}.python-editor-card .python-toolbar-actions select{min-width:150px;max-width:none;flex:1 1 180px}.python-ide-layout .python-terminal-card{height:340px!important;max-height:340px!important;min-height:340px!important}}
