@@ -3,7 +3,9 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'FlightCore_Firmware/**'
+      - 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino'
+      - 'FlightCore_Firmware/catalog.json'
+      - 'VERSION.txt'
       - 'tools/build_firmware.py'
       - '.github/workflows/build-flightcore-a1.yml'
 
@@ -20,32 +22,42 @@ jobs:
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v2
 
-      - name: Compile real ESP32-C3 application binary
+      - name: Compile ESP32-C3 application binary
         run: python3 tools/build_firmware.py --board ZFC-A1
 
-      - name: Show produced firmware
+      - name: Validate produced firmware
         run: |
-          ls -lh FlightCore_Firmware/*.bin
-          sha256sum FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_24_APP.bin
+          test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
+          ls -lh FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
+          sha256sum FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
+          python3 tools/validate_project.py
 
-      - name: Upload actual .bin artifact
+      - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ZEBJUS_FLIGHTCORE_A1_V18_3_24
+          name: ZEBJUS_FLIGHTCORE_A1_APP
           path: |
-            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_24_APP.bin
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
             FlightCore_Firmware/catalog.json
+            FlightCore_Firmware/latest.json
             firmware-catalog.json
+            firmware-latest.json
 
-      - name: Publish actual .bin into repository
+      - name: Publish stable firmware files into repository
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add             FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_24_APP.bin             FlightCore_Firmware/catalog.json             firmware-catalog.json
+          git add \
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin \
+            FlightCore_Firmware/catalog.json \
+            FlightCore_Firmware/latest.json \
+            firmware-catalog.json \
+            firmware-latest.json
           if git diff --cached --quiet; then
             echo "No firmware output changes to publish."
           else
-            git commit -m "Build actual ZEBJUS FlightCore A1 V18.3.24 firmware [skip ci]"
+            VERSION="$(python3 -c 'import json; print(json.load(open("FlightCore_Firmware/catalog.json"))["version"])')"
+            git commit -m "Build ZEBJUS FlightCore A1 ${VERSION} firmware [skip ci]"
             git push
           fi
