@@ -26,14 +26,14 @@ jobs:
       - name: Show produced firmware
         run: |
           ls -lh FlightCore_Firmware/*.bin
-          sha256sum FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_23_APP.bin
+          sha256sum FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_24_APP.bin
 
       - name: Upload actual .bin artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ZEBJUS_FLIGHTCORE_A1_V18_3_23
+          name: ZEBJUS_FLIGHTCORE_A1_V18_3_24
           path: |
-            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_23_APP.bin
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_24_APP.bin
             FlightCore_Firmware/catalog.json
             firmware-catalog.json
 
@@ -42,10 +42,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add             FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_23_APP.bin             FlightCore_Firmware/catalog.json             firmware-catalog.json
+          git add             FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_V18_3_24_APP.bin             FlightCore_Firmware/catalog.json             firmware-catalog.json
           if git diff --cached --quiet; then
             echo "No firmware output changes to publish."
           else
-            git commit -m "Build actual ZEBJUS FlightCore A1 V18.3.23 firmware [skip ci]"
+            git commit -m "Build actual ZEBJUS FlightCore A1 V18.3.24 firmware [skip ci]"
             git push
           fi
