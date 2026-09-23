@@ -8,7 +8,7 @@ window.__zebjusModuleParsed=true;
 window.__zebjusAppLoaded=false;
 window.__zebjus3DReady=false;
 function setBootStatus(text,kind=''){const s=$('#assetStatus');if(s){s.textContent=text;s.className='status'+(kind?' '+kind:'')}}
-setBootStatus('V18.3.29 local-kit module loaded • starting engineering runtime…');
+setBootStatus('V18.3.30 local-kit module loaded • starting engineering runtime…');
 
 /* V9: local camera controls. No network add-on is required for 3D startup. */
 class MiniOrbitControls {
@@ -42,7 +42,7 @@ const products=[
  {type:'fc',icon:'✥',name:'ZEBJUS FC + Case',short:'Actual PCB layout • protected case • exposed I/O',max:1,asset:'zebjus_flight_controller.glb',thumb:'thumb_fc.png',rating:{ESC:'4 × Source/+5V/GND',GPIO:'3 × Source/+5V/GND',RX:'Optional PPM / GPIO',I2C:'VCC/GND/SCL/SDA'},detail:'Actual FC PCB is enclosed in a graphite case fixed by double-side foam tape. Only user headers remain exposed. All 3-pin groups use upward-projecting 2.54 mm male header pins: Source on the upper row, +5V in the centre row and GND on the lower row. ESC female plugs insert from above.',pins:[['ESC1–ESC4','Top/source row • middle +5V • bottom GND'],['GPIO ×3','Source / +5V / GND'],['RX / PPM','Optional 3-pin; source may be reused as compatible I/O'],['I²C','VCC / GND / SCL / SDA']]},
  {type:'batteryStrap',internal:true,icon:'═',name:'Battery Strap',short:'LiPo retention strap',max:2,asset:'battery_strap.glb',thumb:'thumb_batteryStrap.png',rating:{Qty:'2',Use:'Battery retention'},detail:'Two tight straps wrap around the LiPo mounted underneath the central frame/PDB.',pins:[['ROUTE','Plate slots'],['TENSION','Firm, not crushing']]},
  {type:'battery',icon:'▰',name:'LiPo Battery',short:'2200mAh 3S 11.1V + XT60',max:1,asset:'lipo_2200_3s.glb',thumb:'thumb_battery.png',rating:{Capacity:'2200mAh',Cells:'3S',Voltage:'11.1V',Connector:'XT60'},detail:'Main 2200mAh 3S propulsion battery mounted underneath the central frame and held tightly with two straps. Its XT60 plug mates with the soldered PDB battery connector.',pins:[['XT60 +','PDB BAT+'],['XT60 −','PDB BAT−']]},
- {type:'prop',icon:'✣',name:'1045 Propeller',short:'10×4.5 CW / CCW',max:4,asset:'prop_1045_cw.glb',assetCCW:'prop_1045_ccw.glb',thumb:'thumb_prop.png',rating:{Size:'10×4.5',Pair:'CW / CCW'},detail:'Correct direction asset is chosen automatically for each motor.',pins:[['CW','M1/M3'],['CCW','M2/M4']]},
+ {type:'prop',icon:'✣',name:'1045 Propeller',short:'High-visibility 2-blade • CW / CCW',max:4,asset:'prop_1045_cw.glb',assetCCW:'prop_1045_ccw.glb',thumb:'thumb_prop.png',rating:{Size:'10×4.5',Blades:'2',Pair:'CW / CCW',Display:'High visibility'},detail:'Bright two-blade training propeller. The correct CW/CCW blade pitch is selected automatically for each motor.',pins:[['CW','M1/M3'],['CCW','M2/M4']]},
  {type:'receiver',icon:'⌁',name:'PPM Receiver (Optional)',short:'Optional because Wi‑Fi control is built in',max:1,asset:'receiver_module.glb',thumb:'thumb_receiver.png',optional:true,rating:{Output:'PPM',Wires:'Signal / +5V / GND',Requirement:'Optional'},detail:'Optional PPM-output receiver. A reserved top-deck side area is provided. Use the isolated RX/PPM 3-pin Source/+5V/GND section. Wi‑Fi control can be used without this receiver.',pins:[['PPM','RX source pin'],['+5V','Center row'],['GND','Bottom row']]},
  {type:'gps',icon:'⌖',name:'GPS Module (Optional)',short:'External GPIO / serial learning device',max:1,optional:true,rating:{Use:'Position / navigation',Power:'+5V/GND','I/O':'External GPIO'},detail:'Optional GPS module with an automatic raised mast/stand. The stand lifts the GPS above the top deck and keeps space clear around the FC headers. Connect compatible source/serial pins through external GPIO plus +5V/GND.',pins:[['SOURCE','GPIO source pin(s)'],['+5V','Center row'],['GND','Bottom row']]},
  {type:'servo',icon:'↻',name:'Servo (Optional)',short:'External GPIO output',max:2,optional:true,rating:{Signal:'PWM',Power:'+5V/GND',Header:'External GPIO or spare RX source'},detail:'Optional servo. Use a compatible source pin plus +5V and GND.',pins:[['PWM','Source row'],['+5V','Center row'],['GND','Bottom row']]},
@@ -575,30 +575,16 @@ function procEsc(){const g=new THREE.Group(),em=mat(0x174b68,.05,.60),ridge=mat(
 function procFC(){const g=new THREE.Group();B(1.78,.10,1.60,mat(0x0e6c43,.20,.48),[0,.05,0],g);B(.48,.11,.48,mat(0x151d24,.42,.34),[0,.15,0],g);B(.22,.09,.22,mat(0x25323b,.35,.40),[-.42,.14,.08],g);return g}
 function procBattery(){const g=new THREE.Group();B(2.22,.56,1.00,mat(0xf06b1f,.03,.55),[0,.28,0],g);B(.11,.58,1.02,mat(0x20252a),[-1.10,.29,0],g);B(.11,.58,1.02,mat(0x20252a),[1.10,.29,0],g);B(.38,.22,.31,mat(0xf7d334,.05,.48),[1.62,.44,.42],g);return g}
 function procProp(id){
- const g=new THREE.Group(),bladeMat=mat(0x161b20,.18,.40),edgeMat=mat(0x47545e,.12,.42),silver=mat(0xc8d1d7,.78,.18);
- const handed=(id==='M2'||id==='M4')?-1:1;
+ const g=new THREE.Group(),handed=(id==='M2'||id==='M4')?-1:1,isCW=handed>0;
+ const bladeMat=mat(0xdbe5eb,.16,.30),edgeMat=mat(isCW?0x55d7ff:0xffb15b,.12,.34),hubMat=mat(0xaebbc4,.72,.20),dark=mat(0x3a4650,.42,.28);
  function bladeGeometry(){
-   const sh=new THREE.Shape();
-   sh.moveTo(.10,-.105);
-   sh.bezierCurveTo(.36,-.20,.92,-.255,1.36,-.135);
-   sh.bezierCurveTo(1.55,-.085,1.61,-.018,1.56,.055);
-   sh.bezierCurveTo(1.37,.19,.88,.255,.42,.185);
-   sh.bezierCurveTo(.26,.158,.15,.132,.10,.105);
-   sh.closePath();
-   const geo=new THREE.ExtrudeGeometry(sh,{depth:.042,bevelEnabled:true,bevelThickness:.010,bevelSize:.015,bevelSegments:2});
-   geo.rotateX(Math.PI/2);
-   return geo
+   const sh=new THREE.Shape();sh.moveTo(.10,-.105);sh.bezierCurveTo(.36,-.20,.92,-.255,1.36,-.135);sh.bezierCurveTo(1.55,-.085,1.61,-.018,1.56,.055);sh.bezierCurveTo(1.37,.19,.88,.255,.42,.185);sh.bezierCurveTo(.26,.158,.15,.132,.10,.105);sh.closePath();
+   const geo=new THREE.ExtrudeGeometry(sh,{depth:.050,bevelEnabled:true,bevelThickness:.010,bevelSize:.015,bevelSegments:2});geo.rotateX(Math.PI/2);return geo
  }
  const geo=bladeGeometry();
- [0,Math.PI].forEach(a=>{
-   const holder=new THREE.Group();holder.rotation.y=a;g.add(holder);
-   const b=new THREE.Mesh(geo,bladeMat);b.position.y=.11;b.rotation.x=handed*rad(6.5);b.castShadow=true;holder.add(b);
-   const tip=B(.24,.045,.15,edgeMat,[1.39,.13,0],holder,[handed*rad(6.5),0,0]);tip.castShadow=true;
- });
- CY(.19,.11,silver,[0,.065,0],g);
- CY(.105,.28,silver,[0,.24,0],g);
- CY(.155,.105,mat(0x303940,.58,.24),[0,.42,0],g);
- const washer=CY(.205,.035,mat(0x838f97,.65,.22),[0,.15,0],g);
+ [0,Math.PI].forEach(a=>{const holder=new THREE.Group();holder.rotation.y=a;g.add(holder);const b=new THREE.Mesh(geo,bladeMat);b.position.y=.11;b.rotation.x=handed*rad(7.5);b.castShadow=true;b.receiveShadow=true;holder.add(b);const tip=B(.28,.052,.17,edgeMat,[1.38,.14,0],holder,[handed*rad(7.5),0,0]);tip.castShadow=true});
+ CY(.21,.12,hubMat,[0,.07,0],g);CY(.105,.28,hubMat,[0,.24,0],g);CY(.16,.105,dark,[0,.42,0],g);
+ const mark=new THREE.Mesh(new THREE.TorusGeometry(.25,.022,8,32),new THREE.MeshStandardMaterial({color:isCW?0x55d7ff:0xffb15b,metalness:.08,roughness:.36}));mark.rotation.x=Math.PI/2;mark.position.y=.145;g.add(mark);g.userData.propDirection=isCW?'CW':'CCW';
  return g
 }
 
@@ -753,24 +739,24 @@ function normalizeComponentPalette(g,type){
  return g
 }
 function createPart(type,id){
- const c=product(type);let path=c?.asset;if(type==='guard')path=null;if(type==='prop'&&(id==='M2'||id==='M4'))path=c.assetCCW;const a=path?cloneAsset(path):null;const g=normalizeComponentPalette(decoratePart(a||procedural(type,id),type,id),type);g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;rememberMaterialVisual(o.material);tag(o,{partRoot:g})}});return g
+ const c=product(type);let path=c?.asset;if(type==='guard'||type==='prop')path=null;else if(type==='prop'&&(id==='M2'||id==='M4'))path=c.assetCCW;const a=path?cloneAsset(path):null;const g=normalizeComponentPalette(decoratePart(a||procedural(type,id),type,id),type);g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;rememberMaterialVisual(o.material);tag(o,{partRoot:g})}});return g
 }
 function init3D(){
  const e=$('#threeContainer');if(!e)throw new Error('3D container missing');
  const w=Math.max(1,e.clientWidth||e.getBoundingClientRect().width||900),h=Math.max(1,e.clientHeight||e.getBoundingClientRect().height||600);
- scene=new THREE.Scene();scene.background=new THREE.Color(0x0b1720);
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x112431);
  camera=new THREE.PerspectiveCamera(38,w/h,.1,1000);camera.position.set(8.7,7.6,11.5);
  renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(w,h);
- renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.06;e.appendChild(renderer.domElement);
+ renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;e.appendChild(renderer.domElement);
  controls=new MiniOrbitControls(camera,renderer.domElement);controls.target.set(0,.58,0);controls.enableDamping=true;controls.minDistance=4;controls.maxDistance=26;
  // Balanced engineering lighting preserves authored component colours instead of washing them toward white.
- scene.add(new THREE.AmbientLight(0xffffff,.54));
- scene.add(new THREE.HemisphereLight(0xe7f5ff,0x63717c,1.02));
- const key=new THREE.DirectionalLight(0xffffff,2.1);key.position.set(6,10,8);key.castShadow=true;scene.add(key);
- const fill=new THREE.DirectionalLight(0xb7dcff,.90);fill.position.set(-7,6,4);scene.add(fill);
- const rim=new THREE.DirectionalLight(0x7de6ff,.70);rim.position.set(-4,5,-8);scene.add(rim);
- const warm=new THREE.PointLight(0xffd7a8,.75,18);warm.position.set(4.8,5.8,1.8);scene.add(warm);
- const frontFill=new THREE.PointLight(0xa9dcff,.55,16);frontFill.position.set(-4.5,3.8,5.5);scene.add(frontFill);
+ scene.add(new THREE.AmbientLight(0xffffff,.72));
+ scene.add(new THREE.HemisphereLight(0xf2fbff,0x71818b,1.28));
+ const key=new THREE.DirectionalLight(0xffffff,2.35);key.position.set(6,10,8);key.castShadow=true;scene.add(key);
+ const fill=new THREE.DirectionalLight(0xc9e6ff,1.15);fill.position.set(-7,6,4);scene.add(fill);
+ const rim=new THREE.DirectionalLight(0x9beeff,.82);rim.position.set(-4,5,-8);scene.add(rim);
+ const warm=new THREE.PointLight(0xffe2bf,.88,18);warm.position.set(4.8,5.8,1.8);scene.add(warm);
+ const frontFill=new THREE.PointLight(0xc4e8ff,.72,16);frontFill.position.set(-4.5,3.8,5.5);scene.add(frontFill);
  // V16 round engineering workbench instead of the old square bed.
  const benchMat=mat(0x354550,.16,.52);bench=M(new THREE.CylinderGeometry(6.7,6.7,.34,112),benchMat,[0,-.16,0],[0,0,0],scene);
  const topDisc=M(new THREE.CylinderGeometry(6.48,6.48,.036,112),mat(0x1d2a32,.08,.44),[0,.018,0],[0,0,0],scene);
@@ -800,13 +786,12 @@ function down(e){
    if(r){const p=state.parts.find(x=>x.obj===r);if(p){state.selectedInstalledId=p.id;const wireId=partToWireNodeId?.(p.type,p.slotId);if(wireId)selectedWireNodeId=wireId;const c=product(p.type);showInspector(c.name,c.detail,{...c.rating,Mount:'SNAP-LOCKED'},c.pins,'INSTALLED PRODUCT',c.asset||'');$('#inspector').insertAdjacentHTML('beforeend','<span class="locked-badge">✓ LOCKED IN CORRECT POSITION</span><button id="deleteSelectedPartBtn" class="btn danger full">Delete selected component</button>');$('#deleteSelectedPartBtn').onclick=()=>deleteInstalled(p.id);if($('#tab-wiring')?.classList.contains('active'))render2D();return}}
  }
 }
-function snapRadius(type){return({bottomPlate:1.10,topPlate:.90,battery:1.00,armRed:.70,armWhite:.70,guard:.75,motor:.60,esc:.65,fcTape:.55,fc:.55,prop:.70,receiver:.60,gps:.65,servo:.60,matrix:.60,sensor:.60,led:.55}[type]??.70)}
-function nearestFreeSlot(type,p){
+function snapRadius(type){const base=({bottomPlate:120,topPlate:110,battery:120,armRed:115,armWhite:115,guard:125,motor:105,esc:115,fcTape:95,fc:95,prop:115,receiver:100,gps:105,servo:100,matrix:100,sensor:100,led:95}[type]??105),r=renderer?.domElement?.getBoundingClientRect?.();return base*clamp(Math.min(r?.width||800,r?.height||800)/800,.85,1.35)}
+function pointerCanvasPoint(e){const r=renderer.domElement.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top,w:r.width,h:r.height}}
+function projectSlotToScreen(slot){const r=renderer.domElement.getBoundingClientRect(),v=new THREE.Vector3(slot.p[0],slot.p[1],slot.p[2]).project(camera);return{x:(v.x*.5+.5)*r.width,y:(-.5*v.y+.5)*r.height,z:v.z,visible:v.z>=-1&&v.z<=1}}
+function nearestFreeSlotScreen(type,e){
  const used=new Set(state.parts.filter(x=>x.type===type).map(x=>x.slotId)),free=(slots[type]||[]).filter(s=>!used.has(s.id));if(!free.length)return null;
- // Pointer hits the workbench plane while many snap targets are elevated. Distance
- // must therefore be horizontal only; including Y made high parts look permanently
- // "far" even when the cursor was exactly above the correct X/Z target.
- return free.map(s=>({s,d:Math.hypot(s.p[0]-p.x,s.p[2]-p.z)})).sort((a,b)=>a.d-b.d)[0]
+ const p=pointerCanvasPoint(e);return free.map(s=>{const q=projectSlotToScreen(s);return{s,d:Math.hypot(q.x-p.x,q.y-p.y),screen:q}}).filter(x=>x.screen.visible).sort((a,b)=>a.d-b.d)[0]||null
 }
 function updateThreeTooltip(e){
  const tip=$('#threeTooltip');if(!tip||!renderer||!ray)return;ndc(e);ray.setFromCamera(mouse,camera);const h=ray.intersectObjects([partsRoot,wiresRoot,extrasRoot,solderRoot],true)[0],info=h?.object?.userData?.info;
@@ -815,19 +800,18 @@ function updateThreeTooltip(e){
 function move(e){
  updateThreeTooltip(e);
  if(!state.selectedType||!snapPreview)return;
- const p=hitBench(e);if(!p){snapPreview.visible=false;return}
- const n=nearestFreeSlot(state.selectedType,p);if(!n){snapPreview.visible=false;return}
+ const n=nearestFreeSlotScreen(state.selectedType,e);if(!n){snapPreview.visible=false;return}
  const ready=n.d<=snapRadius(state.selectedType);snapPreview.visible=true;snapPreview.position.set(n.s.p[0],n.s.p[1]+.05,n.s.p[2]);snapPreview.material.color.setHex(ready?0x53efbd:0xff5d68);
  const msg=$('#snapMessage');if(msg){msg.textContent=ready?`✓ Magnetic snap ready: ${n.s.id}`:`Move closer to target ${n.s.id}`;msg.className='snap-message '+(ready?'good':'bad')}
 }
-function findSlot(type,p){const n=nearestFreeSlot(type,p);return n?.s||null}
+function findSlot(type,e){const n=nearestFreeSlotScreen(type,e);return n?.s||null}
 function placePointer(e){
  const type=state.selectedType,c=product(type);if(!c)return;
  if(state.guided&&!product(type)?.optional&&!steps[state.step].types.includes(type)){notify('Current guided step needs a different item.','bad');return}
  if(product(type)?.optional&&!state.parts.some(p=>p.type==='fc')){notify('Mount the ZEBJUS FC case before adding optional expansion devices.','bad');return}
  if(type==='frameScrew'||type==='motorScrew'){installFastenerSet(type);return}
- const p=hitBench(e)||new THREE.Vector3(),near=nearestFreeSlot(type,p),s=near?.s;if(!s){notify('No free snap point.','bad');return}
- if(near&&near.d>snapRadius(type)){notify(`Wrong area • move closer to the highlighted ${s.id} snap target.`,'bad');return}
+ const near=nearestFreeSlotScreen(type,e),s=near?.s;if(!s){notify('No visible free snap point in this view.','bad');return}
+ if(near.d>snapRadius(type)){notify(`Move closer to the highlighted ${s.id} snap target.`,'bad');return}
  historyPush();install(type,s,true);state.selectedType=null;if(snapPreview)snapPreview.visible=false;renderAssemblyUI();showGuides();
  setTimeout(()=>advanceGuidedStepIfReady('assembly'),220)
 }
@@ -1285,7 +1269,7 @@ const keyDefaults={rollLeft:'ArrowLeft',rollRight:'ArrowRight',pitchForward:'Arr
 let keyMap=(()=>{try{return{...keyDefaults,...JSON.parse((localStorage.getItem('zebjus-v15-keys')||localStorage.getItem('zebjus-v10-keys')||localStorage.getItem('zebjus-v9-keys'))||'{}')}}catch{return{...keyDefaults}}})();
 const heldKeys=new Set();let keyCaptureAction=null;
 function keyLabel(k){return k===' '?'Space':k}
-function simClone(type,slotId){const c=product(type);let path=c?.asset;if(type==='guard')path=null;if(type==='prop'&&(slotId==='M2'||slotId==='M4'))path=c.assetCCW;const g=normalizeComponentPalette((path?cloneAsset(path):null)||procedural(type,slotId),type);if(type==='fc')decoratePart(g,'fc',slotId);return g}
+function simClone(type,slotId){const c=product(type);let path=c?.asset;if(type==='guard'||type==='prop')path=null;else if(type==='prop'&&(slotId==='M2'||slotId==='M4'))path=c.assetCCW;const g=normalizeComponentPalette((path?cloneAsset(path):null)||procedural(type,slotId),type);if(type==='fc')decoratePart(g,'fc',slotId);return g}
 function buildFinalSimDrone(){
  const root=new THREE.Group(),baseY=.68;simProps=[];simPropBlurs=[];
  const add=(type,slot)=>{
@@ -1579,7 +1563,7 @@ function simKeyUp(e){
 }
 function renderKeySettings(){const box=$('#keySettings');if(!box)return;const labels={rollLeft:'Roll left',rollRight:'Roll right',pitchForward:'Pitch forward',pitchBack:'Pitch back',throttleUp:'Throttle +',throttleDown:'Throttle −',yawLeft:'Yaw left',yawRight:'Yaw right',run:'Run / Stop'};box.innerHTML=Object.entries(labels).map(([k,l])=>`<div class="key-row"><span>${l}</span><button class="key-capture ${keyCaptureAction===k?'listening':''}" data-key-action="${k}">${keyCaptureAction===k?'PRESS KEY…':keyLabel(keyMap[k])}</button></div>`).join('');$$('.key-capture').forEach(b=>b.onclick=()=>{keyCaptureAction=b.dataset.keyAction;renderKeySettings()})}
 function downloadBlob(name,data,type='text/plain'){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)}
-function projectPayload(){return{version:'18.3.29',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
+function projectPayload(){return{version:'18.3.30',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
 function exportProjectJson(){downloadBlob('ZEBJUS_F450_Project_V18.json',JSON.stringify(projectPayload(),null,2),'application/json')}
 function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V18',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
 function exportWiringSvg(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg);downloadBlob('ZEBJUS_F450_Wiring.svg',xml,'image/svg+xml')}
@@ -1591,7 +1575,7 @@ function updateStartupDiagnostics(){const e=$('#startupDiagnostics');if(!e)retur
 function registerOffline(){
  if(!('serviceWorker' in navigator)||!location.protocol.startsWith('http'))return;
  let reloading=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloading)return;reloading=true;location.reload()});
- navigator.serviceWorker.register('./service-worker.js?v=18.3.29',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
+ navigator.serviceWorker.register('./service-worker.js?v=18.3.30',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
 }
 function updateAudioUi(){
  const en=$('#soundEnabled'),vol=$('#soundVolume'),out=$('#soundVolumeOut'),st=$('#soundState');
@@ -1612,7 +1596,7 @@ function initSettings(){renderKeySettings();initAudioSettings();$('#saveKeysBtn'
 /* FC / CAL / PID / PYTHON */
 function fcLog(t){const e=$('#fcLog');if(!e)return;e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
 function fcStatus(on){state.fc.connected=on;const e=$('#fcBadge');if(e){e.textContent=on?'Connected':'Disconnected';e.className='status '+(on?'good':'')}}
-function connectFc(){const ipEl=$('#fcIp'),pathEl=$('#fcPath'),protoEl=$('#fcProtocol');if(!ipEl||!pathEl||!protoEl){fcLog('Legacy WebSocket connector is not present in this UI. Use Kit Connect.');return false}disconnectFc(false);const ip=ipEl.value.trim(),path=pathEl.value.trim(),pref=protoEl.value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3.29'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false);return true}catch(e){fcLog(e.message);return false}}
+function connectFc(){const ipEl=$('#fcIp'),pathEl=$('#fcPath'),protoEl=$('#fcProtocol');if(!ipEl||!pathEl||!protoEl){fcLog('Legacy WebSocket connector is not present in this UI. Use Kit Connect.');return false}disconnectFc(false);const ip=ipEl.value.trim(),path=pathEl.value.trim(),pref=protoEl.value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3.30'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false);return true}catch(e){fcLog(e.message);return false}}
 function disconnectFc(log=true){if(state.fc.socket)try{state.fc.socket.close()}catch{}state.fc.socket=null;fcStatus(false);if(log)fcLog('Disconnected')}
 function sendFc(o){if(window.zebjusSchool?.isViewOnly?.()){fcLog('VIEW ONLY • command blocked');return false}if(window.zebjusSchool?.isCloudActive?.()){if(window.zebjusSchool.sendDeviceCommand?.(o)){fcLog('LOCAL KIT TX '+JSON.stringify(o));return true}fcLog('Select an online kit first');return false}if(state.fc.socket?.readyState===1){state.fc.socket.send(JSON.stringify(o));fcLog('TX '+JSON.stringify(o));return true}fcLog('Not connected');return false}
 function packet(raw){let d,text;if(typeof raw==='string'){text=raw;try{d=JSON.parse(raw)}catch{d={raw}}}else{d=raw||{};text=JSON.stringify(d)};['roll','pitch','yaw','gyroX','gyroY','gyroZ','battery'].forEach(k=>{if(Number.isFinite(+d[k]))state.telemetry[k]=+d[k]});if(d?.type==='ack'&&d?.command==='pid_set'){pidDirty=false;updatePidSaveState?.('saved')}$('#telemetryLog').textContent=(new Date().toLocaleTimeString()+' '+text+'\n'+$('#telemetryLog').textContent).slice(0,12000);telemetryUI()}
@@ -1631,7 +1615,7 @@ function renderPid(){
  $('#pidEditor').innerHTML=g.map(x=>`<div class="pid-section"><h3>${x[0]}</h3>${x[1].map(([n,k])=>`<div class="pid-row"><span>${n}</span>${['P','I','D'].map(v=>`<label>${v}<input type="number" step=".001" data-p="${k}" data-k="${v}" value="${state.pid[k][v]}"></label>`).join('')}</div>`).join('')}</div>`).join('');
  $$('#pidEditor input').forEach(i=>i.onchange=()=>{state.pid[i.dataset.p][i.dataset.k]=+i.value;markPidDirty();syncQuickPid?.();updatePidCoach?.()})
 }
-let py=null,pyodidePromise=null,pythonMonaco=null,monacoPromise=null,pythonPreludeReady=false,pythonStopRequested=false,pythonRunning=false,pythonStderrBuffer='';
+let py=null,pyodidePromise=null,pythonMonaco=null,monacoPromise=null,pythonPreludeReady=false,pythonStopRequested=false,pythonRunning=false,pythonStderrBuffer='',pythonHasRun=false;
 const PYODIDE_URL='https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';
 const MONACO_VERSION='0.52.2',MONACO_BASE=`https://cdn.jsdelivr.net/npm/monaco-editor@${MONACO_VERSION}/min/`;
 const PY_PROJECT_KEY='zebjus-python-project-v18324';
@@ -1666,7 +1650,15 @@ function monacoCompletions(monaco,model,position){
   ['print','print()',K.Function,'Print to the WebApp terminal'],['input','input()',K.Function,'Read one line of input'],['if','if condition:\n    pass',K.Snippet,'Conditional block'],['for','for item in range(5):\n    print(item)',K.Snippet,'For loop'],['while','while condition:\n    pass',K.Snippet,'While loop'],['def','def function_name():\n    pass',K.Snippet,'Define a function'],['class','class ClassName:\n    def __init__(self):\n        pass',K.Snippet,'Define a class'],['try','try:\n    pass\nexcept Exception as e:\n    print(e)',K.Snippet,'Exception handling'],
   ['from zebjus import Drone','from zebjus import Drone',K.Module,'Import the ZEBJUS Drone Python API'],['Drone','Drone()',K.Class,'Create a drone API object'],['drone','drone = Drone()',K.Variable,'Create the default drone object'],['i2c_scan','await drone.i2c_scan()',K.Method,'Return real I²C scan data'],['imu','await drone.imu()',K.Method,'Return real LSM6DS3 accel + gyro data'],['gyro','await drone.gyro()',K.Method,'Return real gyroscope data'],['accel','await drone.accel()',K.Method,'Return real accelerometer data'],['status','await drone.status()',K.Method,'Read selected ZEBJUS kit status'],['stop_requested','drone.stop_requested()',K.Method,'True after the Stop button is pressed'],['asyncio','import asyncio',K.Module,'Import Python asyncio'],['json','import json',K.Module,'Import Python JSON support']
  ];
- return{suggestions:items.map(([label,insertText,kind,documentation])=>({label,kind,insertText,documentation,range,insertTextRules:kind===K.Snippet?monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet:undefined}))}
+ const code=model.getValue(),seen=new Set(items.map(x=>x[0])),user=[];
+ const add=(name,kind,detail)=>{if(!name||seen.has(name)||/^_/.test(name))return;seen.add(name);user.push([name,name,kind,detail])};
+ for(const m of code.matchAll(/^\s*([A-Za-z_]\w*)\s*=\s*/gm))add(m[1],K.Variable,'Variable from your code');
+ for(const m of code.matchAll(/^\s*for\s+([A-Za-z_]\w*)\s+in\s+/gm))add(m[1],K.Variable,'Loop variable from your code');
+ for(const m of code.matchAll(/^\s*(?:async\s+)?def\s+([A-Za-z_]\w*)\s*\(/gm))add(m[1],K.Function,'Function from your code');
+ for(const m of code.matchAll(/^\s*class\s+([A-Za-z_]\w*)/gm))add(m[1],K.Class,'Class from your code');
+ for(const m of code.matchAll(/^\s*(?:from\s+\S+\s+import|import)\s+([A-Za-z_]\w*)/gm))add(m[1],K.Module,'Imported name from your code');
+ const userNames=new Set(user.map(x=>x[0]));
+ return{suggestions:[...user,...items].map(([label,insertText,kind,documentation])=>({label,kind,insertText,documentation,range,sortText:(userNames.has(label)?'0':'1')+label,insertTextRules:kind===K.Snippet?monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet:undefined}))}
 }
 function ensureMonaco(){
  if(pythonMonaco)return Promise.resolve(pythonMonaco);
@@ -1712,11 +1704,11 @@ async function preparePythonRuntime(term){
 async function runPythonLab(){
  const term=$('#pythonTerminal');if(pythonRunning){notify('A Python program is already running. Press Stop first.','bad');return}
  pythonStopRequested=false;pythonStderrBuffer='';clearPythonMarkers();pythonFiles[pythonActiveFile]=getPythonCode();savePythonProject();const code=getPythonCode();if(!pythonHardwarePreflight(code))return;
- pythonRunning=true;$('#runPythonBtn').disabled=true;$('#stopPythonBtn').disabled=false;$('#pyStatus').textContent=`Running ${pythonActiveFile} • LIVE`;
+ pythonRunning=true;pythonHasRun=true;$('#runPythonBtn').disabled=true;$('#rerunPythonBtn').disabled=true;$('#stopPythonBtn').disabled=false;$('#stopPythonBtn').classList.add('python-stop-live');$('#pyStatus').textContent=`Running ${pythonActiveFile} • LIVE`;
  if(term){term.textContent+=`\n▶ ${pythonActiveFile}\n`;term.scrollTop=term.scrollHeight}
  try{await preparePythonRuntime(term);await syncPythonFs();try{await py.loadPackagesFromImports(code)}catch{}const result=await py.runPythonAsync(code,{filename:pythonActiveFile});if(result!==undefined&&result!==null)pythonTerminalWrite(`=> ${String(result)}\n`);if(pythonStderrBuffer.trim())pythonTerminalWrite(pythonStderrBuffer);$('#pyStatus').textContent=`Finished • ${pythonActiveFile}`}
  catch(e){const friendly=pythonFriendlyError(e,pythonStderrBuffer);pythonTerminalWrite(`ERR: ${friendly}\n`);markPythonError(e);$('#pyStatus').textContent='Run stopped with error'}
- finally{pythonRunning=false;$('#runPythonBtn').disabled=false;$('#stopPythonBtn').disabled=true;if(term)term.scrollTop=term.scrollHeight}
+ finally{pythonRunning=false;$('#runPythonBtn').disabled=false;$('#rerunPythonBtn').disabled=!pythonHasRun;$('#stopPythonBtn').disabled=true;$('#stopPythonBtn').classList.remove('python-stop-live');if(term)term.scrollTop=term.scrollHeight}
 }
 function stopPythonLab(){
  if(!pythonRunning){$('#pyStatus').textContent='Python idle';notify('No Python program is running.','bad');return}
@@ -1724,7 +1716,7 @@ function stopPythonLab(){
 }
 function initPython(){
  loadPythonProject();const fallback=$('#pythonEditor');if(fallback)fallback.value=pythonFiles[pythonActiveFile]||PY_DEFAULT;renderPythonFiles();window.zebjusBridge={target:()=>$('#pythonTarget')?.value||'sim',stopRequested:()=>pythonStopRequested,attitude:()=>JSON.stringify({roll:state.telemetry.roll,pitch:state.telemetry.pitch,yaw:state.telemetry.yaw}),status:async()=>JSON.stringify(window.zebjusSchool?.getSelectedDevice?.()||{}),i2cScan:async()=>{if(($('#pythonTarget')?.value||'sim')!=='real')throw new Error('Select Real ZEBJUS kit before I2C scan.');if(!window.zebjusSchool?.isKitActive?.())throw new Error('Connect the ZEBJUS kit first.');return JSON.stringify(await window.zebjusSchool.i2cScan())},imuRead:async()=>{if(($('#pythonTarget')?.value||'sim')!=='real')throw new Error('Select Real ZEBJUS kit before IMU read.');if(!window.zebjusSchool?.isKitActive?.())throw new Error('Connect the ZEBJUS kit first.');return JSON.stringify(await window.zebjusSchool.imuRead())},command:(type,payload='{}')=>{let data={};try{data=JSON.parse(String(payload||'{}'))}catch{}return sendFc({type:String(type),...data})}};
- $('#runPythonBtn').onclick=runPythonLab;$('#stopPythonBtn').onclick=stopPythonLab;$('#stopPythonBtn').disabled=true;$('#clearTerminalBtn').onclick=()=>$('#pythonTerminal').textContent='';$('#pythonNewFileBtn').onclick=newPythonFile;$('#pythonSaveFileBtn').onclick=()=>{pythonFiles[pythonActiveFile]=getPythonCode();savePythonProject();$('#pyStatus').textContent=`Saved ${pythonActiveFile}`};$('#pythonDeleteFileBtn').onclick=deletePythonFile;
+ $('#runPythonBtn').onclick=runPythonLab;$('#rerunPythonBtn').onclick=runPythonLab;$('#rerunPythonBtn').disabled=true;$('#stopPythonBtn').onclick=stopPythonLab;$('#stopPythonBtn').disabled=true;$('#clearTerminalBtn').onclick=()=>$('#pythonTerminal').textContent='';$('#pythonNewFileBtn').onclick=newPythonFile;$('#pythonSaveFileBtn').onclick=()=>{pythonFiles[pythonActiveFile]=getPythonCode();savePythonProject();$('#pyStatus').textContent=`Saved ${pythonActiveFile}`};$('#pythonDeleteFileBtn').onclick=deletePythonFile;
  const quick=$('#pythonQuickHardware');if(quick)quick.onchange=()=>{const id=quick.value;if(!id)return;loadPythonExample(id);quick.value=''};
  ensureMonaco().then(()=>{setPythonCode(pythonFiles[pythonActiveFile]||PY_DEFAULT);renderPythonFiles()})
 }
@@ -1761,7 +1753,7 @@ function showAssembly3DError(e){
 }
 // V18.3 public bridge used by same-Wi-Fi Local Kit runtime.
 window.zebjusLabAPI={
- version:'18.3.29',
+ version:'18.3.30',
  getSimState:()=>{const x=state.sim;return{running:x.running,flightMode:x.flightMode,roll:x.roll,pitch:x.pitch,yaw:x.yaw,rollRate:x.rollRate,pitchRate:x.pitchRate,yawRate:x.yawRate,throttle:x.throttle,cmdRoll:x.cmdRoll,cmdPitch:x.cmdPitch,cmdYaw:x.cmdYaw,targetRoll:x.targetRoll,targetPitch:x.targetPitch,targetYawRate:x.targetYawRate,liftY:x.liftY,lastMix:[...(x.lastMix||[0,0,0,0])],batteryV:x.batteryV,payloadG:x.payloadG,cgX:x.cgX,cgY:x.cgY,wind:x.wind,motorLag:x.motorLag,levelTrimRoll:x.levelTrimRoll,levelTrimPitch:x.levelTrimPitch,rateHoldRoll:x.rateHoldRoll,rateHoldPitch:x.rateHoldPitch}},
  applyRemoteSimState:d=>{window.__zebjusRemoteSimState=d?{...d,lastMix:Array.isArray(d.lastMix)?[...d.lastMix]:[0,0,0,0]}:null},
  setRemoteFollower:on=>{window.__zebjusRemoteFollower=!!on;if(!on)window.__zebjusRemoteSimState=null},
@@ -1802,6 +1794,6 @@ async function boot(){
  if(threeOK){const suffix=assets.failed?` • ${assets.loaded}/${assets.total} GLB models + fallback`:` • ${assets.loaded}/${assets.total} component models`;setBootStatus('Local 3D engine ready'+suffix,'good');notify(assets.failed?'3D ready • some models use safe fallback.':'3D ready • all local component models loaded.','good')}
  else{setBootStatus('3D unavailable • 2D tools active');notify('3D renderer unavailable — 2D tools are still active.','bad')}
  window.__zebjusAppLoaded=true;updateStartupDiagnostics?.();
- window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.29',assets}}));
+ window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.30',assets}}));
 }
 boot().catch(e=>{console.error('[ZEBJUS] boot failed:',e);setBootStatus('Startup error • check console');window.__zebjusAppLoaded=true;updateStartupDiagnostics?.()});

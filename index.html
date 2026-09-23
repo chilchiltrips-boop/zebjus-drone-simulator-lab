@@ -4,16 +4,16 @@
 <head>
 <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content" name="viewport"/>
 <meta content="#07111b" name="theme-color"/>
-<title>ZEBJUS F450 Drone Engineering Lab V18.3.29</title>
-<link href="styles.css?v=18.3.29" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
+<title>ZEBJUS F450 Drone Engineering Lab V18.3.30</title>
+<link href="styles.css?v=18.3.30" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
 <link href="icon-192.png" rel="apple-touch-icon"/>
 <meta content="#07111b" name="theme-color"/>
 </head>
 <body>
 <div id="app">
 <header class="topbar">
-<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.29 • Same-Wi-Fi Auto Discovery • TX10 Safety • Local Kit Access • Python + Simulator</span></div></div>
-<div class="top-actions"><span class="adaptive-layout-badge" id="adaptiveLayoutBadge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" rel="noopener" target="_blank"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span class="top-kit-status offline" id="topKitStatus" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span><span class="status" id="assetStatus">Loading V18.3.29 local-kit module…</span><span class="status good" id="saveState">Ready</span><button class="btn ghost" disabled="" id="undoBtn">↶ Undo</button><button class="btn ghost" disabled="" id="redoBtn">↷ Redo</button><button class="btn ghost" id="saveBtn">Save</button><button class="btn danger ghost" id="resetBtn">Reset</button></div>
+<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.30 • Same-Wi-Fi Auto Discovery • TX10 Safety • Local Kit Access • Python + Simulator</span></div></div>
+<div class="top-actions"><span class="adaptive-layout-badge" id="adaptiveLayoutBadge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com" rel="noopener" target="_blank"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span class="top-kit-status offline" id="topKitStatus" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span><span class="status" id="assetStatus">Loading V18.3.30 local-kit module…</span><span class="status good" id="saveState">Ready</span><button class="btn ghost" disabled="" id="undoBtn">↶ Undo</button><button class="btn ghost" disabled="" id="redoBtn">↷ Redo</button><button class="btn ghost" id="saveBtn">Save</button><button class="btn danger ghost" id="resetBtn">Reset</button></div>
 </header>
 <nav class="tabs">
 <button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="joystick">JOYSTICK</button><button class="tab" data-tab="connect">KIT CONNECT</button><button class="tab" data-tab="firmware">FIRMWARE UPDATE</button><button class="tab" data-tab="cal">CALIBRATION</button><button class="tab" data-tab="pid">PID TUNING</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
@@ -260,7 +260,7 @@
 <div class="device-detail-grid">
 <div><span>Device ID</span><b id="selectedDeviceId">--</b></div><div><span>Access</span><b id="selectedDeviceSchool">Open</b></div>
 <div><span>Mode</span><b id="selectedDeviceMode">--</b></div><div><span>Wi-Fi</span><b id="selectedDeviceNetwork">--</b></div>
-<div><span>RSSI</span><b id="selectedDeviceRssi">--</b></div><div><span>Firmware</span><b id="selectedDeviceFirmware">--</b></div>
+<div><span>RSSI</span><b id="selectedDeviceRssi">--</b></div><div><span>Firmware</span><b id="selectedDeviceFirmware">--</b></div><div><span>Firmware built</span><b id="selectedDeviceFirmwareBuilt">--</b></div>
 <div><span>IP</span><b id="selectedDeviceIp">--</b></div><div><span>Control</span><b id="selectedDeviceLock">--</b></div><div><span>Last seen</span><b id="selectedDeviceLastSeen">--</b></div>
 </div>
 <p class="micro-note" id="selectedControlNote">Select a kit.</p>
@@ -302,7 +302,7 @@
 <div class="firmware-source-actions"><button class="btn primary" id="fwAutoLoadBtn">Auto Load Latest</button><label class="btn ghost firmware-file-label">Import .bin<input accept=".bin,application/octet-stream" id="fwFileInput" type="file"/></label><button class="btn ghost" id="fwForgetBtn">Forget Cached</button></div>
 <div class="firmware-drop-zone" id="fwDropZone"><b>Drop firmware .bin here</b><span>Application image: Wi-Fi OTA or USB @ 0x10000 • Factory/Merged image: USB @ 0x0</span></div>
 <div class="firmware-file-info">
-<div><span>FILE</span><b id="fwFileName">No firmware loaded</b></div><div><span>VERSION</span><b id="fwFileVersion">--</b></div><div><span>SIZE</span><b id="fwFileSize">--</b></div><div><span>SHA-256</span><b class="mono" id="fwFileHash">--</b></div>
+<div><span>FILE</span><b id="fwFileName">No firmware loaded</b></div><div><span>VERSION</span><b id="fwFileVersion">--</b></div><div><span>BUILD DATE / TIME</span><b id="fwBuildTime">--</b></div><div><span>SIZE</span><b id="fwFileSize">--</b></div><div><span>SHA-256</span><b class="mono" id="fwFileHash">--</b></div>
 </div>
 <div class="firmware-config-row"><label>Image type<select id="fwImageType"><option value="app">Application / OTA image</option><option value="factory">Factory / merged image</option></select></label><label>Board profile<select id="fwBoardProfile"><option value="auto">Auto detect / current default</option></select></label></div><div class="firmware-board-detect"><div><span>TARGET BOARD</span><b id="fwDetectedBoard">ZEBJUS FlightCore A1</b></div><div><span>DETECTION</span><b id="fwBoardSource">Default profile</b></div><div><span>LATEST PACKAGE</span><b id="fwPackageState">Checking…</b></div></div>
 <p class="micro-note" id="fwSourceMessage">Auto Load detects the online/USB board first. With no board connected it uses the current default FlightCore profile, then loads that profile’s bundled or browser-cached firmware.</p>
@@ -319,7 +319,7 @@
 <div class="panel-head"><div><small>STEP 3 • UPDATE MONITOR</small><h2>Flash, reboot &amp; reconnect</h2></div><span class="status" id="fwOverallBadge">READY</span></div>
 <div class="firmware-progress-wrap"><div class="firmware-progress-head"><b id="fwProgressTitle">Waiting for firmware</b><span id="fwProgressPct">0%</span></div><div class="firmware-progress"><i id="fwProgressBar"></i></div></div>
 <div class="firmware-stages"><div id="fwStagePrepare"><i></i><span>Prepare</span></div><div id="fwStageFlash"><i></i><span>Flash</span></div><div id="fwStageVerify"><i></i><span>Verify</span></div><div id="fwStageReboot"><i></i><span>Reboot</span></div><div id="fwStageReconnect"><i></i><span>Reconnect</span></div></div>
-<div class="firmware-live-status"><div><span>Current kit firmware</span><b id="fwCurrentVersion">--</b></div><div><span>Device ID</span><b id="fwDeviceId">--</b></div><div><span>Kit state</span><b id="fwKitState">OFFLINE</b></div><div><span>Board profile</span><b id="fwLiveBoard">--</b></div></div>
+<div class="firmware-live-status"><div><span>Current kit firmware</span><b id="fwCurrentVersion">--</b></div><div><span>Current FW built</span><b id="fwCurrentBuildTime">--</b></div><div><span>Device ID</span><b id="fwDeviceId">--</b></div><div><span>Kit state</span><b id="fwKitState">OFFLINE</b></div><div><span>Board profile</span><b id="fwLiveBoard">--</b></div></div>
 <div class="firmware-recovery-actions"><button class="btn ghost" id="fwRebootBtn">Reboot Online Kit</button><button class="btn ghost" id="fwReconnectBtn">Reconnect Kit</button><button class="btn ghost" id="fwDisconnectUsbBtn">Disconnect USB</button></div>
 <pre class="terminal firmware-log" id="fwLog">Firmware Center ready.</pre>
 </div>
@@ -337,7 +337,7 @@
 
 </aside>
 <div class="editor-card python-editor-card">
-<div class="section-toolbar"><div><b id="pythonEditorTitle">main.py</b><span>Type normal Python • hardware quick code is optional</span></div><div class="python-toolbar-actions"><select id="pythonTarget" title="Python execution target"><option value="sim">Python / Simulator</option><option value="real">Real ZEBJUS kit</option></select><select id="pythonQuickHardware" title="Load hardware starter code"><option value="">Hardware quick code…</option><option value="i2c">I²C Scanner</option><option value="imu">LSM6DS3 Sensor Live</option></select><button class="btn danger ghost small" id="stopPythonBtn">Stop</button><button class="btn primary small" id="runPythonBtn">Run ▶</button></div></div>
+<div class="section-toolbar"><div><b id="pythonEditorTitle">main.py</b><span>Type normal Python • hardware quick code is optional</span></div><div class="python-toolbar-actions"><select id="pythonTarget" title="Python execution target"><option value="sim">Python / Simulator</option><option value="real">Real ZEBJUS kit</option></select><select id="pythonQuickHardware" title="Load hardware starter code"><option value="">Hardware quick code…</option><option value="i2c">I²C Scanner</option><option value="imu">LSM6DS3 Sensor Live</option></select><button class="btn danger ghost small" id="stopPythonBtn">Stop ■</button><button class="btn primary small" id="runPythonBtn">Run ▶</button><button class="btn ghost small" id="rerunPythonBtn" title="Run the current file again">Rerun ↻</button></div></div>
 <div class="python-editor-shell"><div id="pythonMonaco" aria-label="Python smart code editor"></div><textarea id="pythonEditor" spellcheck="false" aria-label="Python editor fallback"></textarea></div>
 <div class="python-editor-footer"><span>Ctrl/⌘ + Space suggestions</span><span>Ctrl/⌘ + Enter run</span><span>input() opens a browser input prompt</span><span id="pythonI2cPins">I²C pins: from connected board</span></div>
 </div>
@@ -355,9 +355,9 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option selected="" value="balanced">Balanced</option><option value="low">Low-end laptop</option></select></label><button class="btn ghost full" id="applyPerformanceBtn">Apply graphics profile</button><pre class="terminal mini" id="startupDiagnostics">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.29"></script>
-<script src="kit-local.js?v=18.3.29"></script>
-<script src="app.js?v=18.3.29" type="module"></script>
-<script src="school-lab.js?v=18.3.29"></script>
-<script src="firmware-updater.js?v=18.3.29"></script>
+<script src="ui-runtime.js?v=18.3.30"></script>
+<script src="kit-local.js?v=18.3.30"></script>
+<script src="app.js?v=18.3.30" type="module"></script>
+<script src="school-lab.js?v=18.3.30"></script>
+<script src="firmware-updater.js?v=18.3.30"></script>
 </body></html>

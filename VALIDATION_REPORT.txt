@@ -1,79 +1,24 @@
-ZEBJUS F450 Drone Engineering Lab V18.3.29 - DEEP VALIDATION REPORT
-==================================================================
+ZEBJUS FlightCore / F450 Drone Lab validation report
+Release: 18.3.30
 
-RESULT: PASS (static/package/runtime-model checks)
+PASS
+- app.js parses as JavaScript module; school-lab.js / firmware-updater.js / kit-local.js / ui-runtime.js syntax checks pass
+- project validator passes: 15 GLB models, 15 thumbnails, JSON/catalog/local-reference checks
+- no orphan drone3d.js / wiring2d.js / learning-lab.js runtime copies
+- FILE_COUNT.txt matches the packaged source tree
+- stable firmware source: FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino
+- stable generated application binary name: FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
+- Arduino-ESP32 core: 3.3.12; Arduino CLI workflow pin: 1.5.1
+- firmware build script mock-compile verified version 18.3.30 + SHA-256 + ISO UTC builtAt metadata
+- firmware status/info APIs expose compiler date/time for the connected kit
+- Firmware Center contains package build time + current-kit firmware build time fields
+- magnetic assembly placement uses camera screen-space target projection rather than workbench-plane distance
+- propeller runtime uses bright two-blade geometry with automatic CW M1/M3 and CCW M2/M4 pitch
+- Python Lab contains Run + active-red Stop + Rerun controls and typed variable/function/class completion provider
+- 3D assembly lighting increased while keeping material color/tone mapping
+- global buttons retain ripple/press handling and receive consistent hover/focus/active visual feedback
+- duplicate HTML id audit: none
 
-1. PROJECT / FILE CONSISTENCY
-PASS - VERSION.txt = 18.3.29.
-PASS - package.json, firmware catalogs, firmware latest metadata, web UI, service worker, server and firmware source use V18.3.29.
-PASS - Root and FlightCore_Firmware catalogs are identical.
-PASS - Stable firmware source is FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino.
-PASS - Stable generated A1 name is ZEBJUS_FLIGHTCORE_A1_APP.bin.
-PASS - No stale versioned .ino or *_V*_APP.bin is present.
-PASS - Orphan legacy drone3d.js, wiring2d.js and learning-lab.js were removed; current logic is owned by app.js.
-PASS - Current replace-in-place release notes are RELEASE_NOTES.md; historical RELEASE_NOTES_V*.md files remain documentation only.
-PASS - 94 packaged files, zero zero-byte files.
-
-2. JAVASCRIPT / HTML / RUNTIME STRUCTURE
-PASS - app.js, glb-loader.js and three.module.min.js parse in true ES-module mode.
-PASS - school-lab.js, kit-local.js, ui-runtime.js, firmware-updater.js, service-worker.js and server.js parse successfully.
-PASS - app.js top-level evaluation (boot call removed only for audit and browser globals stubbed) completes without TDZ/ReferenceError.
-PASS - 345 HTML IDs are unique.
-PASS - Local HTML/CSS references resolve.
-PASS - No duplicate top-level function declarations in active app/school/kit/firmware-updater scripts.
-PASS - Local HTTP server health endpoint reports 18.3.29 and 36 critical runtime assets (JS/catalog + 15 GLBs + 15 thumbnails) return HTTP 200.
-NOTE - Full headless-Chromium page navigation is restricted in this execution environment; browser UI interaction was therefore not claimed as an automated pass. Module/runtime-model checks below run independently of that limitation.
-
-3. 3D COMPONENT MODELS / COLOUR
-PASS - All 15 active GLB files parse with the bundled local loader.
-PASS - Runtime model load produced 163 meshes and 24,314 position vertices.
-PASS - All packaged GLBs use loader-supported self-contained features (no required unsupported extensions, sparse/interleaved accessors or unsupported texture-backed materials).
-PASS - Bundled 8-bit vertex colours are converted from authored display sRGB to Three.js linear working colour space, preventing pale/washed-out rendering.
-PASS - Example red-arm vertex colour after conversion: linear 0.64448 / 0.04667 / 0.05613 (authored display red is preserved through sRGB output).
-PASS - Basic glTF material colour/roughness/metalness/alpha/emissive factors are preserved for future compatible model replacements.
-PASS - Scene tone-mapping exposure and engineering lights were reduced/balanced so strong lights do not wash component colours toward white.
-PASS - All 15 active component thumbnails exist and verify as valid PNGs.
-PASS - Component shelf uses lightweight thumbnails rather than large reference photos where thumbnails are available.
-PASS - thumb_matrix.png added for LED Matrix shelf preview.
-PASS - Service worker pre-caches all 15 active GLBs and all 15 active thumbnails.
-PASS - Model-based component placement is gated until local GLB preload completes; fast clicks cannot permanently install a procedural fallback before the real asset is ready.
-
-4. ASSEMBLY / MAGNETIC SNAP / MECHANICAL DATUMS
-PASS - Magnetic snap distance is X/Z horizontal distance only. Elevated targets no longer fail because the pointer ray hits the workbench at Y=0.
-PASS - Per-component magnetic radii were tightened to prevent a visibly misplaced cursor from snapping a component from too far away.
-PASS - F450 arm GLB local motor-pad datum (Z=3.20) is normalized to the assembly datum 2.715 from each arm root.
-PASS - Numerical M1-M4 arm motor-pad -> motor-center maximum X/Z error: 0.000290 model units.
-PASS - Motor-screw targets now follow each rotated/scaled arm hole pattern.
-PASS - Numerical arm-hole -> motor-screw-target maximum X/Z error: < 1e-12 model units in the audit calculation.
-PASS - Guard/motor/ESC/top/bottom/FC/prop/battery models retain their intended local origins; only the arm axis requiring mechanical correction is normalized.
-PASS - Successful real bottom-PDB GLB path receives the same visible XT60 socket/terminals as the procedural fallback, so battery plug animation no longer targets empty space.
-PASS - X-ray no longer overwrites material opacity/transparency/depthWrite every animation frame. Original material state is remembered/restored.
-PASS - Frame X-ray and FC-case X-ray use composable material fade factors.
-PASS - Saved project restore waits for GLB preload before recreating installed components.
-
-5. 2D / ASSEMBLY SYNC
-PASS - 2D render calls syncWiringActionsToAssembly().
-PASS - Motor phase, ESC power, ESC-FC and XT60 guided steps derive completion from actual 2D connections rather than preview-animation clicks.
-PASS - Optional 2D device add/remove remains synchronized with the 3D assembly state.
-
-6. LOCAL KIT / SCHOOL LAB / FIRMWARE API PARITY
-PASS - Local-kit client uses 18 literal /api endpoints; all 18 are implemented by FlightCore firmware.
-PASS - School-lab connection policy uses 5 consecutive failures before disconnect handling and 10,000 ms offline threshold.
-PASS - Firmware lock timeout remains 10,000 ms.
-PASS - school-lab parsed/ready diagnostics are present independently from app.js module diagnostics.
-
-7. FIRMWARE SOURCE / CI
-PASS - ImuSample is declared in ZEBJUS_FLIGHTCORE_TYPES.h before Arduino-generated prototypes can reference it.
-PASS - build_firmware.py copies .h/.hpp/.c/.cpp companions into the temporary Arduino sketch.
-PASS - Arduino-ESP32 core pinned to 3.3.12.
-PASS - GitHub Actions pins Arduino CLI 1.5.1 instead of wildcard 1.x (which had selected 1.5.2-rc.1 on the runner).
-PASS - actions/checkout updated to v5 (Node 24 runtime generation).
-PASS - Workflow triggers on .ino, companion header, catalog, version, builder and workflow changes.
-PASS - Build metadata publishes only stable replace-in-place binary/catalog paths.
-NOTE - No fabricated .bin is included. The GitHub runner must compile the current source; on success the workflow creates/overwrites ZEBJUS_FLIGHTCORE_A1_APP.bin and updates SHA256 metadata.
-
-8. VALIDATOR
-PASS - tools/validate_project.py checks JSON/version parity, JS syntax, local references, stable firmware names, GLB feature support, all model/thumbnail cache entries, assembly snap implementation, arm mechanical datums, colour-loader support, GLB preload gating, school-lab timeout policy and CI version pinning.
-
-FINAL STATUS
-PASS - Package is ready for repository-root drag/drop replacement and GitHub Actions rebuild.
+Packaging note
+- Source ZIP intentionally does not contain a fake/prebuilt firmware image.
+- GitHub Actions compiles the current stable .ino, stamps build time metadata, validates, refreshes FILE_COUNT.txt, and publishes the same-name application .bin.

@@ -21,6 +21,7 @@ function isViewOnly(){const d=selected();return !!(d&&d.online&&!d.lockMine)}
 function canControl(){return !!(client?.connected&&ownsLock())}
 function log(t){const e=$('#schoolLog');if(e)e.textContent=`${new Date().toLocaleTimeString()} ${t}\n${e.textContent}`.slice(0,9000)}
 function signalText(rssi){rssi=+rssi;if(!Number.isFinite(rssi))return 'Unknown';if(rssi>=-55)return 'Excellent';if(rssi>=-67)return 'Good';if(rssi>=-75)return 'Weak';return 'Very weak'}
+function fmtBuildTime(v){if(!v)return'--';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleString([], {year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'})}
 function setText(id,v){const e=$('#'+id);if(e)e.textContent=v}
 function savePrefs(){try{localStorage.setItem('zebjusV183KitQuery',st.query||'');localStorage.setItem('zebjusV183Demo',st.demoMode?'1':'0');localStorage.setItem('zebjusV183WatchdogMs',String(st.watchdogMs));localStorage.setItem('zebjusV183WatchdogWarn',st.watchdogWarnArmed?'1':'0');if(st.selectedDeviceId)localStorage.setItem('zebjusV183LastKit',st.selectedDeviceId)}catch{}}
 function loadPrefs(){
@@ -105,7 +106,7 @@ function renderModules(){
  $$('.module-card').forEach(b=>b.onclick=()=>selectDevice(b.dataset.device));
 }
 function renderSelected(){
- const d=selected();setText('selectedDeviceName',d?.deviceName||'No kit selected');setText('selectedDeviceId',d?.deviceId||'--');setText('selectedDeviceSchool','Open access');setText('selectedDeviceMode',d?.mode||'--');setText('selectedDeviceNetwork',d?.ssid||'--');setText('selectedDeviceRssi',Number.isFinite(+d?.rssi)?`${d.rssi} dBm • ${signalText(d.rssi)}`:'--');setText('selectedDeviceFirmware',d?.firmware||d?.version||'--');setText('selectedDeviceLastSeen',d?.lastSeenText||'--');setText('selectedDeviceLock',!d?'--':d.lockMine?'YOU CONTROL':d.locked?'VIEW ONLY • IN USE':'AVAILABLE');
+ const d=selected();setText('selectedDeviceName',d?.deviceName||'No kit selected');setText('selectedDeviceId',d?.deviceId||'--');setText('selectedDeviceSchool','Open access');setText('selectedDeviceMode',d?.mode||'--');setText('selectedDeviceNetwork',d?.ssid||'--');setText('selectedDeviceRssi',Number.isFinite(+d?.rssi)?`${d.rssi} dBm • ${signalText(d.rssi)}`:'--');setText('selectedDeviceFirmware',d?.firmware||d?.version||'--');setText('selectedDeviceFirmwareBuilt',fmtBuildTime(d?.firmwareBuiltAt));setText('selectedDeviceLastSeen',d?.lastSeenText||'--');setText('selectedDeviceLock',!d?'--':d.lockMine?'YOU CONTROL':d.locked?'VIEW ONLY • IN USE':'AVAILABLE');
  setText('selectedDeviceIp',d?.ip||'--');setText('apModeIndicator',d?(String(d.mode||'').toUpperCase().includes('AP')?'ACTIVE':'OFF'):'--');setText('staModeIndicator',d?(String(d.mode||'').toUpperCase().includes('STA')?'ACTIVE':'OFF'):'--');setText('pythonI2cPins',d?.online&&Number.isFinite(+d.i2cSda)&&Number.isFinite(+d.i2cScl)?`I²C: SDA GPIO${d.i2cSda} • SCL GPIO${d.i2cScl}`:'I²C pins: from connected board');
  const online=$('#selectedDeviceOnline');if(online){online.textContent=d?.online?'Online':'Offline';online.className='status '+(d?.online?'good':'')}
  const rename=$('#deviceRenameInput');if(rename&&d&&!rename.matches(':focus'))rename.value=d.deviceName||'';
@@ -137,7 +138,7 @@ async function i2cScan(){
  const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');
  log(`I2C scan requested • SDA GPIO${d.i2cSda??4} / SCL GPIO${d.i2cScl??5}`);
  try{const r=await client.i2cScan();log(`I2C scan complete • ${Number(r?.count||0)} device(s) • ${Number(r?.durationMs||0)} ms`);return r}
- catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.27 first.');throw e}
+ catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.30 first.');throw e}
 }
 async function imuRead(){
  const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');

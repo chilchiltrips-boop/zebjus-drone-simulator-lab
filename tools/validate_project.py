@@ -146,9 +146,9 @@ for rel in thumbs:
 
 # Assembly-runtime regressions: model readiness, magnetic snapping, colour handling and mechanical datums.
 if app.find('const ARM_GLTF_Z_SCALE=2.715/3.20')>app.find('const slots='): fail('ARM_GLTF_Z_SCALE is declared after slot generation (runtime TDZ risk)')
-if 'Math.hypot(s.p[0]-p.x,s.p[2]-p.z)' not in app: fail('magnetic snap distance is not horizontal X/Z distance')
-nearest_match=re.search(r'function nearestFreeSlot[\s\S]*?\n}',app)
-if nearest_match and 'distanceTo(p)' in nearest_match.group(0): fail('nearestFreeSlot still uses 3D distance')
+if 'function nearestFreeSlotScreen' not in app or '.project(camera)' not in app: fail('magnetic snap is not using view-angle-independent screen-space target projection')
+nearest_match=re.search(r'function nearestFreeSlotScreen[\s\S]*?\n}',app)
+if nearest_match and ('distanceTo(p)' in nearest_match.group(0) or 'hitBench(' in nearest_match.group(0)): fail('screen-space magnetic snap still depends on 3D/bench-plane distance')
 if "'f450_arm_red.glb':{scale:[1,1,ARM_GLTF_Z_SCALE]}" not in app or "'f450_arm_white.glb':{scale:[1,1,ARM_GLTF_Z_SCALE]}" not in app: fail('F450 arm GLB mechanical-datum normalization missing')
 if "c.asset&&!assetsReady" not in app: fail('component placement is not gated until local GLB preload completes')
 if 'PDB_XT60_SOCKET' not in app: fail('real PDB asset path lacks visible XT60 socket decoration')
@@ -187,6 +187,11 @@ if 'ZEBJUS_FLIGHTCORE_A1_APP.bin' not in workflow or '_V18_' in workflow: fail('
 if 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h' not in workflow: fail('workflow does not rebuild when firmware companion header changes')
 if "version: '1.5.1'" not in workflow: fail('workflow does not pin stable Arduino CLI 1.5.1')
 if 'actions/checkout@v5' not in workflow: fail('workflow checkout action is not on Node-24-compatible v5')
+if 'FW_BUILD_DATE=__DATE__' not in ino or 'FW_BUILD_TIME=__TIME__' not in ino or 'firmwareBuiltAt' not in ino: fail('firmware compile date/time is not exposed by status/info APIs')
+if 'built_at=datetime.now(timezone.utc)' not in build or "'builtAt':built_at" not in build: fail('firmware build script does not stamp ISO build date/time metadata')
+if '#fwBuildTime' not in read('firmware-updater.js') or 'fwCurrentBuildTime' not in read('firmware-updater.js'): fail('Firmware Center build date/time rendering is missing')
+if "type==='guard'||type==='prop'" not in app or 'const bladeMat=mat(0xdbe5eb' not in app or '[0,Math.PI].forEach' not in app: fail('high-visibility two-blade procedural CW/CCW propeller runtime is missing')
+if 'rerunPythonBtn' not in app or 'python-stop-live' not in app or 'Variable from your code' not in app: fail('Python Run/Stop/Rerun or typed-variable completion polish is missing')
 
 if warnings:
     for x in warnings: print('WARN:',x)

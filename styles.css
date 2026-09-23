@@ -851,7 +851,7 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed!important;filter:satur
 @media (max-width:1180px){.wiring-card .section-toolbar .toolbar-row{align-self:stretch;justify-content:flex-start}}
 
 
-/* ==================== V18.3.29 PYTHON LAB CLEAN WORKSPACE ==================== */
+/* ==================== V18.3.30 PYTHON LAB CLEAN WORKSPACE ==================== */
 .python-ide-layout{grid-template-columns:210px minmax(520px,1fr) minmax(360px,.68fr)!important;align-items:stretch}
 .python-project-card{min-height:calc(100vh - 154px);padding:12px!important}
 .python-project-card .examples-head,.python-project-card .python-example-list,.python-project-card .python-learning-note{display:none!important}
@@ -867,3 +867,21 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed!important;filter:satur
 #runPythonBtn:disabled,#stopPythonBtn:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:1120px){.python-ide-layout{grid-template-columns:190px minmax(0,1fr)!important}.python-terminal-card{grid-column:1/-1!important;min-height:340px!important}.python-ide-layout .python-terminal-card .terminal{min-height:300px!important}.python-project-card{min-height:auto!important}}
 @media(max-width:760px){.python-ide-layout{grid-template-columns:1fr!important}.python-project-card,.python-terminal-card{grid-column:auto!important}.python-toolbar-actions{justify-content:flex-start}.python-toolbar-actions select{max-width:none;flex:1 1 160px}}
+
+
+/* ==================== V18.3.30 visual / interaction polish ==================== */
+.center-stage,.wiring-card,.wiring-side,.sim-card,.sim-controls,.chart-card,.form-card,.editor-card,.terminal-card{background:linear-gradient(180deg,#0d2030,#091923)}
+.three-wrap{background:#0d202b}.three-wrap:before{background:radial-gradient(ellipse at 50% 44%,rgba(99,145,164,.22),rgba(24,51,65,.10) 48%,transparent 76%)}
+button,.btn,.tab,.mode,.view-btn{position:relative;transform:translateZ(0);transition:transform .11s ease,box-shadow .16s ease,border-color .16s ease,background-color .16s ease,filter .16s ease}
+button:not(:disabled):hover,.btn:not(:disabled):hover,.tab:not(:disabled):hover,.mode:not(:disabled):hover,.view-btn:not(:disabled):hover{filter:brightness(1.09);box-shadow:0 7px 18px rgba(0,0,0,.20),inset 0 0 0 1px rgba(255,255,255,.035)}
+button:not(:disabled):active,.btn:not(:disabled):active,.tab:not(:disabled):active,.mode:not(:disabled):active,.view-btn:not(:disabled):active{transform:translateY(1px) scale(.975);filter:brightness(.96);box-shadow:0 2px 7px rgba(0,0,0,.28),inset 0 2px 5px rgba(0,0,0,.20)}
+button:focus-visible,.btn:focus-visible,.tab:focus-visible,.mode:focus-visible,.view-btn:focus-visible{outline:2px solid rgba(83,239,189,.86);outline-offset:2px}
+button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important}
+.python-toolbar-actions{row-gap:11px!important;padding-block:4px}
+#runPythonBtn,#rerunPythonBtn,#stopPythonBtn{min-height:38px;padding-inline:12px}
+#stopPythonBtn.python-stop-live:not(:disabled){background:linear-gradient(135deg,#d63e52,#8e2031)!important;border-color:#ff6d7e!important;color:#fff!important;box-shadow:0 0 0 1px rgba(255,104,125,.28) inset,0 7px 20px rgba(214,62,82,.20)!important}
+#rerunPythonBtn:not(:disabled){border-color:#3d6c87;color:#c9ecff}
+.firmware-file-info{grid-template-columns:1.2fr .62fr 1fr .62fr 1.25fr!important}
+.firmware-live-status{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+@media(max-width:1180px){.firmware-file-info{grid-template-columns:1fr 1fr!important}.firmware-live-status{grid-template-columns:1fr 1fr!important}}
+@media(max-width:620px){.firmware-file-info,.firmware-live-status{grid-template-columns:1fr!important}}

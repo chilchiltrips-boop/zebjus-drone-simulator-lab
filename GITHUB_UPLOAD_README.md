@@ -1,4 +1,4 @@
-# GitHub upload — V18.3.27
+# GitHub upload — V18.3.30
 
 Upload the **contents** of this folder to the repository root. Keep `index.html`, `.github`, `FlightCore_Firmware`, `tools` and all web assets at their current relative paths.
 

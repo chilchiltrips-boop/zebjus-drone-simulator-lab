@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse, hashlib, json, re, shutil, subprocess, tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -42,10 +43,11 @@ def sync_catalog_version(catalog,version):
     return catalog
 
 
-def write_metadata(catalog,version):
+def write_metadata(catalog,version,built_at):
+    catalog['builtAt']=built_at
     data=json.dumps(catalog,indent=2)+'\n'
     CAT.write_text(data); (ROOT/'firmware-catalog.json').write_text(data)
-    sub={'schema':2,'product':'ZEBJUS_FLIGHTCORE','version':version,'catalog':'catalog.json','note':'Board-aware firmware catalog. Build automation marks each verified package available after compilation.'}
+    sub={'schema':2,'product':'ZEBJUS_FLIGHTCORE','version':version,'builtAt':built_at,'catalog':'catalog.json','note':'Board-aware firmware catalog. Build automation marks each verified package available after compilation.'}
     top={**sub,'catalog':'firmware-catalog.json'}
     (OUT/'latest.json').write_text(json.dumps(sub,indent=2)+'\n')
     (ROOT/'firmware-latest.json').write_text(json.dumps(top,indent=2)+'\n')
@@ -59,6 +61,7 @@ def main():
     if not SRC.exists(): raise SystemExit(f'Missing source: {SRC}')
     if not CAT.exists(): raise SystemExit(f'Missing catalog: {CAT}')
     version=source_version()
+    built_at=datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace('+00:00','Z')
     catalog=sync_catalog_version(json.loads(CAT.read_text()),version)
     ids=[b['id'] for b in catalog.get('boards',[]) if b.get('build',{}).get('builder')=='arduino-cli']
     if args.board!='all' and args.board not in ids: raise SystemExit(f'Unknown/non-buildable board profile: {args.board}. Available: {", ".join(ids)}')
@@ -77,9 +80,9 @@ def main():
             build=td/'build'; build.mkdir()
             run([cli,'compile','--fqbn',cfg['fqbn'],'--output-dir',str(build),str(sketch)])
             srcbin=find_app_bin(build); dst=OUT/filename; shutil.copy2(srcbin,dst); digest=sha(dst)
-            pkg.update({'available':True,'sha256':digest})
+            pkg.update({'available':True,'sha256':digest,'builtAt':built_at}); b['latest']['builtAt']=built_at
             print(f'{b["name"]}: {dst.name} {dst.stat().st_size} bytes SHA256 {digest}')
-    write_metadata(catalog,version)
+    write_metadata(catalog,version,built_at)
     print(f'Updated firmware metadata for {version}; Arduino-ESP32 core {CORE_VERSION}')
 
 
