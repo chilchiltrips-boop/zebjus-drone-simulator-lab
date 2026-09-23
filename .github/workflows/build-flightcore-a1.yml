@@ -22,6 +22,8 @@ jobs:
 
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v2
+        with:
+          version: 1.5.1
 
       - name: Compile ESP32-C3 application binary
         run: python3 tools/build_firmware.py --board ZFC-A1
