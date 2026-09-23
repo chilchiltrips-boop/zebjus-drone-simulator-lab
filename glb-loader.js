@@ -40,12 +40,27 @@ function accessorData(gltf,bin,index){
  if(start+count*bytes>bin.byteLength)throw new Error(`Accessor ${index} exceeds BIN chunk`);
  return{array:new Ctor(bin,start,count),itemSize:size,normalized:!!a.normalized,componentType:a.componentType};
 }
+function srgbToLinear(v){v=Math.max(0,Math.min(1,v));return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)}
 function colorAttribute(data){
  const src=data.array,n=data.itemSize,count=src.length/n,out=new Float32Array(count*3),max=data.normalized?(NORMAL_MAX[data.componentType]||1):1;
- for(let i=0;i<count;i++){out[i*3]=src[i*n]/max;out[i*3+1]=src[i*n+1]/max;out[i*3+2]=src[i*n+2]/max}
+ // ZEBJUS component GLBs store their authored 8-bit display colours in COLOR_0.
+ // Three.js expects vertex colours in the linear working colour space, so convert
+ // sRGB -> linear here. Without this conversion the assembled parts look pale/faded.
+ for(let i=0;i<count;i++){out[i*3]=srgbToLinear(src[i*n]/max);out[i*3+1]=srgbToLinear(src[i*n+1]/max);out[i*3+2]=srgbToLinear(src[i*n+2]/max)}
  return new THREE.BufferAttribute(out,3,false);
 }
 function standardAttribute(data){return new THREE.BufferAttribute(data.array,data.itemSize,data.normalized)}
+function buildMaterial(gltf,index,hasVertexColors){
+ const def=index==null?null:gltf.materials?.[index],pbr=def?.pbrMetallicRoughness||{},base=pbr.baseColorFactor||[1,1,1,1],em=def?.emissiveFactor||[0,0,0];
+ const mat=new THREE.MeshStandardMaterial({
+  color:new THREE.Color().setRGB(base[0]??1,base[1]??1,base[2]??1,THREE.LinearSRGBColorSpace),
+  vertexColors:!!hasVertexColors,metalness:pbr.metallicFactor??.08,roughness:pbr.roughnessFactor??.58,
+  opacity:base[3]??1,transparent:(def?.alphaMode==='BLEND')||((base[3]??1)<1),
+  alphaTest:def?.alphaMode==='MASK'?(def.alphaCutoff??.5):0,side:def?.doubleSided?THREE.DoubleSide:THREE.FrontSide
+ });
+ mat.emissive.setRGB(em[0]??0,em[1]??0,em[2]??0,THREE.LinearSRGBColorSpace);
+ return mat;
+}
 function buildPrimitive(gltf,bin,p){
  if((p.mode??4)!==4)throw new Error(`Only TRIANGLES mode is supported (got ${p.mode})`);
  const geo=new THREE.BufferGeometry(),attrs=p.attributes||{};
@@ -57,8 +72,7 @@ function buildPrimitive(gltf,bin,p){
  if(p.indices!=null)geo.setIndex(standardAttribute(accessorData(gltf,bin,p.indices)));
  if(!geo.getAttribute('normal'))geo.computeVertexNormals();
  geo.computeBoundingBox();geo.computeBoundingSphere();
- const mat=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:!!geo.getAttribute('color'),roughness:.58,metalness:.08});
- return new THREE.Mesh(geo,mat);
+ return new THREE.Mesh(geo,buildMaterial(gltf,p.material,!!geo.getAttribute('color')));
 }
 function applyNodeTransform(obj,n){
  if(Array.isArray(n.matrix)&&n.matrix.length===16){obj.applyMatrix4(new THREE.Matrix4().fromArray(n.matrix));return}

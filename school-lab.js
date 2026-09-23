@@ -7,8 +7,8 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const DEFAULT_CH=[1500,1500,1000,1500,1000,1000,1000,1000,1500,1000];
-const FAILURE_LIMIT=3;
-const HEALTH_INTERVAL_MS=2000, OFFLINE_AFTER_MS=8000, RECONNECT_INTERVAL_MS=2500, STREAM_OK_MS=900, STREAM_DELAY_MS=2200, SENSOR_STALE_MS=2200;
+const FAILURE_LIMIT=5;
+const HEALTH_INTERVAL_MS=2000, OFFLINE_AFTER_MS=10000, RECONNECT_INTERVAL_MS=2500, STREAM_OK_MS=900, STREAM_DELAY_MS=2200, SENSOR_STALE_MS=2200;
 
 const client=window.ZebjusDroneKit?new window.ZebjusDroneKit.LocalKitClient():null;
 const st={devices:[],selectedDeviceId:'',query:'',preferredDeviceId:'',preferredDeviceName:'',autoAcquire:false,demoMode:false,joy:[...DEFAULT_CH],joySeq:0,lastJoySent:0,booted:false,lastDiscoverAt:0,lastHealthAt:0,lastTelemetryAt:0,lastTelemetryGoodAt:0,lastLockBeat:0,failures:0,reconnectBusy:false,healthBusy:false,telemetryBusy:false,lastReconnectAt:0,lastError:'',remoteBenchRc:false,txOn:false,joyKeys:new Set(),joyPointerActive:0,lastJoyInputAt:Date.now(),watchdogMs:1500,watchdogWarnArmed:true,watchdogLatched:false,lastCommandSentAt:0,lastCommandAckAt:0,lastCommandErrorAt:0,receiverLastAt:0,receiverChannels:null,receiverHealth:'NOT_FOUND',sensorHealth:{imu:'NOT_FOUND',barometer:'NOT_FOUND',lidar:'NOT_FOUND',receiver:'NOT_FOUND'},manualDisconnect:false};

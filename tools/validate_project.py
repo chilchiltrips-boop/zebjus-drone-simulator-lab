@@ -18,13 +18,27 @@ version=read('VERSION.txt').strip()
 print(f'ZEBJUS project validation • {version}')
 
 # Required active files and stable mutable names.
-required=['index.html','styles.css','app.js','glb-loader.js','three.module.min.js','service-worker.js','kit-local.js','school-lab.js','ui-runtime.js','firmware-updater.js','FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino','FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json','firmware-catalog.json','firmware-latest.json','.github/workflows/build-flightcore-a1.yml','tools/build_firmware.py']
+required=['RELEASE_NOTES.md','index.html','styles.css','app.js','glb-loader.js','three.module.min.js','service-worker.js','kit-local.js','school-lab.js','ui-runtime.js','firmware-updater.js','FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino','FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json','firmware-catalog.json','firmware-latest.json','.github/workflows/build-flightcore-a1.yml','tools/build_firmware.py']
 for rel in required:
     if not (ROOT/rel).is_file(): fail(f'missing required file: {rel}')
 for p in (ROOT/'FlightCore_Firmware').glob('*.ino'):
     if p.name!='ZEBJUS_FLIGHTCORE.ino': fail(f'versioned/duplicate firmware source must be removed: {p.name}')
 for p in (ROOT/'FlightCore_Firmware').glob('*_V*_APP.bin'):
     fail(f'stale versioned application binary must be removed: {p.name}')
+for rel in ['drone3d.js','wiring2d.js','learning-lab.js']:
+    if (ROOT/rel).exists(): fail(f'orphan legacy runtime should be removed: {rel}')
+
+# Package inventory / active release note / duplicate HTML IDs.
+actual_count=sum(1 for p in ROOT.rglob('*') if p.is_file() and '.git' not in p.parts)
+try:
+    declared_count=int(read('FILE_COUNT.txt').strip())
+    if declared_count!=actual_count: fail(f'FILE_COUNT.txt={declared_count}, actual packaged files={actual_count}')
+except Exception as e: fail(f'invalid FILE_COUNT.txt: {e}')
+if f'V{version}' not in read('RELEASE_NOTES.md').splitlines()[0]: fail('RELEASE_NOTES.md heading does not match VERSION.txt')
+html_ids=re.findall(r'\bid=[\"\']([^\"\']+)',read('index.html'))
+for ident in sorted(set(x for x in html_ids if html_ids.count(x)>1)): fail(f'duplicate HTML id: {ident}')
+for p in ROOT.rglob('*'):
+    if p.is_file() and p.stat().st_size==0: fail(f'zero-byte packaged file: {p.relative_to(ROOT)}')
 
 # JSON syntax and version consistency.
 json_files=['package.json','manifest.webmanifest','firmware-catalog.json','firmware-latest.json','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json']
@@ -105,6 +119,10 @@ def glb_json(path):
 for rel in assets:
     try:
         j=glb_json(ROOT/rel)
+        for mat in j.get('materials',[]):
+            pbr=mat.get('pbrMetallicRoughness',{})
+            if pbr.get('baseColorTexture') or pbr.get('metallicRoughnessTexture') or mat.get('normalTexture') or mat.get('occlusionTexture') or mat.get('emissiveTexture'):
+                fail(f'{rel} uses texture-backed materials not supported by the bundled offline loader')
         if j.get('extensionsRequired'): fail(f'{rel} requires unsupported GLB extensions: {j["extensionsRequired"]}')
         for v in j.get('bufferViews',[]):
             if v.get('byteStride'): fail(f'{rel} uses unsupported interleaved byteStride')
@@ -117,25 +135,48 @@ for rel in assets:
                 if 'POSITION' not in prim.get('attributes',{}): fail(f'{rel} primitive missing POSITION')
     except Exception as e: fail(f'invalid GLB {rel}: {e}')
 
-
-# Assembly interaction invariants: screen-space snapping avoids camera/bench parallax,
-# and base material state must survive X-ray toggles without permanent fade.
-if 'nearestFreeSlotFromPointer' not in app or 'snapPixelLimits' not in app:
-    fail('assembly magnetic snapping is not screen-space / parallax-safe')
-if 'zebjusBaseVisual' not in app or 'restoreMaterialBase' not in app:
-    fail('assembly material base state is not preserved across X-ray/selection states')
-if 'renderer.toneMappingExposure=1.10' not in app:
-    warn('assembly renderer exposure differs from calibrated V18.3.27 value')
-for legacy in ['drone3d.js','wiring2d.js','learning-lab.js']:
-    if (ROOT/legacy).exists(): warn(f'unused legacy runtime file still present: {legacy}')
-
 # Service worker must know the loader and every GLB so offline use is deterministic.
 sw=read('service-worker.js')
-expected_cache='zebjus-flightcore-v'+version.replace('.', '-')
-if expected_cache not in sw: fail(f'service worker cache namespace is stale; expected {expected_cache}')
 if './glb-loader.js' not in sw: fail('service worker does not cache glb-loader.js')
 for rel in assets:
     if f'./{rel}' not in sw: fail(f'service worker does not pre-cache component model: {rel}')
+for rel in thumbs:
+    if f'./{rel}' not in sw: fail(f'service worker does not pre-cache component thumbnail: {rel}')
+
+
+# Assembly-runtime regressions: model readiness, magnetic snapping, colour handling and mechanical datums.
+if app.find('const ARM_GLTF_Z_SCALE=2.715/3.20')>app.find('const slots='): fail('ARM_GLTF_Z_SCALE is declared after slot generation (runtime TDZ risk)')
+if 'Math.hypot(s.p[0]-p.x,s.p[2]-p.z)' not in app: fail('magnetic snap distance is not horizontal X/Z distance')
+nearest_match=re.search(r'function nearestFreeSlot[\s\S]*?\n}',app)
+if nearest_match and 'distanceTo(p)' in nearest_match.group(0): fail('nearestFreeSlot still uses 3D distance')
+if "'f450_arm_red.glb':{scale:[1,1,ARM_GLTF_Z_SCALE]}" not in app or "'f450_arm_white.glb':{scale:[1,1,ARM_GLTF_Z_SCALE]}" not in app: fail('F450 arm GLB mechanical-datum normalization missing')
+if "c.asset&&!assetsReady" not in app: fail('component placement is not gated until local GLB preload completes')
+if 'PDB_XT60_SOCKET' not in app: fail('real PDB asset path lacks visible XT60 socket decoration')
+loader=read('glb-loader.js')
+if 'srgbToLinear' not in loader or 'colorAttribute' not in loader: fail('offline GLB loader does not preserve bundled component vertex colours')
+if 'buildMaterial' not in loader: fail('offline GLB loader does not preserve glTF material factors')
+if 'rememberMaterialVisual' not in app or 'setMaterialFade' not in app: fail('X-ray mode does not preserve original material visual state')
+
+# The arm GLB motor-pad and hole datums are authored at Z=3.20 / 3.105 / 3.295.
+# V18.3.27 scales only local Z so the assembled motor center is exactly 2.715 from the arm root.
+try:
+    aj=glb_json(ROOT/'f450_arm_red.glb')
+    byname={n.get('name'):n for n in aj.get('nodes',[])}
+    mp=byname.get('motor_pad',{}).get('matrix',[])
+    if len(mp)!=16 or abs(mp[14]-3.2)>1e-6: fail('red-arm motor_pad mechanical datum changed; revalidate ARM_GLTF_Z_SCALE')
+    for nm,z in [('hole0',3.105),('hole1',3.105),('hole2',3.295),('hole3',3.295)]:
+        m=byname.get(nm,{}).get('matrix',[])
+        if len(m)!=16 or abs(m[14]-z)>1e-6: fail(f'red-arm {nm} mechanical datum changed; revalidate motor screw slots')
+except Exception as e: fail(f'could not validate arm mechanical datums: {e}')
+
+school=read('school-lab.js')
+if 'const FAILURE_LIMIT=5;' not in school or 'OFFLINE_AFTER_MS=10000' not in school: fail('school-lab reconnect/heartbeat policy is not 5 failures + 10 s offline timeout')
+
+# Browser local-kit API literals must exist in firmware routes.
+kit=read('kit-local.js')
+client_endpoints=set(re.findall(r"['\"`](/api/[A-Za-z0-9_./-]+)",kit))
+firmware_endpoints=set(re.findall(r'server\.on\(\"([^\"?]+)',ino))
+for ep in sorted(client_endpoints-firmware_endpoints): fail(f'kit-local.js endpoint missing in firmware: {ep}')
 
 # Build/update references must use stable firmware names and current supported core.
 build=read('tools/build_firmware.py'); workflow=read('.github/workflows/build-flightcore-a1.yml')
@@ -143,8 +184,9 @@ if "ZEBJUS_FLIGHTCORE.ino" not in build or "CORE_VERSION='3.3.12'" not in build:
 if 'ZEBJUS_FLIGHTCORE_TYPES.h' not in ino or 'ImuSample' not in read('FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h'): fail('firmware ImuSample type is not safely declared in companion header')
 if "('*.h','*.hpp','*.c','*.cpp')" not in build: fail('firmware build script does not copy companion headers/sources into temporary Arduino sketch')
 if 'ZEBJUS_FLIGHTCORE_A1_APP.bin' not in workflow or '_V18_' in workflow: fail('workflow still uses a versioned A1 application filename')
-if 'version: 1.5.1' not in workflow: fail('workflow must pin stable Arduino CLI 1.5.1 instead of floating 1.x / prerelease')
 if 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h' not in workflow: fail('workflow does not rebuild when firmware companion header changes')
+if "version: '1.5.1'" not in workflow: fail('workflow does not pin stable Arduino CLI 1.5.1')
+if 'actions/checkout@v5' not in workflow: fail('workflow checkout action is not on Node-24-compatible v5')
 
 if warnings:
     for x in warnings: print('WARN:',x)

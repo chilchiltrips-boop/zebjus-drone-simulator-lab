@@ -1,14 +1,9 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.27
+# ZEBJUS F450 Drone Engineering Lab V18.3.29
 
 Browser-based F450 assembly, 2D wiring, Python learning, simulator, local-kit control and firmware update environment for ZEBJUS FlightCore.
 
-## V18.3.27 corrective reliability update
+## V18.3.29 corrective reliability update
 
-- Fixed assembly magnetic snapping to use screen-space target distance instead of ray-to-bench distance, removing perspective/parallax target drift for elevated parts.
-- Rebalanced assembly lighting/exposure and preserved base material transparency/opacity so installed components no longer look washed-out after view-mode changes.
-- Bumped the service-worker cache namespace to V18.3.27 so browsers replace cached V18.3.26 runtime files.
-- Removed unused legacy `drone3d.js`, `wiring2d.js` and `learning-lab.js` copies; the active integrated runtime is `app.js`.
-- Pinned GitHub Actions to stable Arduino CLI **1.5.1** instead of floating `1.x`, which had selected the 1.5.2-rc.1 prerelease.
 - Fixed the `app.js` ES-module parse regression in the Python bridge object (missing closing brace), which caused the V18 startup guard to report `app.js failed to load/parse`.
 - Verified `school-lab.js` separately and added independent parsed/ready markers so startup diagnostics no longer mix app-module and school-lab failures.
 - Fixed the ESP32-C3 GitHub Actions compile error around `ImuSample` by moving that type into a companion header included before Arduino auto-generated prototypes.
@@ -67,6 +62,6 @@ npm run check
 
 If `catalog.json` says an application image is unavailable, Firmware Center will not pretend an old binary is current. After GitHub Actions builds the new stable binary, the catalog becomes available with its SHA-256 and the updater can auto-load it. Browser-imported `.bin` files remain supported.
 
-The V18.3.27 firmware is still the local bridge / educational firmware represented by the source in this repository; it is not a claim that the final complete Angle/Rate flight-control core is present. Keep propellers removed during firmware, I²C and sensor bench work.
+The V18.3.29 firmware is still the local bridge / educational firmware represented by the source in this repository; it is not a claim that the final complete Angle/Rate flight-control core is present. Keep propellers removed during firmware, I²C and sensor bench work.
 
-See `FILE_REPLACEMENT_POLICY.md` for the future drag/drop replacement rules and `RELEASE_NOTES_V18_3_27.md` for this release.
+See `FILE_REPLACEMENT_POLICY.md` for future drag/drop replacement rules, `RELEASE_NOTES.md` for the replace-in-place current notes, and `RELEASE_NOTES_V18_3_27.md` for this historical release snapshot.

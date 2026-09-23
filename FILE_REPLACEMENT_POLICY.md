@@ -13,6 +13,7 @@ Keep these names stable between releases so GitHub drag/drop/push updates the ex
 - `school-lab.js`
 - `ui-runtime.js`
 - `firmware-updater.js`
+- `RELEASE_NOTES.md`
 - `three.module.min.js`
 - `firmware-catalog.json`
 - `firmware-latest.json`

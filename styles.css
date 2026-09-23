@@ -838,3 +838,32 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed!important;filter:satur
 .python-editor-error-line{background:#65273255!important}.python-editor-error-glyph{background:#ff6574;border-radius:50%;width:7px!important;height:7px!important;margin-left:5px;margin-top:7px}
 @media(max-width:1350px){.python-ide-layout{grid-template-columns:210px minmax(0,1fr)}.python-terminal-card{grid-column:1/-1;min-height:auto!important}.python-ide-layout .python-terminal-card .terminal{min-height:330px}.python-example-list{max-height:420px}}
 @media(max-width:800px){.python-ide-layout{grid-template-columns:1fr}.python-project-card{min-height:auto}.python-file-list{max-height:180px}.python-example-list{max-height:280px}.guided-wiring-actions{grid-template-columns:1fr}}
+
+
+/* ==================== V18.3.28 wiring / assembly polish ==================== */
+.wiring-card .section-toolbar{height:auto!important;min-height:72px;align-items:flex-start!important}
+.wiring-card .section-toolbar>div:first-child{padding-top:2px}
+.wiring-card .section-toolbar .toolbar-row{margin-top:8px;row-gap:8px;align-self:flex-end}
+.guided-wiring-note{margin-top:12px!important}
+.guided-wiring-actions{margin-top:10px!important;padding-top:2px}
+.guided-wiring-actions .btn{min-height:38px}
+#currentStepCard .learning-grid{margin-bottom:2px}
+@media (max-width:1180px){.wiring-card .section-toolbar .toolbar-row{align-self:stretch;justify-content:flex-start}}
+
+
+/* ==================== V18.3.29 PYTHON LAB CLEAN WORKSPACE ==================== */
+.python-ide-layout{grid-template-columns:210px minmax(520px,1fr) minmax(360px,.68fr)!important;align-items:stretch}
+.python-project-card{min-height:calc(100vh - 154px);padding:12px!important}
+.python-project-card .examples-head,.python-project-card .python-example-list,.python-project-card .python-learning-note{display:none!important}
+.python-file-list{max-height:none!important;flex:1;min-height:220px}
+.python-editor-card,.python-terminal-card{min-height:calc(100vh - 154px)!important}
+.python-terminal-card{grid-column:auto!important}
+.python-ide-layout .python-terminal-card .terminal{min-height:0!important;flex:1;height:100%!important;overflow:auto;font-size:11px;line-height:1.55}
+.python-terminal-card .section-toolbar{min-height:62px;height:auto!important}
+.python-runtime-help{grid-template-columns:1fr;gap:5px}
+.python-toolbar-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.python-toolbar-actions select{min-height:34px;max-width:190px}
+#pythonQuickHardware{min-width:178px;color:#bff7e3;border-color:#2f6f5a}
+#runPythonBtn:disabled,#stopPythonBtn:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:1120px){.python-ide-layout{grid-template-columns:190px minmax(0,1fr)!important}.python-terminal-card{grid-column:1/-1!important;min-height:340px!important}.python-ide-layout .python-terminal-card .terminal{min-height:300px!important}.python-project-card{min-height:auto!important}}
+@media(max-width:760px){.python-ide-layout{grid-template-columns:1fr!important}.python-project-card,.python-terminal-card{grid-column:auto!important}.python-toolbar-actions{justify-content:flex-start}.python-toolbar-actions select{max-width:none;flex:1 1 160px}}
