@@ -8,7 +8,7 @@ window.__zebjusModuleParsed=true;
 window.__zebjusAppLoaded=false;
 window.__zebjus3DReady=false;
 function setBootStatus(text,kind=''){const s=$('#assetStatus');if(s){s.textContent=text;s.className='status'+(kind?' '+kind:'')}}
-setBootStatus('V18.3.30 local-kit module loaded • starting engineering runtime…');
+setBootStatus('V18.3.31 local-kit module loaded • starting engineering runtime…');
 
 /* V9: local camera controls. No network add-on is required for 3D startup. */
 class MiniOrbitControls {
@@ -1264,7 +1264,7 @@ function initWiringControls(){
  window.addEventListener('keydown',e=>{if(window.__zebjusViewOnly)return;if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))return;if(!$('#tab-wiring')?.classList.contains('active'))return;const k=(e.key||'').toLowerCase();if(k==='w'&&!e.repeat){e.preventDefault();setWireMode();return}if(k==='f'&&!e.repeat){e.preventDefault();flipSelectedNode();return}if(k==='r'&&!e.repeat){e.preventDefault();rotateSelectedNode();return}if((e.key==='Delete'||e.key==='Backspace')){e.preventDefault();deleteSelectedObject()}});requestAnimationFrame(animate2DMotors);setWireMode(false,true)
 }
 /* ==================== V15 TRIPOD PID SIMULATOR ==================== */
-let sScene,sCamera,sRenderer,sControls,sPivot,sDrone,simProps=[],simPropBlurs=[],sDust=null,sDustBase=[],sDownwash=[],sDownwashCones=[],sLast=performance.now(),chart=[],simInitialized=false,simMotorBank=null;
+let sScene,sCamera,sRenderer,sControls,sPivot,sDrone,simProps=[],simPropBlurs=[],sDust=null,sDustBase=[],sDownwash=[],sDownwashCones=[],sWashDiscs=[],sLast=performance.now(),chart=[],simInitialized=false,simMotorBank=null;
 const keyDefaults={rollLeft:'ArrowLeft',rollRight:'ArrowRight',pitchForward:'ArrowUp',pitchBack:'ArrowDown',throttleUp:'w',throttleDown:'s',yawLeft:'a',yawRight:'d',run:'r'};
 let keyMap=(()=>{try{return{...keyDefaults,...JSON.parse((localStorage.getItem('zebjus-v15-keys')||localStorage.getItem('zebjus-v10-keys')||localStorage.getItem('zebjus-v9-keys'))||'{}')}}catch{return{...keyDefaults}}})();
 const heldKeys=new Set();let keyCaptureAction=null;
@@ -1284,10 +1284,11 @@ function buildTripod(){
  for(const a of[0,2*Math.PI/3,4*Math.PI/3]){const foot=[Math.cos(a)*1.9,.08,Math.sin(a)*1.9],hub=[0,.55,0];simCylinderBetween(hub,foot,.09,black,g);simCylinderBetween([0,.52,0],[Math.cos(a)*1.20,.45,Math.sin(a)*1.20],.055,dark,g);const cap=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.18,18),new THREE.MeshStandardMaterial({color:0x252c31,roughness:.6}));cap.position.set(...foot);cap.rotation.z=Math.PI/2;g.add(cap)}return g
 }
 function buildDownwash(){
- sDownwash=[];sDownwashCones=[];const g=new THREE.Group(),centers=[[1.72,0,1.72],[-1.72,0,1.72],[-1.72,0,-1.72],[1.72,0,-1.72]];
+ sDownwash=[];sDownwashCones=[];sWashDiscs=[];const g=new THREE.Group(),centers=[[1.72,0,1.72],[-1.72,0,1.72],[-1.72,0,-1.72],[1.72,0,-1.72]];
  centers.forEach((c,mi)=>{
-   const cone=new THREE.Mesh(new THREE.ConeGeometry(.58,2.0,32,1,true),new THREE.MeshBasicMaterial({color:0x83cde8,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));cone.position.set(c[0],-1.0,c[2]);cone.rotation.z=Math.PI;g.add(cone);sDownwashCones.push({cone,motor:mi});
-   for(let j=0;j<6;j++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.30,.012,8,40),new THREE.MeshBasicMaterial({color:0xa9ddf1,transparent:true,opacity:0,depthWrite:false}));ring.rotation.x=Math.PI/2;ring.position.set(c[0],-.24-j*.38,c[2]);g.add(ring);sDownwash.push({ring,motor:mi,phase:j/6})}
+   const cone=new THREE.Mesh(new THREE.ConeGeometry(.66,2.3,32,1,true),new THREE.MeshBasicMaterial({color:0x8cdcf2,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));cone.position.set(c[0],-1.08,c[2]);cone.rotation.z=Math.PI;g.add(cone);sDownwashCones.push({cone,motor:mi});
+   const disc=new THREE.Mesh(new THREE.CircleGeometry(.62,48),new THREE.MeshBasicMaterial({color:0xbfeeff,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));disc.rotation.x=-Math.PI/2;disc.position.set(c[0],-.14,c[2]);g.add(disc);sWashDiscs.push({disc,motor:mi});
+   for(let j=0;j<8;j++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.30,.012,8,48),new THREE.MeshBasicMaterial({color:0xc4efff,transparent:true,opacity:0,depthWrite:false}));ring.rotation.x=Math.PI/2;ring.position.set(c[0],-.20-j*.32,c[2]);g.add(ring);sDownwash.push({ring,motor:mi,phase:j/8})}
  });return g
 }
 function ensureSimMotorBank(){
@@ -1321,13 +1322,13 @@ function ensureSim(){
 }
 function initSim(){
  const e=$('#simThree');if(!e)throw new Error('Tripod simulator container missing');const w=Math.max(1,e.clientWidth||e.getBoundingClientRect().width||900),h=Math.max(1,e.clientHeight||e.getBoundingClientRect().height||650);
- sScene=new THREE.Scene();sScene.background=new THREE.Color(0x101b24);sCamera=new THREE.PerspectiveCamera(46,w/h,.1,1000);sCamera.position.set(9,6.4,10.8);
+ sScene=new THREE.Scene();sScene.background=new THREE.Color(0x142535);sCamera=new THREE.PerspectiveCamera(46,w/h,.1,1000);sCamera.position.set(9,6.4,10.8);
  sRenderer=new THREE.WebGLRenderer({antialias:true});sRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));sRenderer.setSize(w,h);sRenderer.shadowMap.enabled=true;sRenderer.outputColorSpace=THREE.SRGBColorSpace;e.appendChild(sRenderer.domElement);
  sControls=new MiniOrbitControls(sCamera,sRenderer.domElement);sControls.target.set(0,2.7,0);sControls.enableDamping=true;
- sScene.add(new THREE.AmbientLight(0xffffff,.72));sScene.add(new THREE.HemisphereLight(0xeaf7ff,0x374550,2.25));const l=new THREE.DirectionalLight(0xffffff,3.1);l.position.set(6,10,7);l.castShadow=true;sScene.add(l);const rim=new THREE.DirectionalLight(0x66d9ff,1.25);rim.position.set(-6,5,-4);sScene.add(rim);const warm=new THREE.PointLight(0xffd6aa,1.25,18);warm.position.set(4,5,2);sScene.add(warm);
+ sScene.add(new THREE.AmbientLight(0xffffff,.86));sScene.add(new THREE.HemisphereLight(0xf1fbff,0x42586a,2.65));const l=new THREE.DirectionalLight(0xffffff,3.6);l.position.set(6,10,7);l.castShadow=true;sScene.add(l);const rim=new THREE.DirectionalLight(0x7ce4ff,1.45);rim.position.set(-6,5,-4);sScene.add(rim);const fill=new THREE.DirectionalLight(0xcfeaff,1.05);fill.position.set(-2,6,8);sScene.add(fill);const warm=new THREE.PointLight(0xffd6aa,1.45,20);warm.position.set(4,5,2);sScene.add(warm);
  const floor=new THREE.Mesh(new THREE.PlaneGeometry(28,28),new THREE.MeshStandardMaterial({color:0x243039,roughness:.82,metalness:.05}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;sScene.add(floor);sScene.add(new THREE.GridHelper(28,28,0x48606e,0x324651));sScene.add(buildTripod());
- const dustCount=300,pos=new Float32Array(dustCount*3);sDustBase=[];for(let i=0;i<dustCount;i++){const a=Math.random()*Math.PI*2,r=.8+Math.random()*4.2,y=.025+Math.random()*.23;pos[i*3]=Math.cos(a)*r;pos[i*3+1]=y;pos[i*3+2]=Math.sin(a)*r;sDustBase.push({a,r,y,seed:Math.random()*10})}
- const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.BufferAttribute(pos,3));const dm=new THREE.PointsMaterial({color:0xc2ae91,size:.06,transparent:true,opacity:0,depthWrite:false});sDust=new THREE.Points(dg,dm);sScene.add(sDust);
+ const dustCount=520,pos=new Float32Array(dustCount*3);sDustBase=[];for(let i=0;i<dustCount;i++){const a=Math.random()*Math.PI*2,r=.8+Math.random()*4.2,y=.025+Math.random()*.23;pos[i*3]=Math.cos(a)*r;pos[i*3+1]=y;pos[i*3+2]=Math.sin(a)*r;sDustBase.push({a,r,y,seed:Math.random()*10})}
+ const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.BufferAttribute(pos,3));const dm=new THREE.PointsMaterial({color:0xd9c29f,size:.075,transparent:true,opacity:0,depthWrite:false});sDust=new THREE.Points(dg,dm);sScene.add(sDust);
  sPivot=new THREE.Group();sPivot.position.set(0,3.48,0);sPivot.rotation.order='YXZ';sScene.add(sPivot);sDrone=buildFinalSimDrone();sPivot.add(sDrone);sPivot.add(buildDownwash());const clampG=new THREE.Group();simCylinderBetween([-.30,0,0],[.30,0,0],.09,0x161c20,clampG);sPivot.add(clampG);
  syncQuickPid();$('#simFlightMode').value=state.sim.flightMode;updateSimPidModeUI();
  $('#simRunBtn').onclick=toggleSimRun;$('#simResetBtn').onclick=resetSim;$('#simDisturbBtn').onclick=toggleDisturbMode;$('#simCalibrateLevelBtn').onclick=calibrateSimLevel;$('#simFlightMode').onchange=e=>{state.sim.flightMode=e.target.value;if(state.sim.flightMode==='rate'){state.sim.rateHoldRoll=state.sim.roll;state.sim.rateHoldPitch=state.sim.pitch;state.sim.rateRollStickActive=false;state.sim.ratePitchStickActive=false}updateSimPidModeUI();resetSimControllersOnly();chart=[]};$('#simApplyPidBtn').onclick=applyQuickPid;
@@ -1359,7 +1360,7 @@ function stopSimRuntime(updateButton=true){
  destroyMotorAudio('sim');destroySimMotorBank();
  state.sim.motorActual=[0,0,0,0];state.sim.lastMix=[0,0,0,0];
  simPropBlurs.forEach(b=>{b.material.opacity=0;b.scale.setScalar(1)});
- sDownwash.forEach(x=>x.ring.material.opacity=0);sDownwashCones.forEach(x=>x.cone.material.opacity=0);
+ sDownwash.forEach(x=>x.ring.material.opacity=0);sDownwashCones.forEach(x=>x.cone.material.opacity=0);sWashDiscs.forEach(x=>x.disc.material.opacity=0);
  if(sDust)sDust.material.opacity=0;
  if(updateButton&&$('#simRunBtn')){$('#simRunBtn').textContent='RUN';$('#simRunBtn').classList.remove('danger')}
 }
@@ -1471,16 +1472,17 @@ function simLoop(now){
  s.liftY+=(targetLift-s.liftY)*Math.min(1,dt*2.8);sPivot.position.y=3.48+s.liftY;
 
  let mix;
- if(remoteFollower){mix=(Array.isArray(s.lastMix)?s.lastMix:[0,0,0,0]).map(v=>clamp(+v||0,0,100));s.motorActual=[...mix];s.lastMix=[...mix]}else{const base=s.running?clamp((s.throttle-1000)/10,0,100):0,rc=s.running?clamp(uR*.045,-30,30):0,pc=s.running?clamp(uP*.045,-30,30):0,yc=s.running?clamp(uY*.028,-20,20):0;const cmdMix=s.running?[base+rc-pc+yc,base-rc-pc-yc,base-rc+pc+yc,base+rc+pc-yc].map(v=>clamp(v,0,100)):[0,0,0,0];const lag=Math.max(.035,s.motorLag),aLag=s.running?1-Math.exp(-dt/lag):1;s.motorActual=s.motorActual.map((v,i)=>s.running?v+(cmdMix[i]-v)*aLag:0);mix=s.motorActual;s.lastMix=mix}
+ if(remoteFollower){mix=(Array.isArray(s.lastMix)?s.lastMix:[0,0,0,0]).map(v=>clamp(+v||0,0,100));s.motorActual=[...mix];s.lastMix=[...mix]}else{const base=s.running?clamp((s.throttle-1000)/10,0,100):0,rc=s.running?clamp(uR*.058,-36,36):0,pc=s.running?clamp(uP*.058,-36,36):0,yc=s.running?clamp(uY*.038,-26,26):0;const cmdMix=s.running?[base+rc-pc+yc,base-rc-pc-yc,base-rc+pc+yc,base+rc+pc-yc].map(v=>clamp(v,0,100)):[0,0,0,0];const lag=Math.max(.03,s.motorLag),aLag=s.running?1-Math.exp(-dt/lag):1;s.motorActual=s.motorActual.map((v,i)=>s.running?v+(cmdMix[i]-v)*aLag:0);mix=s.motorActual;s.lastMix=mix}
 
- simProps.forEach((p,i)=>{const sp=mix[i]/100;p.rotation.y+=(i%2?1:-1)*dt*(1+sp*108)});
- simPropBlurs.forEach((b,i)=>{const sp=mix[i]/100;b.material.opacity=clamp((sp-.08)*.34,0,.27);b.scale.setScalar(1+sp*.08)});
+ simProps.forEach((p,i)=>{const sp=mix[i]/100;p.rotation.y+=(i%2?1:-1)*dt*(1+sp*138)});
+ simPropBlurs.forEach((b,i)=>{const sp=mix[i]/100;b.material.opacity=clamp((sp-.05)*.52,0,.46);b.scale.setScalar(1+sp*.16)});
  const avg=mix.reduce((a,b)=>a+b,0)/400,spread=(Math.max(...mix)-Math.min(...mix))/100;updateMotorAudio('sim',s.running?avg:0,spread);updateSimMotorBank(mix);
 
- const groundFactor=clamp(1-Math.max(0,s.liftY)/.55,.18,1);
- sDownwash.forEach(x=>{const sp=mix[x.motor]/100,t=(now*.00030*(.35+sp*3.8)+x.phase)%1;x.ring.position.y=-.22-t*(2.45+sp*.9);x.ring.scale.setScalar(.78+t*(.72+sp*.50));x.ring.material.opacity=s.running?clamp(sp*.33*(1-t)*groundFactor,0,.27):0});
- sDownwashCones.forEach(x=>{const sp=mix[x.motor]/100;x.cone.material.opacity=s.running?sp*.055*groundFactor:0;x.cone.scale.set(1+sp*.45,1+sp*.30,1+sp*.45)});
- if(sDust){const ar=sDust.geometry.attributes.position.array;sDust.material.opacity=s.running?clamp((avg-.06)*1.18*groundFactor,0,.72):0;for(let i=0;i<sDustBase.length;i++){const d=sDustBase[i],flow=(now*.00017*(.4+avg*4.5)+d.seed)%1,rr=d.r+flow*(1.4+avg*3.8)*groundFactor;ar[i*3]=Math.cos(d.a+flow*avg*.8)*rr;ar[i*3+2]=Math.sin(d.a+flow*avg*.8)*rr;ar[i*3+1]=d.y+Math.abs(Math.sin(flow*Math.PI))*avg*.42*groundFactor}sDust.geometry.attributes.position.needsUpdate=true}
+ const groundFactor=clamp(1-Math.max(0,s.liftY)/.62,.14,1);
+ sDownwash.forEach(x=>{const sp=mix[x.motor]/100,t=(now*.00034*(.38+sp*4.8)+x.phase)%1;x.ring.position.y=-.18-t*(2.55+sp*1.15);x.ring.scale.setScalar(.72+t*(.96+sp*.72));x.ring.material.opacity=s.running?clamp(sp*.46*(1-t)*groundFactor,0,.40):0});
+ sDownwashCones.forEach(x=>{const sp=mix[x.motor]/100;x.cone.material.opacity=s.running?sp*.11*groundFactor:0;x.cone.scale.set(1+sp*.62,1+sp*.42,1+sp*.62)});
+ sWashDiscs.forEach(x=>{const sp=mix[x.motor]/100;x.disc.material.opacity=s.running?clamp(.05+sp*.18,0,.22)*groundFactor:0;x.disc.scale.setScalar(1+sp*.85)});
+ if(sDust){const ar=sDust.geometry.attributes.position.array;sDust.material.opacity=s.running?clamp((avg-.04)*1.45*groundFactor,0,.88):0;for(let i=0;i<sDustBase.length;i++){const d=sDustBase[i],flow=(now*.00019*(.45+avg*5.6)+d.seed)%1,rr=d.r+flow*(1.8+avg*4.6)*groundFactor,twist=(mix[i%4]/100)*.95;ar[i*3]=Math.cos(d.a+flow*(.9+twist))*rr;ar[i*3+2]=Math.sin(d.a+flow*(.9+twist))*rr;ar[i*3+1]=d.y+Math.abs(Math.sin(flow*Math.PI))*avg*.62*groundFactor}sDust.geometry.attributes.position.needsUpdate=true}
 
  $('#simRoll').textContent=s.roll.toFixed(1)+'°';$('#simPitch').textContent=s.pitch.toFixed(1)+'°';$('#simYaw').textContent=s.yaw.toFixed(1)+'°';$('#simYawRate').textContent=s.yawRate.toFixed(1)+'°/s';$('#simLift').textContent=`${s.throttle} µs • ${(s.liftY>=0?'+':'')}${s.liftY.toFixed(2)} m`;
  $('#simRollTarget').textContent=`${s.flightMode==='angle'?'Level target':'Hold target'} ${(s.targetRoll||0).toFixed(1)}°`;$('#simPitchTarget').textContent=`${s.flightMode==='angle'?'Level target':'Hold target'} ${(s.targetPitch||0).toFixed(1)}°`;$('#simYawTarget').textContent=`Rate target ${s.targetYawRate.toFixed(1)}°/s`;
@@ -1563,7 +1565,7 @@ function simKeyUp(e){
 }
 function renderKeySettings(){const box=$('#keySettings');if(!box)return;const labels={rollLeft:'Roll left',rollRight:'Roll right',pitchForward:'Pitch forward',pitchBack:'Pitch back',throttleUp:'Throttle +',throttleDown:'Throttle −',yawLeft:'Yaw left',yawRight:'Yaw right',run:'Run / Stop'};box.innerHTML=Object.entries(labels).map(([k,l])=>`<div class="key-row"><span>${l}</span><button class="key-capture ${keyCaptureAction===k?'listening':''}" data-key-action="${k}">${keyCaptureAction===k?'PRESS KEY…':keyLabel(keyMap[k])}</button></div>`).join('');$$('.key-capture').forEach(b=>b.onclick=()=>{keyCaptureAction=b.dataset.keyAction;renderKeySettings()})}
 function downloadBlob(name,data,type='text/plain'){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)}
-function projectPayload(){return{version:'18.3.30',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
+function projectPayload(){return{version:'18.3.31',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
 function exportProjectJson(){downloadBlob('ZEBJUS_F450_Project_V18.json',JSON.stringify(projectPayload(),null,2),'application/json')}
 function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V18',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
 function exportWiringSvg(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg);downloadBlob('ZEBJUS_F450_Wiring.svg',xml,'image/svg+xml')}
@@ -1575,7 +1577,7 @@ function updateStartupDiagnostics(){const e=$('#startupDiagnostics');if(!e)retur
 function registerOffline(){
  if(!('serviceWorker' in navigator)||!location.protocol.startsWith('http'))return;
  let reloading=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloading)return;reloading=true;location.reload()});
- navigator.serviceWorker.register('./service-worker.js?v=18.3.30',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
+ navigator.serviceWorker.register('./service-worker.js?v=18.3.31',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
 }
 function updateAudioUi(){
  const en=$('#soundEnabled'),vol=$('#soundVolume'),out=$('#soundVolumeOut'),st=$('#soundState');
@@ -1596,7 +1598,7 @@ function initSettings(){renderKeySettings();initAudioSettings();$('#saveKeysBtn'
 /* FC / CAL / PID / PYTHON */
 function fcLog(t){const e=$('#fcLog');if(!e)return;e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
 function fcStatus(on){state.fc.connected=on;const e=$('#fcBadge');if(e){e.textContent=on?'Connected':'Disconnected';e.className='status '+(on?'good':'')}}
-function connectFc(){const ipEl=$('#fcIp'),pathEl=$('#fcPath'),protoEl=$('#fcProtocol');if(!ipEl||!pathEl||!protoEl){fcLog('Legacy WebSocket connector is not present in this UI. Use Kit Connect.');return false}disconnectFc(false);const ip=ipEl.value.trim(),path=pathEl.value.trim(),pref=protoEl.value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3.30'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false);return true}catch(e){fcLog(e.message);return false}}
+function connectFc(){const ipEl=$('#fcIp'),pathEl=$('#fcPath'),protoEl=$('#fcProtocol');if(!ipEl||!pathEl||!protoEl){fcLog('Legacy WebSocket connector is not present in this UI. Use Kit Connect.');return false}disconnectFc(false);const ip=ipEl.value.trim(),path=pathEl.value.trim(),pref=protoEl.value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3.31'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false);return true}catch(e){fcLog(e.message);return false}}
 function disconnectFc(log=true){if(state.fc.socket)try{state.fc.socket.close()}catch{}state.fc.socket=null;fcStatus(false);if(log)fcLog('Disconnected')}
 function sendFc(o){if(window.zebjusSchool?.isViewOnly?.()){fcLog('VIEW ONLY • command blocked');return false}if(window.zebjusSchool?.isCloudActive?.()){if(window.zebjusSchool.sendDeviceCommand?.(o)){fcLog('LOCAL KIT TX '+JSON.stringify(o));return true}fcLog('Select an online kit first');return false}if(state.fc.socket?.readyState===1){state.fc.socket.send(JSON.stringify(o));fcLog('TX '+JSON.stringify(o));return true}fcLog('Not connected');return false}
 function packet(raw){let d,text;if(typeof raw==='string'){text=raw;try{d=JSON.parse(raw)}catch{d={raw}}}else{d=raw||{};text=JSON.stringify(d)};['roll','pitch','yaw','gyroX','gyroY','gyroZ','battery'].forEach(k=>{if(Number.isFinite(+d[k]))state.telemetry[k]=+d[k]});if(d?.type==='ack'&&d?.command==='pid_set'){pidDirty=false;updatePidSaveState?.('saved')}$('#telemetryLog').textContent=(new Date().toLocaleTimeString()+' '+text+'\n'+$('#telemetryLog').textContent).slice(0,12000);telemetryUI()}
@@ -1753,7 +1755,7 @@ function showAssembly3DError(e){
 }
 // V18.3 public bridge used by same-Wi-Fi Local Kit runtime.
 window.zebjusLabAPI={
- version:'18.3.30',
+ version:'18.3.31',
  getSimState:()=>{const x=state.sim;return{running:x.running,flightMode:x.flightMode,roll:x.roll,pitch:x.pitch,yaw:x.yaw,rollRate:x.rollRate,pitchRate:x.pitchRate,yawRate:x.yawRate,throttle:x.throttle,cmdRoll:x.cmdRoll,cmdPitch:x.cmdPitch,cmdYaw:x.cmdYaw,targetRoll:x.targetRoll,targetPitch:x.targetPitch,targetYawRate:x.targetYawRate,liftY:x.liftY,lastMix:[...(x.lastMix||[0,0,0,0])],batteryV:x.batteryV,payloadG:x.payloadG,cgX:x.cgX,cgY:x.cgY,wind:x.wind,motorLag:x.motorLag,levelTrimRoll:x.levelTrimRoll,levelTrimPitch:x.levelTrimPitch,rateHoldRoll:x.rateHoldRoll,rateHoldPitch:x.rateHoldPitch}},
  applyRemoteSimState:d=>{window.__zebjusRemoteSimState=d?{...d,lastMix:Array.isArray(d.lastMix)?[...d.lastMix]:[0,0,0,0]}:null},
  setRemoteFollower:on=>{window.__zebjusRemoteFollower=!!on;if(!on)window.__zebjusRemoteSimState=null},
@@ -1794,6 +1796,6 @@ async function boot(){
  if(threeOK){const suffix=assets.failed?` • ${assets.loaded}/${assets.total} GLB models + fallback`:` • ${assets.loaded}/${assets.total} component models`;setBootStatus('Local 3D engine ready'+suffix,'good');notify(assets.failed?'3D ready • some models use safe fallback.':'3D ready • all local component models loaded.','good')}
  else{setBootStatus('3D unavailable • 2D tools active');notify('3D renderer unavailable — 2D tools are still active.','bad')}
  window.__zebjusAppLoaded=true;updateStartupDiagnostics?.();
- window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.30',assets}}));
+ window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.31',assets}}));
 }
 boot().catch(e=>{console.error('[ZEBJUS] boot failed:',e);setBootStatus('Startup error • check console');window.__zebjusAppLoaded=true;updateStartupDiagnostics?.()});
