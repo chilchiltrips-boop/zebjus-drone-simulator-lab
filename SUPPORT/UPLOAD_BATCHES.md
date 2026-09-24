@@ -1,12 +1,10 @@
-# GitHub web upload batches — V18.3.36
+# GitHub web upload batches • V18.3.37
 
-The downloadable release is **one outer ZIP**. After extraction it contains two upload folders:
+The project contains more than 100 files, so the delivery ZIP contains two repository-relative upload folders.
 
-1. `BATCH_1_CORE` — 51 core HTML/CSS/JS, firmware source/catalogs, tools, GitHub workflow, docs and SUPPORT files.
-2. `BATCH_2_ASSETS` — 54 GLB component models, thumbnails, reference images and icons.
+1. Open `BATCH_1_CORE` and upload **its contents** to the repository root first.
+2. Commit/upload that batch.
+3. Open `BATCH_2_ASSETS` and upload **its contents** to the same repository root.
+4. Do not upload the `BATCH_1_CORE` or `BATCH_2_ASSETS` wrapper folder names themselves.
 
-Upload **the contents** of `BATCH_1_CORE` to the repository root first, then upload **the contents** of `BATCH_2_ASSETS` to the same repository root. Do not upload the `BATCH_1_CORE` or `BATCH_2_ASSETS` folder names themselves as repository folders.
-
-GitHub web upload replaces same-name files but does not delete removed files. The firmware Action runs `tools/cleanup_repo.py` to remove known obsolete leftovers and refresh `FILE_COUNT.txt`.
-
-Do not rename `FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino`. Stable naming is intentional so future source updates replace the old file.
+Batch 1 contains source, firmware, workflow, runtime JS/CSS/HTML, manifests and tools. Batch 2 contains GLB models, thumbnails and reference images/SVGs.

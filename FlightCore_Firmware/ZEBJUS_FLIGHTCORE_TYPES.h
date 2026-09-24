@@ -2,8 +2,10 @@
 #include <Arduino.h>
 
 // Declared in a header so Arduino auto-generated function prototypes can
-// reference custom IMU types safely before the .ino body is parsed.
+// reference custom types safely before the .ino body is parsed.
 enum ImuKind : uint8_t { IMU_NONE=0, IMU_LSM6DS3=1, IMU_MPU6050=2 };
+enum FlightModeKind : uint8_t { FLIGHT_ANGLE=0, FLIGHT_RATE=1 };
+enum RcSourceKind : uint8_t { RC_NONE=0, RC_PPM=1, RC_WEB_STA=2, RC_WEB_AP=3 };
 
 struct ImuSample{
   uint8_t address=0,whoAmI=0,kind=0;

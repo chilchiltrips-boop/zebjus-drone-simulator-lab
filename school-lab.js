@@ -65,9 +65,9 @@ function updateTopKitStatus(){
  else{el.className='top-kit-status offline';el.innerHTML='<i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span>';}
 }
 function targetUi(){
- const devOpt=$('#webJoyTarget option[value="device"]');if(devOpt){devOpt.disabled=!(st.remoteBenchRc&&ownsLock());devOpt.textContent=st.remoteBenchRc?(ownsLock()?'REAL KIT • PROP-OFF BENCH':'REAL KIT • TAKE CONTROL FIRST'):'REAL KIT • BENCH DISABLED'}
+ const devOpt=$('#webJoyTarget option[value="device"]'),dev=selected();if(devOpt){devOpt.disabled=!(st.remoteBenchRc&&ownsLock());devOpt.textContent=st.remoteBenchRc?(ownsLock()?(dev?.flightCoreIntegrated?'REAL KIT • FLIGHT RC':'REAL KIT • BENCH RC'):'REAL KIT • TAKE CONTROL FIRST'):'REAL KIT • RC DISABLED'}
  const target=$('#webJoyTarget')?.value||'sim',tb=$('#joyTargetBadge');if(tb){tb.textContent=target==='sim'?'SIMULATOR':'REAL HARDWARE';tb.className='target-mode-badge '+(target==='sim'?'sim':'real')}
- const tn=$('#joyTargetNote');if(tn)tn.textContent=!st.txOn?'Transmitter is OFF. Outputs are held safe.':target==='sim'?'Simulator transmitter active. No real kit commands are sent.':ownsLock()?'Real-kit bench transmitter active. Propellers must be removed.':'Real kit is view-only until you take control.';
+ const tn=$('#joyTargetNote');if(tn)tn.textContent=!st.txOn?'Transmitter is OFF. Outputs are held safe.':target==='sim'?'Simulator transmitter active. No real kit commands are sent.':ownsLock()?(dev?.flightCoreIntegrated?'Real FlightCore transmitter active. PPM input has priority when present.':'Real-kit bench transmitter active.'):'Real kit is view-only until you take control.';
  setText('joyTargetSummary',target==='sim'?'SIMULATOR':'REAL KIT');
  const link=$('#webTxLedLink'),linkText=$('#webTxLinkText');if(link){const on=target==='sim'||selectedConnected();link.className='tx-led '+(on?'on':'warn')}if(linkText)linkText.textContent=target==='sim'?'SIM':(selected()?.online?'KIT':'OFFLINE');
 }
@@ -87,7 +87,7 @@ function updateHealthUi(){
 function healthFromTelemetry(t){
  const h=t?.sensorHealth||{};st.sensorHealth.imu=normalizeHealth(t?.imuHealth??h.imu??st.sensorHealth.imu);st.sensorHealth.barometer=normalizeHealth(t?.barometerHealth??t?.baroHealth??h.barometer??h.baro??st.sensorHealth.barometer);st.sensorHealth.lidar=normalizeHealth(t?.lidarHealth??h.lidar??st.sensorHealth.lidar);st.sensorHealth.receiver=normalizeHealth(t?.receiverHealth??h.receiver??st.sensorHealth.receiver);st.receiverHealth=st.sensorHealth.receiver;
 }
-function receiverModeFromChannels(c){return c[5]>=1900?'altitude':c[5]>=1400?'rate':'angle'}
+function receiverModeFromChannels(c){const d=selected();return d?.flightCoreIntegrated?((c[5]>=1500)?'rate':'angle'):(c[5]>=1900?'altitude':c[5]>=1400?'rate':'angle')}
 function applyPhysicalReceiver(t){
  const c=Array.isArray(t?.rc)?t.rc:Array.isArray(t?.channels)?t.channels:null;if(!c||c.length<4)return;const rc=c.slice(0,10).map((v,i)=>clamp(Math.round(+v||DEFAULT_CH[i]),1000,2000));while(rc.length<10)rc.push(DEFAULT_CH[rc.length]);st.receiverChannels=rc;st.receiverLastAt=Date.now();st.sensorHealth.receiver='OK';st.receiverHealth='OK';api()?.controlSim?.({roll:(rc[0]-1500)/500,pitch:(rc[1]-1500)/500,throttle:rc[2],yaw:(rc[3]-1500)/500});api()?.setSimFlightMode?.(receiverModeFromChannels(rc));api()?.setSimRunning?.(rc[4]>1500);if(!st.txOn){st.joy=[...rc];renderJoy()}
 }
@@ -124,7 +124,7 @@ async function connectExact(query,autoAcquire=true){
  clearError();log('Looking for '+query+' on the same Wi-Fi…');
  const samePreferredName=st.preferredDeviceName&&window.ZebjusDroneKit.normalizeKitName(st.preferredDeviceName)===window.ZebjusDroneKit.normalizeKitName(query);const expected=window.ZebjusDroneKit.isDeviceId?.(query)?query:(samePreferredName?st.preferredDeviceId:'');
  const current=selected(),switching=!!(current&&query&&window.ZebjusDroneKit.normalizeKitName(current.deviceName)!==window.ZebjusDroneKit.normalizeKitName(query)&&String(current.deviceId).toUpperCase()!==String(query).toUpperCase());if(switching)client.disconnect({forgetIdentity:true});
- const status=await client.connect(query,'',expected);const d=upsertStatus(status,client.base);st.selectedDeviceId=d.deviceId;st.preferredDeviceId=d.deviceId;st.preferredDeviceName=d.deviceName;st.query=d.deviceName;st.remoteBenchRc=!!status.benchRc;st.failures=0;savePrefs();log(`Connected locally: ${d.deviceName} • ${d.deviceId} • ${status.ip||''}`);statusUi();if(autoAcquire)await acquireLock(true);return d;
+ const status=await client.connect(query,'',expected);const d=upsertStatus(status,client.base);st.selectedDeviceId=d.deviceId;st.preferredDeviceId=d.deviceId;st.preferredDeviceName=d.deviceName;st.query=d.deviceName;st.remoteBenchRc=!!(status.webRc||status.benchRc);st.failures=0;savePrefs();log(`Connected locally: ${d.deviceName} • ${d.deviceId} • ${status.ip||''}`);statusUi();if(autoAcquire)await acquireLock(true);return d;
 }
 async function searchModules(){st.manualDisconnect=false;const q=$('#kitSearchInput')?.value.trim()||st.query,ip=$('#kitCachedIp')?.value.trim()||'';st.query=q;savePrefs();if(!q)return scanKitsUi();try{clearError();const known=window.ZebjusDroneKit.loadKnown().find(k=>window.ZebjusDroneKit.normalizeKitName(k.name)===window.ZebjusDroneKit.normalizeKitName(q));const status=await client.connect(q,ip,known?.deviceId||'');const d=upsertStatus(status,client.base);st.selectedDeviceId=d.deviceId;st.query=d.deviceName;savePrefs();statusUi();await acquireLock(true);await refreshSavedWifi()}catch(e){simpleError(e.message)}}
 async function requestModules(force=false){
@@ -166,7 +166,7 @@ async function healthRefresh(force=false){
  st.healthBusy=true;
  try{
    const s=await client.refresh(2600);
-   st.failures=0;upsertStatus(s,client.base);st.remoteBenchRc=!!s.benchRc;clearError();statusUi();
+   st.failures=0;upsertStatus(s,client.base);st.remoteBenchRc=!!(s.webRc||s.benchRc);clearError();statusUi();
  }catch(e){
    const current=selected(),age=current?.lastSeen?Date.now()-current.lastSeen:Infinity;
    const recentStream=st.lastTelemetryGoodAt&&Date.now()-st.lastTelemetryGoodAt<3000;
@@ -184,7 +184,7 @@ async function reconnectTick(force=false){
  const now=performance.now();if(!force&&now-st.lastReconnectAt<RECONNECT_INTERVAL_MS)return;st.lastReconnectAt=now;
  st.reconnectBusy=true;
  try{
-   const s=await client.reconnect(1);st.failures=0;upsertStatus(s,client.base);st.remoteBenchRc=!!s.benchRc;clearError();log('Kit is online again • reconnected automatically.');statusUi();
+   const s=await client.reconnect(1);st.failures=0;upsertStatus(s,client.base);st.remoteBenchRc=!!(s.webRc||s.benchRc);clearError();log('Kit is online again • reconnected automatically.');statusUi();
  }catch(_){/* stay OFFLINE; next watchdog pass retries */}
  finally{st.reconnectBusy=false}
 }
@@ -241,7 +241,7 @@ async function telemetryTick(now){
  st.lastTelemetryAt=now;st.telemetryBusy=true;
  try{
    const t=await client.telemetry();st.lastTelemetryGoodAt=Date.now();healthFromTelemetry(t);
-   const rcLive=(t?.receiverHealth||t?.sensorHealth?.receiver)==='OK'||(Array.isArray(t?.rc)&&(+t.rcAgeMs||0)<700);
+   const rcLive=String(t?.rcSource||'PPM').toUpperCase()==='PPM'&&((t?.receiverHealth||t?.sensorHealth?.receiver)==='OK'||(Array.isArray(t?.rc)&&(+t.rcAgeMs||0)<700));
    if(rcLive)applyPhysicalReceiver(t);else if(st.receiverHealth==='STALE'){api()?.controlSim?.({roll:0,pitch:0,yaw:0});api()?.setSimRunning?.(false)}
    api()?.receiveDevicePacket(t);api()?.setFcConnected(true);updateHealthUi();
  }catch(_){updateHealthUi()}
@@ -285,12 +285,12 @@ function setTransmitter(on){
 }
 function setFlightMode(value){
  if(st.joy[4]>1500){log('DISARM before changing flight mode.');const m=$('#webMode');if(m)m.value=String(st.joy[5]);return false}
- const v=+value;st.joy[5]=v;st.joy[6]=v>=1900?2000:1000;st.joy[2]=1000;st.joy[3]=1500;api()?.setSimFlightMode?.(v>=1400&&v<1900?'rate':'angle');renderJoy();log(`${modeName()} mode selected • throttle held low for arming.`);return true;
+ let v=+value;const real=$('#webJoyTarget')?.value==='device'&&selected()?.flightCoreIntegrated;if(real&&v>=1900){v=1500;log('ALTITUDE is not integrated in the real FlightCore yet • using RATE mode.')}st.joy[5]=v;st.joy[6]=v>=1900?2000:1000;st.joy[2]=1000;st.joy[3]=1500;api()?.setSimFlightMode?.(v>=1400&&v<1900?'rate':'angle');renderJoy();log(`${modeName()} mode selected • throttle held low for arming.`);return true;
 }
 function tryToggleArm(){
  if(st.joy[4]>1500){st.joy[4]=1000;renderJoy();log('DISARMED');return}
  const gate=armGate();if(!gate.ok){log(gate.title+' • '+gate.text);renderJoy();return}
- const target=$('#webJoyTarget')?.value||'sim';if(target==='device'){if(!ownsLock()){log('Real kit is view-only. Take Control first.');return}if(!st.remoteBenchRc){log('Real web joystick is disabled in kit firmware.');return}if(!confirm('PROP-OFF BENCH ONLY. Confirm propellers are removed before ARM.'))return}
+ const target=$('#webJoyTarget')?.value||'sim';if(target==='device'){if(!ownsLock()){log('Real kit is view-only. Take Control first.');return}if(!st.remoteBenchRc){log('Real web joystick is disabled in kit firmware.');return}if(!confirm(selected()?.flightCoreIntegrated?'REAL FLIGHT OUTPUTS ARE ENABLED. Confirm motor order, propeller direction, frame orientation and a safe test area before ARM.':'PROP-OFF BENCH ONLY. Confirm propellers are removed before ARM.'))return}
  st.joy[4]=2000;renderJoy();log('ARMED • '+modeName());
 }
 function bindWebStick(el,which){
@@ -324,7 +324,7 @@ function initJoystick(){
  bindWebStick($('#webLeftStick'),'left');bindWebStick($('#webRightStick'),'right');const wd=$('#joyWatchdogMs'),ww=$('#joyWatchdogWarnArmed');if(wd){wd.value=String(st.watchdogMs);wd.onchange=()=>{st.watchdogMs=clamp(+wd.value,500,10000);savePrefs();noteJoyInput()}}if(ww){ww.checked=st.watchdogWarnArmed;ww.onchange=()=>{st.watchdogWarnArmed=ww.checked;savePrefs()}}renderJoy();
  $('#webTxPowerBtn')?.addEventListener('click',()=>setTransmitter(!st.txOn));$('#webArmBtn')?.addEventListener('click',tryToggleArm);$('#webJoyDisarmBtn')?.addEventListener('click',()=>{st.joy[4]=1000;st.joy[0]=1500;st.joy[1]=1500;st.joy[3]=1500;st.joy[2]=1000;renderJoy();log('DISARM / SAFE • throttle held low')});
  $('#webMode')?.addEventListener('change',e=>setFlightMode(e.target.value));$('#webCh9')?.addEventListener('input',e=>{if(!st.txOn)return;st.joy[8]=+e.target.value;renderJoy()});$('#webLed')?.addEventListener('change',e=>{if(!st.txOn){e.target.checked=false;return}st.joy[9]=e.target.checked?2000:1000;renderJoy()});$('#webJoyCenterBtn')?.addEventListener('click',centerJoy);
- $('#webJoyTarget')?.addEventListener('change',e=>{if(e.target.value==='device'&&!ownsLock()){e.target.value='sim';log('Real kit target requires Take Control.')}renderJoy()});window.addEventListener('keydown',joystickKeyDown);window.addEventListener('keyup',joystickKeyUp);window.addEventListener('blur',releaseJoystickDirectionalKeys);document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseJoystickDirectionalKeys()});
+ $('#webJoyTarget')?.addEventListener('change',e=>{if(e.target.value==='device'&&!ownsLock()){e.target.value='sim';log('Real kit target requires Take Control.')}if(e.target.value==='device'&&selected()?.flightCoreIntegrated&&st.joy[5]>=1900){st.joy[5]=1500;st.joy[6]=1000;st.joy[2]=1000;log('Real FlightCore supports ANGLE / RATE in this release • switched to RATE.')}renderJoy()});window.addEventListener('keydown',joystickKeyDown);window.addEventListener('keyup',joystickKeyUp);window.addEventListener('blur',releaseJoystickDirectionalKeys);document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseJoystickDirectionalKeys()});
 }
 function joystickTick(now){
  if(api()?.getActiveTab?.()!=='joystick'||!st.txOn)return;const rate=+($('#webJoyRate')?.value||20),period=1000/Math.max(1,rate);if(now-st.lastJoySent<period)return;st.lastJoySent=now;const c=st.joy,target=$('#webJoyTarget')?.value||'sim';if(target==='sim'){api()?.controlSim?.({roll:(c[0]-1500)/500,pitch:(c[1]-1500)/500,throttle:c[2],yaw:(c[3]-1500)/500});api()?.setSimRunning?.(c[4]>1500)}else if(canControl()&&st.remoteBenchRc)sendDeviceCommand({type:'rc_frame',sequence:++st.joySeq,timestamp:Date.now(),channels:[...c]})
