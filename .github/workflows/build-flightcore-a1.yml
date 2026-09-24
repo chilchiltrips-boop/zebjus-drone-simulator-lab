@@ -14,12 +14,21 @@ on:
 permissions:
   contents: write
 
+# If a newer source/workflow commit arrives, cancel the older firmware job.
+# Asset-only uploads do not trigger this workflow, so the publish step below
+# safely rebases generated firmware onto those newer repository commits.
+concurrency:
+  group: flightcore-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-flightcore:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v2
         with:
@@ -32,8 +41,9 @@ jobs:
         run: |
           test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
           test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin
-          ls -lh FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_APP.bin
-          sha256sum FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_APP.bin
+          echo "Both required APP images exist:"
+          ls -lh FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin
+          sha256sum FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin
           for f in FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_FACTORY.bin; do
             [ -e "$f" ] || continue
             test -s "$f"
@@ -54,13 +64,66 @@ jobs:
       - name: Publish stable firmware files into repository
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --cached --quiet; then
-            echo "No firmware output changes to publish."
-          else
-            VERSION="$(python3 -c 'import json; print(json.load(open("FlightCore_Firmware/catalog.json"))["version"])')"
+
+          # Preserve verified generated outputs outside the worktree before
+          # syncing to a newer asset-only repository commit.
+          PUB_DIR="$(mktemp -d)"
+          mkdir -p "$PUB_DIR/FlightCore_Firmware"
+          cp FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_APP.bin "$PUB_DIR/FlightCore_Firmware/"
+          for f in FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_FACTORY.bin; do
+            [ -e "$f" ] || continue
+            cp "$f" "$PUB_DIR/FlightCore_Firmware/"
+          done
+          cp FlightCore_Firmware/catalog.json FlightCore_Firmware/latest.json "$PUB_DIR/FlightCore_Firmware/"
+          cp firmware-catalog.json firmware-latest.json "$PUB_DIR/"
+
+          VERSION="$(python3 -c 'import json; print(json.load(open("FlightCore_Firmware/catalog.json"))["version"])')"
+
+          # Web uploads may advance main while compilation is running. Retry
+          # publication without discarding those user commits. If actual core
+          # inputs changed, the concurrency rule starts/cancels in favour of
+          # the newer build instead of publishing stale firmware.
+          for attempt in 1 2 3 4; do
+            echo "Publish attempt ${attempt}/4"
+            git fetch origin main
+
+            if ! git diff --quiet "${GITHUB_SHA}" origin/main --               FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino               FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h               VERSION.txt tools/build_firmware.py tools/cleanup_repo.py               .github/workflows/build-flightcore-a1.yml; then
+              echo "A newer firmware source/build workflow is already on main."
+              echo "This run will not publish stale binaries; the newer workflow run owns publication."
+              exit 0
+            fi
+
+            git reset --hard origin/main
+            cp "$PUB_DIR"/FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_APP.bin FlightCore_Firmware/
+            for f in "$PUB_DIR"/FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_FACTORY.bin; do
+              [ -e "$f" ] || continue
+              cp "$f" FlightCore_Firmware/
+            done
+            cp "$PUB_DIR/FlightCore_Firmware/catalog.json" "$PUB_DIR/FlightCore_Firmware/latest.json" FlightCore_Firmware/
+            cp "$PUB_DIR/firmware-catalog.json" "$PUB_DIR/firmware-latest.json" ./
+
+            python3 tools/cleanup_repo.py
+            test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
+            test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin
+            python3 tools/validate_project.py
+
+            git add -A
+            if git diff --cached --quiet; then
+              echo "No firmware output changes to publish."
+              exit 0
+            fi
             git commit -m "Build ZEBJUS FlightCore ${VERSION} firmware packages [skip ci]"
-            git push
-          fi
+            if git push origin HEAD:main; then
+              echo "Published A1 + A2 firmware packages successfully."
+              exit 0
+            fi
+
+            echo "Remote advanced during publish; retrying on latest main."
+            sleep $((attempt * 2))
+          done
+
+          echo "Firmware artifacts are available from this Actions run, but repository publication could not complete after 4 attempts."
+          exit 1
