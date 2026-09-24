@@ -1,7 +1,7 @@
-# ZEBJUS F450 Drone Lab V18.3.35
+# ZEBJUS F450 Drone Lab V18.3.36
 
-This release focuses on connection reliability, Python/IMU reliability, multi-board firmware architecture, assembly/wiring correctness and simulator visual comfort.
-
-**Firmware role remains `WIFI_SENSOR_BRIDGE`.** The real onboard flight-control loop, ESC outputs, PID/mixer, persistent flight calibration, battery monitoring and altitude control are not yet integrated and are not represented as complete in the UI/API.
-
-See `RELEASE_NOTES_V18_3_35.md` for the detailed change list.
+- Fixed GitHub Arduino compile failure: `ImuKind` now lives in the companion header so Arduino auto-generated prototypes can resolve it.
+- Same fix is shared by ZFC-A1 ESP32-C3 and ZFC-A2 XIAO ESP32-C6 builds.
+- Build script now prints board ID/name/FQBN before compilation and raises a concise board-specific failure message.
+- Upload packaging consolidated into one outer ZIP containing `BATCH_1_CORE` and `BATCH_2_ASSETS`.
+- Retains V18.3.35 reliability, multi-board, Python Worker, assembly/wiring, simulator, and sensor-bridge improvements.

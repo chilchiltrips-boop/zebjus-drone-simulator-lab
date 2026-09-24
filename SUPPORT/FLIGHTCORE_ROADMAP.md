@@ -1,6 +1,6 @@
 # FlightCore implementation state and roadmap
 
-## V18.3.35 implemented
+## V18.3.36 implemented
 - Same-Wi-Fi bridge, AP provisioning/recovery, unique full-MAC Device ID and verified kit switching.
 - Board profiles: A1 / ESP32-C3 and A2 / XIAO ESP32-C6.
 - IMU auto-detect: LSM6DS3 (0x6A/0x6B) and MPU6050 (0x68/0x69).

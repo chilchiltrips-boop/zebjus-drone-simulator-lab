@@ -12,8 +12,12 @@ CORE_VERSION='3.3.12'
 INDEX_URL='https://espressif.github.io/arduino-esp32/package_esp32_index.json'
 
 
-def run(cmd):
-    print('+',' '.join(map(str,cmd)),flush=True); subprocess.run(cmd,check=True)
+def run(cmd, label='command'):
+    print('+',' '.join(map(str,cmd)),flush=True)
+    try:
+        subprocess.run(cmd,check=True)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f'{label} failed with exit code {e.returncode}. See the compiler output immediately above this message.') from e
 
 
 def sha(path):
@@ -83,7 +87,8 @@ def main():
             for pattern in ('*.h','*.hpp','*.c','*.cpp'):
                 for extra in OUT.glob(pattern): shutil.copy2(extra,sketch/extra.name)
             build=td/'build'; build.mkdir()
-            run([cli,'compile','--fqbn',cfg['fqbn'],'--output-dir',str(build),str(sketch)])
+            print(f'\n=== BUILD {b["id"]} • {b["name"]} • {cfg["fqbn"]} ===',flush=True)
+            run([cli,'compile','--fqbn',cfg['fqbn'],'--warnings','all','--output-dir',str(build),str(sketch)], f'{b["id"]} ({cfg["fqbn"]}) compile')
             srcbin=find_app_bin(build); dst=OUT/filename; shutil.copy2(srcbin,dst); digest=sha(dst)
             build_id=f'{version}-{b["id"]}-{digest[:12]}'
             pkg.update({'available':True,'sha256':digest,'size':dst.stat().st_size,'builtAt':built_at,'buildId':build_id}); b['latest']['builtAt']=built_at

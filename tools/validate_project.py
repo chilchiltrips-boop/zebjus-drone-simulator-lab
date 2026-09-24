@@ -186,7 +186,10 @@ for ep in sorted(client_endpoints-firmware_endpoints): fail(f'kit-local.js endpo
 # Build/update references must use stable firmware names and current supported core.
 build=read('tools/build_firmware.py'); workflow=read('.github/workflows/build-flightcore-a1.yml')
 if "ZEBJUS_FLIGHTCORE.ino" not in build or "CORE_VERSION='3.3.12'" not in build: fail('firmware build script is not on stable source name/core 3.3.12')
-if 'ZEBJUS_FLIGHTCORE_TYPES.h' not in ino or 'ImuSample' not in read('FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h'): fail('firmware ImuSample type is not safely declared in companion header')
+types_header=read('FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h')
+if 'ZEBJUS_FLIGHTCORE_TYPES.h' not in ino or 'ImuSample' not in types_header: fail('firmware ImuSample type is not safely declared in companion header')
+if 'enum ImuKind' not in types_header or 'IMU_MPU6050' not in types_header or 'IMU_LSM6DS3' not in types_header: fail('firmware ImuKind enum is not safely declared in companion header')
+if re.search(r'^\s*enum\s+ImuKind',ino,re.M): fail('ImuKind must not be declared inside the .ino because Arduino auto-prototype generation can place prototypes before it')
 if "('*.h','*.hpp','*.c','*.cpp')" not in build: fail('firmware build script does not copy companion headers/sources into temporary Arduino sketch')
 if 'ZEBJUS_FLIGHTCORE_A1_APP.bin' not in workflow or '_V18_' in workflow: fail('workflow still uses a versioned A1 application filename')
 if 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h' not in workflow: fail('workflow does not rebuild when firmware companion header changes')
