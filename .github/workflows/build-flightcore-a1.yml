@@ -1,4 +1,4 @@
-name: Build ZEBJUS FlightCore A1 Firmware
+name: Build ZEBJUS FlightCore Firmware
 on:
   workflow_dispatch:
   push:
@@ -15,53 +15,52 @@ permissions:
   contents: write
 
 jobs:
-  build-a1:
+  build-flightcore:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v2
         with:
           version: '1.5.1'
-
-      - name: Compile ESP32-C3 application binary
-        run: python3 tools/build_firmware.py --board ZFC-A1
-
+      - name: Compile all supported FlightCore boards
+        run: python3 tools/build_firmware.py --board all
       - name: Clean obsolete release leftovers and refresh inventory
         run: python3 tools/cleanup_repo.py
-
       - name: Validate produced firmware
         run: |
           test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
-          ls -lh FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
-          sha256sum FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
+          test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin
+          ls -lh FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_APP.bin
+          sha256sum FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_APP.bin
+          for f in FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_FACTORY.bin; do
+            [ -e "$f" ] || continue
+            test -s "$f"
+            sha256sum "$f"
+          done
           python3 tools/validate_project.py
-
-      - name: Upload firmware artifact
+      - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ZEBJUS_FLIGHTCORE_A1_APP
+          name: ZEBJUS_FLIGHTCORE_FIRMWARE
           path: |
-            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_APP.bin
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_FACTORY.bin
             FlightCore_Firmware/catalog.json
             FlightCore_Firmware/latest.json
             firmware-catalog.json
             firmware-latest.json
-
       - name: Publish stable firmware files into repository
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # -A is intentional: publish the stable firmware, refreshed inventory,
-          # and deletions of obsolete files left behind by GitHub web uploads.
           git add -A
           if git diff --cached --quiet; then
             echo "No firmware output changes to publish."
           else
             VERSION="$(python3 -c 'import json; print(json.load(open("FlightCore_Firmware/catalog.json"))["version"])')"
-            git commit -m "Build ZEBJUS FlightCore A1 ${VERSION} firmware [skip ci]"
+            git commit -m "Build ZEBJUS FlightCore ${VERSION} firmware packages [skip ci]"
             git push
           fi
