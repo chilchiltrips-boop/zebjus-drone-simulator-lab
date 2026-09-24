@@ -1,7 +1,7 @@
 {
   "schema": 2,
   "product": "ZEBJUS_FLIGHTCORE",
-  "version": "18.3.33",
+  "version": "18.3.34",
   "defaultBoardId": "ZFC-A1",
   "boards": [
     {
@@ -12,7 +12,7 @@
       "flashFreq": "80m",
       "flashSize": "4MB",
       "latest": {
-        "version": "18.3.33",
+        "version": "18.3.34",
         "app": {
           "available": false,
           "file": "ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -42,7 +42,7 @@
       "flashFreq": "80m",
       "flashSize": "4MB",
       "latest": {
-        "version": "18.3.33",
+        "version": "18.3.34",
         "app": {
           "available": false,
           "file": "ZEBJUS_FLIGHTCORE_A2_APP.bin",

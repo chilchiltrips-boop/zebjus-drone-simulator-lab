@@ -1,5 +1,8 @@
-# ZEBJUS F450 Drone Lab V18.3.33
+# ZEBJUS F450 Drone Lab V18.3.34
 
-- Python Lab toolbar reflowed so Run / Stop / Rerun are clearly visible above the editor.
-- Python terminal panel height locked; new output scrolls inside the terminal instead of stretching the panel.
-- Minor Python Lab spacing polish for wide and medium screens.
+- Python editor given more horizontal workspace; project and terminal columns reduced.
+- Added Python project Undo / Redo and stronger file delete workflow.
+- Real-kit selector is locked while Python is running to prevent target changes mid-stream.
+- Python `Drone.imu()` / `i2c_scan()` no longer perform a fragile repeated DOM-target check after preflight.
+- LSM6DS3 live example tolerates temporary sensor read misses instead of immediately terminating.
+- Real IMU bridge retries transient reads; firmware IMU API now uses 100 kHz I²C and multiple read attempts for jumper-wire robustness.

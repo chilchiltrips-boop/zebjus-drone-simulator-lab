@@ -8,7 +8,7 @@ window.__zebjusModuleParsed=true;
 window.__zebjusAppLoaded=false;
 window.__zebjus3DReady=false;
 function setBootStatus(text,kind=''){const s=$('#assetStatus');if(s){s.textContent=text;s.className='status'+(kind?' '+kind:'')}}
-setBootStatus('V18.3.33 local-kit module loaded • starting engineering runtime…');
+setBootStatus('V18.3.34 local-kit module loaded • starting engineering runtime…');
 
 /* V9: local camera controls. No network add-on is required for 3D startup. */
 class MiniOrbitControls {
@@ -1565,7 +1565,7 @@ function simKeyUp(e){
 }
 function renderKeySettings(){const box=$('#keySettings');if(!box)return;const labels={rollLeft:'Roll left',rollRight:'Roll right',pitchForward:'Pitch forward',pitchBack:'Pitch back',throttleUp:'Throttle +',throttleDown:'Throttle −',yawLeft:'Yaw left',yawRight:'Yaw right',run:'Run / Stop'};box.innerHTML=Object.entries(labels).map(([k,l])=>`<div class="key-row"><span>${l}</span><button class="key-capture ${keyCaptureAction===k?'listening':''}" data-key-action="${k}">${keyCaptureAction===k?'PRESS KEY…':keyLabel(keyMap[k])}</button></div>`).join('');$$('.key-capture').forEach(b=>b.onclick=()=>{keyCaptureAction=b.dataset.keyAction;renderKeySettings()})}
 function downloadBlob(name,data,type='text/plain'){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1200)}
-function projectPayload(){return{version:'18.3.33',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
+function projectPayload(){return{version:'18.3.34',savedAt:new Date().toISOString(),guided:state.guided,step:state.step,parts:state.parts.filter(p=>!p.internal&&p.type!=='batteryStrap').map(p=>({type:p.type,slotId:p.slotId})),actions:[...state.doneActions],connections:state.connections,pid:state.pid,wireLayout,wireNodeTransforms,optionalWireNodes,sim:{batteryV:state.sim.batteryV,payloadG:state.sim.payloadG,cgX:state.sim.cgX,cgY:state.sim.cgY,wind:state.sim.wind,motorLag:state.sim.motorLag}}}
 function exportProjectJson(){downloadBlob('ZEBJUS_F450_Project_V18.json',JSON.stringify(projectPayload(),null,2),'application/json')}
 function importProjectJson(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);localStorage.setItem('zebjusF450V18',JSON.stringify(d));notify('Project imported • reloading.','good');setTimeout(()=>location.reload(),450)}catch(e){notify('Invalid project JSON.','bad')}};r.readAsText(file)}
 function exportWiringSvg(){const svg=$('#wiringSvg');if(!svg)return;const xml=new XMLSerializer().serializeToString(svg);downloadBlob('ZEBJUS_F450_Wiring.svg',xml,'image/svg+xml')}
@@ -1577,7 +1577,7 @@ function updateStartupDiagnostics(){const e=$('#startupDiagnostics');if(!e)retur
 function registerOffline(){
  if(!('serviceWorker' in navigator)||!location.protocol.startsWith('http'))return;
  let reloading=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(reloading)return;reloading=true;location.reload()});
- navigator.serviceWorker.register('./service-worker.js?v=18.3.33',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
+ navigator.serviceWorker.register('./service-worker.js?v=18.3.34',{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(()=>{});
 }
 function updateAudioUi(){
  const en=$('#soundEnabled'),vol=$('#soundVolume'),out=$('#soundVolumeOut'),st=$('#soundState');
@@ -1598,7 +1598,7 @@ function initSettings(){renderKeySettings();initAudioSettings();$('#saveKeysBtn'
 /* FC / CAL / PID / PYTHON */
 function fcLog(t){const e=$('#fcLog');if(!e)return;e.textContent+=`\n${new Date().toLocaleTimeString()} ${t}`;e.scrollTop=e.scrollHeight}
 function fcStatus(on){state.fc.connected=on;const e=$('#fcBadge');if(e){e.textContent=on?'Connected':'Disconnected';e.className='status '+(on?'good':'')}}
-function connectFc(){const ipEl=$('#fcIp'),pathEl=$('#fcPath'),protoEl=$('#fcProtocol');if(!ipEl||!pathEl||!protoEl){fcLog('Legacy WebSocket connector is not present in this UI. Use Kit Connect.');return false}disconnectFc(false);const ip=ipEl.value.trim(),path=pathEl.value.trim(),pref=protoEl.value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3.33'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false);return true}catch(e){fcLog(e.message);return false}}
+function connectFc(){const ipEl=$('#fcIp'),pathEl=$('#fcPath'),protoEl=$('#fcProtocol');if(!ipEl||!pathEl||!protoEl){fcLog('Legacy WebSocket connector is not present in this UI. Use Kit Connect.');return false}disconnectFc(false);const ip=ipEl.value.trim(),path=pathEl.value.trim(),pref=protoEl.value,proto=pref==='auto'?(location.protocol==='https:'?'wss':'ws'):pref,url=`${proto}://${ip}${path}`;fcLog('Connecting '+url);try{const ws=new WebSocket(url);state.fc.socket=ws;ws.onopen=()=>{fcStatus(true);fcLog('Connected');sendFc({type:'hello',client:'ZEBJUS F450 Lab V18.3.34'})};ws.onmessage=e=>packet(e.data);ws.onerror=()=>fcLog('WebSocket error');ws.onclose=()=>fcStatus(false);return true}catch(e){fcLog(e.message);return false}}
 function disconnectFc(log=true){if(state.fc.socket)try{state.fc.socket.close()}catch{}state.fc.socket=null;fcStatus(false);if(log)fcLog('Disconnected')}
 function sendFc(o){if(window.zebjusSchool?.isViewOnly?.()){fcLog('VIEW ONLY • command blocked');return false}if(window.zebjusSchool?.isCloudActive?.()){if(window.zebjusSchool.sendDeviceCommand?.(o)){fcLog('LOCAL KIT TX '+JSON.stringify(o));return true}fcLog('Select an online kit first');return false}if(state.fc.socket?.readyState===1){state.fc.socket.send(JSON.stringify(o));fcLog('TX '+JSON.stringify(o));return true}fcLog('Not connected');return false}
 function packet(raw){let d,text;if(typeof raw==='string'){text=raw;try{d=JSON.parse(raw)}catch{d={raw}}}else{d=raw||{};text=JSON.stringify(d)};['roll','pitch','yaw','gyroX','gyroY','gyroZ','battery'].forEach(k=>{if(Number.isFinite(+d[k]))state.telemetry[k]=+d[k]});if(d?.type==='ack'&&d?.command==='pid_set'){pidDirty=false;updatePidSaveState?.('saved')}$('#telemetryLog').textContent=(new Date().toLocaleTimeString()+' '+text+'\n'+$('#telemetryLog').textContent).slice(0,12000);telemetryUI()}
@@ -1623,20 +1623,51 @@ const MONACO_VERSION='0.52.2',MONACO_BASE=`https://cdn.jsdelivr.net/npm/monaco-e
 const PY_PROJECT_KEY='zebjus-python-project-v18324';
 const PY_DEFAULT=`# ZEBJUS Python Lab\n# Write normal Python here. Press Ctrl/⌘ + Enter to run.\n\nprint("Hello from ZEBJUS Python Lab")\n`;
 const PY_I2C_EXAMPLE=`from zebjus import Drone\n\ndrone = Drone()\nscan = await drone.i2c_scan()\n\nprint("I2C bus:", scan["sda"], scan["scl"])\nprint("Devices found:", scan["count"])\n\nfor device in scan["devices"]:\n    print(device["addressHex"], device["hint"])\n`;
-const PY_IMU_EXAMPLE=`from zebjus import Drone\nimport asyncio\n\ndrone = Drone()\nprint("Reading real LSM6DS3. Press Stop to end.\\n")\n\nwhile not drone.stop_requested():\n    imu = await drone.imu()\n    a = imu["accel"]\n    g = imu["gyro"]\n\n    print(f"ACC  X={a['x']:+.3f}  Y={a['y']:+.3f}  Z={a['z']:+.3f} g")\n    print(f"GYRO X={g['x']:+.2f}  Y={g['y']:+.2f}  Z={g['z']:+.2f} dps")\n    print("-")\n\n    await asyncio.sleep(0.10)\n`;
+const PY_IMU_EXAMPLE=`from zebjus import Drone
+import asyncio
+
+drone = Drone()
+print("Reading real LSM6DS3. Press Stop to end.\\n")
+
+misses = 0
+while not drone.stop_requested():
+    try:
+        imu = await drone.imu()
+        misses = 0
+    except Exception as e:
+        misses += 1
+        if misses >= 5:
+            print("IMU connection lost:", e)
+            break
+        await asyncio.sleep(0.18)
+        continue
+
+    a = imu["accel"]
+    g = imu["gyro"]
+    print(f"ACC  X={a['x']:+.3f}  Y={a['y']:+.3f}  Z={a['z']:+.3f} g")
+    print(f"GYRO X={g['x']:+.2f}  Y={g['y']:+.2f}  Z={g['z']:+.2f} dps")
+    print("-")
+    await asyncio.sleep(0.12)
+`;
 const PY_EXAMPLES=[
  {id:'i2c',title:'I²C Scanner',desc:'Scan the real FlightCore I²C bus',code:PY_I2C_EXAMPLE,target:'real'},
  {id:'imu',title:'LSM6DS3 Sensor Live',desc:'Stream real accelerometer + gyroscope values',code:PY_IMU_EXAMPLE,target:'real'}
 ];
-const ZEBJUS_PY_PRELUDE=`import sys, types, json\nfrom js import zebjusBridge as _zebjus_bridge\n\nif "/home/pyproject" not in sys.path:\n    sys.path.insert(0, "/home/pyproject")\n\n_zebjus_module = types.ModuleType("zebjus")\n\nclass Drone:\n    def target(self):\n        return str(_zebjus_bridge.target())\n\n    def stop_requested(self):\n        return bool(_zebjus_bridge.stopRequested())\n\n    async def status(self):\n        raw = await _zebjus_bridge.status()\n        return json.loads(str(raw))\n\n    async def i2c_scan(self):\n        if self.target() != "real":\n            raise RuntimeError("Select Real ZEBJUS kit before scanning the physical I2C bus.")\n        raw = await _zebjus_bridge.i2cScan()\n        return json.loads(str(raw))\n\n    async def imu(self):\n        if self.target() != "real":\n            raise RuntimeError("Select Real ZEBJUS kit before reading the physical LSM6DS3.")\n        raw = await _zebjus_bridge.imuRead()\n        return json.loads(str(raw))\n\n    async def gyro(self):\n        return (await self.imu())["gyro"]\n\n    async def accel(self):\n        return (await self.imu())["accel"]\n\n_zebjus_module.Drone = Drone\nsys.modules["zebjus"] = _zebjus_module\n`;
-let pythonFiles={'main.py':PY_DEFAULT},pythonActiveFile='main.py';
+const ZEBJUS_PY_PRELUDE=`import sys, types, json, asyncio\nfrom js import zebjusBridge as _zebjus_bridge\n\nif "/home/pyproject" not in sys.path:\n    sys.path.insert(0, "/home/pyproject")\n\n_zebjus_module = types.ModuleType("zebjus")\n\nclass Drone:\n    def target(self):\n        return str(_zebjus_bridge.target())\n\n    def stop_requested(self):\n        return bool(_zebjus_bridge.stopRequested())\n\n    async def status(self):\n        raw = await _zebjus_bridge.status()\n        return json.loads(str(raw))\n\n    async def i2c_scan(self):\n        raw = await _zebjus_bridge.i2cScan()\n        return json.loads(str(raw))\n\n    async def imu(self):\n        last_error = None\n        for _ in range(3):\n            try:\n                raw = await _zebjus_bridge.imuRead()\n                return json.loads(str(raw))\n            except Exception as exc:\n                last_error = exc\n                await asyncio.sleep(0.06)\n        raise RuntimeError("Temporary IMU read failure: " + str(last_error))\n\n    async def gyro(self):\n        return (await self.imu())["gyro"]\n\n    async def accel(self):\n        return (await self.imu())["accel"]\n\n_zebjus_module.Drone = Drone\nsys.modules["zebjus"] = _zebjus_module\n`;
+let pythonFiles={'main.py':PY_DEFAULT},pythonActiveFile='main.py',pythonProjectUndo=[],pythonProjectRedo=[],pythonProjectRestoring=false;
+function pythonProjectSnapshot(){const files={...pythonFiles};files[pythonActiveFile]=getPythonCode();return{active:pythonActiveFile,files}}
+function pythonProjectHistoryButtons(){const u=$('#pythonUndoFileBtn'),r=$('#pythonRedoFileBtn');if(u)u.disabled=!pythonProjectUndo.length;if(r)r.disabled=!pythonProjectRedo.length}
+function pythonProjectHistoryPush(){if(pythonProjectRestoring)return;pythonProjectUndo.push(pythonProjectSnapshot());if(pythonProjectUndo.length>30)pythonProjectUndo.shift();pythonProjectRedo.length=0;pythonProjectHistoryButtons()}
+function restorePythonProjectSnapshot(snap){if(!snap?.files)return;pythonProjectRestoring=true;pythonFiles={...snap.files};pythonActiveFile=pythonFiles[snap.active]!=null?snap.active:Object.keys(pythonFiles)[0]||'main.py';setPythonCode(pythonFiles[pythonActiveFile]||'');renderPythonFiles();savePythonProject();clearPythonMarkers();pythonProjectRestoring=false;pythonProjectHistoryButtons()}
+function undoPythonProject(){if(pythonProjectUndo.length){pythonProjectRedo.push(pythonProjectSnapshot());restorePythonProjectSnapshot(pythonProjectUndo.pop());$('#pyStatus').textContent='Python project undo';return}if(pythonMonaco){pythonMonaco.trigger('zebjus','undo');$('#pyStatus').textContent='Editor undo'}}
+function redoPythonProject(){if(pythonProjectRedo.length){pythonProjectUndo.push(pythonProjectSnapshot());restorePythonProjectSnapshot(pythonProjectRedo.pop());$('#pyStatus').textContent='Python project redo';return}if(pythonMonaco){pythonMonaco.trigger('zebjus','redo');$('#pyStatus').textContent='Editor redo'}}
 function loadPythonProject(){try{const d=JSON.parse(localStorage.getItem(PY_PROJECT_KEY)||'null');if(d?.files&&typeof d.files==='object'){pythonFiles=d.files;pythonActiveFile=d.active&&d.files[d.active]!=null?d.active:Object.keys(d.files)[0]||'main.py'}}catch{}if(!Object.keys(pythonFiles).length)pythonFiles={'main.py':PY_DEFAULT}}
 function savePythonProject(){try{pythonFiles[pythonActiveFile]=getPythonCode();localStorage.setItem(PY_PROJECT_KEY,JSON.stringify({active:pythonActiveFile,files:pythonFiles}))}catch(e){console.warn('[ZEBJUS] Python project save failed',e)}}
-function renderPythonFiles(){const box=$('#pythonFileList');if(!box)return;box.innerHTML=Object.keys(pythonFiles).sort((a,b)=>a==='main.py'?-1:b==='main.py'?1:a.localeCompare(b)).map(name=>`<button class="python-file-btn ${name===pythonActiveFile?'active':''}" data-py-file="${name.replaceAll('"','&quot;')}">${name}</button>`).join('');box.querySelectorAll('[data-py-file]').forEach(b=>b.onclick=()=>openPythonFile(b.dataset.pyFile));const title=$('#pythonEditorTitle');if(title)title.textContent=pythonActiveFile}
+function renderPythonFiles(){const box=$('#pythonFileList');if(!box)return;box.innerHTML=Object.keys(pythonFiles).sort((a,b)=>a==='main.py'?-1:b==='main.py'?1:a.localeCompare(b)).map(name=>`<div class="python-file-row ${name===pythonActiveFile?'active':''}"><button class="python-file-btn ${name===pythonActiveFile?'active':''}" data-py-file="${name.replaceAll('\"','&quot;')}">${name}</button><button class="python-file-delete" data-py-delete="${name.replaceAll('\"','&quot;')}" title="Delete ${name}">×</button></div>`).join('');box.querySelectorAll('[data-py-file]').forEach(b=>b.onclick=()=>openPythonFile(b.dataset.pyFile));box.querySelectorAll('[data-py-delete]').forEach(b=>b.onclick=e=>{e.stopPropagation();deletePythonFile(b.dataset.pyDelete)});const title=$('#pythonEditorTitle');if(title)title.textContent=pythonActiveFile;pythonProjectHistoryButtons()}
 function openPythonFile(name){if(!pythonFiles[name]&&pythonFiles[name]!=='' )return;pythonFiles[pythonActiveFile]=getPythonCode();pythonActiveFile=name;setPythonCode(pythonFiles[name]);renderPythonFiles();savePythonProject();clearPythonMarkers()}
-function newPythonFile(){let name=prompt('New Python file name','lesson.py');if(name==null)return;name=String(name).trim().replace(/[^A-Za-z0-9_.-]/g,'_');if(!name)return;if(!name.endsWith('.py'))name+='.py';if(pythonFiles[name]!=null){alert('That file already exists.');return}pythonFiles[pythonActiveFile]=getPythonCode();pythonFiles[name]='# New Python file\n';pythonActiveFile=name;setPythonCode(pythonFiles[name]);renderPythonFiles();savePythonProject()}
-function deletePythonFile(){if(Object.keys(pythonFiles).length<=1){alert('Keep at least one Python file.');return}if(!confirm(`Delete ${pythonActiveFile}?`))return;delete pythonFiles[pythonActiveFile];pythonActiveFile=Object.keys(pythonFiles)[0];setPythonCode(pythonFiles[pythonActiveFile]);renderPythonFiles();savePythonProject()}
-function loadPythonExample(id){const ex=PY_EXAMPLES.find(x=>x.id===id);if(!ex)return;pythonFiles[pythonActiveFile]=getPythonCode();setPythonCode(ex.code);pythonFiles[pythonActiveFile]=ex.code;if(ex.target&&$('#pythonTarget'))$('#pythonTarget').value=ex.target;savePythonProject();clearPythonMarkers();const term=$('#pythonTerminal');if(term){term.textContent=`[READY] ${ex.title} loaded.\nConnect the ZEBJUS kit, then press Run.\n`;term.scrollTop=term.scrollHeight}$('#pyStatus').textContent=`${ex.title} ready`;ensureMonaco()}
+function newPythonFile(){let name=prompt('New Python file name','lesson.py');if(name==null)return;name=String(name).trim().replace(/[^A-Za-z0-9_.-]/g,'_');if(!name)return;if(!name.endsWith('.py'))name+='.py';if(pythonFiles[name]!=null){alert('That file already exists.');return}pythonProjectHistoryPush();pythonFiles[pythonActiveFile]=getPythonCode();pythonFiles[name]='# New Python file\n';pythonActiveFile=name;setPythonCode(pythonFiles[name]);renderPythonFiles();savePythonProject()}
+function deletePythonFile(name=pythonActiveFile){if(pythonFiles[name]==null)return;if(Object.keys(pythonFiles).length<=1){alert('Keep at least one Python file.');return}if(!confirm(`Delete ${name}?`))return;pythonProjectHistoryPush();if(name===pythonActiveFile)pythonFiles[pythonActiveFile]=getPythonCode();delete pythonFiles[name];if(name===pythonActiveFile)pythonActiveFile=Object.keys(pythonFiles).sort((a,b)=>a==='main.py'?-1:b==='main.py'?1:a.localeCompare(b))[0];setPythonCode(pythonFiles[pythonActiveFile]||'');renderPythonFiles();savePythonProject();$('#pyStatus').textContent=`Deleted ${name} • Undo available`}
+function loadPythonExample(id){const ex=PY_EXAMPLES.find(x=>x.id===id);if(!ex)return;pythonProjectHistoryPush();pythonFiles[pythonActiveFile]=getPythonCode();setPythonCode(ex.code);pythonFiles[pythonActiveFile]=ex.code;if(ex.target&&$('#pythonTarget'))$('#pythonTarget').value=ex.target;savePythonProject();clearPythonMarkers();const term=$('#pythonTerminal');if(term){term.textContent=`[READY] ${ex.title} loaded.\nConnect the ZEBJUS kit, then press Run.\n`;term.scrollTop=term.scrollHeight}$('#pyStatus').textContent=`${ex.title} ready`;ensureMonaco()}
 function ensurePyodide(){
  if(window.loadPyodide)return Promise.resolve();
  if(pyodidePromise)return pyodidePromise;
@@ -1706,19 +1737,19 @@ async function preparePythonRuntime(term){
 async function runPythonLab(){
  const term=$('#pythonTerminal');if(pythonRunning){notify('A Python program is already running. Press Stop first.','bad');return}
  pythonStopRequested=false;pythonStderrBuffer='';clearPythonMarkers();pythonFiles[pythonActiveFile]=getPythonCode();savePythonProject();const code=getPythonCode();if(!pythonHardwarePreflight(code))return;
- pythonRunning=true;pythonHasRun=true;$('#runPythonBtn').disabled=true;$('#rerunPythonBtn').disabled=true;$('#stopPythonBtn').disabled=false;$('#stopPythonBtn').classList.add('python-stop-live');$('#pyStatus').textContent=`Running ${pythonActiveFile} • LIVE`;
+ pythonRunning=true;pythonHasRun=true;$('#runPythonBtn').disabled=true;$('#rerunPythonBtn').disabled=true;$('#stopPythonBtn').disabled=false;if($('#pythonTarget'))$('#pythonTarget').disabled=true;if($('#pythonQuickHardware'))$('#pythonQuickHardware').disabled=true;$('#stopPythonBtn').classList.add('python-stop-live');$('#pyStatus').textContent=`Running ${pythonActiveFile} • LIVE`;
  if(term){term.textContent+=`\n▶ ${pythonActiveFile}\n`;term.scrollTop=term.scrollHeight}
  try{await preparePythonRuntime(term);await syncPythonFs();try{await py.loadPackagesFromImports(code)}catch{}const result=await py.runPythonAsync(code,{filename:pythonActiveFile});if(result!==undefined&&result!==null)pythonTerminalWrite(`=> ${String(result)}\n`);if(pythonStderrBuffer.trim())pythonTerminalWrite(pythonStderrBuffer);$('#pyStatus').textContent=`Finished • ${pythonActiveFile}`}
  catch(e){const friendly=pythonFriendlyError(e,pythonStderrBuffer);pythonTerminalWrite(`ERR: ${friendly}\n`);markPythonError(e);$('#pyStatus').textContent='Run stopped with error'}
- finally{pythonRunning=false;$('#runPythonBtn').disabled=false;$('#rerunPythonBtn').disabled=!pythonHasRun;$('#stopPythonBtn').disabled=true;$('#stopPythonBtn').classList.remove('python-stop-live');if(term)term.scrollTop=term.scrollHeight}
+ finally{pythonRunning=false;$('#runPythonBtn').disabled=false;$('#rerunPythonBtn').disabled=!pythonHasRun;$('#stopPythonBtn').disabled=true;if($('#pythonTarget'))$('#pythonTarget').disabled=false;if($('#pythonQuickHardware'))$('#pythonQuickHardware').disabled=false;$('#stopPythonBtn').classList.remove('python-stop-live');if(term)term.scrollTop=term.scrollHeight}
 }
 function stopPythonLab(){
  if(!pythonRunning){$('#pyStatus').textContent='Python idle';notify('No Python program is running.','bad');return}
  pythonStopRequested=true;$('#pyStatus').textContent='Stop requested • waiting for current loop';pythonTerminalWrite('[STOP] Stop requested.\n')
 }
 function initPython(){
- loadPythonProject();const fallback=$('#pythonEditor');if(fallback)fallback.value=pythonFiles[pythonActiveFile]||PY_DEFAULT;renderPythonFiles();window.zebjusBridge={target:()=>$('#pythonTarget')?.value||'sim',stopRequested:()=>pythonStopRequested,attitude:()=>JSON.stringify({roll:state.telemetry.roll,pitch:state.telemetry.pitch,yaw:state.telemetry.yaw}),status:async()=>JSON.stringify(window.zebjusSchool?.getSelectedDevice?.()||{}),i2cScan:async()=>{if(($('#pythonTarget')?.value||'sim')!=='real')throw new Error('Select Real ZEBJUS kit before I2C scan.');if(!window.zebjusSchool?.isKitActive?.())throw new Error('Connect the ZEBJUS kit first.');return JSON.stringify(await window.zebjusSchool.i2cScan())},imuRead:async()=>{if(($('#pythonTarget')?.value||'sim')!=='real')throw new Error('Select Real ZEBJUS kit before IMU read.');if(!window.zebjusSchool?.isKitActive?.())throw new Error('Connect the ZEBJUS kit first.');return JSON.stringify(await window.zebjusSchool.imuRead())},command:(type,payload='{}')=>{let data={};try{data=JSON.parse(String(payload||'{}'))}catch{}return sendFc({type:String(type),...data})}};
- $('#runPythonBtn').onclick=runPythonLab;$('#rerunPythonBtn').onclick=runPythonLab;$('#rerunPythonBtn').disabled=true;$('#stopPythonBtn').onclick=stopPythonLab;$('#stopPythonBtn').disabled=true;$('#clearTerminalBtn').onclick=()=>$('#pythonTerminal').textContent='';$('#pythonNewFileBtn').onclick=newPythonFile;$('#pythonSaveFileBtn').onclick=()=>{pythonFiles[pythonActiveFile]=getPythonCode();savePythonProject();$('#pyStatus').textContent=`Saved ${pythonActiveFile}`};$('#pythonDeleteFileBtn').onclick=deletePythonFile;
+ loadPythonProject();const fallback=$('#pythonEditor');if(fallback)fallback.value=pythonFiles[pythonActiveFile]||PY_DEFAULT;renderPythonFiles();window.zebjusBridge={target:()=>$('#pythonTarget')?.value||'sim',stopRequested:()=>pythonStopRequested,attitude:()=>JSON.stringify({roll:state.telemetry.roll,pitch:state.telemetry.pitch,yaw:state.telemetry.yaw}),status:async()=>JSON.stringify(window.zebjusSchool?.getSelectedDevice?.()||{}),i2cScan:async()=>{if(!window.zebjusSchool?.isKitActive?.())throw new Error('Connect the ZEBJUS kit first.');return JSON.stringify(await window.zebjusSchool.i2cScan())},imuRead:async()=>{if(!window.zebjusSchool?.isKitActive?.())throw new Error('Connect the ZEBJUS kit first.');return JSON.stringify(await window.zebjusSchool.imuRead())},command:(type,payload='{}')=>{let data={};try{data=JSON.parse(String(payload||'{}'))}catch{}return sendFc({type:String(type),...data})}};
+ $('#runPythonBtn').onclick=runPythonLab;$('#rerunPythonBtn').onclick=runPythonLab;$('#rerunPythonBtn').disabled=true;$('#stopPythonBtn').onclick=stopPythonLab;$('#stopPythonBtn').disabled=true;$('#clearTerminalBtn').onclick=()=>$('#pythonTerminal').textContent='';$('#pythonNewFileBtn').onclick=newPythonFile;$('#pythonSaveFileBtn').onclick=()=>{pythonFiles[pythonActiveFile]=getPythonCode();savePythonProject();$('#pyStatus').textContent=`Saved ${pythonActiveFile}`};$('#pythonUndoFileBtn').onclick=undoPythonProject;$('#pythonRedoFileBtn').onclick=redoPythonProject;$('#pythonDeleteFileBtn').onclick=()=>deletePythonFile();
  const quick=$('#pythonQuickHardware');if(quick)quick.onchange=()=>{const id=quick.value;if(!id)return;loadPythonExample(id);quick.value=''};
  ensureMonaco().then(()=>{setPythonCode(pythonFiles[pythonActiveFile]||PY_DEFAULT);renderPythonFiles()})
 }
@@ -1755,7 +1786,7 @@ function showAssembly3DError(e){
 }
 // V18.3 public bridge used by same-Wi-Fi Local Kit runtime.
 window.zebjusLabAPI={
- version:'18.3.33',
+ version:'18.3.34',
  getSimState:()=>{const x=state.sim;return{running:x.running,flightMode:x.flightMode,roll:x.roll,pitch:x.pitch,yaw:x.yaw,rollRate:x.rollRate,pitchRate:x.pitchRate,yawRate:x.yawRate,throttle:x.throttle,cmdRoll:x.cmdRoll,cmdPitch:x.cmdPitch,cmdYaw:x.cmdYaw,targetRoll:x.targetRoll,targetPitch:x.targetPitch,targetYawRate:x.targetYawRate,liftY:x.liftY,lastMix:[...(x.lastMix||[0,0,0,0])],batteryV:x.batteryV,payloadG:x.payloadG,cgX:x.cgX,cgY:x.cgY,wind:x.wind,motorLag:x.motorLag,levelTrimRoll:x.levelTrimRoll,levelTrimPitch:x.levelTrimPitch,rateHoldRoll:x.rateHoldRoll,rateHoldPitch:x.rateHoldPitch}},
  applyRemoteSimState:d=>{window.__zebjusRemoteSimState=d?{...d,lastMix:Array.isArray(d.lastMix)?[...d.lastMix]:[0,0,0,0]}:null},
  setRemoteFollower:on=>{window.__zebjusRemoteFollower=!!on;if(!on)window.__zebjusRemoteSimState=null},
@@ -1796,6 +1827,6 @@ async function boot(){
  if(threeOK){const suffix=assets.failed?` • ${assets.loaded}/${assets.total} GLB models + fallback`:` • ${assets.loaded}/${assets.total} component models`;setBootStatus('Local 3D engine ready'+suffix,'good');notify(assets.failed?'3D ready • some models use safe fallback.':'3D ready • all local component models loaded.','good')}
  else{setBootStatus('3D unavailable • 2D tools active');notify('3D renderer unavailable — 2D tools are still active.','bad')}
  window.__zebjusAppLoaded=true;updateStartupDiagnostics?.();
- window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.33',assets}}));
+ window.dispatchEvent(new CustomEvent('zebjus-app-ready',{detail:{three:threeOK,version:'18.3.34',assets}}));
 }
 boot().catch(e=>{console.error('[ZEBJUS] boot failed:',e);setBootStatus('Startup error • check console');window.__zebjusAppLoaded=true;updateStartupDiagnostics?.()});

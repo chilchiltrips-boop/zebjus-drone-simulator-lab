@@ -197,6 +197,11 @@ if 'built_at=datetime.now(timezone.utc)' not in build or "'builtAt':built_at" no
 if '#fwBuildTime' not in read('firmware-updater.js') or 'fwCurrentBuildTime' not in read('firmware-updater.js'): fail('Firmware Center build date/time rendering is missing')
 if "type==='guard'||type==='prop'" not in app or 'const bladeMat=mat(0xdbe5eb' not in app or '[0,Math.PI].forEach' not in app: fail('high-visibility two-blade procedural CW/CCW propeller runtime is missing')
 if 'rerunPythonBtn' not in app or 'python-stop-live' not in app or 'Variable from your code' not in app: fail('Python Run/Stop/Rerun or typed-variable completion polish is missing')
+if 'pythonProjectUndo' not in app or 'pythonUndoFileBtn' not in app or 'pythonRedoFileBtn' not in app or 'python-file-delete' not in read('styles.css'): fail('Python project delete/undo/redo workflow is missing')
+if 'if self.target() != \"real\"' in app: fail('Python runtime still contains fragile repeated Real-kit target checks')
+if "$('#pythonTarget').disabled=true" not in app: fail('Python target selector is not locked during a running hardware program')
+if 'for(let attempt=0;attempt<3;attempt++)' not in school or 'LSM6DS3 read was lost after retries' not in school: fail('school-lab IMU transient retry logic is missing')
+if 'Wire.begin(I2C_SDA_PIN,I2C_SCL_PIN,100000)' not in ino or 'attempt<3&&!ok' not in ino: fail('firmware IMU API does not use robust 100 kHz multi-attempt I2C reads')
 
 if warnings:
     for x in warnings: print('WARN:',x)

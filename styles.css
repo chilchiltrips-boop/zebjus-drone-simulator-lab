@@ -914,3 +914,19 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 .python-ide-layout .python-terminal-card .terminal,#pythonTerminal{flex:1 1 auto!important;height:0!important;min-height:0!important;max-height:none!important;overflow:auto!important;white-space:pre-wrap;overflow-wrap:anywhere}
 @media(max-width:1350px){.python-editor-card .python-toolbar-actions select{min-width:180px;flex:1 1 220px}.python-ide-layout .python-terminal-card{height:380px!important;max-height:380px!important;min-height:380px!important}}
 @media(max-width:760px){.python-editor-card .python-toolbar-actions{justify-content:flex-start!important}.python-editor-card .python-toolbar-actions select{min-width:150px;max-width:none;flex:1 1 180px}.python-ide-layout .python-terminal-card{height:340px!important;max-height:340px!important;min-height:340px!important}}
+
+
+/* ==================== V18.3.34 Python workspace + project history ==================== */
+.python-ide-layout{grid-template-columns:170px minmax(700px,1.55fr) minmax(310px,.55fr)!important;max-width:2600px!important;gap:9px!important}
+.python-project-card{padding:9px!important}
+.python-project-actions{grid-template-columns:1fr 1fr!important;gap:6px!important}
+.python-file-list{gap:5px!important}
+.python-file-row{display:grid;grid-template-columns:minmax(0,1fr) 28px;gap:4px;align-items:center;border-radius:8px}
+.python-file-row .python-file-btn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.python-file-delete{height:30px;border:1px solid #4e2e37;background:#171019;color:#d995a0;border-radius:7px;font-size:15px;line-height:1;padding:0;opacity:.72}
+.python-file-delete:hover{opacity:1;border-color:#a94b5a;color:#ffd1d8;background:#32151c}
+#pythonUndoFileBtn:disabled,#pythonRedoFileBtn:disabled{opacity:.38;cursor:not-allowed}
+.python-editor-shell{min-width:0!important}
+@media(max-width:1500px){.python-ide-layout{grid-template-columns:160px minmax(620px,1fr) minmax(290px,.48fr)!important}}
+@media(max-width:1250px){.python-ide-layout{grid-template-columns:160px minmax(0,1fr)!important}.python-terminal-card{grid-column:1/-1!important}.python-ide-layout .python-terminal-card{height:360px!important;min-height:360px!important;max-height:360px!important}}
+@media(max-width:760px){.python-ide-layout{grid-template-columns:1fr!important}.python-project-card{min-height:auto!important}.python-editor-shell{min-height:58dvh!important}}

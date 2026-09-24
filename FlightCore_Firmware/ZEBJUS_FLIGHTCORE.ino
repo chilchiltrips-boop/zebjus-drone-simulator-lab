@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.33 - LOCAL Wi-Fi / mDNS + I2C PYTHON LAB
+  ZEBJUS FlightCore V18.3.34 - LOCAL Wi-Fi / mDNS + I2C PYTHON LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -43,7 +43,7 @@
 #include "ZEBJUS_FLIGHTCORE_TYPES.h"
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.33";
+static const char* FW_VERSION="18.3.34";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -368,7 +368,7 @@ bool readLsm6ds3(ImuSample& out){
 }
 void imuApi(){
  if(effectiveArmed()){sendMessage(423,"IMU bench read blocked while armed");return;}
- Wire.begin(I2C_SDA_PIN,I2C_SCL_PIN,400000);delay(2);ImuSample sample;bool ok=readLsm6ds3(sample);Wire.end();if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);
+ Wire.begin(I2C_SDA_PIN,I2C_SCL_PIN,100000);delay(2);ImuSample sample;bool ok=false;for(uint8_t attempt=0;attempt<3&&!ok;attempt++){ok=readLsm6ds3(sample);if(!ok)delay(4);}Wire.end();if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);
  if(!ok){lastImuValid=false;sendMessage(404,"LSM6DS3 not found or WHO_AM_I did not match 0x69. Check SDA/SCL/VCC/GND and address 0x6B or 0x6A.");return;}
  lastImu=sample;lastImuValid=true;String hx=hexAddress(sample.address);
  String j="{\"ok\":true,\"source\":\"real\",\"sensor\":\"LSM6DS3\",\"address\":"+String(sample.address)+",\"addressHex\":\""+hx+"\",\"whoAmI\":"+String(sample.whoAmI)+",\"whoAmIHex\":\"0x69\",\"odrHz\":104,\"accelRangeG\":2,\"gyroRangeDps\":245";
@@ -579,7 +579,7 @@ void setupRoutes(){
 }
 void startNormalServer(){
   setupMode=false;dnsServer.stop();WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.33 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.34 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
   setupMode=true;controlOwner="";controlExpiresAt=0;if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP_STA);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),AP_PASSWORD);dnsServer.start(DNS_PORT,"*",AP_IP);server.begin();wifiTestState=WT_IDLE;
@@ -601,7 +601,7 @@ void networkHealth(){
 void setup(){
   Serial.begin(115200);delay(300);WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);if(ENABLE_PPM_RECEIVER&&PPM_RECEIVER_PIN>=0){pinMode(PPM_RECEIVER_PIN,INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(PPM_RECEIVER_PIN),ppmIsr,RISING);}
   deviceId=getDeviceId();loadKitName();loadSavedWiFi();setupRoutes();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.33 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.34 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
   if(consumeForceSetupFlag()){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }

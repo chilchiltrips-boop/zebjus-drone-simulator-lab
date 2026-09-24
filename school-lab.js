@@ -138,11 +138,12 @@ async function i2cScan(){
  const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');
  log(`I2C scan requested • SDA GPIO${d.i2cSda??4} / SCL GPIO${d.i2cScl??5}`);
  try{const r=await client.i2cScan();log(`I2C scan complete • ${Number(r?.count||0)} device(s) • ${Number(r?.durationMs||0)} ms`);return r}
- catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.32 first.');throw e}
+ catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.34 first.');throw e}
 }
 async function imuRead(){
  const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');
- try{return await client.imuRead()}catch(e){if(e?.status===404)throw new Error('LSM6DS3 was not found. Check I2C wiring and confirm address 0x6B/0x6A.');if(e?.status===409)throw new Error(e.message||'Connected I2C device is not an LSM6DS3.');throw e}
+ let last=null;for(let attempt=0;attempt<3;attempt++){try{return await client.imuRead()}catch(e){last=e;if(e?.status===423)throw e;if(attempt<2)await new Promise(r=>setTimeout(r,55+attempt*45))}}
+ if(last?.status===404)throw new Error('LSM6DS3 read was lost after retries. Check SDA/SCL/VCC/GND and address 0x6B/0x6A.');if(last?.status===409)throw new Error(last.message||'Connected I2C device is not an LSM6DS3.');throw last
 }
 function sendDeviceCommand(command){
  const d=selected();if(!d?.online||!client?.connected)return false;if(command?.type!=='ping'&&!d.lockMine){log('VIEW ONLY • Take Control before changing the real kit.');return false}
