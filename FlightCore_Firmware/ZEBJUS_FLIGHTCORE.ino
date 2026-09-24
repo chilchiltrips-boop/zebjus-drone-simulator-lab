@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.40 - LOCAL Wi-Fi / mDNS + I2C PYTHON LAB
+  ZEBJUS FlightCore V18.3.41 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -43,7 +43,7 @@
 #include "ZEBJUS_FLIGHTCORE_TYPES.h"
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.40";
+static const char* FW_VERSION="18.3.41";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -146,6 +146,11 @@ float motorInput[4]={1000,1000,1000,1000};
 float prevRateErrRoll=0,prevRateErrPitch=0,prevRateErrYaw=0,iRateRoll=0,iRatePitch=0,iRateYaw=0;
 float prevAngleErrRoll=0,prevAngleErrPitch=0,iAngleRoll=0,iAnglePitch=0;
 unsigned long lastFlightSampleMs=0,lastSourceChangeMs=0;
+FlightPidSettings flightPid;
+BenchModeKind benchMode=BENCH_NONE;
+uint8_t benchMotor=0,benchSequenceMotor=0,benchEscStage=0;
+uint16_t benchPulse=1000;
+unsigned long benchUntilMs=0,benchStageUntilMs=0;
 
 // ---------------- Wi-Fi test state ----------------
 enum WifiTestState{WT_IDLE,WT_RUNNING,WT_SUCCESS,WT_FAILED};
@@ -262,7 +267,7 @@ void forgetSavedWiFi(const String& ssid){
 void setPreferredWiFi(const String& ssid){int idx=savedIndex(ssid);if(idx<0)return;preferredSSID=ssid;prefs.begin("zjwifi",false);prefs.putString("preferred",ssid);prefs.end();}
 void setForceSetupFlag(bool on){prefs.begin("zjsys",false);if(on)prefs.putBool("forceap",true);else prefs.remove("forceap");prefs.end();}
 bool consumeForceSetupFlag(){prefs.begin("zjsys",false);bool on=prefs.getBool("forceap",false);if(on)prefs.remove("forceap");prefs.end();return on;}
-void factoryResetAll(){clearSavedWiFi();clearKitName();prefs.begin("zjsys",false);prefs.clear();prefs.end();}
+void factoryResetAll(){clearSavedWiFi();clearKitName();prefs.begin("zjsys",false);prefs.clear();prefs.end();prefs.begin("zjpid",false);prefs.clear();prefs.end();}
 
 // ============================================================
 // Wi-Fi + mDNS
@@ -375,6 +380,42 @@ float pidStep(float error,float kp,float ki,float kd,float& prevErr,float& iTerm
 void kalmanStep(float& state,float& uncertainty,float rate,float measurement){const float dt=.004f;state+=dt*rate;uncertainty+=dt*dt*16.0f;float gain=uncertainty/(uncertainty+9.0f);state+=gain*(measurement-state);uncertainty=(1.0f-gain)*uncertainty;}
 void writeMotorOutputs(float m1,float m2,float m3,float m4){motorInput[0]=m1;motorInput[1]=m2;motorInput[2]=m3;motorInput[3]=m4;if(!FLIGHT_CONTROL_ENABLED)return;for(int i=0;i<4;i++)if(MOTOR_PINS[i]>=0)ledcWrite(MOTOR_PINS[i],(uint32_t)constrain((int)motorInput[i],1000,1999));}
 void motorsSafe(){writeMotorOutputs(1000,1000,1000,1000);}
+void setPidDefaults(){
+  flightPid.rateRoll={1.4f,18.0f,.035f};flightPid.ratePitch=flightPid.rateRoll;flightPid.rateYaw={3.0f,20.0f,0.0f};
+  flightPid.angleRateRoll={.9f,15.0f,.03f};flightPid.angleRatePitch=flightPid.angleRateRoll;flightPid.angleRateYaw={3.0f,15.0f,0.0f};
+  flightPid.angleRoll={3.0f,0.0f,0.0f};flightPid.anglePitch=flightPid.angleRoll;
+}
+void loadPidSettings(){setPidDefaults();prefs.begin("zjpid",true);if(!prefs.getBool("saved",false)){prefs.end();return;}
+  #define GP(K,V) V=prefs.getFloat(K,V)
+  GP("rrp",flightPid.rateRoll.p);GP("rri",flightPid.rateRoll.i);GP("rrd",flightPid.rateRoll.d);GP("rpp",flightPid.ratePitch.p);GP("rpi",flightPid.ratePitch.i);GP("rpd",flightPid.ratePitch.d);GP("ryp",flightPid.rateYaw.p);GP("ryi",flightPid.rateYaw.i);GP("ryd",flightPid.rateYaw.d);
+  GP("arp",flightPid.angleRateRoll.p);GP("ari",flightPid.angleRateRoll.i);GP("ard",flightPid.angleRateRoll.d);GP("app",flightPid.angleRatePitch.p);GP("api",flightPid.angleRatePitch.i);GP("apd",flightPid.angleRatePitch.d);GP("ayp",flightPid.angleRateYaw.p);GP("ayi",flightPid.angleRateYaw.i);GP("ayd",flightPid.angleRateYaw.d);
+  GP("orp",flightPid.angleRoll.p);GP("ori",flightPid.angleRoll.i);GP("ord",flightPid.angleRoll.d);GP("opp",flightPid.anglePitch.p);GP("opi",flightPid.anglePitch.i);GP("opd",flightPid.anglePitch.d);
+  #undef GP
+  prefs.end();
+}
+void savePidSettings(){prefs.begin("zjpid",false);prefs.putBool("saved",true);
+  #define PP(K,V) prefs.putFloat(K,V)
+  PP("rrp",flightPid.rateRoll.p);PP("rri",flightPid.rateRoll.i);PP("rrd",flightPid.rateRoll.d);PP("rpp",flightPid.ratePitch.p);PP("rpi",flightPid.ratePitch.i);PP("rpd",flightPid.ratePitch.d);PP("ryp",flightPid.rateYaw.p);PP("ryi",flightPid.rateYaw.i);PP("ryd",flightPid.rateYaw.d);
+  PP("arp",flightPid.angleRateRoll.p);PP("ari",flightPid.angleRateRoll.i);PP("ard",flightPid.angleRateRoll.d);PP("app",flightPid.angleRatePitch.p);PP("api",flightPid.angleRatePitch.i);PP("apd",flightPid.angleRatePitch.d);PP("ayp",flightPid.angleRateYaw.p);PP("ayi",flightPid.angleRateYaw.i);PP("ayd",flightPid.angleRateYaw.d);
+  PP("orp",flightPid.angleRoll.p);PP("ori",flightPid.angleRoll.i);PP("ord",flightPid.angleRoll.d);PP("opp",flightPid.anglePitch.p);PP("opi",flightPid.anglePitch.i);PP("opd",flightPid.anglePitch.d);
+  #undef PP
+  prefs.end();
+}
+bool pidAxisValid(const PidAxis& a,bool angleOuter=false){float pMax=angleOuter?10.0f:8.0f,iMax=angleOuter?10.0f:50.0f,dMax=angleOuter?.5f:.2f;return isfinite(a.p)&&isfinite(a.i)&&isfinite(a.d)&&a.p>=0&&a.p<=pMax&&a.i>=0&&a.i<=iMax&&a.d>=0&&a.d<=dMax;}
+bool pidConfigValid(const FlightPidSettings& p){return pidAxisValid(p.rateRoll)&&pidAxisValid(p.ratePitch)&&pidAxisValid(p.rateYaw)&&pidAxisValid(p.angleRateRoll)&&pidAxisValid(p.angleRatePitch)&&pidAxisValid(p.angleRateYaw)&&pidAxisValid(p.angleRoll,true)&&pidAxisValid(p.anglePitch,true);}
+String pidAxisJson(const PidAxis& a){return String("{\"P\":")+String(a.p,5)+",\"I\":"+String(a.i,5)+",\"D\":"+String(a.d,5)+"}";}
+String pidJson(){String j="{\"rateRoll\":"+pidAxisJson(flightPid.rateRoll)+",\"ratePitch\":"+pidAxisJson(flightPid.ratePitch)+",\"rateYaw\":"+pidAxisJson(flightPid.rateYaw);j+=",\"angleRateRoll\":"+pidAxisJson(flightPid.angleRateRoll)+",\"angleRatePitch\":"+pidAxisJson(flightPid.angleRatePitch)+",\"angleRateYaw\":"+pidAxisJson(flightPid.angleRateYaw);j+=",\"angleRoll\":"+pidAxisJson(flightPid.angleRoll)+",\"anglePitch\":"+pidAxisJson(flightPid.anglePitch)+"}";return j;}
+float argFloat(const char* key,float fallback){if(!server.hasArg(key))return fallback;String v=server.arg(key);v.trim();if(!v.length())return fallback;return v.toFloat();}
+void readPidArgs(FlightPidSettings& n){
+  n.rateRoll={argFloat("rateRollP",n.rateRoll.p),argFloat("rateRollI",n.rateRoll.i),argFloat("rateRollD",n.rateRoll.d)};n.ratePitch={argFloat("ratePitchP",n.ratePitch.p),argFloat("ratePitchI",n.ratePitch.i),argFloat("ratePitchD",n.ratePitch.d)};n.rateYaw={argFloat("rateYawP",n.rateYaw.p),argFloat("rateYawI",n.rateYaw.i),argFloat("rateYawD",n.rateYaw.d)};
+  n.angleRateRoll={argFloat("angleRateRollP",n.angleRateRoll.p),argFloat("angleRateRollI",n.angleRateRoll.i),argFloat("angleRateRollD",n.angleRateRoll.d)};n.angleRatePitch={argFloat("angleRatePitchP",n.angleRatePitch.p),argFloat("angleRatePitchI",n.angleRatePitch.i),argFloat("angleRatePitchD",n.angleRatePitch.d)};n.angleRateYaw={argFloat("angleRateYawP",n.angleRateYaw.p),argFloat("angleRateYawI",n.angleRateYaw.i),argFloat("angleRateYawD",n.angleRateYaw.d)};
+  n.angleRoll={argFloat("angleRollP",n.angleRoll.p),argFloat("angleRollI",n.angleRoll.i),argFloat("angleRollD",n.angleRoll.d)};n.anglePitch={argFloat("anglePitchP",n.anglePitch.p),argFloat("anglePitchI",n.anglePitch.i),argFloat("anglePitchD",n.anglePitch.d)};
+}
+bool propsRemovedConfirmed(){String c=server.arg("confirm");c.toUpperCase();return c=="PROPS_REMOVED";}
+void benchStop(){benchMode=BENCH_NONE;benchMotor=0;benchSequenceMotor=0;benchEscStage=0;benchUntilMs=benchStageUntilMs=0;motorsSafe();}
+void directMotorPulse(int index,int pulse){if(!FLIGHT_CONTROL_ENABLED)return;for(int i=0;i<4;i++){int v=(i==index)?pulse:1000;motorInput[i]=v;if(MOTOR_PINS[i]>=0)ledcWrite(MOTOR_PINS[i],v);}}
+void allMotorPulse(int pulse){if(!FLIGHT_CONTROL_ENABLED)return;for(int i=0;i<4;i++){motorInput[i]=pulse;if(MOTOR_PINS[i]>=0)ledcWrite(MOTOR_PINS[i],pulse);}}
+void serviceBenchMode(){if(benchMode==BENCH_NONE)return;unsigned long now=millis();if(benchMode==BENCH_MOTOR){if((long)(now-benchUntilMs)>=0){benchStop();return;}directMotorPulse((int)benchMotor-1,benchPulse);return;}if(benchMode==BENCH_MOTOR_SEQUENCE){if((long)(now-benchStageUntilMs)>=0){benchSequenceMotor++;if(benchSequenceMotor>4){benchStop();return;}benchStageUntilMs=now+700;}directMotorPulse((int)benchSequenceMotor-1,1200);return;}if(benchMode==BENCH_ESC_CAL){if(benchEscStage==0){allMotorPulse(2048);if((long)(now-benchStageUntilMs)>=0){benchEscStage=1;benchStageUntilMs=now+3000;}}else if(benchEscStage==1){allMotorPulse(1024);if((long)(now-benchStageUntilMs)>=0){benchStop();}}}}
 bool configureMpu6050Flight(){if(detectedImu!=IMU_MPU6050||!detectedImuAddress)return false;return i2cWriteReg(detectedImuAddress,0x6B,0x00)&&i2cWriteReg(detectedImuAddress,0x1A,0x05)&&i2cWriteReg(detectedImuAddress,0x1C,0x10)&&i2cWriteReg(detectedImuAddress,0x1B,0x08)&&i2cWriteReg(detectedImuAddress,0x19,0x03);}
 bool readMpuFlight(float& rr,float& rp,float& ry,float& ax,float& ay,float& az){uint8_t b[14];if(!i2cReadBlock(detectedImuAddress,0x3B,b,sizeof(b)))return false;auto be16=[&](int i)->int16_t{return (int16_t)(((uint16_t)b[i]<<8)|b[i+1]);};int16_t rax=be16(0),ray=be16(2),raz=be16(4),rgx=be16(8),rgy=be16(10),rgz=be16(12);ax=(float)rax/4096.0f-0.10f;ay=(float)ray/4096.0f+0.03f;az=(float)raz/4096.0f+0.12f;rr=(float)rgx/65.5f;rp=(float)rgy/65.5f;ry=(float)rgz/65.5f;lastImu.kind=IMU_MPU6050;lastImu.address=detectedImuAddress;lastImu.whoAmI=detectedImuAddress;lastImu.rawAx=rax;lastImu.rawAy=ray;lastImu.rawAz=raz;lastImu.rawGx=rgx;lastImu.rawGy=rgy;lastImu.rawGz=rgz;lastImu.ax=ax;lastImu.ay=ay;lastImu.az=az;lastImu.gx=rr;lastImu.gy=rp;lastImu.gz=ry;lastImu.sampledAt=millis();lastImuValid=true;return true;}
 void disarmFlight(const char* reason){if(armed&&reason&&strlen(reason))Serial.println(String("DISARM • ")+reason);armed=false;motorsSafe();resetFlightPid();}
@@ -393,7 +434,7 @@ void setupFlightCore(){
   Serial.printf("FlightCore READY • gyro bias R %.3f P %.3f Y %.3f dps • motors D1/D2/D3/D0 • 250 Hz\n",gyroBiasRoll,gyroBiasPitch,gyroBiasYaw);
 }
 void runFlightLoop(){
-  if(!FLIGHT_CONTROL_ENABLED||!flightReady)return;uint32_t now=micros();if((uint32_t)(now-flightLoopTimerUs)<FLIGHT_LOOP_US)return;flightLoopTimerUs+=FLIGHT_LOOP_US;if((uint32_t)(now-flightLoopTimerUs)>FLIGHT_LOOP_US*4)flightLoopTimerUs=now;
+  if(!FLIGHT_CONTROL_ENABLED||!flightReady||benchMode!=BENCH_NONE)return;uint32_t now=micros();if((uint32_t)(now-flightLoopTimerUs)<FLIGHT_LOOP_US)return;flightLoopTimerUs+=FLIGHT_LOOP_US;if((uint32_t)(now-flightLoopTimerUs)>FLIGHT_LOOP_US*4)flightLoopTimerUs=now;
   uint16_t rc[10];activeRcSource=chooseRcSource();copyActiveRc(rc,activeRcSource);
   if(activeRcSource!=lastRcSource){if(armed)disarmFlight("RC source changed");armLowSeen=false;lastRcSource=activeRcSource;lastSourceChangeMs=millis();Serial.println(String("RC source: ")+rcSourceName(activeRcSource));}
   FlightModeKind requested=rc[5]>=1500?FLIGHT_RATE:FLIGHT_ANGLE;if(requested!=flightMode){if(armed)disarmFlight("mode changed");flightMode=requested;resetFlightPid();}
@@ -403,8 +444,8 @@ void runFlightLoop(){
   accAngleRoll=atan2f(accY,sqrtf(accX*accX+accZ*accZ))*57.2957795f;accAnglePitch=-atan2f(accX,sqrtf(accY*accY+accZ*accZ))*57.2957795f;kalmanStep(kalmanRoll,kalmanRollUnc,rateRoll,accAngleRoll);kalmanStep(kalmanPitch,kalmanPitchUnc,ratePitch,accAnglePitch);
   if(!armed||rc[2]<1050){motorsSafe();resetFlightPid();return;}
   float desiredRateRoll=0,desiredRatePitch=0,desiredRateYaw=.15f*((float)rc[3]-1500.0f);float inputRoll=0,inputPitch=0,inputYaw=0;
-  if(flightMode==FLIGHT_RATE){desiredRateRoll=.15f*((float)rc[0]-1500.0f);desiredRatePitch=.15f*((float)rc[1]-1500.0f);inputRoll=pidStep(desiredRateRoll-rateRoll,1.4f,18.0f,.035f,prevRateErrRoll,iRateRoll);inputPitch=pidStep(desiredRatePitch-ratePitch,1.4f,18.0f,.035f,prevRateErrPitch,iRatePitch);inputYaw=pidStep(desiredRateYaw-rateYaw,3.0f,20.0f,0.0f,prevRateErrYaw,iRateYaw);}
-  else{float desiredAngleRoll=.10f*((float)rc[0]-1500.0f),desiredAnglePitch=.10f*((float)rc[1]-1500.0f);desiredRateRoll=pidStep(desiredAngleRoll-kalmanRoll,3.0f,0.0f,0.0f,prevAngleErrRoll,iAngleRoll);desiredRatePitch=pidStep(desiredAnglePitch-kalmanPitch,3.0f,0.0f,0.0f,prevAngleErrPitch,iAnglePitch);inputRoll=pidStep(desiredRateRoll-rateRoll,.9f,15.0f,.03f,prevRateErrRoll,iRateRoll);inputPitch=pidStep(desiredRatePitch-ratePitch,.9f,15.0f,.03f,prevRateErrPitch,iRatePitch);inputYaw=pidStep(desiredRateYaw-rateYaw,3.0f,15.0f,0.0f,prevRateErrYaw,iRateYaw);}
+  if(flightMode==FLIGHT_RATE){desiredRateRoll=.15f*((float)rc[0]-1500.0f);desiredRatePitch=.15f*((float)rc[1]-1500.0f);inputRoll=pidStep(desiredRateRoll-rateRoll,flightPid.rateRoll.p,flightPid.rateRoll.i,flightPid.rateRoll.d,prevRateErrRoll,iRateRoll);inputPitch=pidStep(desiredRatePitch-ratePitch,flightPid.ratePitch.p,flightPid.ratePitch.i,flightPid.ratePitch.d,prevRateErrPitch,iRatePitch);inputYaw=pidStep(desiredRateYaw-rateYaw,flightPid.rateYaw.p,flightPid.rateYaw.i,flightPid.rateYaw.d,prevRateErrYaw,iRateYaw);}
+  else{float desiredAngleRoll=.10f*((float)rc[0]-1500.0f),desiredAnglePitch=.10f*((float)rc[1]-1500.0f);desiredRateRoll=pidStep(desiredAngleRoll-kalmanRoll,flightPid.angleRoll.p,flightPid.angleRoll.i,flightPid.angleRoll.d,prevAngleErrRoll,iAngleRoll);desiredRatePitch=pidStep(desiredAnglePitch-kalmanPitch,flightPid.anglePitch.p,flightPid.anglePitch.i,flightPid.anglePitch.d,prevAngleErrPitch,iAnglePitch);inputRoll=pidStep(desiredRateRoll-rateRoll,flightPid.angleRateRoll.p,flightPid.angleRateRoll.i,flightPid.angleRateRoll.d,prevRateErrRoll,iRateRoll);inputPitch=pidStep(desiredRatePitch-ratePitch,flightPid.angleRatePitch.p,flightPid.angleRatePitch.i,flightPid.angleRatePitch.d,prevRateErrPitch,iRatePitch);inputYaw=pidStep(desiredRateYaw-rateYaw,flightPid.angleRateYaw.p,flightPid.angleRateYaw.i,flightPid.angleRateYaw.d,prevRateErrYaw,iRateYaw);}
   float throttle=min((float)rc[2],1800.0f),m1=1.024f*(throttle+inputRoll-inputPitch+inputYaw),m2=1.024f*(throttle-inputRoll-inputPitch-inputYaw),m3=1.024f*(throttle-inputRoll+inputPitch+inputYaw),m4=1.024f*(throttle+inputRoll+inputPitch-inputYaw);m1=constrain(m1,1180.0f,1999.0f);m2=constrain(m2,1180.0f,1999.0f);m3=constrain(m3,1180.0f,1999.0f);m4=constrain(m4,1180.0f,1999.0f);writeMotorOutputs(m1,m2,m3,m4);flightLoopCount++;
 }
 
@@ -488,7 +529,7 @@ String statusJson(const String& clientId=""){
   String j="{\"ok\":true,\"kit\":\"ZEBJUS_FLIGHTCORE\",\"version\":\""+String(FW_VERSION)+"\",\"firmware\":\""+String(FW_VERSION)+"\",\"firmwareBuiltAt\":\""+String(FW_BUILD_DATE)+" "+String(FW_BUILD_TIME)+" UTC\"";
   j+=",\"name\":\""+jsonEscape(kitName)+"\",\"deviceName\":\""+jsonEscape(kitName)+"\",\"hostname\":\""+hostFromName(kitName)+"\",\"deviceId\":\""+deviceId+"\",\"boardId\":\""+String(BOARD_ID)+"\",\"boardName\":\""+String(BOARD_NAME)+"\"";
   j+=",\"connected\":"+String(connected?"true":"false")+",\"ssid\":\""+jsonEscape(connected?WiFi.SSID():"")+"\",\"ip\":\""+(connected?WiFi.localIP().toString():WiFi.softAPIP().toString())+"\",\"rssi\":"+String(connected?WiFi.RSSI():0);
-  j+=",\"mode\":\""+mode+"\",\"armed\":"+String(effectiveArmed()?"true":"false")+",\"locked\":"+String(lockActive()?"true":"false")+",\"lockMine\":"+String(lockMine(clientId)?"true":"false")+",\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+",\"benchRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"webRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"apRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"firmwareRole\":\""+String(FLIGHT_CONTROL_ENABLED?"RATE_ANGLE_FLIGHT_CORE":"WIFI_SENSOR_BRIDGE")+"\",\"flightCoreIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"flightReady\":"+String(flightReady?"true":"false")+",\"escOutputs\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidWritable\":false,\"calibrationIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"flightMode\":\""+String(flightModeName(flightMode))+"\",\"rcSource\":\""+String(rcSourceName(activeRcSource))+"\",\"otaUpdate\":true,\"receiverHealth\":\""+receiverHealth()+"\",\"receiverPin\":"+String(PPM_RECEIVER_PIN)+",\"i2cScan\":true,\"imuRead\":true,\"imuModel\":\""+String(imuName(detectedImu))+"\",\"i2cSda\":"+String(I2C_SDA_PIN)+",\"i2cScl\":"+String(I2C_SCL_PIN)+"}";
+  j+=",\"mode\":\""+mode+"\",\"armed\":"+String(effectiveArmed()?"true":"false")+",\"locked\":"+String(lockActive()?"true":"false")+",\"lockMine\":"+String(lockMine(clientId)?"true":"false")+",\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+",\"benchRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"webRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"apRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"firmwareRole\":\""+String(FLIGHT_CONTROL_ENABLED?"RATE_ANGLE_FLIGHT_CORE":"WIFI_SENSOR_BRIDGE")+"\",\"flightCoreIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"flightReady\":"+String(flightReady?"true":"false")+",\"escOutputs\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidWritable\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"calibrationIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"flightMode\":\""+String(flightModeName(flightMode))+"\",\"rcSource\":\""+String(rcSourceName(activeRcSource))+"\",\"otaUpdate\":true,\"receiverHealth\":\""+receiverHealth()+"\",\"receiverPin\":"+String(PPM_RECEIVER_PIN)+",\"i2cScan\":true,\"imuRead\":true,\"imuModel\":\""+String(imuName(detectedImu))+"\",\"i2cSda\":"+String(I2C_SDA_PIN)+",\"i2cScl\":"+String(I2C_SCL_PIN)+",\"benchMode\":"+String((int)benchMode)+",\"pid\":"+pidJson()+"}";
   return j;
 }
 void statusApi(){sendJson(200,statusJson(server.arg("clientId")));}
@@ -510,10 +551,31 @@ int parseRcCsv(const String& csv,uint16_t out[10]){int n=0,start=0;while(n<10&&s
 void commandApi(){
   String type=server.arg("type");if(type=="ping"){sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"ping\",\"message\":\"PONG from "+jsonEscape(kitName)+" / "+deviceId+"\"}");return;}
   if(!requireControl())return;
-  if(type=="pid_set"){if(effectiveArmed()){sendMessage(423,"PID edit blocked while armed");return;}sendMessage(501,"Rate/Angle PID is active onboard, but browser PID write is not enabled in this release.");return;}
-  if(type.startsWith("calibrate_")||type.startsWith("acc_")||type=="motor_order_test"){if(effectiveArmed()){sendMessage(423,"Calibration blocked while armed");return;}sendMessage(501,"Boot gyro calibration is active; interactive calibration/motor-test commands are not enabled yet.");return;}
+  if(type=="pid_get"){sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"pid_get\",\"pid\":"+pidJson()+"}");return;}
+  if(type=="pid_set"){
+    if(!FLIGHT_CONTROL_ENABLED){sendMessage(403,"PID write is not available on this board profile.");return;}if(effectiveArmed()){sendMessage(423,"PID edit blocked while armed. Land, disarm, then tune.");return;}if(benchMode!=BENCH_NONE){sendMessage(423,"PID edit blocked during bench motor/ESC operation.");return;}
+    FlightPidSettings next=flightPid;readPidArgs(next);if(!pidConfigValid(next)){sendMessage(400,"PID values outside guarded limits. Rate P 0-8, I 0-50, D 0-0.2; outer angle P/I 0-10, D 0-0.5.");return;}flightPid=next;resetFlightPid();savePidSettings();sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"pid_set\",\"saved\":true,\"pid\":"+pidJson()+",\"message\":\"PID saved to FlightCore NVS\"}");return;
+  }
+  if(type=="pid_defaults"){if(effectiveArmed()){sendMessage(423,"PID restore blocked while armed.");return;}setPidDefaults();savePidSettings();resetFlightPid();sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"pid_defaults\",\"pid\":"+pidJson()+"}");return;}
+  if(type=="receiver_read"||type=="ppm_read"){uint16_t rc[10];RcSourceKind src=chooseRcSource();copyActiveRc(rc,src);String j="{\"ok\":true,\"type\":\"ack\",\"command\":\"receiver_read\",\"source\":\""+String(rcSourceName(src))+"\",\"ppmFresh\":"+String(receiverFresh()?"true":"false")+",\"channels\":[";for(int i=0;i<10;i++){if(i)j+=",";j+=String(rc[i]);}j+="]}";sendJson(200,j);return;}
+  if(type=="attitude_read"){String j="{\"ok\":true,\"type\":\"ack\",\"command\":\"attitude_read\",\"roll\":"+String(kalmanRoll,3)+",\"pitch\":"+String(kalmanPitch,3)+",\"yaw\":"+String(flightYaw,3)+",\"rateRoll\":"+String(rateRoll,3)+",\"ratePitch\":"+String(ratePitch,3)+",\"rateYaw\":"+String(rateYaw,3)+"}";sendJson(200,j);return;}
+  if(type=="calibrate_gyro"){
+    if(effectiveArmed()){sendMessage(423,"Gyro calibration blocked while armed.");return;}if(benchMode!=BENCH_NONE){sendMessage(423,"Gyro calibration blocked during bench output.");return;}setupFlightCore();if(flightReady)sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"calibrate_gyro\",\"message\":\"Gyro calibrated\"}");else sendMessage(500,"Gyro calibration failed. Keep frame level/still and check MPU6050.");return;
+  }
+  if(type=="motor_stop"){benchStop();sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"motor_stop\"}");return;}
+  if(type=="motor_test"){
+    if(!FLIGHT_CONTROL_ENABLED){sendMessage(403,"Motor outputs unavailable on this board profile.");return;}if(effectiveArmed()){sendMessage(423,"Motor test blocked while armed.");return;}if(!propsRemovedConfirmed()){sendMessage(412,"Motor test requires confirm=PROPS_REMOVED.");return;}int motor=constrain(server.arg("motor").toInt(),1,4),pulse=constrain(server.arg("pulse").toInt(),1050,1300),duration=constrain(server.arg("durationMs").toInt(),100,3000);benchMode=BENCH_MOTOR;benchMotor=motor;benchPulse=pulse;benchUntilMs=millis()+duration;directMotorPulse(motor-1,pulse);sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"motor_test\",\"motor\":"+String(motor)+",\"pulse\":"+String(pulse)+",\"durationMs\":"+String(duration)+"}");return;
+  }
+  if(type=="motor_order_test"){
+    if(!FLIGHT_CONTROL_ENABLED){sendMessage(403,"Motor outputs unavailable on this board profile.");return;}if(effectiveArmed()){sendMessage(423,"Motor order test blocked while armed.");return;}if(!propsRemovedConfirmed()){sendMessage(412,"Motor order test requires confirm=PROPS_REMOVED.");return;}benchMode=BENCH_MOTOR_SEQUENCE;benchSequenceMotor=1;benchStageUntilMs=millis()+700;directMotorPulse(0,1200);sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"motor_order_test\",\"message\":\"M1-M4 sequence started\"}");return;
+  }
+  if(type=="esc_calibrate"){
+    if(!FLIGHT_CONTROL_ENABLED){sendMessage(403,"ESC outputs unavailable on this board profile.");return;}if(effectiveArmed()){sendMessage(423,"ESC calibration blocked while armed.");return;}if(!propsRemovedConfirmed()){sendMessage(412,"ESC calibration requires confirm=PROPS_REMOVED.");return;}benchMode=BENCH_ESC_CAL;benchEscStage=0;benchStageUntilMs=millis()+3000;allMotorPulse(2048);sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"esc_calibrate\",\"message\":\"ESC calibration started: 3 s high, then 3 s low\"}");return;
+  }
+  if(type=="bench_status"){sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"bench_status\",\"benchMode\":"+String((int)benchMode)+",\"motor\":"+String((int)benchMotor)+",\"pulse\":"+String((int)benchPulse)+"}");return;}
+  if(type.startsWith("acc_")||type=="calibrate_level"){if(effectiveArmed()){sendMessage(423,"Calibration blocked while armed");return;}sendMessage(501,"Six-face accelerometer calibration storage is not enabled yet. Use the Python read tools to collect samples.");return;}
   if(type=="rc_frame"){
-    if(!ALLOW_WEB_RC||!FLIGHT_CONTROL_ENABLED){sendMessage(403,"Real web/AP RC is not enabled on this board profile.");return;}
+    if(!ALLOW_WEB_RC||!FLIGHT_CONTROL_ENABLED){sendMessage(403,"Real web/AP RC is not enabled on this board profile.");return;}if(benchMode!=BENCH_NONE){sendMessage(423,"RC blocked during bench motor/ESC operation.");return;}
     uint16_t next[10]={1500,1500,1000,1500,1000,1000,1000,1000,1500,1000};int count=parseRcCsv(server.arg("channels"),next);if(count<6){sendMessage(400,"rc_frame requires at least CH1..CH6");return;}
     for(int i=0;i<10;i++)webRcCh[i]=next[i];webRcLastMs=millis();RcSourceKind chosen=chooseRcSource();
     sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"rc_frame\",\"activeSource\":\""+String(rcSourceName(chosen))+"\",\"message\":\"RC frame accepted\"}");return;
@@ -614,7 +676,7 @@ void factoryResetApi(){if(!allowDisruptiveAdminAction("Factory reset"))return;fa
 // Firmware update / reboot
 // ============================================================
 void firmwareInfoApi(){
-  String j="{\"ok\":true,\"product\":\"ZEBJUS_FLIGHTCORE\",\"firmware\":\""+String(FW_VERSION)+"\",\"firmwareBuiltAt\":\""+String(FW_BUILD_DATE)+" "+String(FW_BUILD_TIME)+" UTC\",\"boardId\":\""+String(BOARD_ID)+"\",\"boardName\":\""+String(BOARD_NAME)+"\",\"flashBytes\":"+String(ESP.getFlashChipSize())+",\"freeSketchBytes\":"+String(ESP.getFreeSketchSpace())+",\"ota\":true,\"firmwareRole\":\""+String(FLIGHT_CONTROL_ENABLED?"RATE_ANGLE_FLIGHT_CORE":"WIFI_SENSOR_BRIDGE")+"\",\"flightCoreIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"flightReady\":"+String(flightReady?"true":"false")+",\"escOutputs\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidWritable\":false,\"calibrationIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"webRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"ppmRc\":true,\"i2cScan\":true,\"imuRead\":true,\"imuModel\":\""+String(imuName(detectedImu))+"\",\"i2cSda\":"+String(I2C_SDA_PIN)+",\"i2cScl\":"+String(I2C_SCL_PIN)+",\"armed\":"+String(effectiveArmed()?"true":"false")+"}";sendJson(200,j);
+  String j="{\"ok\":true,\"product\":\"ZEBJUS_FLIGHTCORE\",\"firmware\":\""+String(FW_VERSION)+"\",\"firmwareBuiltAt\":\""+String(FW_BUILD_DATE)+" "+String(FW_BUILD_TIME)+" UTC\",\"boardId\":\""+String(BOARD_ID)+"\",\"boardName\":\""+String(BOARD_NAME)+"\",\"flashBytes\":"+String(ESP.getFlashChipSize())+",\"freeSketchBytes\":"+String(ESP.getFreeSketchSpace())+",\"ota\":true,\"firmwareRole\":\""+String(FLIGHT_CONTROL_ENABLED?"RATE_ANGLE_FLIGHT_CORE":"WIFI_SENSOR_BRIDGE")+"\",\"flightCoreIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"flightReady\":"+String(flightReady?"true":"false")+",\"escOutputs\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidWritable\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"calibrationIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"webRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"ppmRc\":true,\"i2cScan\":true,\"imuRead\":true,\"imuModel\":\""+String(imuName(detectedImu))+"\",\"i2cSda\":"+String(I2C_SDA_PIN)+",\"i2cScl\":"+String(I2C_SCL_PIN)+",\"armed\":"+String(effectiveArmed()?"true":"false")+"}";sendJson(200,j);
 }
 void rebootApi(){
   if(!requireControl())return;if(effectiveArmed()){sendMessage(423,"Reboot blocked while armed");return;}sendMessage(200,"Reboot scheduled");restartAt=millis()+850;
@@ -667,7 +729,7 @@ void setupRoutes(){
 }
 void startNormalServer(){
   setupMode=false;dnsServer.stop();WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.40 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.41 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
   setupMode=true;controlOwner="";controlExpiresAt=0;if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP_STA);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),AP_PASSWORD);dnsServer.start(DNS_PORT,"*",AP_IP);server.begin();wifiTestState=WT_IDLE;
@@ -688,13 +750,13 @@ void networkHealth(){
 
 void setup(){
   Serial.begin(115200);delay(300);WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);if(ENABLE_PPM_RECEIVER&&PPM_RECEIVER_PIN>=0){pinMode(PPM_RECEIVER_PIN,INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(PPM_RECEIVER_PIN),ppmIsr,RISING);}
-  deviceId=getDeviceId();loadKitName();loadSavedWiFi();probeImuAtBoot();setupFlightCore();setupRoutes();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.40 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  deviceId=getDeviceId();loadKitName();loadSavedWiFi();loadPidSettings();probeImuAtBoot();setupFlightCore();setupRoutes();
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.41 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
   if(consumeForceSetupFlag()){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }
 void loop(){
-  runFlightLoop();server.handleClient();if(setupMode)dnsServer.processNextRequest();expireLock();processWifiTest();checkRecoveryButton();networkHealth();
+  serviceBenchMode();runFlightLoop();server.handleClient();if(setupMode)dnsServer.processNextRequest();expireLock();processWifiTest();checkRecoveryButton();networkHealth();
   if(wifiTestState==WT_SUCCESS&&wifiTestRestartAt&&(long)(millis()-wifiTestRestartAt)>=0){disarmFlight("restart");ESP.restart();}
   if(restartAt&&(long)(millis()-restartAt)>=0){disarmFlight("restart");ESP.restart();}
   yield();

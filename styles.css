@@ -968,3 +968,55 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 @media(max-width:1500px){.python-side-stack .python-terminal-card{flex-basis:220px!important;height:220px!important;min-height:220px!important;max-height:220px!important}.python-imu-card .imu-toolbox canvas{min-height:70px;max-height:108px}}
 @media(max-width:1250px){.python-side-stack{grid-column:1/-1;height:auto;min-height:0;max-height:none}.python-imu-card{min-height:390px!important}.python-side-stack .python-terminal-card{flex-basis:210px!important;height:210px!important;min-height:210px!important;max-height:210px!important}.python-imu-card .imu-toolbox{max-width:none}.python-imu-card .imu-toolbox canvas{height:92px;min-height:92px;max-height:92px}}
 @media(max-width:760px){.python-side-stack{grid-column:auto}.python-imu-card{min-height:360px!important}.python-side-stack .python-terminal-card{flex-basis:200px!important;height:200px!important;min-height:200px!important;max-height:200px!important}.terminal-toolbar-actions{width:100%}.terminal-toolbar-actions .btn{flex:1 1 120px}}
+
+/* ==================== V18.3.41 Python Flight Lab workspace ==================== */
+#tab-python{--py-side-w:430px;--py-terminal-h:330px}
+#tab-python .python-ide-layout{
+  display:grid!important;
+  grid-template-columns:minmax(560px,1fr) 8px minmax(310px,var(--py-side-w))!important;
+  grid-template-rows:auto minmax(620px,calc(100vh - 230px))!important;
+  gap:8px!important;max-width:2900px!important;align-items:stretch!important
+}
+#tab-python .python-project-card{
+  grid-column:1/-1!important;grid-row:1!important;min-height:0!important;height:auto!important;
+  padding:7px 9px!important;display:grid!important;grid-template-columns:auto minmax(180px,1fr) auto!important;
+  align-items:center!important;gap:8px!important;overflow:hidden!important
+}
+#tab-python .python-pane-head{margin:0!important;white-space:nowrap;min-width:max-content}
+#tab-python .python-pane-head>div{display:flex;align-items:center;gap:7px}
+#tab-python .python-pane-head small,#tab-python .python-pane-head b{display:inline!important}
+#tab-python .python-file-list{display:flex!important;flex-direction:row!important;gap:5px!important;overflow-x:auto!important;overflow-y:hidden!important;max-height:42px!important;min-height:34px!important;padding:2px!important;align-items:center}
+#tab-python .python-file-row{display:flex!important;flex:0 0 auto!important;width:auto!important;min-width:120px;max-width:200px;gap:3px!important}
+#tab-python .python-file-row .python-file-btn{height:30px!important;min-width:90px;max-width:165px;padding:5px 7px!important}
+#tab-python .python-file-delete{width:27px!important;height:30px!important;flex:0 0 27px}
+#tab-python .python-project-actions{display:flex!important;grid-template-columns:none!important;gap:4px!important;margin:0!important;flex-wrap:nowrap!important;align-items:center}
+#tab-python .python-project-actions .btn{padding:6px 8px!important;min-height:30px!important;white-space:nowrap}
+#tab-python .python-editor-card{grid-column:1!important;grid-row:2!important;min-height:0!important;height:auto!important;max-height:none!important;min-width:0!important}
+#tab-python .python-col-resizer{grid-column:2!important;grid-row:2!important;cursor:col-resize;border-radius:8px;background:linear-gradient(90deg,transparent 2px,#234356 3px,#234356 5px,transparent 6px);opacity:.62;touch-action:none}
+#tab-python .python-col-resizer:hover,#tab-python .python-col-resizer.dragging{background:linear-gradient(90deg,transparent 1px,#48d8ac 2px,#48d8ac 6px,transparent 7px);opacity:1}
+#tab-python .python-side-stack{grid-column:3!important;grid-row:2!important;height:auto!important;min-height:0!important;max-height:none!important;display:flex!important;flex-direction:column!important;gap:0!important;min-width:0!important;overflow:hidden!important}
+#tab-python .python-imu-card{flex:1 1 auto!important;min-height:260px!important;height:auto!important;max-height:none!important;overflow:auto!important}
+#tab-python .python-row-resizer{height:9px;flex:0 0 9px;cursor:row-resize;border-radius:7px;background:linear-gradient(0deg,transparent 2px,#234356 3px,#234356 6px,transparent 7px);opacity:.62;touch-action:none}
+#tab-python .python-row-resizer:hover,#tab-python .python-row-resizer.dragging{background:linear-gradient(0deg,transparent 1px,#48d8ac 2px,#48d8ac 7px,transparent 8px);opacity:1}
+#tab-python .python-side-stack .python-terminal-card{flex:0 0 var(--py-terminal-h)!important;height:var(--py-terminal-h)!important;min-height:180px!important;max-height:650px!important;overflow:hidden!important}
+#tab-python .python-side-stack .python-terminal-card #pythonTerminal{height:0!important;min-height:0!important;max-height:none!important;flex:1 1 auto!important;overflow:auto!important;user-select:text!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important}
+#pythonTerminal .python-terminal-error{color:#ff7288;font-weight:650}
+#pythonTerminal .python-terminal-warn{color:#ffd36a}
+#pythonTerminal .python-terminal-out{color:inherit}
+#tab-python .python-imu-card .imu-toolbox canvas{height:96px!important;min-height:82px!important;max-height:140px!important}
+#tab-python .python-toolbar-actions select{max-width:260px}
+@media(max-width:1150px){
+ #tab-python .python-ide-layout{grid-template-columns:1fr!important;grid-template-rows:auto minmax(560px,70vh) auto!important}
+ #tab-python .python-project-card{grid-column:1!important;grid-row:1!important;grid-template-columns:1fr!important;gap:6px!important}
+ #tab-python .python-pane-head{justify-content:flex-start!important}.python-project-actions{overflow-x:auto}
+ #tab-python .python-editor-card{grid-column:1!important;grid-row:2!important}
+ #tab-python .python-col-resizer{display:none!important}
+ #tab-python .python-side-stack{grid-column:1!important;grid-row:3!important;min-height:600px!important;overflow:visible!important}
+ #tab-python .python-side-stack .python-terminal-card{height:var(--py-terminal-h)!important;flex-basis:var(--py-terminal-h)!important}
+}
+@media(max-width:760px){
+ #tab-python{--py-terminal-h:300px}
+ #tab-python .python-project-actions{flex-wrap:wrap!important}
+ #tab-python .python-file-list{max-height:46px!important}
+ #tab-python .python-ide-layout{grid-template-rows:auto minmax(520px,68vh) auto!important}
+}

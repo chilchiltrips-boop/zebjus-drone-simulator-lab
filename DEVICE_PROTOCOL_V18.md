@@ -24,7 +24,7 @@ Lock expires after 10 seconds without heartbeat.
 
 Form fields: `clientId`, `type`, plus command-specific values.
 
-Non-read-only hardware commands require the local control lock. PID/calibration changes are rejected while armed. Real web joystick is disabled by default in firmware.
+Non-read-only hardware commands require the local control lock. PID/calibration changes are rejected while armed. On the A2 flight profile, verified Web/AP RC is enabled with PPM-first source priority and a short stale-frame failsafe. A1 remains bridge-only.
 
 ## Rename
 `POST /api/name` with `clientId`, `name`.
@@ -95,3 +95,24 @@ Example response:
 ## V18.3.27 packaging / update note
 
 The wire/API protocol remains compatible with V18.3.24. Packaging changed to stable replace-in-place firmware names: `ZEBJUS_FLIGHTCORE.ino` and board-specific `ZEBJUS_FLIGHTCORE_<board>_APP.bin`. Firmware semantic version remains available through the existing `FW_VERSION` / firmware-info fields.
+
+## V18.3.41 Python Flight Lab / PID / bench commands
+
+A2 / XIAO ESP32-C6 exposes the following `POST /api/command` types to the verified control-lock owner:
+
+- `pid_get` — returns the complete persistent PID object.
+- `pid_set` — accepts flattened fields such as `rateRollP`, `rateRollI`, `rateRollD`, `angleRatePitchP`, `angleRollP`, etc. Real writes are rejected while ARMED or while bench output is active. Accepted values are saved to NVS.
+- `pid_defaults` — restores and persists the default Rate + Angle PID profile while disarmed.
+- `receiver_read` / `ppm_read` — returns active RC source and CH1..CH10 values.
+- `attitude_read` — returns filtered roll/pitch/yaw and rate-roll/pitch/yaw.
+- `calibrate_gyro` — reruns the real A2 gyro-zero routine while disarmed and still.
+- `rc_frame` — accepts `channels` with at least CH1..CH6. Fresh physical PPM retains priority over Web/AP RC.
+- `motor_test` — guarded single-motor low-pulse bench test. Requires `confirm=PROPS_REMOVED`.
+- `motor_order_test` — M1→M4 bench sequence. Requires `confirm=PROPS_REMOVED`.
+- `esc_calibrate` — guarded 3 s high + 3 s low calibration sequence. Requires `confirm=PROPS_REMOVED`.
+- `motor_stop` — immediately ends a bench output operation and writes safe motor values.
+- `bench_status` — reports the current bench state.
+
+A1 / ESP32-C3 continues to expose bridge/read capabilities but rejects real motor/PID flight-output operations that require the A2 flight profile.
+
+The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `set_angle_pid()`, `receiver()/ppm()`, `attitude()`, `rc()`, `motor_test()`, `motor_order_test()`, `esc_calibrate()`, `motor_stop()`, `bench_status()`, and `calibrate_gyro()`.

@@ -231,7 +231,31 @@ if 'validateEspImage' not in fu or 'mostly empty/zero data' not in fu: fail('Fir
 if 'imuAccelChart' not in read('index.html') or 'recordImuSample' not in app or 'downloadImuCsv' not in app: fail('IMU live graph/rate/CSV teaching tools are missing')
 if 'python-side-stack' not in read('index.html') or 'python-imu-card' not in read('index.html'): fail('IMU Live Graph and Python terminal are not separated into stacked cards')
 if 'copyTerminalBtn' not in read('index.html') or 'copyPythonTerminal' not in app or 'navigator.clipboard.writeText' not in app: fail('Python terminal Copy Output workflow is missing')
-if '.python-side-stack .python-terminal-card{flex:0 0 238px' not in read('styles.css'): fail('Python terminal compact-height layout is missing')
+styles=read('styles.css')
+if '#tab-python{--py-side-w:430px;--py-terminal-h:330px}' not in styles or 'python-row-resizer' not in styles or 'python-col-resizer' not in styles: fail('V18.3.41 draggable Python workspace sizing is missing')
+if '#tab-python .python-file-list{display:flex!important;flex-direction:row!important' not in styles: fail('Student Python Files is not a horizontal project strip')
+if '#pythonTerminal .python-terminal-error' not in styles or 'color:#ff7288' not in styles: fail('Python terminal error coloring is missing')
+if "const CACHE='zebjus-flightcore-v18-3-41'" not in sw: fail('service-worker cache key is stale for V18.3.41')
+
+
+# V18.3.41 Python Flight Lab / real-FC tuning integration.
+if 'struct FlightPidSettings' not in types_header or 'enum BenchModeKind' not in types_header: fail('PID/bench custom types are not in the Arduino-safe companion header')
+for token in ['loadPidSettings()','savePidSettings()','pid_get','pid_set','pid_defaults','PID edit blocked while armed','confirm=PROPS_REMOVED','motor_test','motor_order_test','esc_calibrate','bench_status','calibrate_gyro']:
+    if token not in ino: fail(f'V18.3.41 real-FC Python/PID support missing: {token}')
+if 'async function commandDevice' not in school or 'await client.command(command)' not in school: fail('school-lab lacks awaited command bridge for Python real-kit projects')
+for method in ['set_rate_pid','set_angle_pid','receiver','ppm','motor_test','motor_order_test','esc_calibrate','bench_status','calibrate_gyro']:
+    if method not in app or method not in read('python-worker.js'): fail(f'Python Drone API method missing from app/worker runtime: {method}')
+example_block=app[app.find('const PY_EXAMPLES=['):app.find('const ZEBJUS_PY_PRELUDE=')]
+required_examples=['i2c','imu','gyro','accel','angle','ppm','pid-read','rate-pid','angle-pid','keyboard-rc','gyro-cal','motor-test','esc-cal','level-check','rx-monitor','sensor-snapshot','flight-diag','rc-center','throttle-ramp','bench-status','motor-one','pid-step','combined']
+for ident in required_examples:
+    if f"id:'{ident}'" not in example_block: fail(f'Python Flight Lab example missing: {ident}')
+if example_block.count("{id:'") < 25: fail('Python Flight Lab does not contain the expanded project library')
+for token in ['syncPythonCodeToSimulator','pythonSimCommand','pythonBenchMix','setStickVisual','PRateRoll','PAngleRoll']:
+    if token not in app: fail(f'Python code-to-simulator reflection missing: {token}')
+for token in ['pythonColResizer','pythonRowResizer','initPythonWorkspaceResizers','zebjus-python-layout-v1841']:
+    if token not in app+html: fail(f'Python draggable workspace integration missing: {token}')
+if "pythonTerminalWrite(m.text||'','error')" in app: fail('stderr handler regression: terminal should buffer stderr and render it as red on completion/error')
+if "pythonTerminalWrite(pythonStderrBuffer,'error')" not in app or "pythonTerminalWrite(`ERR: ${friendly}\\n`,'error')" not in app: fail('Python runtime errors are not routed to red terminal output')
 
 if warnings:
     for x in warnings: print('WARN:',x)
