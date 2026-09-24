@@ -16,9 +16,10 @@ const st={devices:[],selectedDeviceId:'',query:'',preferredDeviceId:'',preferred
 function api(){return window.zebjusLabAPI||null}
 function ready(){return !!client}
 function selected(){return st.devices.find(d=>d.deviceId===st.selectedDeviceId)||null}
+function selectedConnected(){const d=selected();return !!(d?.online&&client?.connected&&window.ZebjusDroneKit?.sameDeviceIdentity?.(client.deviceId,d.deviceId))}
 function ownsLock(){const d=selected();return !!(d&&d.online&&d.lockMine)}
 function isViewOnly(){const d=selected();return !!(d&&d.online&&!d.lockMine)}
-function canControl(){return !!(client?.connected&&ownsLock())}
+function canControl(){return !!(selectedConnected()&&ownsLock())}
 function log(t){const e=$('#schoolLog');if(e)e.textContent=`${new Date().toLocaleTimeString()} ${t}\n${e.textContent}`.slice(0,9000)}
 function signalText(rssi){rssi=+rssi;if(!Number.isFinite(rssi))return 'Unknown';if(rssi>=-55)return 'Excellent';if(rssi>=-67)return 'Good';if(rssi>=-75)return 'Weak';return 'Very weak'}
 function fmtBuildTime(v){if(!v)return'--';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleString([], {year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'})}
@@ -53,13 +54,14 @@ function refreshLastSeenText(){
 }
 function serviceStatus(){
  const e=$('#simpleServiceStatus');if(e){e.textContent=ready()?'LOCAL READY':'UNAVAILABLE';e.className=ready()?'good':''}
- const d=selected(),k=$('#simpleKitStatus');if(k){k.textContent=d?(d.online?'ONLINE':'OFFLINE'):'NOT SELECTED';k.className=d?.online?'good':''}
+ const d=selected(),linked=selectedConnected(),k=$('#simpleKitStatus');if(k){k.textContent=!d?'NOT SELECTED':linked?'CONNECTED':d.online?'FOUND':'OFFLINE';k.className=linked?'good':d?.online?'warn':''}
  const c=$('#simpleControlStatus');if(c){c.textContent=!d?'--':d.lockMine?'YOU CONTROL':d.locked?'VIEW ONLY':'AVAILABLE';c.className=d?.lockMine?'good':d?.locked?'warn':''}
  const n=$('#simpleNetworkStatus');if(n)n.textContent=d?(d.ssid||'Same Wi-Fi'):'--';
 }
 function updateTopKitStatus(){
  const el=$('#topKitStatus'),d=selected();if(!el)return;
- if(d?.online){const mode=d.lockMine?'CONTROL':d.locked?'VIEW ONLY':'CONNECTED';el.className='top-kit-status online';el.innerHTML=`<i></i><span><b>KIT CONNECTED</b><em>${esc(d.deviceName||d.deviceId)} • ${mode}</em></span>`;}
+ if(selectedConnected()){const mode=d.lockMine?'CONTROL':d.locked?'VIEW ONLY':'CONNECTED';el.className='top-kit-status online';el.innerHTML=`<i></i><span><b>KIT CONNECTED</b><em>${esc(d.deviceName||d.deviceId)} • ${mode}</em></span>`;}
+ else if(d?.online){el.className='top-kit-status offline';el.innerHTML=`<i></i><span><b>KIT FOUND</b><em>${esc(d.deviceName||d.deviceId)} • press Connect</em></span>`;}
  else{el.className='top-kit-status offline';el.innerHTML='<i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span>';}
 }
 function targetUi(){
@@ -67,7 +69,7 @@ function targetUi(){
  const target=$('#webJoyTarget')?.value||'sim',tb=$('#joyTargetBadge');if(tb){tb.textContent=target==='sim'?'SIMULATOR':'REAL HARDWARE';tb.className='target-mode-badge '+(target==='sim'?'sim':'real')}
  const tn=$('#joyTargetNote');if(tn)tn.textContent=!st.txOn?'Transmitter is OFF. Outputs are held safe.':target==='sim'?'Simulator transmitter active. No real kit commands are sent.':ownsLock()?'Real-kit bench transmitter active. Propellers must be removed.':'Real kit is view-only until you take control.';
  setText('joyTargetSummary',target==='sim'?'SIMULATOR':'REAL KIT');
- const link=$('#webTxLedLink'),linkText=$('#webTxLinkText');if(link){const on=target==='sim'||(client?.connected&&selected()?.online);link.className='tx-led '+(on?'on':'warn')}if(linkText)linkText.textContent=target==='sim'?'SIM':(selected()?.online?'KIT':'OFFLINE');
+ const link=$('#webTxLedLink'),linkText=$('#webTxLinkText');if(link){const on=target==='sim'||selectedConnected();link.className='tx-led '+(on?'on':'warn')}if(linkText)linkText.textContent=target==='sim'?'SIM':(selected()?.online?'KIT':'OFFLINE');
 }
 function normalizeHealth(v,fallback='NOT_FOUND'){
  const x=String(v??fallback).trim().toUpperCase().replace(/\s+/g,'_');if(['OK','STALE','NOT_FOUND'].includes(x))return x;return fallback;
@@ -115,12 +117,13 @@ function renderSelected(){
  const rel=$('#releaseControlBtn');if(rel){rel.hidden=!d?.lockMine;rel.disabled=!d?.lockMine}
  const jm=$('#joySelectedModule');if(jm)jm.textContent=d?.deviceName||'None';const jl=$('#joyLock');if(jl)jl.textContent=!d?'--':d.lockMine?'CONTROL':d.locked?'VIEW ONLY':'AVAILABLE';
  const jt=$('#webJoyTarget');if(jt&&jt.value==='device'&&!d?.lockMine){jt.value='sim';st.joy[4]=1000;centerJoy()}
- try{api()?.setFcConnected(!!(d&&d.online))}catch(e){log('UI bridge: '+e.message)}const note=$('#selectedControlNote');if(note)note.textContent=!d?'Select a discovered kit or enter its Kit Name.':d.lockMine?'This browser controls the real kit. Other browsers are view-only until your heartbeat stops.':d.locked?'Another browser controls this kit. Telemetry and simulator remain available.':'Kit is available. Take Control for real-hardware changes.';const badge=$('#kitConnBadge');if(badge){badge.textContent=d?.online?'Connected':'Not connected';badge.className='status '+(d?.online?'good':'')}const info=$('#kitInfo');if(info)info.innerHTML=d?.online?`<b>${esc(d.deviceName)} • VERIFIED</b><span>${esc(d.deviceId)} • ${esc(d.boardName||'ZEBJUS FlightCore')} • ${esc(d.ip||'local')} • ${esc(d.ssid||'Wi-Fi')} • ${Number.isFinite(+d.rssi)?d.rssi+' dBm / '+signalText(d.rssi):'RSSI --'}</span>`:'<b>Automatic connection order</b><span>Cached IP → Device ID verification → kit-name.local → Device ID verification.</span>';const ip=$('#kitCachedIp');if(ip&&d?.ip&&!ip.matches(':focus'))ip.value=d.ip;serviceStatus();targetUi();
+ try{api()?.setFcConnected(selectedConnected())}catch(e){log('UI bridge: '+e.message)}const note=$('#selectedControlNote');if(note)note.textContent=!d?'Select a discovered kit or enter its Kit Name.':d.lockMine?'This browser controls the real kit. Other browsers are view-only until your heartbeat stops.':d.locked?'Another browser controls this kit. Telemetry and simulator remain available.':'Kit is available. Take Control for real-hardware changes.';const badge=$('#kitConnBadge');if(badge){badge.textContent=selectedConnected()?'Connected':d?.online?'Found • Connect required':'Not connected';badge.className='status '+(selectedConnected()?'good':d?.online?'warn':'')}const info=$('#kitInfo');if(info)info.innerHTML=selectedConnected()?`<b>${esc(d.deviceName)} • VERIFIED CONNECTED</b><span>${esc(d.deviceId)} • ${esc(d.boardName||'ZEBJUS FlightCore')} • ${esc(d.ip||'local')} • ${esc(d.ssid||'Wi-Fi')} • ${Number.isFinite(+d.rssi)?d.rssi+' dBm / '+signalText(d.rssi):'RSSI --'}</span>`:'<b>Automatic connection order</b><span>Cached IP → Device ID verification → kit-name.local → Device ID verification.</span>';const ip=$('#kitCachedIp');if(ip&&d?.ip&&!ip.matches(':focus'))ip.value=d.ip;serviceStatus();targetUi();
 }
 async function connectExact(query,autoAcquire=true){
  st.manualDisconnect=false;query=String(query||'').trim();if(!query)throw new Error('Enter a Kit Name such as zebjus_drone_1, or press Scan Default Kits.');
  clearError();log('Looking for '+query+' on the same Wi-Fi…');
  const samePreferredName=st.preferredDeviceName&&window.ZebjusDroneKit.normalizeKitName(st.preferredDeviceName)===window.ZebjusDroneKit.normalizeKitName(query);const expected=window.ZebjusDroneKit.isDeviceId?.(query)?query:(samePreferredName?st.preferredDeviceId:'');
+ const current=selected(),switching=!!(current&&query&&window.ZebjusDroneKit.normalizeKitName(current.deviceName)!==window.ZebjusDroneKit.normalizeKitName(query)&&String(current.deviceId).toUpperCase()!==String(query).toUpperCase());if(switching)client.disconnect({forgetIdentity:true});
  const status=await client.connect(query,'',expected);const d=upsertStatus(status,client.base);st.selectedDeviceId=d.deviceId;st.preferredDeviceId=d.deviceId;st.preferredDeviceName=d.deviceName;st.query=d.deviceName;st.remoteBenchRc=!!status.benchRc;st.failures=0;savePrefs();log(`Connected locally: ${d.deviceName} • ${d.deviceId} • ${status.ip||''}`);statusUi();if(autoAcquire)await acquireLock(true);return d;
 }
 async function searchModules(){st.manualDisconnect=false;const q=$('#kitSearchInput')?.value.trim()||st.query,ip=$('#kitCachedIp')?.value.trim()||'';st.query=q;savePrefs();if(!q)return scanKitsUi();try{clearError();const known=window.ZebjusDroneKit.loadKnown().find(k=>window.ZebjusDroneKit.normalizeKitName(k.name)===window.ZebjusDroneKit.normalizeKitName(q));const status=await client.connect(q,ip,known?.deviceId||'');const d=upsertStatus(status,client.base);st.selectedDeviceId=d.deviceId;st.query=d.deviceName;savePrefs();statusUi();await acquireLock(true);await refreshSavedWifi()}catch(e){simpleError(e.message)}}
@@ -130,20 +133,20 @@ async function requestModules(force=false){
  try{const found=await window.ZebjusDroneKit.scanDefaultKits({max:30,extraNames:extras});found.forEach(r=>upsertStatus(r.status,r.base));reconcileSelection();clearError();try{statusUi()}catch(e){console.warn('[ZEBJUS] discovery UI update skipped',e)}}catch(e){console.warn('[ZEBJUS] Background discovery',e)}
 }
 function reconcileSelection(){if(st.selectedDeviceId&&!selected())st.selectedDeviceId='';if(st.manualDisconnect){st.selectedDeviceId='';savePrefs();return}if(!st.selectedDeviceId){let d=null;if(st.preferredDeviceId)d=st.devices.find(x=>x.deviceId===st.preferredDeviceId)||null;if(!d&&st.preferredDeviceName)d=st.devices.find(x=>String(x.deviceName).toLowerCase()===st.preferredDeviceName.toLowerCase())||null;if(!d&&st.devices.length===1)d=st.devices[0];if(d)st.selectedDeviceId=d.deviceId}savePrefs()}
-async function selectDevice(id){st.manualDisconnect=false;const d=st.devices.find(x=>x.deviceId===id);if(!d)return;try{if(ownsLock())await releaseLock(false);const s=await client.connect(d.deviceName,d.ip,d.deviceId);upsertStatus(s,client.base);st.selectedDeviceId=id;st.query=d.deviceName;savePrefs();await acquireLock(true);statusUi()}catch(e){simpleError(e.message)}}
+async function selectDevice(id){st.manualDisconnect=false;const d=st.devices.find(x=>x.deviceId===id);if(!d)return;try{if(ownsLock())await releaseLock(false);if(client?.deviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(client.deviceId,d.deviceId))client.disconnect({forgetIdentity:true});const s=await client.connect(d.deviceName,d.ip,d.deviceId);upsertStatus(s,client.base);st.selectedDeviceId=id;st.query=d.deviceName;savePrefs();await acquireLock(true);statusUi()}catch(e){simpleError(e.message)}}
 async function acquireLock(auto=false){const d=selected();if(!d?.online||!client?.connected)return false;if(d.lockMine)return true;if(auto&&d.locked)return false;try{const r=await client.acquire();const s=await client.refresh();upsertStatus(s,client.base);if(r.ok)log('Control acquired for '+(s.name||d.deviceName));clearError();statusUi();return !!r.ok}catch(e){log(e.message||'Kit is in use. View-only mode active.');try{upsertStatus(await client.refresh(),client.base)}catch{}statusUi();return false}}
 async function releaseLock(clearSelection=false){try{if(client?.connected&&ownsLock())await client.release()}catch{}if(selected())selected().lockMine=false;if(clearSelection)st.selectedDeviceId='';statusUi()}
 async function renameDevice(){const d=selected(),name=$('#deviceRenameInput')?.value.trim();if(!d||!name)return log('Select a kit and enter a name.');if(!canControl())return log('VIEW ONLY • Take Control first.');try{const s=await client.rename(name);upsertStatus(s,client.base);st.query=s.name;st.preferredDeviceName=s.name;savePrefs();log('Kit renamed: '+s.name);statusUi()}catch(e){simpleError(e.message)}}
 async function i2cScan(){
- const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');
+ const d=selected();if(!selectedConnected())throw Object.assign(new Error('Connect the selected ZEBJUS kit first.'),{code:'KIT_NOT_CONNECTED'});
  log(`I2C scan requested • SDA GPIO${d.i2cSda??4} / SCL GPIO${d.i2cScl??5}`);
  try{const r=await client.i2cScan();log(`I2C scan complete • ${Number(r?.count||0)} device(s) • ${Number(r?.durationMs||0)} ms`);return r}
- catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.34 first.');throw e}
+ catch(e){if(e?.status===404)throw new Error('I2C scan API is not installed on this kit yet. Update FlightCore firmware to V18.3.35 first.');throw e}
 }
 async function imuRead(){
- const d=selected();if(!d?.online||!client?.connected)throw new Error('Connect a ZEBJUS kit first.');
+ const d=selected();if(!selectedConnected())throw Object.assign(new Error('Connect the selected ZEBJUS kit first.'),{code:'KIT_NOT_CONNECTED'});
  let last=null;for(let attempt=0;attempt<3;attempt++){try{return await client.imuRead()}catch(e){last=e;if(e?.status===423)throw e;if(attempt<2)await new Promise(r=>setTimeout(r,55+attempt*45))}}
- if(last?.status===404)throw new Error('LSM6DS3 read was lost after retries. Check SDA/SCL/VCC/GND and address 0x6B/0x6A.');if(last?.status===409)throw new Error(last.message||'Connected I2C device is not an LSM6DS3.');throw last
+ if(last?.status===404)throw Object.assign(new Error(last?.message||'IMU read was lost after retries. Check SDA/SCL/VCC/GND and the detected sensor address.'),{code:'IMU_NOT_FOUND',status:404});if(last?.status===409)throw Object.assign(new Error(last.message||'Connected I²C device did not match a supported IMU.'),{code:'IMU_UNSUPPORTED',status:409});throw last
 }
 function sendDeviceCommand(command){
  const d=selected();if(!d?.online||!client?.connected)return false;if(command?.type!=='ping'&&!d.lockMine){log('VIEW ONLY • Take Control before changing the real kit.');return false}
@@ -234,7 +237,7 @@ async function reconnectAfterFirmware({totalMs=120000,onProgress=null}={}){
 }
 async function telemetryTick(now){
  const d=selected();
- if(!client?.connected||!d?.online||d.flightCoreIntegrated===false||st.telemetryBusy||now-st.lastTelemetryAt<150)return;
+ if(!selectedConnected()||st.telemetryBusy||now-st.lastTelemetryAt<150)return;
  st.lastTelemetryAt=now;st.telemetryBusy=true;
  try{
    const t=await client.telemetry();st.lastTelemetryGoodAt=Date.now();healthFromTelemetry(t);
@@ -282,7 +285,7 @@ function setTransmitter(on){
 }
 function setFlightMode(value){
  if(st.joy[4]>1500){log('DISARM before changing flight mode.');const m=$('#webMode');if(m)m.value=String(st.joy[5]);return false}
- const v=+value;st.joy[5]=v;st.joy[6]=v>=1900?2000:1000;st.joy[2]=1000;st.joy[3]=1500;renderJoy();log(`${modeName()} mode selected • throttle held low for arming.`);return true;
+ const v=+value;st.joy[5]=v;st.joy[6]=v>=1900?2000:1000;st.joy[2]=1000;st.joy[3]=1500;api()?.setSimFlightMode?.(v>=1400&&v<1900?'rate':'angle');renderJoy();log(`${modeName()} mode selected • throttle held low for arming.`);return true;
 }
 function tryToggleArm(){
  if(st.joy[4]>1500){st.joy[4]=1000;renderJoy();log('DISARMED');return}
@@ -357,6 +360,6 @@ function initUi(){
  if(st.preferredDeviceName||st.query){connectExact(st.preferredDeviceName||st.query,st.autoAcquire).then(refreshSavedWifi).catch(e=>{log('Auto-connect: '+e.message);scanKitsUi()})}else scanKitsUi();
 }
 function loop(t){joystickTick(t);joystickWatchdogTick();telemetryTick(t);lockTick(t);updateHealthUi();requestAnimationFrame(loop)}
-function start(){if(st.booted)return;st.booted=true;window.__zebjusSchoolReady=true;initUi();requestAnimationFrame(loop);setInterval(()=>{refreshLastSeenText();healthRefresh();reconnectTick();requestModules(false)},1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){healthRefresh(true);reconnectTick(true)}});window.addEventListener('online',()=>{healthRefresh(true);reconnectTick(true)});window.zebjusSchool={sendDeviceCommand,i2cScan,imuRead,isViewOnly,isCloudActive:()=>!!selected()?.online,isKitActive:()=>!!selected()?.online,getSelectedDevice:selected,canControl,ownsLock,requestModules,acquireLock,releaseLock,state:st,client,markOffline:markSelectedOffline,refreshNow:async()=>{await healthRefresh(true);return selected()},reconnectNow:async()=>{const d=selected();if(!d)return null;if(d.online&&client?.connected){await healthRefresh(true);return selected()}if(d.online)markSelectedOffline('Reconnect requested');await reconnectTick(true);return selected()},reconnectAfterFirmware} }
+function start(){if(st.booted)return;st.booted=true;window.__zebjusSchoolReady=true;initUi();requestAnimationFrame(loop);setInterval(()=>{refreshLastSeenText();healthRefresh();reconnectTick();requestModules(false)},1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){healthRefresh(true);reconnectTick(true)}});window.addEventListener('online',()=>{healthRefresh(true);reconnectTick(true)});window.zebjusSchool={sendDeviceCommand,i2cScan,imuRead,isViewOnly,isCloudActive:()=>selectedConnected(),isKitActive:()=>selectedConnected(),getSelectedDevice:selected,isSelectedConnected:selectedConnected,canControl,ownsLock,requestModules,acquireLock,releaseLock,state:st,client,markOffline:markSelectedOffline,refreshNow:async()=>{await healthRefresh(true);return selected()},reconnectNow:async()=>{const d=selected();if(!d)return null;if(d.online&&client?.connected){await healthRefresh(true);return selected()}if(d.online)markSelectedOffline('Reconnect requested');await reconnectTick(true);return selected()},reconnectAfterFirmware} }
 window.addEventListener('zebjus-app-ready',start,{once:true});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{if(window.__zebjusAppLoaded)start()},0));else setTimeout(()=>{if(window.__zebjusAppLoaded)start()},0);
 })();

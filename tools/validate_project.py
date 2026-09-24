@@ -18,7 +18,7 @@ version=read('VERSION.txt').strip()
 print(f'ZEBJUS project validation • {version}')
 
 # Required active files and stable mutable names.
-required=['RELEASE_NOTES.md','index.html','styles.css','app.js','glb-loader.js','three.module.min.js','service-worker.js','kit-local.js','school-lab.js','ui-runtime.js','firmware-updater.js','FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino','FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json','firmware-catalog.json','firmware-latest.json','.github/workflows/build-flightcore-a1.yml','tools/build_firmware.py']
+required=['RELEASE_NOTES.md','index.html','styles.css','app.js','python-worker.js','glb-loader.js','three.module.min.js','service-worker.js','kit-local.js','school-lab.js','ui-runtime.js','firmware-updater.js','FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino','FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json','firmware-catalog.json','firmware-latest.json','.github/workflows/build-flightcore-a1.yml','tools/build_firmware.py']
 for rel in required:
     if not (ROOT/rel).is_file(): fail(f'missing required file: {rel}')
 for p in (ROOT/'FlightCore_Firmware').glob('*.ino'):
@@ -199,9 +199,19 @@ if "type==='guard'||type==='prop'" not in app or 'const bladeMat=mat(0xdbe5eb' n
 if 'rerunPythonBtn' not in app or 'python-stop-live' not in app or 'Variable from your code' not in app: fail('Python Run/Stop/Rerun or typed-variable completion polish is missing')
 if 'pythonProjectUndo' not in app or 'pythonUndoFileBtn' not in app or 'pythonRedoFileBtn' not in app or 'python-file-delete' not in read('styles.css'): fail('Python project delete/undo/redo workflow is missing')
 if 'if self.target() != \"real\"' in app: fail('Python runtime still contains fragile repeated Real-kit target checks')
-if "$('#pythonTarget').disabled=true" not in app: fail('Python target selector is not locked during a running hardware program')
-if 'for(let attempt=0;attempt<3;attempt++)' not in school or 'LSM6DS3 read was lost after retries' not in school: fail('school-lab IMU transient retry logic is missing')
+if 'function pythonSetRunUi' not in app or 'target.disabled=running' not in app: fail('Python target selector is not locked during a running hardware program')
+if 'for(let attempt=0;attempt<3;attempt++)' not in school or 'IMU read was lost after retries' not in school: fail('school-lab IMU transient retry logic is missing')
 if 'Wire.begin(I2C_SDA_PIN,I2C_SCL_PIN,100000)' not in ino or 'attempt<3&&!ok' not in ino: fail('firmware IMU API does not use robust 100 kHz multi-attempt I2C reads')
+if 'new Worker(`./python-worker.js' not in app or 'worker.terminate()' not in app: fail('Python execution is not isolated in a terminable Worker')
+if './python-worker.js' not in sw: fail('service worker does not cache python-worker.js')
+if 'IMU_MPU6050' not in ino or 'IMU_LSM6DS3' not in ino or 'detectImu' not in ino: fail('firmware does not auto-detect supported IMU families')
+if '0xFFFFFFFFFFFF' not in ino or '%012llX' not in ino: fail('firmware Device ID is not using the full 48-bit MAC')
+if 'selectedConnected()' not in school or 'Found • Connect required' not in school: fail('truthful FOUND vs CONNECTED state is missing')
+if 'flightCoreIntegrated' not in ino or 'WIFI_SENSOR_BRIDGE' not in ino: fail('bridge-only firmware role is not explicit')
+if 'ZEBJUS_FLIGHTCORE_A2_APP.bin' not in workflow or '--board all' not in workflow: fail('workflow does not build both A1/C3 and A2/C6 application packages')
+if 'find_factory_bin' not in build or "'buildId':build_id" not in build: fail('firmware build does not publish factory metadata/build IDs')
+if 'validateEspImage' not in fu or 'mostly empty/zero data' not in fu: fail('Firmware Center imported-image validation is incomplete')
+if 'imuAccelChart' not in read('index.html') or 'recordImuSample' not in app or 'downloadImuCsv' not in app: fail('IMU live graph/rate/CSV teaching tools are missing')
 
 if warnings:
     for x in warnings: print('WARN:',x)

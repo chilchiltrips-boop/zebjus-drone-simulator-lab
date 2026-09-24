@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.34 - LOCAL Wi-Fi / mDNS + I2C PYTHON LAB
+  ZEBJUS FlightCore V18.3.35 - LOCAL Wi-Fi / mDNS + I2C PYTHON LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -43,7 +43,7 @@
 #include "ZEBJUS_FLIGHTCORE_TYPES.h"
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.34";
+static const char* FW_VERSION="18.3.35";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -51,16 +51,16 @@ static const char* FW_BUILD_TIME=__TIME__;
 // browser/API users see only stable ZEBJUS FlightCore profile names.
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
 static const char* BOARD_ID="ZFC-A1";
-static const char* BOARD_NAME="ZEBJUS FlightCore A1";
+static const char* BOARD_NAME="ZEBJUS FlightCore A1 / ESP32-C3";
 static const int RECOVERY_BUTTON_PIN=9;
 static const int PPM_RECEIVER_PIN=18;
 static const int I2C_SDA_PIN=SDA;
 static const int I2C_SCL_PIN=SCL;
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 static const char* BOARD_ID="ZFC-A2";
-static const char* BOARD_NAME="ZEBJUS FlightCore A2";
+static const char* BOARD_NAME="ZEBJUS FlightCore A2 / XIAO ESP32-C6";
 static const int RECOVERY_BUTTON_PIN=9;
-static const int PPM_RECEIVER_PIN=18;
+static const int PPM_RECEIVER_PIN=16; // XIAO D6; keep I2C on board SDA/SCL.
 static const int I2C_SDA_PIN=SDA;
 static const int I2C_SCL_PIN=SCL;
 #else
@@ -139,7 +139,7 @@ size_t firmwareUploadBytes=0;
 // ============================================================
 String getDeviceId(){
   uint64_t mac=ESP.getEfuseMac();char b[32];
-  snprintf(b,sizeof(b),"ZFC-%06llX",(unsigned long long)(mac&0xFFFFFFULL));
+  snprintf(b,sizeof(b),"ZFC-%012llX",(unsigned long long)(mac&0xFFFFFFFFFFFFULL));
   return String(b);
 }
 String shortId(){return deviceId.substring(deviceId.length()-6);}
@@ -350,31 +350,42 @@ String i2cHint(uint8_t address){
 String hexAddress(uint8_t address){char b[5];snprintf(b,sizeof(b),"0x%02X",address);return String(b);}
 static const uint8_t LSM6DS3_ADDR_PRIMARY=0x6B;
 static const uint8_t LSM6DS3_ADDR_SECONDARY=0x6A;
-ImuSample lastImu;bool lastImuValid=false;
+static const uint8_t MPU6050_ADDR_PRIMARY=0x68;
+static const uint8_t MPU6050_ADDR_SECONDARY=0x69;
+enum ImuKind:uint8_t{IMU_NONE=0,IMU_LSM6DS3=1,IMU_MPU6050=2};
+ImuSample lastImu;bool lastImuValid=false;ImuKind detectedImu=IMU_NONE;uint8_t detectedImuAddress=0;
 
 bool i2cProbe(uint8_t address){Wire.beginTransmission(address);return Wire.endTransmission(true)==0;}
 bool i2cWriteReg(uint8_t address,uint8_t reg,uint8_t value){Wire.beginTransmission(address);Wire.write(reg);Wire.write(value);return Wire.endTransmission(true)==0;}
 bool i2cReadReg(uint8_t address,uint8_t reg,uint8_t& value){Wire.beginTransmission(address);Wire.write(reg);if(Wire.endTransmission(false)!=0)return false;if(Wire.requestFrom((int)address,1,true)!=1)return false;value=Wire.read();return true;}
 bool i2cReadBlock(uint8_t address,uint8_t reg,uint8_t* dst,size_t len){Wire.beginTransmission(address);Wire.write(reg);if(Wire.endTransmission(false)!=0)return false;size_t got=Wire.requestFrom((int)address,(int)len,true);if(got!=len)return false;for(size_t i=0;i<len;i++)dst[i]=Wire.read();return true;}
-uint8_t findLsm6ds3Address(){if(i2cProbe(LSM6DS3_ADDR_PRIMARY))return LSM6DS3_ADDR_PRIMARY;if(i2cProbe(LSM6DS3_ADDR_SECONDARY))return LSM6DS3_ADDR_SECONDARY;return 0;}
-bool readLsm6ds3(ImuSample& out){
- uint8_t address=findLsm6ds3Address();if(!address)return false;uint8_t who=0;if(!i2cReadReg(address,0x0F,who))return false;if(who!=0x69)return false;
- // CTRL1_XL = 104 Hz, ±2 g; CTRL2_G = 104 Hz, ±245 dps.
- if(!i2cWriteReg(address,0x10,0x40)||!i2cWriteReg(address,0x11,0x40))return false;delay(2);
- uint8_t b[12];if(!i2cReadBlock(address,0x22,b,sizeof(b)))return false;
- auto s16=[&](int i)->int16_t{return (int16_t)(((uint16_t)b[i+1]<<8)|b[i]);};
- out.address=address;out.whoAmI=who;out.rawGx=s16(0);out.rawGy=s16(2);out.rawGz=s16(4);out.rawAx=s16(6);out.rawAy=s16(8);out.rawAz=s16(10);
- out.gx=out.rawGx*0.00875f;out.gy=out.rawGy*0.00875f;out.gz=out.rawGz*0.00875f;out.ax=out.rawAx*0.000061f;out.ay=out.rawAy*0.000061f;out.az=out.rawAz*0.000061f;out.sampledAt=millis();return true;
+const char* imuName(ImuKind k){return k==IMU_LSM6DS3?"LSM6DS3":k==IMU_MPU6050?"MPU6050":"NONE";}
+uint16_t imuOdrHz(ImuKind k){return k==IMU_LSM6DS3?104:k==IMU_MPU6050?100:0;}
+ImuKind detectImu(uint8_t& address,uint8_t& who){
+  const uint8_t lsmAddr[2]={LSM6DS3_ADDR_PRIMARY,LSM6DS3_ADDR_SECONDARY};for(uint8_t i=0;i<2;i++){uint8_t a=lsmAddr[i];if(!i2cProbe(a))continue;uint8_t w=0;if(i2cReadReg(a,0x0F,w)&&w==0x69){address=a;who=w;return IMU_LSM6DS3;}}
+  const uint8_t mpuAddr[2]={MPU6050_ADDR_PRIMARY,MPU6050_ADDR_SECONDARY};for(uint8_t i=0;i<2;i++){uint8_t a=mpuAddr[i];if(!i2cProbe(a))continue;uint8_t w=0;if(i2cReadReg(a,0x75,w)&&(w==0x68||w==0x69)){address=a;who=w;return IMU_MPU6050;}}
+  address=0;who=0;return IMU_NONE;
 }
+bool readLsm6ds3(uint8_t address,uint8_t who,ImuSample& out){
+ if(!i2cWriteReg(address,0x10,0x40)||!i2cWriteReg(address,0x11,0x40))return false;delay(2);uint8_t b[12];if(!i2cReadBlock(address,0x22,b,sizeof(b)))return false;
+ auto s16=[&](int i)->int16_t{return (int16_t)(((uint16_t)b[i+1]<<8)|b[i]);};out.kind=IMU_LSM6DS3;out.address=address;out.whoAmI=who;out.rawGx=s16(0);out.rawGy=s16(2);out.rawGz=s16(4);out.rawAx=s16(6);out.rawAy=s16(8);out.rawAz=s16(10);out.gx=out.rawGx*0.00875f;out.gy=out.rawGy*0.00875f;out.gz=out.rawGz*0.00875f;out.ax=out.rawAx*0.000061f;out.ay=out.rawAy*0.000061f;out.az=out.rawAz*0.000061f;out.sampledAt=millis();return true;
+}
+bool readMpu6050(uint8_t address,uint8_t who,ImuSample& out){
+ if(!i2cWriteReg(address,0x6B,0x00))return false;delay(3);i2cWriteReg(address,0x1A,0x03);i2cWriteReg(address,0x19,0x09);i2cWriteReg(address,0x1B,0x00);i2cWriteReg(address,0x1C,0x00);uint8_t b[14];if(!i2cReadBlock(address,0x3B,b,sizeof(b)))return false;
+ auto be16=[&](int i)->int16_t{return (int16_t)(((uint16_t)b[i]<<8)|b[i+1]);};out.kind=IMU_MPU6050;out.address=address;out.whoAmI=who;out.rawAx=be16(0);out.rawAy=be16(2);out.rawAz=be16(4);out.rawGx=be16(8);out.rawGy=be16(10);out.rawGz=be16(12);out.ax=out.rawAx/16384.0f;out.ay=out.rawAy/16384.0f;out.az=out.rawAz/16384.0f;out.gx=out.rawGx/131.0f;out.gy=out.rawGy/131.0f;out.gz=out.rawGz/131.0f;out.sampledAt=millis();return true;
+}
+bool readAnyImu(ImuSample& out){
+ uint8_t address=0,who=0;ImuKind kind=detectedImu;if(kind==IMU_NONE||!detectedImuAddress){kind=detectImu(address,who);}else{address=detectedImuAddress;if(kind==IMU_LSM6DS3){if(!i2cReadReg(address,0x0F,who)||who!=0x69)kind=detectImu(address,who);}else if(kind==IMU_MPU6050){if(!i2cReadReg(address,0x75,who)||(who!=0x68&&who!=0x69))kind=detectImu(address,who);}}
+ if(kind==IMU_NONE)return false;bool ok=kind==IMU_LSM6DS3?readLsm6ds3(address,who,out):readMpu6050(address,who,out);if(ok){detectedImu=kind;detectedImuAddress=address;}return ok;
+}
+void probeImuAtBoot(){Wire.begin(I2C_SDA_PIN,I2C_SCL_PIN,100000);delay(2);uint8_t address=0,who=0;detectedImu=detectImu(address,who);detectedImuAddress=address;Wire.end();if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);Serial.println(String("IMU auto-detect: ")+imuName(detectedImu)+(address?String(" @ ")+hexAddress(address):String("")));}
 void imuApi(){
  if(effectiveArmed()){sendMessage(423,"IMU bench read blocked while armed");return;}
- Wire.begin(I2C_SDA_PIN,I2C_SCL_PIN,100000);delay(2);ImuSample sample;bool ok=false;for(uint8_t attempt=0;attempt<3&&!ok;attempt++){ok=readLsm6ds3(sample);if(!ok)delay(4);}Wire.end();if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);
- if(!ok){lastImuValid=false;sendMessage(404,"LSM6DS3 not found or WHO_AM_I did not match 0x69. Check SDA/SCL/VCC/GND and address 0x6B or 0x6A.");return;}
- lastImu=sample;lastImuValid=true;String hx=hexAddress(sample.address);
- String j="{\"ok\":true,\"source\":\"real\",\"sensor\":\"LSM6DS3\",\"address\":"+String(sample.address)+",\"addressHex\":\""+hx+"\",\"whoAmI\":"+String(sample.whoAmI)+",\"whoAmIHex\":\"0x69\",\"odrHz\":104,\"accelRangeG\":2,\"gyroRangeDps\":245";
- j+=",\"accel\":{\"x\":"+String(sample.ax,6)+",\"y\":"+String(sample.ay,6)+",\"z\":"+String(sample.az,6)+"}";
- j+=",\"gyro\":{\"x\":"+String(sample.gx,4)+",\"y\":"+String(sample.gy,4)+",\"z\":"+String(sample.gz,4)+"}";
- j+=",\"raw\":{\"ax\":"+String(sample.rawAx)+",\"ay\":"+String(sample.rawAy)+",\"az\":"+String(sample.rawAz)+",\"gx\":"+String(sample.rawGx)+",\"gy\":"+String(sample.rawGy)+",\"gz\":"+String(sample.rawGz)+"},\"sampleMs\":"+String(sample.sampledAt)+"}";sendJson(200,j);
+ Wire.begin(I2C_SDA_PIN,I2C_SCL_PIN,100000);delay(2);ImuSample sample;bool ok=false;for(uint8_t attempt=0;attempt<3&&!ok;attempt++){ok=readAnyImu(sample);if(!ok)delay(5);}Wire.end();if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);
+ if(!ok){lastImuValid=false;sendMessage(404,"Supported IMU not found. Supported: LSM6DS3 at 0x6A/0x6B and MPU6050 at 0x68/0x69. Check SDA/SCL/VCC/GND.");return;}
+ lastImu=sample;lastImuValid=true;String hx=hexAddress(sample.address),sensor=imuName((ImuKind)sample.kind),whoHex=String("0x")+(sample.whoAmI<16?"0":"")+String(sample.whoAmI,HEX);whoHex.toUpperCase();
+ String j="{\"ok\":true,\"source\":\"real\",\"sensor\":\""+sensor+"\",\"address\":"+String(sample.address)+",\"addressHex\":\""+hx+"\",\"whoAmI\":"+String(sample.whoAmI)+",\"whoAmIHex\":\""+whoHex+"\",\"odrHz\":"+String(imuOdrHz((ImuKind)sample.kind))+",\"accelRangeG\":2,\"gyroRangeDps\":"+String(sample.kind==IMU_MPU6050?250:245);
+ j+=",\"accel\":{\"x\":"+String(sample.ax,6)+",\"y\":"+String(sample.ay,6)+",\"z\":"+String(sample.az,6)+"}";j+=",\"gyro\":{\"x\":"+String(sample.gx,4)+",\"y\":"+String(sample.gy,4)+",\"z\":"+String(sample.gz,4)+"}";j+=",\"raw\":{\"ax\":"+String(sample.rawAx)+",\"ay\":"+String(sample.rawAy)+",\"az\":"+String(sample.rawAz)+",\"gx\":"+String(sample.rawGx)+",\"gy\":"+String(sample.rawGy)+",\"gz\":"+String(sample.rawGz)+"},\"sampleMs\":"+String(sample.sampledAt)+"}";sendJson(200,j);
 }
 void i2cScanApi(){
   if(effectiveArmed()){sendMessage(423,"I2C scan blocked while armed");return;}
@@ -407,13 +418,17 @@ String statusJson(const String& clientId=""){
   String j="{\"ok\":true,\"kit\":\"ZEBJUS_FLIGHTCORE\",\"version\":\""+String(FW_VERSION)+"\",\"firmware\":\""+String(FW_VERSION)+"\",\"firmwareBuiltAt\":\""+String(FW_BUILD_DATE)+" "+String(FW_BUILD_TIME)+" UTC\"";
   j+=",\"name\":\""+jsonEscape(kitName)+"\",\"deviceName\":\""+jsonEscape(kitName)+"\",\"hostname\":\""+hostFromName(kitName)+"\",\"deviceId\":\""+deviceId+"\",\"boardId\":\""+String(BOARD_ID)+"\",\"boardName\":\""+String(BOARD_NAME)+"\"";
   j+=",\"connected\":"+String(connected?"true":"false")+",\"ssid\":\""+jsonEscape(connected?WiFi.SSID():"")+"\",\"ip\":\""+(connected?WiFi.localIP().toString():WiFi.softAPIP().toString())+"\",\"rssi\":"+String(connected?WiFi.RSSI():0);
-  j+=",\"mode\":\""+mode+"\",\"armed\":"+String(effectiveArmed()?"true":"false")+",\"locked\":"+String(lockActive()?"true":"false")+",\"lockMine\":"+String(lockMine(clientId)?"true":"false")+",\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+",\"benchRc\":"+String(ALLOW_BENCH_RC?"true":"false")+",\"flightCoreIntegrated\":false,\"otaUpdate\":true,\"receiverHealth\":\""+receiverHealth()+"\",\"receiverPin\":"+String(PPM_RECEIVER_PIN)+",\"i2cScan\":true,\"imuRead\":true,\"imuModel\":\"LSM6DS3\",\"i2cSda\":"+String(I2C_SDA_PIN)+",\"i2cScl\":"+String(I2C_SCL_PIN)+"}";
+  j+=",\"mode\":\""+mode+"\",\"armed\":"+String(effectiveArmed()?"true":"false")+",\"locked\":"+String(lockActive()?"true":"false")+",\"lockMine\":"+String(lockMine(clientId)?"true":"false")+",\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+",\"benchRc\":"+String(ALLOW_BENCH_RC?"true":"false")+",\"firmwareRole\":\"WIFI_SENSOR_BRIDGE\",\"flightCoreIntegrated\":false,\"escOutputs\":false,\"pidIntegrated\":false,\"calibrationIntegrated\":false,\"otaUpdate\":true,\"receiverHealth\":\""+receiverHealth()+"\",\"receiverPin\":"+String(PPM_RECEIVER_PIN)+",\"i2cScan\":true,\"imuRead\":true,\"imuModel\":\""+String(imuName(detectedImu))+"\",\"i2cSda\":"+String(I2C_SDA_PIN)+",\"i2cScl\":"+String(I2C_SCL_PIN)+"}";
   return j;
 }
 void statusApi(){sendJson(200,statusJson(server.arg("clientId")));}
 void telemetryApi(){
-  uint16_t rc[10];copyReceiver(rc);String rx=receiverHealth();uint32_t age=receiverAgeMs();bool imuFresh=lastImuValid&&(uint32_t)(millis()-lastImu.sampledAt)<2500UL;String imuHealth=lastImuValid?(imuFresh?"OK":"STALE"):"NOT_FOUND";
-  String j="{\"type\":\"telemetry\",\"roll\":0.0,\"pitch\":0.0,\"yaw\":0.0,\"gyroX\":"+String(lastImuValid?lastImu.gx:0.0f,4)+",\"gyroY\":"+String(lastImuValid?lastImu.gy:0.0f,4)+",\"gyroZ\":"+String(lastImuValid?lastImu.gz:0.0f,4)+",\"accX\":"+String(lastImuValid?lastImu.ax:0.0f,6)+",\"accY\":"+String(lastImuValid?lastImu.ay:0.0f,6)+",\"accZ\":"+String(lastImuValid?lastImu.az:0.0f,6)+",\"battery\":0.0,\"armed\":"+String(effectiveArmed()?"true":"false");
+  uint16_t rc[10];copyReceiver(rc);String rx=receiverHealth();uint32_t age=receiverAgeMs();
+  // The bridge firmware still exposes live receiver + raw IMU telemetry even though
+  // the onboard attitude/PID/ESC flight loop is not integrated yet.
+  if(!effectiveArmed()){Wire.begin(I2C_SDA_PIN,I2C_SCL_PIN,100000);delay(1);ImuSample sample;if(readAnyImu(sample)){lastImu=sample;lastImuValid=true;}Wire.end();if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);}
+  bool imuFresh=lastImuValid&&(uint32_t)(millis()-lastImu.sampledAt)<2500UL;String imuHealth=lastImuValid?(imuFresh?"OK":"STALE"):"NOT_FOUND";
+  String j="{\"type\":\"telemetry\",\"source\":\"bridge\",\"flightCoreIntegrated\":false,\"roll\":0.0,\"pitch\":0.0,\"yaw\":0.0,\"gyroX\":"+String(lastImuValid?lastImu.gx:0.0f,4)+",\"gyroY\":"+String(lastImuValid?lastImu.gy:0.0f,4)+",\"gyroZ\":"+String(lastImuValid?lastImu.gz:0.0f,4)+",\"accX\":"+String(lastImuValid?lastImu.ax:0.0f,6)+",\"accY\":"+String(lastImuValid?lastImu.ay:0.0f,6)+",\"accZ\":"+String(lastImuValid?lastImu.az:0.0f,6)+",\"imuModel\":\""+String(imuName(detectedImu))+"\",\"sampleMs\":"+String(lastImuValid?lastImu.sampledAt:0)+",\"battery\":0.0,\"armed\":"+String(effectiveArmed()?"true":"false");
   j+=",\"rc\":[";for(int i=0;i<10;i++){if(i)j+=",";j+=String(rc[i]);}j+="]";
   j+=",\"rcSource\":\"PPM\",\"rcAgeMs\":"+String(age==0xFFFFFFFFUL?999999UL:age)+",\"receiverHealth\":\""+rx+"\"";
   j+=",\"imuHealth\":\""+imuHealth+"\",\"barometerHealth\":\"NOT_FOUND\",\"lidarHealth\":\"NOT_FOUND\"";
@@ -526,7 +541,7 @@ void factoryResetApi(){if(!allowDisruptiveAdminAction("Factory reset"))return;fa
 // Firmware update / reboot
 // ============================================================
 void firmwareInfoApi(){
-  String j="{\"ok\":true,\"product\":\"ZEBJUS_FLIGHTCORE\",\"firmware\":\""+String(FW_VERSION)+"\",\"firmwareBuiltAt\":\""+String(FW_BUILD_DATE)+" "+String(FW_BUILD_TIME)+" UTC\",\"boardId\":\""+String(BOARD_ID)+"\",\"boardName\":\""+String(BOARD_NAME)+"\",\"flashBytes\":"+String(ESP.getFlashChipSize())+",\"freeSketchBytes\":"+String(ESP.getFreeSketchSpace())+",\"ota\":true,\"flightCoreIntegrated\":false,\"i2cScan\":true,\"imuRead\":true,\"imuModel\":\"LSM6DS3\",\"i2cSda\":"+String(I2C_SDA_PIN)+",\"i2cScl\":"+String(I2C_SCL_PIN)+",\"armed\":"+String(effectiveArmed()?"true":"false")+"}";sendJson(200,j);
+  String j="{\"ok\":true,\"product\":\"ZEBJUS_FLIGHTCORE\",\"firmware\":\""+String(FW_VERSION)+"\",\"firmwareBuiltAt\":\""+String(FW_BUILD_DATE)+" "+String(FW_BUILD_TIME)+" UTC\",\"boardId\":\""+String(BOARD_ID)+"\",\"boardName\":\""+String(BOARD_NAME)+"\",\"flashBytes\":"+String(ESP.getFlashChipSize())+",\"freeSketchBytes\":"+String(ESP.getFreeSketchSpace())+",\"ota\":true,\"firmwareRole\":\"WIFI_SENSOR_BRIDGE\",\"flightCoreIntegrated\":false,\"escOutputs\":false,\"pidIntegrated\":false,\"calibrationIntegrated\":false,\"i2cScan\":true,\"imuRead\":true,\"imuModel\":\""+String(imuName(detectedImu))+"\",\"i2cSda\":"+String(I2C_SDA_PIN)+",\"i2cScl\":"+String(I2C_SCL_PIN)+",\"armed\":"+String(effectiveArmed()?"true":"false")+"}";sendJson(200,j);
 }
 void rebootApi(){
   if(!requireControl())return;if(effectiveArmed()){sendMessage(423,"Reboot blocked while armed");return;}sendMessage(200,"Reboot scheduled");restartAt=millis()+850;
@@ -579,7 +594,7 @@ void setupRoutes(){
 }
 void startNormalServer(){
   setupMode=false;dnsServer.stop();WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.34 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.35 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
   setupMode=true;controlOwner="";controlExpiresAt=0;if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP_STA);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),AP_PASSWORD);dnsServer.start(DNS_PORT,"*",AP_IP);server.begin();wifiTestState=WT_IDLE;
@@ -600,8 +615,8 @@ void networkHealth(){
 
 void setup(){
   Serial.begin(115200);delay(300);WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);if(ENABLE_PPM_RECEIVER&&PPM_RECEIVER_PIN>=0){pinMode(PPM_RECEIVER_PIN,INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(PPM_RECEIVER_PIN),ppmIsr,RISING);}
-  deviceId=getDeviceId();loadKitName();loadSavedWiFi();setupRoutes();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.34 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  deviceId=getDeviceId();loadKitName();loadSavedWiFi();probeImuAtBoot();setupRoutes();
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.35 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
   if(consumeForceSetupFlag()){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }

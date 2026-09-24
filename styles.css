@@ -930,3 +930,19 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 @media(max-width:1500px){.python-ide-layout{grid-template-columns:160px minmax(620px,1fr) minmax(290px,.48fr)!important}}
 @media(max-width:1250px){.python-ide-layout{grid-template-columns:160px minmax(0,1fr)!important}.python-terminal-card{grid-column:1/-1!important}.python-ide-layout .python-terminal-card{height:360px!important;min-height:360px!important;max-height:360px!important}}
 @media(max-width:760px){.python-ide-layout{grid-template-columns:1fr!important}.python-project-card{min-height:auto!important}.python-editor-shell{min-height:58dvh!important}}
+
+/* ==================== V18.3.35 reliability / IMU tools ==================== */
+.python-ide-layout{grid-template-columns:160px minmax(760px,1.7fr) minmax(300px,.52fr)!important;max-width:2800px!important}
+.python-project-actions{grid-template-columns:1fr 1fr!important}
+.imu-toolbox{flex:0 0 auto;margin:7px 9px;border:1px solid #24465a;border-radius:10px;background:#071722;overflow:hidden}
+.imu-toolbox summary{cursor:pointer;padding:8px 10px;color:#91e8c8;font-size:9px;font-weight:850;letter-spacing:.02em;background:#0a1c28}
+.imu-tool-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:7px 8px 2px}
+.imu-tool-metrics>div{border:1px solid #1f394b;border-radius:7px;padding:5px 6px;background:#06131c;min-width:0}
+.imu-tool-metrics span{display:block;color:#708a9c;font-size:7px}.imu-tool-metrics b{display:block;color:#cce5f3;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.imu-toolbox canvas{display:block;width:calc(100% - 16px);height:82px;margin:7px 8px;border:1px solid #173346;border-radius:7px;background:#06121b}
+.imu-tool-actions{display:flex;gap:6px;flex-wrap:wrap;padding:2px 8px 7px}.imu-tool-actions .btn{flex:1 1 90px}
+.imu-toolbox .micro-note{margin:0;padding:0 9px 8px;font-size:7.5px;line-height:1.35}
+.python-terminal-card #pythonTerminal{min-height:120px!important}
+@media(max-width:1500px){.python-ide-layout{grid-template-columns:150px minmax(650px,1fr) minmax(285px,.48fr)!important}.imu-toolbox canvas{height:70px}}
+@media(max-width:1250px){.python-ide-layout{grid-template-columns:150px minmax(0,1fr)!important}.python-terminal-card{grid-column:1/-1!important}.imu-toolbox{max-width:920px}.python-terminal-card #pythonTerminal{min-height:160px!important}}
+@media(max-width:760px){.imu-tool-metrics{grid-template-columns:1fr 1fr}.imu-toolbox canvas{height:70px}}

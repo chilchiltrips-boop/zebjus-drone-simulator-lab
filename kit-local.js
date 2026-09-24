@@ -58,8 +58,12 @@ function deviceIdentityParts(value){
 function sameDeviceIdentity(a,b){
   const aa=String(a||'').trim().toUpperCase(),bb=String(b||'').trim().toUpperCase();
   if(!aa||!bb)return false;if(aa===bb)return true;
-  const pa=deviceIdentityParts(aa),pb=deviceIdentityParts(bb);
-  return !!(pa&&pb&&pa.family!==pb.family&&pa.suffix===pb.suffix);
+  const pa=deviceIdentityParts(aa),pb=deviceIdentityParts(bb);if(!pa||!pb)return false;
+  if(pa.suffix===pb.suffix)return true;
+  // Migration compatibility: old firmware exposed only the last 24 MAC bits.
+  // New firmware uses the complete 48-bit MAC to avoid collisions.
+  const shorter=pa.suffix.length<=pb.suffix.length?pa.suffix:pb.suffix,longer=pa.suffix.length<=pb.suffix.length?pb.suffix:pa.suffix;
+  return shorter.length===6&&longer.length>=12&&longer.endsWith(shorter);
 }
 function isCompatibleKit(status){
   if(!status||status.ok===false||!status.deviceId||!status.name)return false;
@@ -131,7 +135,7 @@ class LocalKitClient{
   get connected(){return !!this.base&&!!this.status}
   get lastGoodAgeMs(){return this._lastGoodAt?Date.now()-this._lastGoodAt:Infinity}
   _accept(st,base){this.base=base;this.status=st;this.name=st?.name||this.name;this.deviceId=st?.deviceId||this.deviceId;this.ipHint=st?.ip||this.ipHint;this._lastGoodAt=Date.now();rememberKit(st,base);return st}
-  async connect(query,ipHint='',expectedDeviceId=''){const r=await connect(query||this.name||this.deviceId,ipHint||this.ipHint,expectedDeviceId||this.deviceId,this.clientId);return this._accept(r.status,r.base)}
+  async connect(query='',ipHint='',expectedDeviceId=''){const explicit=String(query||'').trim(),q=explicit||this.name||this.deviceId,expected=expectedDeviceId||(explicit?'':this.deviceId),r=await connect(q,ipHint||this.ipHint,expected,this.clientId);return this._accept(r.status,r.base)}
   disconnect({forgetIdentity=false}={}){this.base='';this.status=null;this._lastGoodAt=0;if(forgetIdentity){this.name='';this.deviceId='';this.ipHint=''}}
   async refresh(timeout=2100){if(!this.base)throw new Error('Kit not connected.');const st=await requestBase(this.base,`/api/status?clientId=${encodeURIComponent(this.clientId)}`,{timeout});if(this.deviceId&&!sameDeviceIdentity(st.deviceId,this.deviceId))throw new Error('Connected device identity changed.');return this._accept(st,this.base)}
   async reconnect(retries=4){if(this._reconnectPromise)return this._reconnectPromise;this._reconnectPromise=(async()=>{let last;const waits=[0,350,800,1500,2500];for(let i=0;i<Math.max(1,retries);i++){if(waits[i])await new Promise(r=>setTimeout(r,waits[i]));try{return await this.connect(this.name||this.deviceId,this.ipHint,this.deviceId)}catch(e){last=e}}throw last||new Error('Kit reconnect failed.')})();try{return await this._reconnectPromise}finally{this._reconnectPromise=null}}

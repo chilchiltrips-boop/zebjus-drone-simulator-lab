@@ -1,8 +1,8 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.34
+# ZEBJUS F450 Drone Engineering Lab V18.3.35
 
 Browser-based F450 assembly, 2D wiring, Python learning, simulator, local-kit control and firmware update environment for ZEBJUS FlightCore.
 
-## V18.3.34 corrective reliability update
+## V18.3.35 corrective reliability update
 
 OTA firmware reboot recovery now waits up to 120 seconds, drops a stale cached DHCP address after quick retries, then falls back to kit-name.local and same-Wi-Fi discovery. A successful flash remains marked successful while reconnect is pending; a 5-minute background watch verifies the new firmware when the kit comes back.
 
@@ -33,18 +33,28 @@ These names should stay unchanged in future releases:
 
 The release number belongs in `VERSION.txt`, firmware `FW_VERSION`, catalog metadata and UI metadata — **not in the mutable firmware filename**. Replacing a future `ZEBJUS_FLIGHTCORE.ino` therefore replaces the old source instead of creating another version-named source file.
 
-## Automatic A1 firmware build
+## Automatic board-aware firmware build
 
-`.github/workflows/build-flightcore-a1.yml` runs when the stable `.ino`, catalog, version, build script or workflow changes. It:
+`.github/workflows/build-flightcore-a1.yml` keeps its stable filename for replacement compatibility, but now builds **all supported board profiles**:
 
-1. installs Arduino CLI,
-2. installs Arduino-ESP32 `3.3.12`,
-3. compiles ZFC-A1 (`esp32:esp32:esp32c3`),
-4. overwrites `FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin`,
-5. updates SHA-256 and availability in both firmware catalogs, and
-6. commits the generated stable binary/metadata back to the repository.
+1. ZFC-A1 / ESP32-C3,
+2. ZFC-A2 / XIAO ESP32-C6,
+3. application images for both boards,
+4. merged/factory images when the Arduino build actually produces them,
+5. SHA-256, byte size, UTC build time and Build ID metadata,
+6. full project validation before publishing, and
+7. stable binary/catalog files committed back to the repository.
 
-So a future firmware source update does not require manually renaming a `.bin` for each version.
+The web updater verifies ESP image structure and board chip ID before an imported `.bin` is accepted.
+
+## Connection / Python / sensor reliability
+
+- Device identity uses the complete 48-bit MAC, with migration matching for older six-hex IDs.
+- A discovered kit is shown as **FOUND**, not Connected, until the browser client has verified that exact Device ID.
+- Changing kit clears stale client identity so an old kit cannot silently reconnect as the new selection.
+- Bridge telemetry continues to poll receiver + raw IMU data even though the real flight loop is not integrated.
+- Python runs in a fresh Web Worker on every Run/Rerun. Stop terminates the Worker, so even a non-cooperative infinite loop can be stopped.
+- LSM6DS3 and MPU6050 are auto-detected; Python Lab includes live charts, sample rate/age, CSV recording and browser-side teaching calibration.
 
 ## Local development
 
@@ -64,7 +74,7 @@ npm run check
 
 If `catalog.json` says an application image is unavailable, Firmware Center will not pretend an old binary is current. After GitHub Actions builds the new stable binary, the catalog becomes available with its SHA-256 and the updater can auto-load it. Browser-imported `.bin` files remain supported.
 
-The V18.3.34 firmware is still the local bridge / educational firmware represented by the source in this repository; it is not a claim that the final complete Angle/Rate flight-control core is present. Keep propellers removed during firmware, I²C and sensor bench work.
+The V18.3.35 firmware is still the local bridge / educational firmware represented by the source in this repository; it is not a claim that the final complete Angle/Rate flight-control core is present. Keep propellers removed during firmware, I²C and sensor bench work.
 
 See `FILE_REPLACEMENT_POLICY.md` for future drag/drop replacement rules, `RELEASE_NOTES.md` for the replace-in-place current notes, and `RELEASE_NOTES_V18_3_27.md` for this historical release snapshot.
 

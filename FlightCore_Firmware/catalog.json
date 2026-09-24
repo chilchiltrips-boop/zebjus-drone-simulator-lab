@@ -1,18 +1,18 @@
 {
   "schema": 2,
   "product": "ZEBJUS_FLIGHTCORE",
-  "version": "18.3.34",
+  "version": "18.3.35",
   "defaultBoardId": "ZFC-A1",
   "boards": [
     {
       "id": "ZFC-A1",
-      "name": "ZEBJUS FlightCore A1",
+      "name": "ZEBJUS FlightCore A1 \u2022 ESP32-C3",
       "appAddress": "0x10000",
       "flashMode": "dio",
       "flashFreq": "80m",
       "flashSize": "4MB",
       "latest": {
-        "version": "18.3.34",
+        "version": "18.3.35",
         "app": {
           "available": false,
           "file": "ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -32,17 +32,25 @@
       "build": {
         "builder": "arduino-cli",
         "fqbn": "esp32:esp32:esp32c3"
-      }
+      },
+      "imageChipIds": [
+        5
+      ],
+      "supportedSensors": [
+        "LSM6DS3",
+        "MPU6050"
+      ],
+      "recommendedSensor": "LSM6DS3"
     },
     {
       "id": "ZFC-A2",
-      "name": "ZEBJUS FlightCore A2",
+      "name": "ZEBJUS FlightCore A2 \u2022 XIAO ESP32-C6",
       "appAddress": "0x10000",
       "flashMode": "dio",
       "flashFreq": "80m",
       "flashSize": "4MB",
       "latest": {
-        "version": "18.3.34",
+        "version": "18.3.35",
         "app": {
           "available": false,
           "file": "ZEBJUS_FLIGHTCORE_A2_APP.bin",
@@ -61,8 +69,16 @@
       "flasher": "serial-loader-v1",
       "build": {
         "builder": "arduino-cli",
-        "fqbn": "esp32:esp32:esp32c6"
-      }
+        "fqbn": "esp32:esp32:XIAO_ESP32C6"
+      },
+      "imageChipIds": [
+        13
+      ],
+      "supportedSensors": [
+        "MPU6050",
+        "LSM6DS3"
+      ],
+      "recommendedSensor": "MPU6050"
     }
   ]
 }

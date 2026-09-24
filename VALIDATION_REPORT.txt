@@ -1,24 +1,38 @@
 ZEBJUS FlightCore / F450 Drone Lab validation report
-Release: 18.3.30
+Release: 18.3.35
 
-PASS
-- app.js parses as JavaScript module; school-lab.js / firmware-updater.js / kit-local.js / ui-runtime.js syntax checks pass
-- project validator passes: 15 GLB models, 15 thumbnails, JSON/catalog/local-reference checks
-- no orphan drone3d.js / wiring2d.js / learning-lab.js runtime copies
-- FILE_COUNT.txt matches the packaged source tree
-- stable firmware source: FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino
-- stable generated application binary name: FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
-- Arduino-ESP32 core: 3.3.12; Arduino CLI workflow pin: 1.5.1
-- firmware build script mock-compile verified version 18.3.30 + SHA-256 + ISO UTC builtAt metadata
-- firmware status/info APIs expose compiler date/time for the connected kit
-- Firmware Center contains package build time + current-kit firmware build time fields
-- magnetic assembly placement uses camera screen-space target projection rather than workbench-plane distance
-- propeller runtime uses bright two-blade geometry with automatic CW M1/M3 and CCW M2/M4 pitch
-- Python Lab contains Run + active-red Stop + Rerun controls and typed variable/function/class completion provider
-- 3D assembly lighting increased while keeping material color/tone mapping
-- global buttons retain ripple/press handling and receive consistent hover/focus/active visual feedback
-- duplicate HTML id audit: none
+PASS — static/package validation
+- app.js parses in ES-module mode.
+- kit-local.js, school-lab.js, firmware-updater.js, ui-runtime.js, service-worker.js and python-worker.js parse successfully.
+- 15 GLB component models + 15 thumbnails are present and references resolve.
+- No orphan drone3d.js / wiring2d.js / learning-lab.js runtime copies.
+- Full 48-bit Device ID generation is present with legacy suffix migration matching.
+- UI distinguishes discovered FOUND kit from VERIFIED CONNECTED client identity.
+- Kit switching clears stale client identity and verifies Device ID.
+- Bridge telemetry polling is enabled even with flightCoreIntegrated=false.
+- Python hardware APIs are blocked in Simulator target.
+- Python runs in a fresh Worker; Stop terminates the Worker; terminal output is bounded.
+- Python project delete/undo/redo + JSON import/export are present.
+- IMU tools provide sample age/rate, accel/gyro charts, CSV recording and browser teaching calibration.
+- Firmware auto-detect supports LSM6DS3 and MPU6050; I2C reads use 100 kHz + retries.
+- A1 ESP32-C3 and A2 XIAO ESP32-C6 firmware profiles are in the catalog/workflow.
+- Build automation compiles all profiles, publishes APP images, and publishes FACTORY images when a merged image is generated.
+- Firmware metadata includes SHA-256, byte size, UTC builtAt and Build ID.
+- Browser imported .bin validation checks ESP magic, segment count, non-empty content and target chip ID.
+- 2D motor U/V/W connections remain visible as 3D wiring in Object view with connector endpoints.
+- Direct PDB +/− rail shorts are reported as critical.
+- Frame top plate / FC deck vertical separation and riser geometry increased.
+- Tripod dust particle count, opacity, speed and swirl reduced for visual comfort.
+- GitHub OTA reconnect staged recovery remains present.
 
-Packaging note
-- Source ZIP intentionally does not contain a fake/prebuilt firmware image.
-- GitHub Actions compiles the current stable .ino, stamps build time metadata, validates, refreshes FILE_COUNT.txt, and publishes the same-name application .bin.
+Important firmware state
+- firmwareRole = WIFI_SENSOR_BRIDGE
+- flightCoreIntegrated = false
+- escOutputs = false
+- pidIntegrated = false
+- calibrationIntegrated = false
+
+The final onboard sensor-fusion / PID / mixer / ESC flight loop is intentionally NOT claimed as implemented.
+
+Local environment note
+- Arduino CLI is not installed in this container, so C3/C6 binary compilation is delegated to the included GitHub Actions workflow using Arduino-ESP32 3.3.12. The project validator checks firmware source/catalog/workflow consistency before packaging.

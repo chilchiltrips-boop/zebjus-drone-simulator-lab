@@ -35,6 +35,11 @@ def find_app_bin(build):
     if not bins: raise RuntimeError('Application .bin was not produced')
     return bins[0]
 
+def find_factory_bin(build):
+    bins=[p for p in build.glob('*.bin') if 'merged' in p.name.lower() or 'factory' in p.name.lower()]
+    bins.sort(key=lambda p:p.stat().st_size,reverse=True)
+    return bins[0] if bins else None
+
 
 def sync_catalog_version(catalog,version):
     catalog['version']=version
@@ -80,8 +85,19 @@ def main():
             build=td/'build'; build.mkdir()
             run([cli,'compile','--fqbn',cfg['fqbn'],'--output-dir',str(build),str(sketch)])
             srcbin=find_app_bin(build); dst=OUT/filename; shutil.copy2(srcbin,dst); digest=sha(dst)
-            pkg.update({'available':True,'sha256':digest,'builtAt':built_at}); b['latest']['builtAt']=built_at
-            print(f'{b["name"]}: {dst.name} {dst.stat().st_size} bytes SHA256 {digest}')
+            build_id=f'{version}-{b["id"]}-{digest[:12]}'
+            pkg.update({'available':True,'sha256':digest,'size':dst.stat().st_size,'builtAt':built_at,'buildId':build_id}); b['latest']['builtAt']=built_at
+            factory_pkg=b['latest'].get('factory',{}); merged=find_factory_bin(build)
+            if merged and factory_pkg.get('file'):
+                fdst=OUT/factory_pkg['file']; shutil.copy2(merged,fdst); fdigest=sha(fdst)
+                factory_pkg.update({'available':True,'sha256':fdigest,'size':fdst.stat().st_size,'builtAt':built_at,'buildId':f'{version}-{b["id"]}-FACTORY-{fdigest[:12]}'})
+                print(f'{b["name"]}: {fdst.name} {fdst.stat().st_size} bytes SHA256 {fdigest}')
+            else:
+                if factory_pkg.get('file'):
+                    stale=OUT/factory_pkg['file']
+                    if stale.exists(): stale.unlink()
+                factory_pkg.update({'available':False,'sha256':'','size':0,'builtAt':built_at,'buildId':''})
+            print(f'{b["name"]}: {dst.name} {dst.stat().st_size} bytes SHA256 {digest} buildId {build_id}')
     write_metadata(catalog,version,built_at)
     print(f'Updated firmware metadata for {version}; Arduino-ESP32 core {CORE_VERSION}')
 
