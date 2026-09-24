@@ -1,4 +1,4 @@
-# GitHub web upload batches • V18.3.38
+# GitHub web upload batches • V18.3.39
 
 The project contains more than 100 files, so the delivery ZIP contains two repository-relative upload folders.
 

@@ -1,7 +1,7 @@
-# ZEBJUS F450 Drone Lab V18.3.38
+# ZEBJUS F450 Drone Lab V18.3.39
 
-- Fixed GitHub Actions firmware publication race when a web upload advances `main` while A1/A2 are compiling.
-- Workflow now requires both `ZEBJUS_FLIGHTCORE_A1_APP.bin` and `ZEBJUS_FLIGHTCORE_A2_APP.bin` before validation can pass.
-- Added workflow concurrency so older source builds are cancelled when a newer firmware source/workflow commit arrives.
-- Stable firmware publication now preserves newer asset-only commits and retries push up to four times instead of failing with `fetch first`.
-- A1/A2 APP and optional FACTORY packages remain available as Actions artifacts even before the repository publish step.
+- Fixed stale cached Device ID/IP blocking a replacement XIAO ESP32-C6 that reuses a previous Kit Name.
+- Added multi-kit-safe discovery and strict per-device selection using full Device ID.
+- Duplicate live Kit Names are surfaced instead of silently choosing the wrong controller.
+- Background discovery now continues while the selected kit is connected.
+- Preserves V18.3.38 A1/A2 dual firmware build/publish race protection and V18.3.37 Rate/Angle + PPM/Web/AP integration.

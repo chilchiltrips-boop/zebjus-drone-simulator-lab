@@ -214,6 +214,10 @@ if './python-worker.js' not in sw: fail('service worker does not cache python-wo
 if 'IMU_MPU6050' not in ino or 'IMU_LSM6DS3' not in ino or 'detectImu' not in ino: fail('firmware does not auto-detect supported IMU families')
 if '0xFFFFFFFFFFFF' not in ino or '%012llX' not in ino: fail('firmware Device ID is not using the full 48-bit MAC')
 if 'selectedConnected()' not in school or 'Found • Connect required' not in school: fail('truthful FOUND vs CONNECTED state is missing')
+if 'DUPLICATE_KIT_NAME' not in kit or 'discoverName' not in kit: fail('multi-kit duplicate-name discovery protection is missing')
+if 'filter(x=>!sameDeviceIdentity(x.deviceId,id))' not in kit: fail('known-kit cache still collapses physical boards by Kit Name instead of Device ID')
+if 'interval=selectedConnected()?30000:15000' not in school: fail('background multi-kit discovery stops or scans too aggressively while a selected kit is connected')
+if 'matches.length===1' not in school or 'duplicate-kit-name' not in school: fail('duplicate Kit Names are not surfaced/guarded in the multi-kit selector')
 if 'flightCoreIntegrated' not in ino or 'RATE_ANGLE_FLIGHT_CORE' not in ino or 'WIFI_SENSOR_BRIDGE' not in ino: fail('board-aware bridge/flight-core firmware roles are not explicit')
 if 'enum FlightModeKind' not in types_header or 'enum RcSourceKind' not in types_header: fail('flight-control custom enums must live in the companion header for Arduino prototype safety')
 for token in ['runFlightLoop()','FLIGHT_LOOP_US=4000','MOTOR_PINS[4]={D1,D2,D3,D0}','chooseRcSource()','RC_PPM','RC_WEB_STA','RC_WEB_AP','parseRcCsv','/fly','WEB_RC_STALE_MS=300']:

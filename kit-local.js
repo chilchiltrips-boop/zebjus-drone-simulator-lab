@@ -16,7 +16,10 @@ function saveKnown(list){try{localStorage.setItem(KNOWN_KEY,JSON.stringify(list.
 function rememberKit(status,base){
   if(!status?.deviceId||!status?.name)return;
   const id=String(status.deviceId), now=Date.now();
-  const old=loadKnown().filter(x=>String(x.deviceId)!==id && normalizeKitName(x.name)!==normalizeKitName(status.name));
+  // Device ID is the physical identity. Never delete another board only because it
+  // currently uses the same human-readable Kit Name; multi-kit labs may temporarily
+  // contain duplicate names during replacement/provisioning.
+  const old=loadKnown().filter(x=>!sameDeviceIdentity(x.deviceId,id));
   old.unshift({deviceId:id,name:status.name,ip:status.ip||'',base:base||baseFromName(status.name),ssid:status.ssid||'',lastSeen:now});
   saveKnown(old);
 }
@@ -81,53 +84,77 @@ function clearKnownAddress(identity=''){
   });
   saveKnown(list);
 }
-function candidateKnown(query){
-  const q=String(query||'').trim().toLowerCase();
-  if(!q)return null;
-  return loadKnown().find(x=>String(x.deviceId).toLowerCase()===q||normalizeKitName(x.name)===normalizeKitName(q))||null;
+function knownMatches(query){
+  const q=String(query||'').trim();if(!q)return[];
+  const list=loadKnown();
+  if(isDeviceId(q))return list.filter(x=>sameDeviceIdentity(x.deviceId,q));
+  const n=normalizeKitName(q);return list.filter(x=>normalizeKitName(x.name)===n).sort((a,b)=>(+b.lastSeen||0)-(+a.lastSeen||0));
+}
+function candidateBases(name,knownList=[],ipHint=''){
+  const bases=[];
+  if(ipHint&&/^\d{1,3}(?:\.\d{1,3}){3}$/.test(ipHint))bases.push(`http://${ipHint}`);
+  knownList.forEach(k=>{if(k?.ip)bases.push(`http://${k.ip}`);if(k?.base)bases.push(k.base)});
+  if(name)bases.push(baseFromName(name));
+  return [...new Set(bases.filter(Boolean))];
+}
+async function probeBase(base,{expected='',name='',clientId=''}={}){
+  const qs=clientId?`?clientId=${encodeURIComponent(clientId)}`:'';
+  const st=await requestBase(base,'/api/status'+qs,{timeout:2100});
+  if(!isCompatibleKit(st))throw new Error('This device is not a compatible ZEBJUS FlightCore controller.');
+  if(expected&&!sameDeviceIdentity(st.deviceId,expected))throw Object.assign(new Error('Device ID mismatch: this address belongs to another kit.'),{code:'DEVICE_ID_MISMATCH'});
+  if(name&&normalizeKitName(st.name)!==normalizeKitName(name))throw Object.assign(new Error('Kit Name mismatch: this address belongs to another kit.'),{code:'KIT_NAME_MISMATCH'});
+  if(expected&&String(st.deviceId).toUpperCase()!==String(expected).toUpperCase())emit({kind:'identity-migrated',from:expected,to:st.deviceId,name:st.name});
+  return {status:st,base};
+}
+function uniqueResults(results){
+  const out=[];for(const r of results){if(!r?.status?.deviceId)continue;const i=out.findIndex(x=>sameDeviceIdentity(x.status.deviceId,r.status.deviceId));if(i<0)out.push(r);else if((+r.status.rssi||-999)>(+out[i].status.rssi||-999))out[i]=r}return out;
+}
+async function discoverName(name,clientId=''){
+  name=String(name||'').trim();if(!name||isDeviceId(name))return[];
+  const bases=candidateBases(name,knownMatches(name));if(!bases.length)return[];
+  const settled=await Promise.allSettled(bases.map(base=>probeBase(base,{name,clientId})));
+  const ok=uniqueResults(settled.filter(x=>x.status==='fulfilled').map(x=>x.value));ok.forEach(r=>rememberKit(r.status,r.base));return ok;
 }
 async function connect(query,ipHint='',expectedDeviceId='',clientId=''){
   query=String(query||'').trim();
-  const known=candidateKnown(query)||candidateKnown(expectedDeviceId);
-  const expected=String(expectedDeviceId||(isDeviceId(query)?query:'')||known?.deviceId||'');
-  const name=isDeviceId(query)?(known?.name||''):query;
-  const bases=[];
-  if(ipHint&&/^\d{1,3}(?:\.\d{1,3}){3}$/.test(ipHint))bases.push(`http://${ipHint}`);
-  if(known?.ip)bases.push(`http://${known.ip}`);
-  if(known?.base)bases.push(known.base);
-  if(name)bases.push(baseFromName(name));
+  const queryIsId=isDeviceId(query),expected=String(expectedDeviceId||(queryIsId?query:'')||'');
+  const identityKnown=expected?knownMatches(expected):(queryIsId?knownMatches(query):[]);
+  const name=queryIsId?(identityKnown[0]?.name||''):query;
+  const nameKnown=!queryIsId&&name?knownMatches(name):[];
+  const known=[...identityKnown,...nameKnown];
+  const bases=candidateBases(name,known,ipHint);
   if(!bases.length)throw new Error('For a new browser, enter the Kit Name once. Device ID lookup works after the kit has been seen on this browser.');
-  let last=null;
-  for(const base of [...new Set(bases.filter(Boolean))]){
-    try{
-      const qs=clientId?`?clientId=${encodeURIComponent(clientId)}`:'';
-      const st=await requestBase(base,'/api/status'+qs,{timeout:2100});
-      if(!isCompatibleKit(st))throw new Error('This device is not a compatible ZEBJUS FlightCore controller.');
-      if(expected&&!sameDeviceIdentity(st.deviceId,expected))throw new Error('Device ID mismatch: this address belongs to another kit.');
-      if(expected&&String(st.deviceId).toUpperCase()!==String(expected).toUpperCase())emit({kind:'identity-migrated',from:expected,to:st.deviceId,name:st.name});
-      if(name&&!expected&&normalizeKitName(st.name)!==normalizeKitName(name))throw new Error('Kit Name mismatch: this address belongs to another kit.');
-      rememberKit(st,base);return {status:st,base};
-    }catch(e){last=e}
+
+  // IP hints are only candidates; a stale browser IP must never silently choose a same-name
+  // board. Device-ID selection below remains strict and verifies identity before binding.
+
+  // Device-ID selection is always strict: cached IP/mDNS may move, identity may not.
+  if(expected){
+    let last=null;for(const base of bases){try{const r=await probeBase(base,{expected,clientId});rememberKit(r.status,r.base);return r}catch(e){last=e}}
+    throw last||new Error('Selected Device ID was not found on this Wi-Fi.');
   }
-  throw new Error(last?.name==='AbortError'?'Kit connection timed out. Confirm the kit is powered and this computer is on the same Wi-Fi.':(last instanceof TypeError?'Kit not reachable. Allow Local Network Access for this site in Chrome/Edge, confirm both devices are on the same Wi-Fi, then Rescan.':(last?.message||'Kit not found on this Wi-Fi.')));
+
+  // Name-based connection intentionally does NOT inherit an old cached Device ID. This lets a
+  // replacement controller reuse a kit name. If two live boards really share that name, refuse
+  // to guess and require the user to select the Device ID discovered for each board.
+  const settled=await Promise.allSettled(bases.map(base=>probeBase(base,{name,clientId})));
+  const results=uniqueResults(settled.filter(x=>x.status==='fulfilled').map(x=>x.value));
+  if(results.length===1){rememberKit(results[0].status,results[0].base);return results[0]}
+  if(results.length>1){
+    results.forEach(r=>rememberKit(r.status,r.base));const err=new Error(`Multiple live kits use the name “${name}”. Select the required Device ID from Kits found on this Wi-Fi, or rename one kit.`);err.code='DUPLICATE_KIT_NAME';err.devices=results.map(r=>({deviceId:r.status.deviceId,name:r.status.name,ip:r.status.ip||'',base:r.base}));throw err;
+  }
+  const rejected=settled.find(x=>x.status==='rejected')?.reason;
+  throw new Error(rejected?.name==='AbortError'?'Kit connection timed out. Confirm the kit is powered and this computer is on the same Wi-Fi.':(rejected instanceof TypeError?'Kit not reachable. Allow Local Network Access for this site in Chrome/Edge, confirm both devices are on the same Wi-Fi, then Rescan.':(rejected?.message||'Kit not found on this Wi-Fi.')));
 }
 async function scanDefaultKits({max=30,extraNames=[],onProgress=null}={}){
   max=Math.max(1,Math.min(80,Number(max)||30));
-  const candidates=[];
-  for(let i=1;i<=max;i++)candidates.push(`zebjus_drone_${i}`);
-  loadKnown().forEach(k=>candidates.push(k.name));
-  extraNames.forEach(n=>candidates.push(n));
-  const names=[...new Set(candidates.map(n=>String(n||'').trim()).filter(Boolean))],found=[];
-  let cursor=0,done=0;
+  const candidates=[];for(let i=1;i<=max;i++)candidates.push(`zebjus_drone_${i}`);loadKnown().forEach(k=>candidates.push(k.name));extraNames.forEach(n=>candidates.push(n));
+  const names=[...new Set(candidates.map(n=>String(n||'').trim()).filter(Boolean))],found=[];let cursor=0,done=0;
   async function worker(){
-    while(cursor<names.length){
-      const name=names[cursor++];
-      try{const r=await connect(name);if(!found.some(x=>x.status.deviceId===r.status.deviceId))found.push(r)}catch(_){}
-      done++;if(onProgress)onProgress(done,names.length,found.length);
-    }
+    while(cursor<names.length){const name=names[cursor++];try{const rs=await discoverName(name);for(const r of rs)if(!found.some(x=>sameDeviceIdentity(x.status.deviceId,r.status.deviceId)))found.push(r)}catch(_){}done++;if(onProgress)onProgress(done,names.length,found.length)}
   }
   await Promise.all(Array.from({length:Math.min(8,names.length)},worker));
-  return found.sort((a,b)=>String(a.status.name).localeCompare(String(b.status.name),undefined,{numeric:true}));
+  return found.sort((a,b)=>{const n=String(a.status.name).localeCompare(String(b.status.name),undefined,{numeric:true});return n||String(a.status.deviceId).localeCompare(String(b.status.deviceId))});
 }
 
 class LocalKitClient{
@@ -158,5 +185,5 @@ class LocalKitClient{
   async reboot(){return requestBase(this.base,'/api/reboot',{method:'POST',data:{clientId:this.clientId},timeout:2200})}
 }
 
-global.ZebjusDroneKit={normalizeKitName,hostFromName,baseFromName,loadKnown,rememberKit,clearKnownAddress,isDeviceId,sameDeviceIdentity,isCompatibleKit,connect,scanDefaultKits,LocalKitClient};
+global.ZebjusDroneKit={normalizeKitName,hostFromName,baseFromName,loadKnown,rememberKit,clearKnownAddress,isDeviceId,sameDeviceIdentity,isCompatibleKit,connect,discoverName,scanDefaultKits,LocalKitClient};
 })(window);

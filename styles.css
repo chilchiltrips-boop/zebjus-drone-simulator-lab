@@ -946,3 +946,7 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 @media(max-width:1500px){.python-ide-layout{grid-template-columns:150px minmax(650px,1fr) minmax(285px,.48fr)!important}.imu-toolbox canvas{height:70px}}
 @media(max-width:1250px){.python-ide-layout{grid-template-columns:150px minmax(0,1fr)!important}.python-terminal-card{grid-column:1/-1!important}.imu-toolbox{max-width:920px}.python-terminal-card #pythonTerminal{min-height:160px!important}}
 @media(max-width:760px){.imu-tool-metrics{grid-template-columns:1fr 1fr}.imu-toolbox canvas{height:70px}}
+
+/* ==================== V18.3.39 multi-kit identity polish ==================== */
+.duplicate-kit-name{display:inline-block;margin-left:6px;padding:2px 5px;border:1px solid #9b6b28;border-radius:999px;background:#2a1d0c;color:#ffd48b;font-size:6px;font-weight:900;letter-spacing:.08em;vertical-align:middle}
+.module-card.selected .duplicate-kit-name{border-color:#d38a32;color:#ffe2a9}

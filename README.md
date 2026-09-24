@@ -1,8 +1,10 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.38
+# ZEBJUS F450 Drone Engineering Lab V18.3.39
 
 Browser-based F450 assembly, 2D wiring, Python learning, simulator, local-kit control and firmware update environment for ZEBJUS FlightCore.
 
-## V18.3.38 Rate + Angle FlightCore integration
+V18.3.39 makes Kit Name a discovery label rather than a physical identity. Full MAC-based Device ID is authoritative, stale cached IP/Device ID data cannot block a replacement controller, multiple kits remain visible while one kit is selected, and duplicate live names require explicit Device-ID selection instead of silently binding to the wrong board.
+
+## V18.3.39 Multi-kit identity + Rate/Angle FlightCore
 
 ZFC-A2 / XIAO ESP32-C6 now contains the supplied MPU6050 Rate-mode and Angle-mode control loops instead of acting only as a Wi-Fi/sensor bridge. The A2 profile uses D1/D2/D3/D0 for M1/M2/M3/M4 ESC PWM, a 250 Hz control loop, boot gyro calibration, accelerometer roll/pitch, 1D Kalman fusion, the supplied PID/mixer structure, CH5 arming and CH6 Angle/Rate selection.
 
@@ -63,7 +65,7 @@ npm run check
 
 If `catalog.json` says an application image is unavailable, Firmware Center will not pretend an old binary is current. After GitHub Actions builds the new stable binary, the catalog becomes available with its SHA-256 and the updater can auto-load it. Browser-imported `.bin` files remain supported.
 
-V18.3.38 contains a real Rate/Angle flight loop on the A2/XIAO ESP32-C6 profile. A1 remains bridge-only. Altitude hold, persistent live PID tuning, battery failsafe and full flight calibration are still pending. Perform initial motor-order/direction and control checks with propellers removed.
+V18.3.39 contains a real Rate/Angle flight loop on the A2/XIAO ESP32-C6 profile. A1 remains bridge-only. Altitude hold, persistent live PID tuning, battery failsafe and full flight calibration are still pending. Perform initial motor-order/direction and control checks with propellers removed.
 
 See `FILE_REPLACEMENT_POLICY.md` for future drag/drop replacement rules, `RELEASE_NOTES.md` for the replace-in-place current notes, and `RELEASE_NOTES_V18_3_27.md` for this historical release snapshot.
 
