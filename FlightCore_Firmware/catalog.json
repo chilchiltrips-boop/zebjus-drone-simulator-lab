@@ -1,7 +1,7 @@
 {
   "schema": 2,
   "product": "ZEBJUS_FLIGHTCORE",
-  "version": "18.3.39",
+  "version": "18.3.40",
   "defaultBoardId": "ZFC-A1",
   "boards": [
     {
@@ -12,24 +12,17 @@
       "flashFreq": "80m",
       "flashSize": "4MB",
       "latest": {
-        "version": "18.3.39",
+        "version": "18.3.40",
         "app": {
-          "available": true,
+          "available": false,
           "file": "ZEBJUS_FLIGHTCORE_A1_APP.bin",
-          "sha256": "584e8c082305caf164778948b7ff0c0feadc4d17138cc08c8c07619dba8d2f16",
-          "size": 1157472,
-          "builtAt": "2026-09-24T08:56:59Z",
-          "buildId": "18.3.39-ZFC-A1-584e8c082305"
+          "sha256": ""
         },
         "factory": {
-          "available": true,
+          "available": false,
           "file": "ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
-          "sha256": "f0299163068dd7b68747eced3131bb8839a62eea38213ca4e20e3915a2bb3539",
-          "size": 4194304,
-          "builtAt": "2026-09-24T08:56:59Z",
-          "buildId": "18.3.39-ZFC-A1-FACTORY-f0299163068d"
-        },
-        "builtAt": "2026-09-24T08:56:59Z"
+          "sha256": ""
+        }
       },
       "usbMatch": [
         "ESP32-C3",
@@ -57,24 +50,17 @@
       "flashFreq": "80m",
       "flashSize": "4MB",
       "latest": {
-        "version": "18.3.39",
+        "version": "18.3.40",
         "app": {
-          "available": true,
+          "available": false,
           "file": "ZEBJUS_FLIGHTCORE_A2_APP.bin",
-          "sha256": "ccfa68174bd8be391607de5653a2fed3d8dfadf74ab16e19c002f24541948301",
-          "size": 1177600,
-          "builtAt": "2026-09-24T08:56:59Z",
-          "buildId": "18.3.39-ZFC-A2-ccfa68174bd8"
+          "sha256": ""
         },
         "factory": {
-          "available": true,
+          "available": false,
           "file": "ZEBJUS_FLIGHTCORE_A2_FACTORY.bin",
-          "sha256": "646d0fe1449df46901438e52eb231c00179b9f8ccb850a20529e04240ecd43a4",
-          "size": 4194304,
-          "builtAt": "2026-09-24T08:56:59Z",
-          "buildId": "18.3.39-ZFC-A2-FACTORY-646d0fe1449d"
-        },
-        "builtAt": "2026-09-24T08:56:59Z"
+          "sha256": ""
+        }
       },
       "usbMatch": [
         "ESP32-C6",
@@ -94,6 +80,5 @@
       ],
       "recommendedSensor": "MPU6050"
     }
-  ],
-  "builtAt": "2026-09-24T08:56:59Z"
+  ]
 }

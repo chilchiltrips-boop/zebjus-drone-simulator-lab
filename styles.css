@@ -947,6 +947,24 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 @media(max-width:1250px){.python-ide-layout{grid-template-columns:150px minmax(0,1fr)!important}.python-terminal-card{grid-column:1/-1!important}.imu-toolbox{max-width:920px}.python-terminal-card #pythonTerminal{min-height:160px!important}}
 @media(max-width:760px){.imu-tool-metrics{grid-template-columns:1fr 1fr}.imu-toolbox canvas{height:70px}}
 
-/* ==================== V18.3.39 multi-kit identity polish ==================== */
+/* ==================== V18.3.40 multi-kit identity polish ==================== */
 .duplicate-kit-name{display:inline-block;margin-left:6px;padding:2px 5px;border:1px solid #9b6b28;border-radius:999px;background:#2a1d0c;color:#ffd48b;font-size:6px;font-weight:900;letter-spacing:.08em;vertical-align:middle}
 .module-card.selected .duplicate-kit-name{border-color:#d38a32;color:#ffe2a9}
+
+
+/* ==================== V18.3.40 separate IMU graph + compact copyable terminal ==================== */
+.python-side-stack{min-width:0;display:flex;flex-direction:column;gap:9px;height:calc(100vh - 154px);min-height:calc(100vh - 154px);max-height:calc(100vh - 154px)}
+.python-imu-card{display:flex;flex-direction:column;flex:1 1 auto;min-height:0!important;overflow:hidden}
+.python-imu-card .section-toolbar{flex:0 0 auto;min-height:56px}
+.python-imu-card .imu-toolbox{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;margin:7px 9px 9px}
+.python-imu-card .imu-toolbox[open] summary{flex:0 0 auto}
+.python-imu-card .imu-toolbox canvas{flex:1 1 0;min-height:78px;max-height:126px}
+.python-side-stack .python-terminal-card{flex:0 0 238px!important;height:238px!important;min-height:238px!important;max-height:238px!important;grid-column:auto!important;overflow:hidden!important}
+.python-side-stack .python-terminal-card .section-toolbar{min-height:54px!important;padding-block:8px!important}
+.terminal-toolbar-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.python-side-stack .python-terminal-card .python-runtime-help{padding:6px 10px;font-size:7.5px;grid-template-columns:1fr;gap:2px}
+.python-side-stack .python-terminal-card #pythonTerminal{flex:1 1 auto!important;height:0!important;min-height:0!important;max-height:none!important;margin:0!important;border:0!important;border-radius:0!important;overflow:auto!important;white-space:pre!important;overflow-wrap:normal!important;user-select:text!important;cursor:text}
+#copyTerminalBtn.copied{border-color:#2f8f70!important;color:#a9f3d4!important;background:#0b2c22!important}
+@media(max-width:1500px){.python-side-stack .python-terminal-card{flex-basis:220px!important;height:220px!important;min-height:220px!important;max-height:220px!important}.python-imu-card .imu-toolbox canvas{min-height:70px;max-height:108px}}
+@media(max-width:1250px){.python-side-stack{grid-column:1/-1;height:auto;min-height:0;max-height:none}.python-imu-card{min-height:390px!important}.python-side-stack .python-terminal-card{flex-basis:210px!important;height:210px!important;min-height:210px!important;max-height:210px!important}.python-imu-card .imu-toolbox{max-width:none}.python-imu-card .imu-toolbox canvas{height:92px;min-height:92px;max-height:92px}}
+@media(max-width:760px){.python-side-stack{grid-column:auto}.python-imu-card{min-height:360px!important}.python-side-stack .python-terminal-card{flex-basis:200px!important;height:200px!important;min-height:200px!important;max-height:200px!important}.terminal-toolbar-actions{width:100%}.terminal-toolbar-actions .btn{flex:1 1 120px}}

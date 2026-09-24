@@ -229,6 +229,9 @@ if 'ZEBJUS_FLIGHTCORE_A2_APP.bin' not in workflow or '--board all' not in workfl
 if 'find_factory_bin' not in build or "'buildId':build_id" not in build: fail('firmware build does not publish factory metadata/build IDs')
 if 'validateEspImage' not in fu or 'mostly empty/zero data' not in fu: fail('Firmware Center imported-image validation is incomplete')
 if 'imuAccelChart' not in read('index.html') or 'recordImuSample' not in app or 'downloadImuCsv' not in app: fail('IMU live graph/rate/CSV teaching tools are missing')
+if 'python-side-stack' not in read('index.html') or 'python-imu-card' not in read('index.html'): fail('IMU Live Graph and Python terminal are not separated into stacked cards')
+if 'copyTerminalBtn' not in read('index.html') or 'copyPythonTerminal' not in app or 'navigator.clipboard.writeText' not in app: fail('Python terminal Copy Output workflow is missing')
+if '.python-side-stack .python-terminal-card{flex:0 0 238px' not in read('styles.css'): fail('Python terminal compact-height layout is missing')
 
 if warnings:
     for x in warnings: print('WARN:',x)
