@@ -1,18 +1,14 @@
-ZEBJUS project validation • 18.3.43
-PASS: 15 GLB models, 15 thumbnails, JSON/JS/catalog/file-reference checks OK
-PASS: school-lab.js syntax
-PASS: python-worker.js syntax
-PASS: firmware-updater.js syntax
-PASS: kit-local.js syntax
-PASS: app.js module syntax
-PASS: Workflow YAML parse
-PASS: embedded Python project templates compile through project validator
-PASS: MPU6050/Kalman sampling remains independent of RC availability
-PASS: pid_get / calibration_get / attitude / receiver reads remain View-Only capable
-PASS: persistent A2 accel offsets + level capture integration present
-PASS: fresh WEB_STA/WEB_AP/Python RC precedes PPM fallback
-PASS: WebApp joystick real target mirrors the same frame into Tripod Simulator
-PASS: Tripod REAL KIT MIRROR path + guarded control-lock check present
-PASS: Python Real Kit commands mirror PID/RC state into Tripod Simulator
-PASS: active PPM/WEB_AP/WEB_STA telemetry RC channels mirror into Tripod sticks
-NOTE: Arduino CLI A1/A2 binary compilation is performed by GitHub Actions, not locally in this environment.
+ZEBJUS project validation • 18.3.44
+
+PASS: Unified project has 15 GLB models, 15 thumbnails, matching catalogs, local references and file inventory.
+PASS: tools/validate_project.py and editable AP page/firmware embedding consistency.
+PASS: JavaScript syntax for app, school-lab, Python Worker, server and both AP inline controllers.
+PASS: HTML parser found unique IDs in the main app and both AP pages.
+PASS: Browser Python Worker prelude, four new student examples and laptop companion Python files compile for syntax.
+PASS: Mocked companion rejects a mismatched full Device ID before mutation; acquires one control lock for PID/RC and releases it.
+PASS: Source guard checks cover loop-gap disarm, ESC attach status, calibration reset, Wi-Fi scan gate, safe RC exit and version metadata.
+
+LIMIT: The supplied ZIP contains firmware source and GitHub Actions build instructions; no A1/A2 binary was compiled here because Arduino CLI is unavailable.
+LIMIT: No real kit, ESC, motor, IMU or flight test was available. Propeller-off hardware verification and restrained flight tuning are required; see SUPPORT/FLIGHT_VALIDATION_V18_3_44.md.
+LIMIT: Automated visual viewport rendering was unavailable because the Chromium executable is absent in this environment. Responsive CSS and AP markup passed static checks.
+LIMIT: Native OpenCV, MediaPipe and cvzone are laptop dependencies installed via python_companion/requirements-vision.txt; platform-specific wheels are not inside this ZIP. Browser Python/MediaPipe loads pinned web runtime assets on first use and needs network access then.

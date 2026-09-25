@@ -1,4 +1,4 @@
-# Upload to repository root — V18.3.30
+# Upload to repository root — V18.3.44
 
 This package is already arranged for repository-root drag/drop.
 
@@ -11,5 +11,6 @@ Do not create a second version-named firmware source. Keep:
 GitHub Actions builds/replaces:
 
 `FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin`
+`FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin`
 
-After upload, open **Actions → Build ZEBJUS FlightCore A1 Firmware** if you want to run it manually. A normal push that changes the stable firmware source also triggers it automatically.
+After upload, open **Actions → Build ZEBJUS FlightCore Firmware** if you want to run it manually. A normal push that changes the stable firmware source also triggers it automatically. Wait until both APP images and the catalog are updated before flashing. If upload required separate source/assets commits, rerun the workflow after the assets commit.

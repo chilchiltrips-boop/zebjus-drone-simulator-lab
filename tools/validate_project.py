@@ -235,7 +235,7 @@ styles=read('styles.css')
 if '#tab-python{--py-side-w:430px;--py-terminal-h:330px}' not in styles or 'python-row-resizer' not in styles or 'python-col-resizer' not in styles: fail('V18.3.43 draggable Python workspace sizing is missing')
 if '#tab-python .python-file-list{display:flex!important;flex-direction:row!important' not in styles: fail('Student Python Files is not a horizontal project strip')
 if '#pythonTerminal .python-terminal-error' not in styles or 'color:#ff7288' not in styles: fail('Python terminal error coloring is missing')
-if "const CACHE='zebjus-flightcore-v18-3-43'" not in sw: fail('service-worker cache key is stale for V18.3.43')
+if "const CACHE='zebjus-flightcore-v18-3-44'" not in sw: fail('service-worker cache key is stale for V18.3.44')
 
 
 # V18.3.43 Python Flight Lab / real-FC tuning integration.
@@ -293,6 +293,20 @@ if 'if(webRcFresh())return setupMode?RC_WEB_AP:RC_WEB_STA;if(receiverFresh())ret
 if 'REAL KIT + TRIPOD MIRROR' not in html or 'simRealMirrorTick' not in app or 'mirrorSimPidToReal' not in app: fail('V18.3.43 Tripod real-kit mirror is missing')
 if "rcSource!=='NONE'" not in school or "api()?.controlSim?.({roll:(c[0]-1500)/500" not in school: fail('V18.3.43 active RC telemetry/Web joystick mirror is missing')
 if 'simulatorMirror:true' not in app: fail('V18.3.43 Python real-kit simulator mirror is missing')
+
+# V18.3.44 release integration and editable AP-page source consistency.
+embedded=subprocess.run([sys.executable,str(ROOT/'tools/embed_ap_pages.py'),'--check'],capture_output=True,text=True)
+if embedded.returncode: fail('AP page sources differ from firmware: '+embedded.stderr.strip())
+for rel in ['tools/ap_portal_source.html','tools/ap_fly_source.html','python_companion/zebjus_client.py','python_companion/requirements-vision.txt','python_companion/imu_plot.py','python_companion/camera_telemetry.py','python_companion/cvzone_hands.py','SUPPORT/FLIGHT_VALIDATION_V18_3_44.md']:
+    if not (ROOT/rel).is_file(): fail(f'V18.3.44 project file missing: {rel}')
+for token in ['ARMED_LOOP_GAP_LIMIT_US','loopOverruns','escPwmReady','prefs.begin("zjcal",false)','Wi-Fi scan blocked while armed','Level capture requires a level, motionless']:
+    if token not in ino: fail(f'V18.3.44 firmware guard missing: {token}')
+for token in ['settingsNetworkSummary','basicFlightMode','pythonCameraVideo','pythonHandsToggle','pythonPlotImage']:
+    if token not in html: fail(f'V18.3.44 UI control missing: {token}')
+for token in ['sendPythonSafeFrame','pythonCameraFrame','togglePythonHands','pythonVisualImage','plot-imu','camera-opencv','hand-landmarks']:
+    if token not in app: fail(f'V18.3.44 Python/vision integration missing: {token}')
+for token in ['camera_frame','hands','show_image','show_plot','loadPackagesFromImports']:
+    if token not in read('python-worker.js'): fail(f'V18.3.44 Python Worker method missing: {token}')
 
 if warnings:
     for x in warnings: print('WARN:',x)
