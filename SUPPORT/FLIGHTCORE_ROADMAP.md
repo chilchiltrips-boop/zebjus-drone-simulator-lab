@@ -1,6 +1,6 @@
 # FlightCore implementation state and roadmap
 
-## V18.3.41 implemented
+## V18.3.43 implemented
 - Same-Wi-Fi local control, AP provisioning/recovery, full-MAC Device ID and verified kit switching.
 - Board profiles: A1 / ESP32-C3 and A2 / XIAO ESP32-C6.
 - A2 real flight loop with MPU6050: 250 Hz Rate mode + Angle mode, boot gyro calibration, accelerometer roll/pitch, 1D Kalman fusion and four-motor mixer.

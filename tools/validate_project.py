@@ -232,16 +232,16 @@ if 'imuAccelChart' not in read('index.html') or 'recordImuSample' not in app or 
 if 'python-side-stack' not in read('index.html') or 'python-imu-card' not in read('index.html'): fail('IMU Live Graph and Python terminal are not separated into stacked cards')
 if 'copyTerminalBtn' not in read('index.html') or 'copyPythonTerminal' not in app or 'navigator.clipboard.writeText' not in app: fail('Python terminal Copy Output workflow is missing')
 styles=read('styles.css')
-if '#tab-python{--py-side-w:430px;--py-terminal-h:330px}' not in styles or 'python-row-resizer' not in styles or 'python-col-resizer' not in styles: fail('V18.3.41 draggable Python workspace sizing is missing')
+if '#tab-python{--py-side-w:430px;--py-terminal-h:330px}' not in styles or 'python-row-resizer' not in styles or 'python-col-resizer' not in styles: fail('V18.3.43 draggable Python workspace sizing is missing')
 if '#tab-python .python-file-list{display:flex!important;flex-direction:row!important' not in styles: fail('Student Python Files is not a horizontal project strip')
 if '#pythonTerminal .python-terminal-error' not in styles or 'color:#ff7288' not in styles: fail('Python terminal error coloring is missing')
-if "const CACHE='zebjus-flightcore-v18-3-41'" not in sw: fail('service-worker cache key is stale for V18.3.41')
+if "const CACHE='zebjus-flightcore-v18-3-43'" not in sw: fail('service-worker cache key is stale for V18.3.43')
 
 
-# V18.3.41 Python Flight Lab / real-FC tuning integration.
+# V18.3.43 Python Flight Lab / real-FC tuning integration.
 if 'struct FlightPidSettings' not in types_header or 'enum BenchModeKind' not in types_header: fail('PID/bench custom types are not in the Arduino-safe companion header')
 for token in ['loadPidSettings()','savePidSettings()','pid_get','pid_set','pid_defaults','PID edit blocked while armed','confirm=PROPS_REMOVED','motor_test','motor_order_test','esc_calibrate','bench_status','calibrate_gyro']:
-    if token not in ino: fail(f'V18.3.41 real-FC Python/PID support missing: {token}')
+    if token not in ino: fail(f'V18.3.43 real-FC Python/PID support missing: {token}')
 if 'async function commandDevice' not in school or 'await client.command(command)' not in school: fail('school-lab lacks awaited command bridge for Python real-kit projects')
 for method in ['set_rate_pid','set_angle_pid','receiver','ppm','motor_test','motor_order_test','esc_calibrate','bench_status','calibrate_gyro']:
     if method not in app or method not in read('python-worker.js'): fail(f'Python Drone API method missing from app/worker runtime: {method}')
@@ -256,6 +256,43 @@ for token in ['pythonColResizer','pythonRowResizer','initPythonWorkspaceResizers
     if token not in app+html: fail(f'Python draggable workspace integration missing: {token}')
 if "pythonTerminalWrite(m.text||'','error')" in app: fail('stderr handler regression: terminal should buffer stderr and render it as red on completion/error')
 if "pythonTerminalWrite(pythonStderrBuffer,'error')" not in app or "pythonTerminalWrite(`ERR: ${friendly}\\n`,'error')" not in app: fail('Python runtime errors are not routed to red terminal output')
+
+
+# V18.3.43 continuous real-attitude fix.
+if 'Always sample/fuse the MPU6050 at 250 Hz, even when no RC source is active.' not in ino:
+    fail('V18.3.43 continuous MPU6050 attitude sampling fix is missing')
+needle='if(activeRcSource==RC_NONE){armLowSeen=false;disarmFlight("RC timeout");return;}'
+imu='float rr,rp,ry;if(!readMpuFlight(rr,rp,ry,accX,accY,accZ))'
+if ino.find(imu) < 0 or ino.find(needle) < 0 or ino.find(imu) > ino.find(needle):
+    fail('IMU/Kalman update must occur before the RC_NONE early return')
+if 'sampleAgeMs' not in ino or 'MPU6050_KALMAN' not in ino:
+    fail('attitude_read diagnostics are missing')
+if "{id:'angle',title:'Angle / Attitude Read'" not in app or "code:PY_ANGLE_EXAMPLE,target:'real'" not in app:
+    fail('Angle / Attitude Read example must default to Real ZEBJUS kit')
+
+# V18.3.43 read-only bridge + persistent level calibration.
+for token in ['READ_ONLY_DEVICE_COMMANDS','calibration_get','calibration_set','level_calibrate','calibration_defaults']:
+    if token not in school+ino+app: fail(f'V18.3.43 calibration/read-only integration missing: {token}')
+if "const READ_ONLY_DEVICE_COMMANDS=new Set(['ping','pid_get','receiver_read','ppm_read','attitude_read','calibration_get','bench_status'])" not in school:
+    fail('Read-only real-kit commands are not explicitly separated from mutating commands')
+if 'const ok=await acquireLock(true)' not in school:
+    fail('Mutating Python real-kit commands do not auto-acquire the selected Device ID control lock')
+for token in ['loadCalibrationSettings()','saveCalibrationSettings()','accelOffsetX','accelOffsetY','accelOffsetZ','levelTrimRoll','levelTrimPitch','Level accelerometer offsets and gyro bias captured']:
+    if token not in ino: fail(f'Persistent A2 level calibration missing: {token}')
+for method in ['get_calibration','set_accel_offsets','level_calibrate','restore_calibration_defaults']:
+    if method not in app or method not in read('python-worker.js'): fail(f'Python calibration API method missing: {method}')
+for ident in ['cal-read','acc-offsets','level-cal']:
+    if f"id:'{ident}'" not in example_block: fail(f'Python calibration example missing: {ident}')
+if example_block.count("{id:'") < 28: fail('Python Flight Lab does not contain the calibration-expanded project library')
+if 'calAccX' not in html or 'calCaptureBtn' not in html or 'calibrationUi' not in app:
+    fail('Calibration page does not expose persistent X/Y/Z offsets and Capture Level')
+
+
+# V18.3.43 unified RC / simulator mirror.
+if 'if(webRcFresh())return setupMode?RC_WEB_AP:RC_WEB_STA;if(receiverFresh())return RC_PPM' not in ino: fail('V18.3.43 Web/AP/Python-first RC arbitration is missing')
+if 'REAL KIT + TRIPOD MIRROR' not in html or 'simRealMirrorTick' not in app or 'mirrorSimPidToReal' not in app: fail('V18.3.43 Tripod real-kit mirror is missing')
+if "rcSource!=='NONE'" not in school or "api()?.controlSim?.({roll:(c[0]-1500)/500" not in school: fail('V18.3.43 active RC telemetry/Web joystick mirror is missing')
+if 'simulatorMirror:true' not in app: fail('V18.3.43 Python real-kit simulator mirror is missing')
 
 if warnings:
     for x in warnings: print('WARN:',x)

@@ -969,7 +969,7 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 @media(max-width:1250px){.python-side-stack{grid-column:1/-1;height:auto;min-height:0;max-height:none}.python-imu-card{min-height:390px!important}.python-side-stack .python-terminal-card{flex-basis:210px!important;height:210px!important;min-height:210px!important;max-height:210px!important}.python-imu-card .imu-toolbox{max-width:none}.python-imu-card .imu-toolbox canvas{height:92px;min-height:92px;max-height:92px}}
 @media(max-width:760px){.python-side-stack{grid-column:auto}.python-imu-card{min-height:360px!important}.python-side-stack .python-terminal-card{flex-basis:200px!important;height:200px!important;min-height:200px!important;max-height:200px!important}.terminal-toolbar-actions{width:100%}.terminal-toolbar-actions .btn{flex:1 1 120px}}
 
-/* ==================== V18.3.41 Python Flight Lab workspace ==================== */
+/* ==================== V18.3.42 Python Flight Lab workspace ==================== */
 #tab-python{--py-side-w:430px;--py-terminal-h:330px}
 #tab-python .python-ide-layout{
   display:grid!important;
@@ -1020,3 +1020,18 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
  #tab-python .python-file-list{max-height:46px!important}
  #tab-python .python-ide-layout{grid-template-rows:auto minmax(520px,68vh) auto!important}
 }
+/* V18.3.42 persistent level calibration */
+.calibration-offset-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.calibration-offset-grid label{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#07131e}
+.calibration-offset-grid label span{font-size:10px;color:var(--muted);font-weight:800}
+.calibration-offset-grid input{width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.calibration-actions{flex-wrap:wrap;margin-top:10px}
+.calibration-live-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.calibration-live-grid>div{padding:10px;border:1px solid var(--line);border-radius:10px;background:#07131e}
+.calibration-live-grid span{display:block;font-size:9px;color:var(--muted);margin-bottom:4px}.calibration-live-grid b{font-size:12px}
+.calibration-wizard-card{margin-top:12px}
+@media(max-width:900px){.calibration-offset-grid,.calibration-live-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.calibration-offset-grid,.calibration-live-grid{grid-template-columns:1fr}}
+
+/* V18.3.43 Tripod <-> real FlightCore control mirror */
+.sim-real-mirror{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 10px;border:1px solid #31566a;border-radius:9px;background:#0b1d28;color:#c8e7f5;font-size:11px;font-weight:800;white-space:nowrap}.sim-real-mirror input{accent-color:#35d3a5}.sim-real-mirror:has(input:checked){border-color:#35d3a5;background:#0d2c25;color:#8ff0cf}#simRealMirrorState{white-space:nowrap}

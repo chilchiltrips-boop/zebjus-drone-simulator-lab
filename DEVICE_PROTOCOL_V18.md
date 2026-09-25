@@ -96,15 +96,19 @@ Example response:
 
 The wire/API protocol remains compatible with V18.3.24. Packaging changed to stable replace-in-place firmware names: `ZEBJUS_FLIGHTCORE.ino` and board-specific `ZEBJUS_FLIGHTCORE_<board>_APP.bin`. Firmware semantic version remains available through the existing `FW_VERSION` / firmware-info fields.
 
-## V18.3.41 Python Flight Lab / PID / bench commands
+## V18.3.43 Python Flight Lab / PID / bench commands
 
-A2 / XIAO ESP32-C6 exposes the following `POST /api/command` types to the verified control-lock owner:
+A2 / XIAO ESP32-C6 exposes the following `POST /api/command` types. Read-only commands (`pid_get`, `receiver_read`/`ppm_read`, `attitude_read`, `calibration_get`, `bench_status`) work in View Only mode. Commands that change PID, calibration, RC or motor/ESC state require the verified control-lock owner:
 
 - `pid_get` — returns the complete persistent PID object.
 - `pid_set` — accepts flattened fields such as `rateRollP`, `rateRollI`, `rateRollD`, `angleRatePitchP`, `angleRollP`, etc. Real writes are rejected while ARMED or while bench output is active. Accepted values are saved to NVS.
 - `pid_defaults` — restores and persists the default Rate + Angle PID profile while disarmed.
 - `receiver_read` / `ppm_read` — returns active RC source and CH1..CH10 values.
 - `attitude_read` — returns filtered roll/pitch/yaw and rate-roll/pitch/yaw.
+- `calibration_get` — returns persistent accelerometer X/Y/Z additive offsets, current gyro bias, Roll/Pitch trim, corrected acceleration and attitude.
+- `calibration_set` — stores guarded X/Y/Z accelerometer offsets (±0.5 g) plus Roll/Pitch trim (±10°) in NVS while disarmed.
+- `level_calibrate` / `calibrate_level` — while level/still, averages 100–1000 MPU6050 samples, calculates X=0 g / Y=0 g / Z=+1 g offsets, refreshes gyro bias and saves the offsets to NVS.
+- `calibration_defaults` — restores factory offsets `-0.10`, `+0.03`, `+0.12` g and zero Roll/Pitch trim.
 - `calibrate_gyro` — reruns the real A2 gyro-zero routine while disarmed and still.
 - `rc_frame` — accepts `channels` with at least CH1..CH6. Fresh physical PPM retains priority over Web/AP RC.
 - `motor_test` — guarded single-motor low-pulse bench test. Requires `confirm=PROPS_REMOVED`.
@@ -115,4 +119,13 @@ A2 / XIAO ESP32-C6 exposes the following `POST /api/command` types to the verifi
 
 A1 / ESP32-C3 continues to expose bridge/read capabilities but rejects real motor/PID flight-output operations that require the A2 flight profile.
 
-The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `set_angle_pid()`, `receiver()/ppm()`, `attitude()`, `rc()`, `motor_test()`, `motor_order_test()`, `esc_calibrate()`, `motor_stop()`, `bench_status()`, and `calibrate_gyro()`.
+The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `set_angle_pid()`, `receiver()/ppm()`, `attitude()`, `get_calibration()`, `set_accel_offsets()`, `level_calibrate()`, `restore_calibration_defaults()`, `rc()`, `motor_test()`, `motor_order_test()`, `esc_calibrate()`, `motor_stop()`, `bench_status()`, and `calibrate_gyro()`.
+
+
+## V18.3.43 unified RC arbitration
+
+- `WEB_STA` / `WEB_AP` frames are authoritative while fresh (`<300 ms`) and require the control lock.
+- Physical `PPM` is automatic fallback when no fresh Web/AP/Python frame exists.
+- A source transition while armed forces DISARM before the new source can arm.
+- `/api/telemetry` exposes active `rcSource`, `rcAgeMs` and all ten `rc` channels so the browser can mirror PPM/AP/Python control into Tripod Simulator.
+- Tripod real mirror and Python real target use the same guarded `rc_frame` endpoint.
