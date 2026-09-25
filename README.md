@@ -1,14 +1,16 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.43
+# ZEBJUS F450 Drone Engineering Lab V18.3.44
 
 Browser-based F450 assembly, 2D wiring, Python learning, simulator, local-kit control and firmware update environment for ZEBJUS FlightCore.
 
-V18.3.43 adds the Python Flight Lab and guarded real-FC tuning layer on top of the multi-kit identity work. Full MAC-based Device ID remains authoritative; Python and the PID editor can now work against the Simulator or the selected verified controller without confusing one kit with another.
+V18.3.44 builds on the Python Flight Lab, multi-kit Device ID and Tripod real-kit mirror. It includes the full assets in one GitHub-ready directory, a page-wise responsive AP interface, STA and flight-mode controls in Settings, safety fixes, browser plots/vision and a native laptop Python companion. See `RELEASE_NOTES.md`.
 
-## V18.3.43 Unified control mirror
+For a new kit, use `http://192.168.4.1/` on its setup AP. The kit hosts Wi-Fi setup and status there; `/fly` hosts direct control on AP or STA. On a hosted secure Drone Lab page, students can use the browser Python editor, camera, MediaPipe hand landmarks, OpenCV and Matplotlib. `python_companion/` installs native MediaPipe/cvzone/OpenCV on the laptop for camera projects. The ESP32 does not install Python packages.
+
+## Unified control mirror
 
 WebApp Joystick, Tripod sticks, AP direct RC and Python `drone.rc()` can operate the A2 FlightCore without a PPM receiver. Fresh Web/AP/Python frames own the active RC source; PPM is fallback. Tripod REAL KIT MIRROR sends the same sticks/mode/arm frame to Simulator and the selected controlled kit, and PID Apply can synchronize the real FC for bench/tether tuning.
 
-## V18.3.43 Python Flight Lab + Rate/Angle FlightCore
+## Python Flight Lab + Rate/Angle FlightCore
 
 ZFC-A2 / XIAO ESP32-C6 now contains the supplied MPU6050 Rate-mode and Angle-mode control loops instead of acting only as a Wi-Fi/sensor bridge. The A2 profile uses D1/D2/D3/D0 for M1/M2/M3/M4 ESC PWM, a 250 Hz control loop, boot gyro calibration, accelerometer roll/pitch, 1D Kalman fusion, the supplied PID/mixer structure, CH5 arming and CH6 Angle/Rate selection.
 
@@ -72,7 +74,7 @@ npm run check
 
 If `catalog.json` says an application image is unavailable, Firmware Center will not pretend an old binary is current. After GitHub Actions builds the new stable binary, the catalog becomes available with its SHA-256 and the updater can auto-load it. Browser-imported `.bin` files remain supported.
 
-V18.3.43 contains a real Rate/Angle flight loop, persistent guarded PID tuning and persistent level accelerometer calibration on the A2/XIAO ESP32-C6 profile. Acc X/Y/Z offsets and Roll/Pitch trim are stored in NVS; Capture Level can calculate X=0 g, Y=0 g, Z=+1 g offsets and refresh gyro bias. A1 remains bridge-only. Altitude hold and battery failsafe are still pending. Perform motor-order/direction, ESC calibration and control checks with propellers removed.
+V18.3.44 contains a real Rate/Angle flight loop, persistent guarded PID tuning and persistent level accelerometer calibration on the A2/XIAO ESP32-C6 profile. Acc X/Y/Z offsets and Roll/Pitch trim are stored in NVS; Capture Level calculates X=0 g, Y=0 g, Z=+1 g offsets and refreshes gyro bias only when still and near level. A1 remains bridge-only. A2 flight needs MPU6050 even if LSM6DS3 is detected for student projects. Altitude hold and battery failsafe are pending. The firmware and airframe need the prop-off/tethered checks in `SUPPORT/FLIGHT_VALIDATION_V18_3_44.md` before free flight.
 
 See `FILE_REPLACEMENT_POLICY.md` for future drag/drop replacement rules, `RELEASE_NOTES.md` for the replace-in-place current notes, and `RELEASE_NOTES_V18_3_27.md` for this historical release snapshot.
 

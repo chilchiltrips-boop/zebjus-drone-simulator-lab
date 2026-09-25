@@ -24,7 +24,7 @@ Lock expires after 10 seconds without heartbeat.
 
 Form fields: `clientId`, `type`, plus command-specific values.
 
-Non-read-only hardware commands require the local control lock. PID/calibration changes are rejected while armed. On the A2 flight profile, verified Web/AP RC is enabled with PPM-first source priority and a short stale-frame failsafe. A1 remains bridge-only.
+Non-read-only hardware commands require the local control lock. PID/calibration changes are rejected while armed. On the A2 flight profile, a fresh verified Web/AP/Python RC frame takes priority; PPM is fallback after the web frame expires. A source change while armed disarms. A1 remains bridge-only.
 
 ## Rename
 `POST /api/name` with `clientId`, `name`.
@@ -110,7 +110,7 @@ A2 / XIAO ESP32-C6 exposes the following `POST /api/command` types. Read-only co
 - `level_calibrate` / `calibrate_level` — while level/still, averages 100–1000 MPU6050 samples, calculates X=0 g / Y=0 g / Z=+1 g offsets, refreshes gyro bias and saves the offsets to NVS.
 - `calibration_defaults` — restores factory offsets `-0.10`, `+0.03`, `+0.12` g and zero Roll/Pitch trim.
 - `calibrate_gyro` — reruns the real A2 gyro-zero routine while disarmed and still.
-- `rc_frame` — accepts `channels` with at least CH1..CH6. Fresh physical PPM retains priority over Web/AP RC.
+- `rc_frame` — accepts 6–10 decimal channel values, each 1000–2000 µs, in `channels`. Fresh verified Web/AP/Python RC takes priority; PPM is fallback.
 - `motor_test` — guarded single-motor low-pulse bench test. Requires `confirm=PROPS_REMOVED`.
 - `motor_order_test` — M1→M4 bench sequence. Requires `confirm=PROPS_REMOVED`.
 - `esc_calibrate` — guarded 3 s high + 3 s low calibration sequence. Requires `confirm=PROPS_REMOVED`.
@@ -120,6 +120,13 @@ A2 / XIAO ESP32-C6 exposes the following `POST /api/command` types. Read-only co
 A1 / ESP32-C3 continues to expose bridge/read capabilities but rejects real motor/PID flight-output operations that require the A2 flight profile.
 
 The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `set_angle_pid()`, `receiver()/ppm()`, `attitude()`, `get_calibration()`, `set_accel_offsets()`, `level_calibrate()`, `restore_calibration_defaults()`, `rc()`, `motor_test()`, `motor_order_test()`, `esc_calibrate()`, `motor_stop()`, `bench_status()`, and `calibrate_gyro()`.
+
+## V18.3.44 status and control safeguards
+
+- `/api/status` and `/api/telemetry` include `loopCount`, `maxLoopGapUs` and `loopOverruns` for timing diagnosis. `maxLoopGapUs` is the longest time since a scheduled 250 Hz tick, including startup/other disarmed work; inspect it together with overrun growth under load.
+- On A2, an armed loop gap over 30 ms, expiring/releasing the owner lock during Web RC, or invalid IMU/RC fails safe. Changing Wi-Fi/reset/recovery, scan, and setup test are blocked while armed or bench output is active.
+- `level_calibrate` rejects motion/large tilt. Factory reset clears PID and accelerometer offsets/trim. No attitude or motor output from an LSM6DS3 is used for A2 flight control in this version.
+- AP setup `/` has Wi-Fi, kit status and controller navigation; `/fly` works directly on the local FlightCore. Browser camera/MediaPipe processing is separate from flight stabilization.
 
 
 ## V18.3.43 unified RC arbitration
