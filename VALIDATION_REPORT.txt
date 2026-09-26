@@ -1,14 +1,9 @@
-ZEBJUS project validation • 18.3.44
+ZEBJUS V18.3.46 source validation
 
-PASS: Unified project has 15 GLB models, 15 thumbnails, matching catalogs, local references and file inventory.
-PASS: tools/validate_project.py and editable AP page/firmware embedding consistency.
-PASS: JavaScript syntax for app, school-lab, Python Worker, server and both AP inline controllers.
-PASS: HTML parser found unique IDs in the main app and both AP pages.
-PASS: Browser Python Worker prelude, four new student examples and laptop companion Python files compile for syntax.
-PASS: Mocked companion rejects a mismatched full Device ID before mutation; acquires one control lock for PID/RC and releases it.
-PASS: Source guard checks cover loop-gap disarm, ESC attach status, calibration reset, Wi-Fi scan gate, safe RC exit and version metadata.
+PASS: tools/validate_project.py — GLB assets, JS syntax, HTML references/IDs, matching AP templates, firmware/catalog/version and structural integration.
+PASS: tools/test_expansion_contract.py — all 42 browser Python examples compile with top-level await; Python Worker prelude compiles; AP setup/fly/I/O inline scripts pass node --check; ESC microsecond duty converts 1000/1500/2000 to 1024/1536/2048 ticks at 250 Hz; servo duty converts these pulses to 205/307/410 ticks at 50 Hz; /io route present.
+PASS: python_companion/zebjus_client.py compiles with Python 3. No built firmware binary is represented as available in the catalogs.
 
-LIMIT: The supplied ZIP contains firmware source and GitHub Actions build instructions; no A1/A2 binary was compiled here because Arduino CLI is unavailable.
-LIMIT: No real kit, ESC, motor, IMU or flight test was available. Propeller-off hardware verification and restrained flight tuning are required; see SUPPORT/FLIGHT_VALIDATION_V18_3_44.md.
-LIMIT: Automated visual viewport rendering was unavailable because the Chromium executable is absent in this environment. Responsive CSS and AP markup passed static checks.
-LIMIT: Native OpenCV, MediaPipe and cvzone are laptop dependencies installed via python_companion/requirements-vision.txt; platform-specific wheels are not inside this ZIP. Browser Python/MediaPipe loads pinned web runtime assets on first use and needs network access then.
+LIMIT: Arduino CLI and the physical A2/A1 boards were unavailable. The Arduino source has not been compiled/flashed in this workspace; actual PWM waveform, pin order, servo 50 Hz isolation, PPM polarity, multi-device I²C compatibility, GPS, matrix, motor/propeller direction and flight stability are unverified.
+LIMIT: No GUI browser executable was available. Responsive UI has structural/CSS/JS checks, but touch behavior, mobile layout and real AP/STA connectivity require on-device browser checks.
+LIMIT: A2 stabilized flight currently requires MPU6050. A1 is a bridge. See SUPPORT/FLIGHT_VALIDATION_V18_3_46.md for the physical verification sequence and supported expansion hardware.

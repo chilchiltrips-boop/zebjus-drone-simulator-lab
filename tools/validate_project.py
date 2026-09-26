@@ -18,7 +18,7 @@ version=read('VERSION.txt').strip()
 print(f'ZEBJUS project validation • {version}')
 
 # Required active files and stable mutable names.
-required=['RELEASE_NOTES.md','index.html','styles.css','app.js','python-worker.js','glb-loader.js','three.module.min.js','service-worker.js','kit-local.js','school-lab.js','ui-runtime.js','firmware-updater.js','FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino','FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json','firmware-catalog.json','firmware-latest.json','.github/workflows/build-flightcore-a1.yml','tools/build_firmware.py']
+required=['hardware-io.js','tools/ap_io_source.html','RELEASE_NOTES.md','index.html','styles.css','app.js','python-worker.js','glb-loader.js','three.module.min.js','service-worker.js','kit-local.js','school-lab.js','ui-runtime.js','firmware-updater.js','FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino','FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json','firmware-catalog.json','firmware-latest.json','.github/workflows/build-flightcore-a1.yml','tools/build_firmware.py']
 for rel in required:
     if not (ROOT/rel).is_file(): fail(f'missing required file: {rel}')
 for p in (ROOT/'FlightCore_Firmware').glob('*.ino'):
@@ -224,7 +224,7 @@ for token in ['runFlightLoop()','FLIGHT_LOOP_US=4000','MOTOR_PINS[4]={D1,D2,D3,D
     if token not in ino: fail(f'Rate/Angle multi-source flight integration missing: {token}')
 if 'rc[5]>=1500?FLIGHT_RATE:FLIGHT_ANGLE' not in ino: fail('CH6 Angle/Rate mode mapping missing')
 if 'rc[4]<1500' not in ino or 'rc[2]<=1050' not in ino: fail('CH5 arm / low-throttle arming gates missing')
-if '1.024f*(throttle+inputRoll-inputPitch+inputYaw)' not in ino: fail('four-motor mixer missing or changed unexpectedly')
+if 'm1=throttle+inputRoll-inputPitch+inputYaw' not in ino or 'writeEscMicroseconds(i,(int)motorInput[i])' not in ino: fail('four-motor microsecond mixer missing or changed unexpectedly')
 if 'ZEBJUS_FLIGHTCORE_A2_APP.bin' not in workflow or '--board all' not in workflow: fail('workflow does not build both A1/C3 and A2/C6 application packages')
 if 'find_factory_bin' not in build or "'buildId':build_id" not in build: fail('firmware build does not publish factory metadata/build IDs')
 if 'validateEspImage' not in fu or 'mostly empty/zero data' not in fu: fail('Firmware Center imported-image validation is incomplete')
@@ -235,7 +235,7 @@ styles=read('styles.css')
 if '#tab-python{--py-side-w:430px;--py-terminal-h:330px}' not in styles or 'python-row-resizer' not in styles or 'python-col-resizer' not in styles: fail('V18.3.43 draggable Python workspace sizing is missing')
 if '#tab-python .python-file-list{display:flex!important;flex-direction:row!important' not in styles: fail('Student Python Files is not a horizontal project strip')
 if '#pythonTerminal .python-terminal-error' not in styles or 'color:#ff7288' not in styles: fail('Python terminal error coloring is missing')
-if "const CACHE='zebjus-flightcore-v18-3-44'" not in sw: fail('service-worker cache key is stale for V18.3.44')
+if "const CACHE='zebjus-flightcore-v18-3-46'" not in sw: fail('service-worker cache key is stale for V18.3.46')
 
 
 # V18.3.43 Python Flight Lab / real-FC tuning integration.
@@ -252,7 +252,7 @@ for ident in required_examples:
 if example_block.count("{id:'") < 25: fail('Python Flight Lab does not contain the expanded project library')
 for token in ['syncPythonCodeToSimulator','pythonSimCommand','pythonBenchMix','setStickVisual','PRateRoll','PAngleRoll']:
     if token not in app: fail(f'Python code-to-simulator reflection missing: {token}')
-for token in ['pythonColResizer','pythonRowResizer','initPythonWorkspaceResizers','zebjus-python-layout-v1841']:
+for token in ['pythonColResizer','pythonRowResizer','initPythonWorkspaceResizers','zebjus-python-layout-v1845']:
     if token not in app+html: fail(f'Python draggable workspace integration missing: {token}')
 if "pythonTerminalWrite(m.text||'','error')" in app: fail('stderr handler regression: terminal should buffer stderr and render it as red on completion/error')
 if "pythonTerminalWrite(pythonStderrBuffer,'error')" not in app or "pythonTerminalWrite(`ERR: ${friendly}\\n`,'error')" not in app: fail('Python runtime errors are not routed to red terminal output')
@@ -273,7 +273,7 @@ if "{id:'angle',title:'Angle / Attitude Read'" not in app or "code:PY_ANGLE_EXAM
 # V18.3.43 read-only bridge + persistent level calibration.
 for token in ['READ_ONLY_DEVICE_COMMANDS','calibration_get','calibration_set','level_calibrate','calibration_defaults']:
     if token not in school+ino+app: fail(f'V18.3.43 calibration/read-only integration missing: {token}')
-if "const READ_ONLY_DEVICE_COMMANDS=new Set(['ping','pid_get','receiver_read','ppm_read','attitude_read','calibration_get','bench_status'])" not in school:
+if "'pinmap_get','gps_read','matrix_read','gpio_read','i2c_read'" not in school:
     fail('Read-only real-kit commands are not explicitly separated from mutating commands')
 if 'const ok=await acquireLock(true)' not in school:
     fail('Mutating Python real-kit commands do not auto-acquire the selected Device ID control lock')
@@ -294,19 +294,46 @@ if 'REAL KIT + TRIPOD MIRROR' not in html or 'simRealMirrorTick' not in app or '
 if "rcSource!=='NONE'" not in school or "api()?.controlSim?.({roll:(c[0]-1500)/500" not in school: fail('V18.3.43 active RC telemetry/Web joystick mirror is missing')
 if 'simulatorMirror:true' not in app: fail('V18.3.43 Python real-kit simulator mirror is missing')
 
-# V18.3.44 release integration and editable AP-page source consistency.
+# V18.3.46 release integration and editable AP-page source consistency.
 embedded=subprocess.run([sys.executable,str(ROOT/'tools/embed_ap_pages.py'),'--check'],capture_output=True,text=True)
 if embedded.returncode: fail('AP page sources differ from firmware: '+embedded.stderr.strip())
 for rel in ['tools/ap_portal_source.html','tools/ap_fly_source.html','python_companion/zebjus_client.py','python_companion/requirements-vision.txt','python_companion/imu_plot.py','python_companion/camera_telemetry.py','python_companion/cvzone_hands.py','SUPPORT/FLIGHT_VALIDATION_V18_3_44.md']:
-    if not (ROOT/rel).is_file(): fail(f'V18.3.44 project file missing: {rel}')
+    if not (ROOT/rel).is_file(): fail(f'V18.3.46 project file missing: {rel}')
 for token in ['ARMED_LOOP_GAP_LIMIT_US','loopOverruns','escPwmReady','prefs.begin("zjcal",false)','Wi-Fi scan blocked while armed','Level capture requires a level, motionless']:
-    if token not in ino: fail(f'V18.3.44 firmware guard missing: {token}')
+    if token not in ino: fail(f'V18.3.46 firmware guard missing: {token}')
 for token in ['settingsNetworkSummary','basicFlightMode','pythonCameraVideo','pythonHandsToggle','pythonPlotImage']:
-    if token not in html: fail(f'V18.3.44 UI control missing: {token}')
+    if token not in html: fail(f'V18.3.46 UI control missing: {token}')
 for token in ['sendPythonSafeFrame','pythonCameraFrame','togglePythonHands','pythonVisualImage','plot-imu','camera-opencv','hand-landmarks']:
-    if token not in app: fail(f'V18.3.44 Python/vision integration missing: {token}')
+    if token not in app: fail(f'V18.3.46 Python/vision integration missing: {token}')
 for token in ['camera_frame','hands','show_image','show_plot','loadPackagesFromImports']:
-    if token not in read('python-worker.js'): fail(f'V18.3.44 Python Worker method missing: {token}')
+    if token not in read('python-worker.js'): fail(f'V18.3.46 Python Worker method missing: {token}')
+
+# V18.3.46 Python / AP / measured RC integration.
+for token in ['pythonOutputWindow','joyTxRate','joyRxRate','joyLoopRate','joyPythonValues','joyKeysYaw','zebjus-market-card']:
+    if token not in html: fail(f'V18.3.46 UI missing {token}')
+for token in ['setPythonControlMode','mirrorPythonRc','renderJoystickKeyHints','updateRateUi','st.pythonRcActive']:
+    if token not in school: fail(f'V18.3.46 transmitter integration missing {token}')
+for token in ['matplotlib.use("Agg", force=True)','browser_cv2.py','latestCameraFrame']:
+    if token not in read('python-worker.js'): fail(f'V18.3.46 Python Worker support missing {token}')
+for token in ['ppmFrameHz','webRcFrameHz','flightLoopHz','updateControlRates()']:
+    if token not in ino: fail(f'V18.3.46 measured FC rates missing {token}')
+for token in ['KEYBOARD','arrowleft','ppmHz','fcHz']:
+    if token.lower() not in read('tools/ap_fly_source.html').lower(): fail(f'V18.3.46 AP keyboard/rate support missing {token}')
+for rel in ['python_companion/browser_cv2.py','python_companion/face_detection.py','python_companion/reference_uploads/legacy_udp_flight_client.py','python_companion/reference_uploads/legacy_mediapipe_face_detector.py','python_companion/reference_uploads/cvzone_face_camera.py','python_companion/reference_uploads/hand_distance_serial_legacy.py','python_companion/reference_uploads/opencv_camera_basics.py']:
+    if not (ROOT/rel).is_file(): fail(f'V18.3.46 supplied/adapted Python file missing {rel}')
+
+
+# V18.3.46 expansion firmware and UI contract.
+for token in ['escDutyFromUs','servoDutyFromUs','ledcAttachChannel(pin,250,12,i)','ledcAttachChannel(pin,50,12,4)','motorSlotsValid','loadExpansionSettings','ppmEdgeFalling','ppmReverse','expansionJson','expansionReadCommand','expansionWriteCommand','/io','FLIGHT_ANGLE','FLIGHT_RATE']:
+    if token not in ino: fail(f'V18.3.46 expansion firmware missing {token}')
+for token in ['motor_map_set','ppm_config','i2c_read','i2c_write','servo_config','servo_write','gps_config','gps_read','matrix_config','matrix_write','gpio_read','gpio_write','gpio_release']:
+    if token not in ino or token not in read('tools/ap_io_source.html') or token not in read('hardware-io.js'): fail(f'V18.3.46 I/O command mismatch: {token}')
+for token in ['referenceWires()','fcHeaderForMotor','zebjus-expansion-change']:
+    if token not in app: fail(f'V18.3.46 dynamic 2D wiring missing {token}')
+for token in ['pinmap_get','motor_map_set','ppm_config','i2c_read','servo_config','gps_read','matrix_write','gpio_write']:
+    if token not in read('python-worker.js') or token not in read('python_companion/zebjus_client.py'): fail(f'V18.3.46 Python hardware bridge missing {token}')
+if "'./hardware-io.js'" not in sw: fail('offline cache omits hardware I/O script')
+if 'id="tab-io"' not in html or 'hardware-io.js?v=18.3.46' not in html: fail('V18.3.46 hardware I/O page is absent')
 
 if warnings:
     for x in warnings: print('WARN:',x)
@@ -315,3 +342,4 @@ if errors:
     print(f'FAILED: {len(errors)} error(s)')
     sys.exit(1)
 print(f'PASS: {len(assets)} GLB models, {len(thumbs)} thumbnails, JSON/JS/catalog/file-reference checks OK')
+
