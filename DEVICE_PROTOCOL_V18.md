@@ -26,6 +26,24 @@ Form fields: `clientId`, `type`, plus command-specific values.
 
 Non-read-only hardware commands require the local control lock. PID/calibration changes are rejected while armed. On the A2 flight profile, a fresh verified Web/AP/Python RC frame takes priority; PPM is fallback after the web frame expires. A source change while armed disarms. A1 remains bridge-only.
 
+## V18.3.46 expansion commands
+
+The FC serves responsive direct pages `/io` (AP and STA) and `/fly`. `GET /api/status` and `/api/telemetry` include `expansion`: logical motor connector/GPIO routes, PPM input pin/edge/reversal, configured servo/GPS pins, matrix address and active GPIO outputs. `receiver_read` reports the latest measured PPM/Web/loop rates.
+
+| `type` | Form fields | Response / effect |
+| --- | --- | --- |
+| `pinmap_get` | none | read-only current expansion map |
+| `motor_map_set` | `m1slot`…`m4slot` each 0–3 exactly once | A2 only; save map and reboot |
+| `ppm_config` | `edge=RISING` or `FALLING`; `reverse0`…`reverse3` as 0/1 | saved roll/pitch/throttle/yaw input reversal |
+| `i2c_read` | decimal `address`, `reg`, `length` (1–16) | raw bytes |
+| `i2c_write` | decimal `address`, `reg`, `bytes` comma-separated (1–8) | disarmed register write, except the detected IMU |
+| `servo_config` / `servo_write` | `pin=-1` or GPIO17/19/20/18; `pulseUs` 1000–2000 | A2 50 Hz PWM on one free D7–D10 pin |
+| `gps_config` / `gps_read` | `pin=-1` or a free GPIO17/19/20/18; none to read | A2 RX-only NMEA at 9600 baud |
+| `matrix_config` / `matrix_write` / `matrix_read` | address 112–119; eight comma-separated decimal `rows`; none | HT16K33 8×8 |
+| `gpio_read` / `gpio_write` / `gpio_release` | free GPIO17/19/20/18; `value=0/1` on write | A2 3.3 V digital I/O; release drives LOW then returns pin to input |
+
+`GET /api/i2c/scan` scans every address 1–126 and reports ACK devices. Read-only commands work without the control lock; mutations require `/api/control/acquire`. Bus operations and pin changes are blocked while armed or a bench motor test is active. The firmware implements only the listed drivers, not arbitrary I²C device-specific protocols.
+
 ## Rename
 `POST /api/name` with `clientId`, `name`.
 
@@ -121,7 +139,7 @@ A1 / ESP32-C3 continues to expose bridge/read capabilities but rejects real moto
 
 The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `set_angle_pid()`, `receiver()/ppm()`, `attitude()`, `get_calibration()`, `set_accel_offsets()`, `level_calibrate()`, `restore_calibration_defaults()`, `rc()`, `motor_test()`, `motor_order_test()`, `esc_calibrate()`, `motor_stop()`, `bench_status()`, and `calibrate_gyro()`.
 
-## V18.3.44 status and control safeguards
+## V18.3.46 status and control safeguards
 
 - `/api/status` and `/api/telemetry` include `loopCount`, `maxLoopGapUs` and `loopOverruns` for timing diagnosis. `maxLoopGapUs` is the longest time since a scheduled 250 Hz tick, including startup/other disarmed work; inspect it together with overrun growth under load.
 - On A2, an armed loop gap over 30 ms, expiring/releasing the owner lock during Web RC, or invalid IMU/RC fails safe. Changing Wi-Fi/reset/recovery, scan, and setup test are blocked while armed or bench output is active.

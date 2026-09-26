@@ -13,7 +13,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-READ_ONLY = frozenset({"ping", "pid_get", "receiver_read", "ppm_read", "attitude_read", "calibration_get", "bench_status"})
+READ_ONLY = frozenset({"ping", "pid_get", "receiver_read", "ppm_read", "attitude_read", "calibration_get", "bench_status", "pinmap_get", "gps_read", "matrix_read", "gpio_read", "i2c_read"})
 
 
 class ZebjusClient:
@@ -109,6 +109,61 @@ class ZebjusClient:
 
     def set_accel_offsets(self, x: float, y: float, z: float, roll_trim: float = 0, pitch_trim: float = 0) -> dict:
         return self.command("calibration_set", accelOffsetX=x, accelOffsetY=y, accelOffsetZ=z, levelTrimRoll=roll_trim, levelTrimPitch=pitch_trim)
+
+    def pinmap_get(self):
+        return self.command("pinmap_get")
+
+    def motor_map_set(self, slots=("D1", "D2", "D3", "D0")):
+        if sorted(str(x).upper() for x in slots) != ["D0", "D1", "D2", "D3"]:
+            raise ValueError("Assign D0-D3 exactly once to M1-M4")
+        return self.command("motor_map_set", **{f"m{i+1}slot": int(str(v)[1]) for i, v in enumerate(slots)})
+
+    def ppm_config(self, edge="RISING", reverse=(False, False, False, False)):
+        if len(reverse) != 4:
+            raise ValueError("Specify four roll/pitch/throttle/yaw reversals")
+        return self.command("ppm_config", edge=edge.upper(), **{f"reverse{i}": int(bool(v)) for i, v in enumerate(reverse)})
+
+    def i2c_scan(self):
+        self.status()
+        return self._request("/api/i2c/scan")
+
+    def i2c_read(self, address, reg, length=1):
+        return self.command("i2c_read", address=int(address), reg=int(reg), length=int(length))
+
+    def i2c_write(self, address, reg, values):
+        return self.command("i2c_write", address=int(address), reg=int(reg), bytes=",".join(str(int(x)) for x in values))
+
+    def servo_config(self, pin):
+        return self.command("servo_config", pin=int(pin))
+
+    def servo_write(self, pulse_us=1500):
+        return self.command("servo_write", pulseUs=int(pulse_us))
+
+    def gps_config(self, pin):
+        return self.command("gps_config", pin=int(pin))
+
+    def gps_read(self):
+        return self.command("gps_read")
+
+    def matrix_config(self, address=0x70):
+        return self.command("matrix_config", address=int(address))
+
+    def matrix_write(self, rows):
+        if len(rows) != 8:
+            raise ValueError("Specify eight byte rows")
+        return self.command("matrix_write", rows=",".join(str(int(x)) for x in rows))
+
+    def matrix_read(self):
+        return self.command("matrix_read")
+
+    def gpio_read(self, pin):
+        return self.command("gpio_read", pin=int(pin))
+
+    def gpio_write(self, pin, value):
+        return self.command("gpio_write", pin=int(pin), value=int(bool(value)))
+
+    def gpio_release(self, pin):
+        return self.command("gpio_release", pin=int(pin))
 
     def __enter__(self):
         self.status()
