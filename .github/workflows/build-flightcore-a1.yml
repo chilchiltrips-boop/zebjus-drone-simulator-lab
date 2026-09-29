@@ -5,6 +5,7 @@ on:
     paths:
       - 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino'
       - 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h'
+      - 'FlightCore_Firmware/src/**'
       - 'FlightCore_Firmware/catalog.json'
       - 'VERSION.txt'
       - 'tools/build_firmware.py'
@@ -90,7 +91,7 @@ jobs:
             echo "Publish attempt ${attempt}/4"
             git fetch origin main
 
-            if ! git diff --quiet "${GITHUB_SHA}" origin/main --               FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino               FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h               VERSION.txt tools/build_firmware.py tools/cleanup_repo.py               .github/workflows/build-flightcore-a1.yml; then
+            if ! git diff --quiet "${GITHUB_SHA}" origin/main --               FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino               FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h               FlightCore_Firmware/src               VERSION.txt tools/build_firmware.py tools/cleanup_repo.py               .github/workflows/build-flightcore-a1.yml; then
               echo "A newer firmware source/build workflow is already on main."
               echo "This run will not publish stale binaries; the newer workflow run owns publication."
               exit 0
