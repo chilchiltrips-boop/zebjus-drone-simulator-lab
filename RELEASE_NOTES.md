@@ -1,4 +1,12 @@
-# ZEBJUS V18.3.48 — receiver, camera and calibration update
+# ZEBJUS V18.3.50 — classroom Python and Aerion F1
+
+The Python example menu is hidden by default; Settings controls its visibility per browser. New keyboard, hand tracking and LED lessons use `from zebjus_simple import Drone` with regular function definitions and no explicit `await`. They retain the existing worker, camera lifecycle, RC control lock, and stop handling. Keyboard and hand lessons open in Simulator; real hand flight remains blocked while armed. User-facing board profile is ZEBJUS Aerion F1, with stable board ID ZFC-A2 and silicon target retained internally for build/pin safety. Hiding the board name in UI does not conceal hardware identity from physical inspection, firmware or source.
+
+## Earlier V18.3.49 changes
+
+XIAO ESP32-C6 onboard GPIO15 orange LED supports `led_set` (on/off/blink, 100–5000 ms) and `led_read` without a blocking delay. Python browser and companion methods added. GPIO reads accept pullup, pulldown, or floating; see `SUPPORT/LED_AND_SENSOR_IO_V18_3_49.md`. Firmware binary is not included; compile and test on the real kit.
+
+## Earlier V18.3.48 changes
 
 ## FlightCore A2 source
 

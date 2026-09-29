@@ -1080,3 +1080,5 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 
 /* Six-face calibration and a roomier teaching terminal. */
 .six-face-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}.six-face-grid .btn{min-width:0}.six-face-done{border-color:#65deb3!important;background:#123d38!important}.calibration-six-card .terminal{min-height:90px;max-height:200px;white-space:pre-wrap;overflow:auto}.calibration-six-card{grid-column:1/-1}#tab-python{--py-terminal-h:520px}#tab-python .python-side-stack .python-terminal-card{max-height:min(85dvh,820px)!important}@media(max-width:620px){.six-face-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#tab-python{--py-terminal-h:420px}}
+
+#pythonQuickHardware[hidden]{display:none!important}
