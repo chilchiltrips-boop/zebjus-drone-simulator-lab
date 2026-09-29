@@ -118,10 +118,14 @@ class ZebjusClient:
             raise ValueError("Assign D0-D3 exactly once to M1-M4")
         return self.command("motor_map_set", **{f"m{i+1}slot": int(str(v)[1]) for i, v in enumerate(slots)})
 
-    def ppm_config(self, edge="RISING", reverse=(False, False, False, False)):
+    def ppm_config(self, edge="RISING", reverse=(False, False, False, False), arm_mode="YAW_STICK", pin=None):
         if len(reverse) != 4:
             raise ValueError("Specify four roll/pitch/throttle/yaw reversals")
-        return self.command("ppm_config", edge=edge.upper(), **{f"reverse{i}": int(bool(v)) for i, v in enumerate(reverse)})
+        fields={"edge":edge.upper(),"armMode":arm_mode.upper(),**{f"reverse{i}": int(bool(v)) for i, v in enumerate(reverse)}}
+        if pin is not None:
+            if int(pin) not in (16,18): raise ValueError("A2 PPM signal pin must be D6/GPIO16 or D10/GPIO18")
+            fields["pin"]=int(pin)
+        return self.command("ppm_config", **fields)
 
     def i2c_scan(self):
         self.status()
@@ -139,8 +143,8 @@ class ZebjusClient:
     def servo_write(self, pulse_us=1500):
         return self.command("servo_write", pulseUs=int(pulse_us))
 
-    def gps_config(self, pin):
-        return self.command("gps_config", pin=int(pin))
+    def gps_config(self, pin, tx_pin=-1, protocol="NMEA_9600"):
+        return self.command("gps_config", pin=int(pin), txPin=int(tx_pin), protocol=protocol.upper())
 
     def gps_read(self):
         return self.command("gps_read")

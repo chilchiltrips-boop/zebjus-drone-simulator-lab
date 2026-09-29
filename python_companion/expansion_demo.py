@@ -22,7 +22,9 @@ with client_from_environment() as kit:
     # kit.servo_write(1500)            # center, 50 Hz
     # kit.gpio_write(18, 1)            # D10 is 3.3 V logic; use a load driver
     # kit.gpio_release(18)             # output LOW, return pin to input
-    # kit.gps_config(19)               # GPS TX to D8 RX, 9600 baud
+    # For NEO-7 only: GPS TX->D9 / GPS RX->D8. This reboots the FC.
+    # kit.gps_config(20, tx_pin=19, protocol='UBX_10HZ')
+    # Reconnect and read {'measuredHz': 10, 'rateOk': True} from the real kit.
     # print(kit.gps_read())
     # kit.matrix_config(0x70)          # HT16K33 only
     # kit.matrix_write([0, 36, 126, 126, 60, 24, 0, 0])

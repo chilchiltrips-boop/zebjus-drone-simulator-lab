@@ -26,23 +26,27 @@ Form fields: `clientId`, `type`, plus command-specific values.
 
 Non-read-only hardware commands require the local control lock. PID/calibration changes are rejected while armed. On the A2 flight profile, a fresh verified Web/AP/Python RC frame takes priority; PPM is fallback after the web frame expires. A source change while armed disarms. A1 remains bridge-only.
 
-## V18.3.46 expansion commands
+## V18.3.48 expansion commands
 
-The FC serves responsive direct pages `/io` (AP and STA) and `/fly`. `GET /api/status` and `/api/telemetry` include `expansion`: logical motor connector/GPIO routes, PPM input pin/edge/reversal, configured servo/GPS pins, matrix address and active GPIO outputs. `receiver_read` reports the latest measured PPM/Web/loop rates.
+The FC serves responsive direct pages `/io` (AP and STA) and `/fly`. `GET /api/status` and `/api/telemetry` include `expansion`: logical motor connector/GPIO routes, PPM input pin/edge/reversal/arm mode, configured servo/GPS RX/GPS TX pins and protocol, GPS target and measured rate, matrix address and active GPIO outputs. `receiver_read` reports the latest measured PPM/Web/loop rates.
+
+CC3D X top view uses M1 front left, M2 front right, M3 rear right, M4 rear left. Default connectors are D1, D2, D3, D0. A motor map changes connector routing, not the physical position of a logical M number. Physical PPM defaults to `YAW_STICK`: minimum throttle (≤1050), roll/pitch centered (within 80 µs), yaw right ≥1900 held one second arms, yaw left ≤1100 held one second disarms. Return yaw to center before another gesture. `CH5_SWITCH` is selectable. Web/AP/Python RC frames continue using CH5 to arm/disarm. At low throttle, 15 seconds with no ≥12 µs movement on the four primary channels disarms.
 
 | `type` | Form fields | Response / effect |
 | --- | --- | --- |
 | `pinmap_get` | none | read-only current expansion map |
 | `motor_map_set` | `m1slot`…`m4slot` each 0–3 exactly once | A2 only; save map and reboot |
-| `ppm_config` | `edge=RISING` or `FALLING`; `reverse0`…`reverse3` as 0/1 | saved roll/pitch/throttle/yaw input reversal |
+| `ppm_config` | `edge=RISING` or `FALLING`; `reverse0`…`reverse3` as 0/1; optional `armMode=YAW_STICK` or `CH5_SWITCH` | saved physical PPM edge, CH1–CH4 reversal and arm choice |
 | `i2c_read` | decimal `address`, `reg`, `length` (1–16) | raw bytes |
 | `i2c_write` | decimal `address`, `reg`, `bytes` comma-separated (1–8) | disarmed register write, except the detected IMU |
 | `servo_config` / `servo_write` | `pin=-1` or GPIO17/19/20/18; `pulseUs` 1000–2000 | A2 50 Hz PWM on one free D7–D10 pin |
-| `gps_config` / `gps_read` | `pin=-1` or a free GPIO17/19/20/18; none to read | A2 RX-only NMEA at 9600 baud |
+| `gps_config` / `gps_read` | `pin=-1` or a free GPIO17/19/20/18 for FC RX; `protocol=NMEA_9600` or `UBX_10HZ`; `txPin` a distinct free GPIO for UBX; none to read | NMEA is 9600 baud RX-only; UBX configures 38400 baud and requests 100 ms epochs, then restarts FC; `gps_read` returns `measuredHz`, `targetHz`, `configError`, freshness, fix/quality fields in UBX mode |
 | `matrix_config` / `matrix_write` / `matrix_read` | address 112–119; eight comma-separated decimal `rows`; none | HT16K33 8×8 |
 | `gpio_read` / `gpio_write` / `gpio_release` | free GPIO17/19/20/18; `value=0/1` on write | A2 3.3 V digital I/O; release drives LOW then returns pin to input |
 
 `GET /api/i2c/scan` scans every address 1–126 and reports ACK devices. Read-only commands work without the control lock; mutations require `/api/control/acquire`. Bus operations and pin changes are blocked while armed or a bench motor test is active. The firmware implements only the listed drivers, not arbitrary I²C device-specific protocols.
+
+The included `DroneGPS` source targets u-blox 7 / NEO-7 UBX UART. Wire GPS TX→FC RX and FC TX→GPS RX plus common GND and module-appropriate power. `gps_read.measuredHz` counts completed synchronized POSLLH/VELNED/SOL epochs over a one-second window; `rateOk` is true only with fresh data and a measured rate from 9 to 11 Hz. The target configuration alone is not proof of real receiver output. GPS data does not participate in flight stabilization.
 
 ## Rename
 `POST /api/name` with `clientId`, `name`.
@@ -139,7 +143,7 @@ A1 / ESP32-C3 continues to expose bridge/read capabilities but rejects real moto
 
 The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `set_angle_pid()`, `receiver()/ppm()`, `attitude()`, `get_calibration()`, `set_accel_offsets()`, `level_calibrate()`, `restore_calibration_defaults()`, `rc()`, `motor_test()`, `motor_order_test()`, `esc_calibrate()`, `motor_stop()`, `bench_status()`, and `calibrate_gyro()`.
 
-## V18.3.46 status and control safeguards
+## V18.3.48 status and control safeguards
 
 - `/api/status` and `/api/telemetry` include `loopCount`, `maxLoopGapUs` and `loopOverruns` for timing diagnosis. `maxLoopGapUs` is the longest time since a scheduled 250 Hz tick, including startup/other disarmed work; inspect it together with overrun growth under load.
 - On A2, an armed loop gap over 30 ms, expiring/releasing the owner lock during Web RC, or invalid IMU/RC fails safe. Changing Wi-Fi/reset/recovery, scan, and setup test are blocked while armed or bench output is active.
@@ -154,3 +158,7 @@ The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `
 - A source transition while armed forces DISARM before the new source can arm.
 - `/api/telemetry` exposes active `rcSource`, `rcAgeMs` and all ten `rc` channels so the browser can mirror PPM/AP/Python control into Tripod Simulator.
 - Tripod real mirror and Python real target use the same guarded `rc_frame` endpoint.
+
+## V18.3.48 receiver and output status
+
+`ppm_config` accepts `pin=16` (A2 D6 default) or `pin=18` (A2 D10), along with `edge`, `armMode`, and all four `reverse0..reverse3` flags. It is disarmed-only and rejects a pin occupied by servo/GPS/GPIO. `expansion.ppmPin` and `receiverPin` report the active pin; D10 is then excluded from auxiliary allocation. PPM frame Hz counts full, valid CH1–CH6 frames only. `outputWatchdogTripped` and `outputWatchdogTrips` expose the software ESC minimum-output supervisor; a safe low-throttle RC frame clears a trip. UBX `gps_read.measuredHz` counts all complete epochs received per poll. Battery is `null` with `batteryValid:false` until a compatible sensor is wired and implemented.
