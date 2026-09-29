@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.48 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
+  ZEBJUS FlightCore V18.3.50 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -48,7 +48,7 @@
 #endif
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.48";
+static const char* FW_VERSION="18.3.50";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -56,7 +56,7 @@ static const char* FW_BUILD_TIME=__TIME__;
 // browser/API users see only stable ZEBJUS FlightCore profile names.
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
 static const char* BOARD_ID="ZFC-A1";
-static const char* BOARD_NAME="ZEBJUS FlightCore A1 / ESP32-C3";
+static const char* BOARD_NAME="ZEBJUS FlightCore Bridge";
 static const int RECOVERY_BUTTON_PIN=9;
 static const int DEFAULT_PPM_RECEIVER_PIN=18;
 static const int I2C_SDA_PIN=SDA;
@@ -65,7 +65,7 @@ static const bool FLIGHT_CONTROL_ENABLED=false; // A1 stays bridge-only until it
 static const int MOTOR_PINS[4]={-1,-1,-1,-1};
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 static const char* BOARD_ID="ZFC-A2";
-static const char* BOARD_NAME="ZEBJUS FlightCore A2 / XIAO ESP32-C6";
+static const char* BOARD_NAME="ZEBJUS Aerion F1";
 static const int RECOVERY_BUTTON_PIN=9;
 static const int DEFAULT_PPM_RECEIVER_PIN=16; // XIAO D6; GPIO18/D10 is selectable if the kit is wired that way.
 static const int I2C_SDA_PIN=SDA;
@@ -722,7 +722,22 @@ bool expansionBusAvailable(){if(effectiveArmed()||benchMode!=BENCH_NONE){sendMes
 bool expansionPinConfigAllowed(){if(!FLIGHT_CONTROL_ENABLED){sendMessage(403,"Auxiliary pin outputs require the verified A2 XIAO profile");return false;}if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"Pin changes are blocked while armed or during bench output");return false;}return true;}
 String matrixRowsJson(){String j="[";for(int i=0;i<8;i++){if(i)j+=",";j+=String(matrixRows[i]);}return j+"]";}
 int parseEightRows(const String& csv,uint8_t out[8]){int start=0,n=0;while(start<csv.length()&&n<8){int end=csv.indexOf(',',start);if(end<0)end=csv.length();String v=csv.substring(start,end);v.trim();if(!v.length())return -1;for(size_t i=0;i<v.length();i++)if(v[i]<'0'||v[i]>'9')return -1;int row=v.toInt();if(row<0||row>255)return -1;out[n++]=(uint8_t)row;start=end+1;}return start>=csv.length()?n:-1;}
+// XIAO ESP32-C6 orange user LED on GPIO15; active low. The scheduler never delays flight control.
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+const int USER_LED_PIN=15;
+#else
+const int USER_LED_PIN=-1;
+#endif
+uint16_t userLedIntervalMs=0;
+uint32_t userLedLastMs=0;
+bool userLedLit=false;
+void serviceUserLed(){
+ if(USER_LED_PIN<0||!userLedIntervalMs)return;
+ uint32_t now=millis();
+ if((uint32_t)(now-userLedLastMs)>=userLedIntervalMs){userLedLastMs=now;userLedLit=!userLedLit;digitalWrite(USER_LED_PIN,userLedLit?LOW:HIGH);}
+}
 void expansionReadCommand(const String& type){
+ if(type=="led_read"){sendJson(200,"{\"ok\":true,\"command\":\"led_read\",\"supported\":"+String(USER_LED_PIN>=0?"true":"false")+",\"gpio\":"+String(USER_LED_PIN)+",\"on\":"+String(userLedLit?"true":"false")+",\"intervalMs\":"+String(userLedIntervalMs)+"}");return;}
  if(type=="pinmap_get"){sendJson(200,"{\"ok\":true,\"command\":\"pinmap_get\",\"expansion\":"+expansionJson()+"}");return;}
  if(type=="gps_read"){
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
@@ -736,7 +751,7 @@ void expansionReadCommand(const String& type){
   String j="{\"ok\":true,\"command\":\"gps_read\",\"protocol\":\""+String(gpsUbx10Hz?"UBX_10HZ":"NMEA_9600")+"\",\"ready\":"+String(gpsReady?"true":"false")+",\"sentence\":\""+jsonEscape(gpsLastSentence)+"\",\"sentences\":"+String(gpsSentences)+",\"measuredHz\":0,\"ageMs\":"+String(gpsLastMs?millis()-gpsLastMs:0)+"}";sendJson(200,j);return;
  }
  if(type=="matrix_read"){sendJson(200,"{\"ok\":true,\"command\":\"matrix_read\",\"address\":"+String(matrixAddress)+",\"rows\":"+matrixRowsJson()+"}");return;}
- if(type=="gpio_read"){int pin=server.arg("pin").toInt();if(!auxPinAllowed(pin)||pin==servoPin||pin==gpsRxPin||pin==gpsTxPin){sendMessage(400,"Choose an unreserved A2 D7-D10 GPIO");return;}if(effectiveArmed()){sendMessage(423,"GPIO bench read blocked while armed");return;}if(!auxOutputActive(pin))pinMode(pin,INPUT_PULLUP);sendJson(200,"{\"ok\":true,\"command\":\"gpio_read\",\"pin\":"+String(pin)+",\"value\":"+String(digitalRead(pin))+"}");return;}
+ if(type=="gpio_read"){int pin=server.arg("pin").toInt();if(!auxPinAllowed(pin)||pin==servoPin||pin==gpsRxPin||pin==gpsTxPin){sendMessage(400,"Choose an unreserved A2 D7-D10 GPIO");return;}if(effectiveArmed()){sendMessage(423,"GPIO bench read blocked while armed");return;}String mode=server.arg("mode");if(mode.length()==0)mode="pullup";if(mode!="pullup"&&mode!="pulldown"&&mode!="floating"){sendMessage(400,"Input mode must be pullup, pulldown or floating");return;}if(!auxOutputActive(pin))pinMode(pin,mode=="pullup"?INPUT_PULLUP:mode=="pulldown"?INPUT_PULLDOWN:INPUT);sendJson(200,"{\"ok\":true,\"command\":\"gpio_read\",\"pin\":"+String(pin)+",\"value\":"+String(digitalRead(pin)) +",\"mode\":\""+mode+"\"}");return;}
  if(type=="i2c_read"){
   if(!expansionBusAvailable())return;int address=server.arg("address").toInt(),reg=server.arg("reg").toInt(),length=server.arg("length").toInt();if(address<8||address>0x77||reg<0||reg>255||length<1||length>16){sendMessage(400,"I2C read needs address 8-119, register 0-255, length 1-16");return;}
   expansionBusBegin();Wire.beginTransmission((uint8_t)address);Wire.write((uint8_t)reg);int error=Wire.endTransmission(false);int got=error==0?Wire.requestFrom(address,length,true):0;String values="[";for(int i=0;i<got;i++){if(i)values+=",";values+=String(Wire.read());}values+="]";expansionBusEnd();if(error||got!=length){sendMessage(502,"I2C device did not return the requested bytes; check address/register/wiring");return;}
@@ -773,6 +788,15 @@ void expansionWriteCommand(const String& type){
   if(ubx){sendJson(200,"{\"ok\":true,\"command\":\"gps_config\",\"rebooting\":true,\"message\":\"Configuring bundled DroneGPS after restart; read gps_read for measured epoch Hz\",\"expansion\":"+expansionJson()+"}");restartAt=millis()+800;return;}
   if(pin>=0){Serial1.begin(9600,SERIAL_8N1,pin,-1);gpsReady=true;}
   sendJson(200,"{\"ok\":true,\"command\":\"gps_config\",\"expansion\":"+expansionJson()+"}");return;
+ }
+ if(type=="led_set"){
+  if(USER_LED_PIN<0){sendMessage(403,"Onboard user LED available on ZEBJUS Aerion F1 only");return;}
+  String mode=server.arg("mode");int interval=server.arg("intervalMs").toInt();
+  if(mode!="on"&&mode!="off"&&mode!="blink"){sendMessage(400,"LED mode must be on, off or blink");return;}
+  if(mode=="blink"&&(interval<100||interval>5000)){sendMessage(400,"Blink intervalMs must be 100-5000");return;}
+  userLedIntervalMs=mode=="blink"?(uint16_t)interval:0;
+  userLedLastMs=millis();userLedLit=mode!="off";digitalWrite(USER_LED_PIN,userLedLit?LOW:HIGH);
+  sendJson(200,"{\"ok\":true,\"command\":\"led_set\",\"mode\":\""+mode+"\",\"intervalMs\":"+String(userLedIntervalMs)+"}");return;
  }
  if(type=="gpio_write"){
   int pin=server.arg("pin").toInt(),value=server.arg("value").toInt();if(!auxPinAllowed(pin)||pin==servoPin||pin==gpsRxPin||pin==gpsTxPin||value<0||value>1){sendMessage(400,"GPIO write needs an unreserved A2 D7-D10 pin and value 0/1");return;}auxOutputMask|=(1u<<auxPinIndex(pin));pinMode(pin,OUTPUT);digitalWrite(pin,value?HIGH:LOW);sendJson(200,"{\"ok\":true,\"command\":\"gpio_write\",\"pin\":"+String(pin)+",\"value\":"+String(value)+"}");return;
@@ -827,11 +851,12 @@ void commandApi(){
   if(type=="receiver_read"||type=="ppm_read"){uint16_t rc[10];RcSourceKind src=chooseRcSource();copyActiveRc(rc,src);String j="{\"ok\":true,\"type\":\"ack\",\"command\":\"receiver_read\",\"source\":\""+String(rcSourceName(src))+"\",\"ppmFresh\":"+String(receiverFresh()?"true":"false")+",\"channels\":[";for(int i=0;i<10;i++){if(i)j+=",";j+=String(rc[i]);}j+="],\"ppmFrameHz\":"+String(ppmFrameHz)+",\"webRcFrameHz\":"+String(webRcFrameHz)+",\"flightLoopHz\":"+String(flightLoopHz)+"}";sendJson(200,j);return;}
   if(type=="attitude_read"){uint32_t age=lastFlightSampleMs?(uint32_t)(millis()-lastFlightSampleMs):0xFFFFFFFFu;String j="{\"ok\":true,\"type\":\"ack\",\"command\":\"attitude_read\",\"source\":\"MPU6050_KALMAN\",\"flightReady\":"+String(flightReady?"true":"false")+",\"sampleMs\":"+String(lastFlightSampleMs)+",\"sampleAgeMs\":"+String(age)+",\"roll\":"+String(kalmanRoll,3)+",\"pitch\":"+String(kalmanPitch,3)+",\"yaw\":"+String(flightYaw,3)+",\"accRoll\":"+String(accAngleRoll,3)+",\"accPitch\":"+String(accAnglePitch,3)+",\"rateRoll\":"+String(rateRoll,3)+",\"ratePitch\":"+String(ratePitch,3)+",\"rateYaw\":"+String(rateYaw,3)+"}";sendJson(200,j);return;}
   if(type=="calibration_get"){sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"calibration_get\",\"calibration\":"+calibrationJson()+"}");return;}
-  if(type=="pinmap_get"||type=="gps_read"||type=="matrix_read"||type=="gpio_read"||type=="i2c_read"){expansionReadCommand(type);return;}
+  if(type=="pinmap_get"||type=="gps_read"||type=="matrix_read"||type=="gpio_read"||type=="i2c_read"||type=="led_read"){expansionReadCommand(type);return;}
   if(type=="bench_status"){sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"bench_status\",\"benchMode\":"+String((int)benchMode)+",\"motor\":"+String((int)benchMotor)+",\"pulse\":"+String((int)benchPulse)+"}");return;}
 
   // Everything below this line changes hardware state and requires the selected browser to own control.
   if(!requireControl())return;
+  if(type=="led_set"){expansionWriteCommand(type);return;}
   if(type=="motor_map_set"||type=="ppm_config"||type=="servo_config"||type=="servo_write"||type=="gps_config"||type=="gpio_write"||type=="gpio_release"||type=="matrix_config"||type=="matrix_write"||type=="i2c_write"){expansionWriteCommand(type);return;}
   if(type=="pid_set"){
     if(!FLIGHT_CONTROL_ENABLED){sendMessage(403,"PID write is not available on this board profile.");return;}if(effectiveArmed()){sendMessage(423,"PID edit blocked while armed. Land, disarm, then tune.");return;}if(benchMode!=BENCH_NONE){sendMessage(423,"PID edit blocked during bench motor/ESC operation.");return;}
@@ -1099,7 +1124,7 @@ void setupRoutes(){
 }
 void startNormalServer(){
   setupMode=false;dnsServer.stop();WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.48 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.50 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
   setupMode=true;controlOwner="";controlExpiresAt=0;if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP_STA);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),AP_PASSWORD);dnsServer.start(DNS_PORT,"*",AP_IP);server.begin();wifiTestState=WT_IDLE;
@@ -1119,15 +1144,16 @@ void networkHealth(){
 }
 
 void setup(){
+  if(USER_LED_PIN>=0){pinMode(USER_LED_PIN,OUTPUT);digitalWrite(USER_LED_PIN,HIGH);}
   Serial.begin(115200);delay(300);WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);loadExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}
   deviceId=getDeviceId();loadKitName();loadSavedWiFi();loadPidSettings();loadCalibrationSettings();probeImuAtBoot();setupFlightCore();flightHeartbeatUs=micros();if(FLIGHT_CONTROL_ENABLED&&xTaskCreate(flightOutputSupervisor,"fc-output-guard",3072,nullptr,3,nullptr)!=pdPASS){flightReady=false;motorsSafe();Serial.println("Output supervisor unavailable: arming disabled");}setupExpansionPeripherals();setupRoutes();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.48 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.50 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
   if(consumeForceSetupFlag()){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }
 void loop(){
   flightHeartbeatUs=micros();
-  serviceBenchMode();pollGps();runFlightLoop();server.handleClient();runFlightLoop();updateControlRates();if(setupMode)dnsServer.processNextRequest();expireLock();processWifiTest();checkRecoveryButton();networkHealth();
+  serviceUserLed();serviceBenchMode();pollGps();runFlightLoop();server.handleClient();runFlightLoop();updateControlRates();if(setupMode)dnsServer.processNextRequest();expireLock();processWifiTest();checkRecoveryButton();networkHealth();
   if(wifiTestState==WT_SUCCESS&&wifiTestRestartAt&&(long)(millis()-wifiTestRestartAt)>=0){disarmFlight("restart");ESP.restart();}
   if(restartAt&&(long)(millis()-restartAt)>=0){disarmFlight("restart");ESP.restart();}
   yield();

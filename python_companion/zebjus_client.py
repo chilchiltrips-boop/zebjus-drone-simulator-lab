@@ -13,7 +13,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-READ_ONLY = frozenset({"ping", "pid_get", "receiver_read", "ppm_read", "attitude_read", "calibration_get", "bench_status", "pinmap_get", "gps_read", "matrix_read", "gpio_read", "i2c_read"})
+READ_ONLY = frozenset({"ping", "pid_get", "receiver_read", "ppm_read", "attitude_read", "calibration_get", "bench_status", "pinmap_get", "gps_read", "matrix_read", "gpio_read", "i2c_read", "led_read"})
 
 
 class ZebjusClient:
@@ -160,8 +160,14 @@ class ZebjusClient:
     def matrix_read(self):
         return self.command("matrix_read")
 
-    def gpio_read(self, pin):
-        return self.command("gpio_read", pin=int(pin))
+    def led_set(self, mode="blink", interval_ms=500):
+        return self.command("led_set", mode=str(mode).lower(), intervalMs=int(interval_ms))
+
+    def led_read(self):
+        return self.command("led_read")
+
+    def gpio_read(self, pin, mode="pullup"):
+        return self.command("gpio_read", pin=int(pin), mode=str(mode).lower())
 
     def gpio_write(self, pin, value):
         return self.command("gpio_write", pin=int(pin), value=int(bool(value)))
