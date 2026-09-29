@@ -1,6 +1,6 @@
 # FlightCore implementation state and roadmap
 
-## V18.3.46 implemented
+## V18.3.47 implemented
 - Same-Wi-Fi local control, AP provisioning/recovery, full-MAC Device ID and verified kit switching.
 - Board profiles: A1 / ESP32-C3 and A2 / XIAO ESP32-C6.
 - A2 real flight loop with MPU6050: 250 Hz Rate mode + Angle mode, boot gyro calibration, accelerometer roll/pitch, 1D Kalman fusion and four-motor mixer.
@@ -25,3 +25,7 @@
 - Secure device pairing and a unique AP password; the current default AP password is shared and should be changed before a classroom fleet is flown.
 
 Initial motor order, direction, arming and mode-switch checks should be completed with propellers removed before any prop-on flight test.
+
+## V18.3.48 source progress
+
+Complete-frame PPM on selectable D6/D10, an RTOS output supervisor, corrected GPS epoch count, automatic Python camera cleanup, browser cvzone hand drawing and a guarded six-face accelerometer check are in source. Physical compile/flight verification, battery sensing/failsafe, secure per-kit AP credential and offline vision model delivery remain hardware/deployment tasks.

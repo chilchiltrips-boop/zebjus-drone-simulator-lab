@@ -49,9 +49,46 @@ if compiler:
         result=subprocess.run([compiler,'-std=c++17','-x','c++','-o',str(out),'-'],input=cpp,text=True,capture_output=True)
         if result.returncode: raise SystemExit(result.stderr)
         subprocess.run([out],check=True)
+    # Compile the actual ISR body with fake pulse edges. Partial/invalid frames
+    # must not publish a stale CH5/CH6 arming or flight-mode value.
+    isr=re.search(r'void IRAM_ATTR ppmIsr\(\)\{[\s\S]*?\n\}',ino)
+    assert isr, 'PPM frame decoder missing'
+    ppm_cpp='''#include <stdint.h>
+#include <assert.h>
+#define IRAM_ATTR
+static uint32_t clockUs=0;
+uint32_t micros(){return clockUs;}
+const uint32_t PPM_SYNC_US=3000,PPM_MIN_US=750,PPM_MAX_US=2250;
+volatile uint16_t ppmCh[10]={1500,1500,1000,1500,1000,1000,1000,1000,1500,1000};
+volatile uint16_t ppmPending[10]={};
+volatile uint8_t ppmIndex=0;
+volatile bool ppmInvalidFrame=false;
+volatile uint32_t ppmLastEdgeUs=0,ppmLastFrameUs=0,ppmFrames=0;
+''' + isr.group(0) + '''
+void edge(uint32_t dt){clockUs+=dt;ppmIsr();}
+int main(){
+ edge(4000);
+ for(uint32_t pulse: {1500u,1500u,1000u,1500u,1000u,1000u})edge(pulse);
+ edge(4000);assert(ppmFrames==1&&ppmCh[4]==1000&&ppmCh[5]==1000);
+ auto publishedAt=ppmLastFrameUs;
+ for(uint32_t pulse: {1500u,1500u,1000u,1500u})edge(pulse);
+ edge(4000);assert(ppmFrames==1&&ppmLastFrameUs==publishedAt);
+ for(uint32_t pulse: {1500u,1500u,1000u,1500u,2000u,2000u})edge(pulse);
+ edge(4000);assert(ppmFrames==2&&ppmCh[4]==2000&&ppmCh[5]==2000&&ppmCh[6]==1000&&ppmCh[8]==1500);
+ edge(1500);edge(2500);
+ for(uint32_t pulse: {1500u,1500u,1000u,1500u,1000u,1000u})edge(pulse);
+ edge(4000);assert(ppmFrames==2&&ppmCh[4]==2000);
+}
+'''
+    ppm_cpp=ppm_cpp.replace('#include <assert.h>','#include <assert.h>\n#include <initializer_list>')
+    with tempfile.TemporaryDirectory() as tmp:
+        out=Path(tmp)/'ppm-frame'
+        result=subprocess.run([compiler,'-std=c++17','-x','c++','-o',str(out),'-'],input=ppm_cpp,text=True,capture_output=True)
+        if result.returncode: raise SystemExit(result.stderr)
+        subprocess.run([out],check=True)
 else:
     print('WARN: g++ unavailable; ESC duty C++ check skipped')
 assert 'server.on("/io",HTTP_GET,sendIoPage)' in ino
 assert 'ledcAttachChannel(pin,250,12,i)' in ino and 'ledcAttachChannel(pin,50,12,4)' in ino
 assert ino.count('requireControl()')>=1
-print(f'PASS: {examples} student examples, Python preludes, three AP scripts, ESC/servo microsecond duty endpoints and /io route')
+print(f'PASS: {examples} student examples, Python preludes, three AP scripts, PWM endpoints, complete-frame PPM parser and /io route')

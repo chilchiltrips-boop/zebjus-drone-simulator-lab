@@ -1,9 +1,12 @@
-ZEBJUS V18.3.46 source validation
+ZEBJUS V18.3.48 source validation • 2026-09-26
 
-PASS: tools/validate_project.py — GLB assets, JS syntax, HTML references/IDs, matching AP templates, firmware/catalog/version and structural integration.
-PASS: tools/test_expansion_contract.py — all 42 browser Python examples compile with top-level await; Python Worker prelude compiles; AP setup/fly/I/O inline scripts pass node --check; ESC microsecond duty converts 1000/1500/2000 to 1024/1536/2048 ticks at 250 Hz; servo duty converts these pulses to 205/307/410 ticks at 50 Hz; /io route present.
-PASS: python_companion/zebjus_client.py compiles with Python 3. No built firmware binary is represented as available in the catalogs.
+PASS: tools/validate_project.py — 15 GLB models, 15 thumbnails, JSON/JS/catalog/file-reference checks, duplicate HTML IDs, synchronized AP pages and version metadata.
+PASS: tools/test_expansion_contract.py — 43 browser Python examples and Worker prelude parse; AP setup/fly/I/O inline scripts parse; C++ ESC/servo PWM conversion and complete-frame PPM ISR pass pulse-sequence tests.
+PASS: node tools/test_camera_lifecycle.js — a late webcam permission grant after Stop releases tracks; a normal camera start and stop releases tracks.
+PASS: python3 tools/test_browser_cvzone.py — synthetic 21-point HandDetector result draws bones/points/box, exposes fingersUp, discards stale hand data.
+PASS: local static HTTP smoke — /health, /index.html, /hardware-io.js, /python-worker.js, /python_companion/browser_cvzone.py and /service-worker.js return 200.
+PASS: tools/embed_ap_pages.py --check — editable AP page sources are synchronized with the firmware sketch.
 
-LIMIT: Arduino CLI and the physical A2/A1 boards were unavailable. The Arduino source has not been compiled/flashed in this workspace; actual PWM waveform, pin order, servo 50 Hz isolation, PPM polarity, multi-device I²C compatibility, GPS, matrix, motor/propeller direction and flight stability are unverified.
-LIMIT: No GUI browser executable was available. Responsive UI has structural/CSS/JS checks, but touch behavior, mobile layout and real AP/STA connectivity require on-device browser checks.
-LIMIT: A2 stabilized flight currently requires MPU6050. A1 is a bridge. See SUPPORT/FLIGHT_VALIDATION_V18_3_46.md for the physical verification sequence and supported expansion hardware.
+LIMIT: Arduino CLI/core and physical A1/A2 boards are unavailable here. Firmware was not compiled, flashed, or flown. Output-supervisor scheduling, actual ESC pulses and motor directions, PPM pin/Hz, GPS 10 Hz, six-face sensor readings, radio/loop timing and flight stability require propellers-off measurements on the real kit. Catalog images remain marked unavailable.
+LIMIT: No GUI browser/webcam was available. Phone/tablet responsive visuals, camera permission/model downloads, and AP/STA UI must be verified on devices. AP direct HTTP cannot use getUserMedia in a standard browser secure-context policy.
+LIMIT: A2 stabilized flight requires an MPU6050. Battery monitor/failsafe is absent and explicitly reports batteryValid:false. A1 remains a bridge. Follow SUPPORT/FLIGHT_VALIDATION_V18_3_48.md before any flight.

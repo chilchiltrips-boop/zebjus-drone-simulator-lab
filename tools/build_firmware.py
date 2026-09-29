@@ -86,6 +86,7 @@ def main():
             td=Path(td); sketch=td/'ZEBJUS_FLIGHTCORE'; sketch.mkdir(); shutil.copy2(SRC,sketch/'ZEBJUS_FLIGHTCORE.ino')
             for pattern in ('*.h','*.hpp','*.c','*.cpp'):
                 for extra in OUT.glob(pattern): shutil.copy2(extra,sketch/extra.name)
+            if (OUT/'src').is_dir(): shutil.copytree(OUT/'src',sketch/'src')
             build=td/'build'; build.mkdir()
             print(f'\n=== BUILD {b["id"]} • {b["name"]} • {cfg["fqbn"]} ===',flush=True)
             run([cli,'compile','--fqbn',cfg['fqbn'],'--warnings','all','--output-dir',str(build),str(sketch)], f'{b["id"]} ({cfg["fqbn"]}) compile')

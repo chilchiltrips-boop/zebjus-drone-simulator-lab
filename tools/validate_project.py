@@ -224,7 +224,21 @@ for token in ['runFlightLoop()','FLIGHT_LOOP_US=4000','MOTOR_PINS[4]={D1,D2,D3,D
     if token not in ino: fail(f'Rate/Angle multi-source flight integration missing: {token}')
 if 'rc[5]>=1500?FLIGHT_RATE:FLIGHT_ANGLE' not in ino: fail('CH6 Angle/Rate mode mapping missing')
 if 'rc[4]<1500' not in ino or 'rc[2]<=1050' not in ino: fail('CH5 arm / low-throttle arming gates missing')
-if 'm1=throttle+inputRoll-inputPitch+inputYaw' not in ino or 'writeEscMicroseconds(i,(int)motorInput[i])' not in ino: fail('four-motor microsecond mixer missing or changed unexpectedly')
+if 'm1=1.024f*(throttle+inputRoll-inputPitch+inputYaw)' not in ino or 'm2=1.024f*(throttle-inputRoll-inputPitch-inputYaw)' not in ino or 'm3=1.024f*(throttle-inputRoll+inputPitch+inputYaw)' not in ino or 'm4=1.024f*(throttle+inputRoll+inputPitch-inputYaw)' not in ino or 'writeFlightDutyOutputs(m1,m2,m3,m4)' not in ino: fail('CC3D X duty-tick mixer signs/order are missing')
+if ino.count('max(1180.0f,constrain(')!=4 or 'writeEscMicroseconds(i,(int)motorInput[i])' not in ino: fail('armed idle and independent microsecond bench output contract missing')
+for token in ['ppmYawStickArm=true','ARM_GESTURE_HOLD_MS=1000','IDLE_AUTO_DISARM_MS=15000','if(rc[2]>1050){idleLastMovementMs=now','armMode','resetArmGesture()']:
+    if token not in ino: fail(f'PPM yaw arm/idle disarm safety missing: {token}')
+for token in ['src/DroneGPS.h','gpsUbx10Hz','gpsMeasuredHz','gpsDriver->takeMessageCounters().completeEpochs','gpsDriver->configurationReport()','UBX_10HZ']:
+    if token not in ino: fail(f'UBX GPS runtime missing: {token}')
+for rel in ['FlightCore_Firmware/src/DroneGPS.h','FlightCore_Firmware/src/DroneGPS.cpp']:
+    if not (ROOT/rel).is_file(): fail(f'bundled DroneGPS source missing: {rel}')
+gps_cpp=read('FlightCore_Firmware/src/DroneGPS.cpp')
+for token in ['0x64, 0x00,  // measRate = 100 ms','UBX_CFG_RATE','UBX_NAV_POSLLH','UBX_NAV_VELNED','UBX_NAV_SOL']:
+    if token not in gps_cpp: fail(f'DroneGPS 10 Hz complete-epoch configuration missing: {token}')
+for token in ['gpsRxPin>=0&&auxPinAllowed(gt)','gpsDriver->update();','gpsMeasuredHz>=9&&gpsMeasuredHz<=11','"rateOk"','"configError"']:
+    if token not in ino and token.replace('"','\\"') not in ino: fail(f'GPS runtime configuration/rate check missing: {token}')
+if 'WiFiReceiver.h' in ino: fail('firmware still depends on custom WiFiReceiver.h')
+if "shutil.copytree(OUT/'src',sketch/'src')" not in build: fail('Arduino build drops bundled DroneGPS source')
 if 'ZEBJUS_FLIGHTCORE_A2_APP.bin' not in workflow or '--board all' not in workflow: fail('workflow does not build both A1/C3 and A2/C6 application packages')
 if 'find_factory_bin' not in build or "'buildId':build_id" not in build: fail('firmware build does not publish factory metadata/build IDs')
 if 'validateEspImage' not in fu or 'mostly empty/zero data' not in fu: fail('Firmware Center imported-image validation is incomplete')
@@ -235,7 +249,7 @@ styles=read('styles.css')
 if '#tab-python{--py-side-w:430px;--py-terminal-h:330px}' not in styles or 'python-row-resizer' not in styles or 'python-col-resizer' not in styles: fail('V18.3.43 draggable Python workspace sizing is missing')
 if '#tab-python .python-file-list{display:flex!important;flex-direction:row!important' not in styles: fail('Student Python Files is not a horizontal project strip')
 if '#pythonTerminal .python-terminal-error' not in styles or 'color:#ff7288' not in styles: fail('Python terminal error coloring is missing')
-if "const CACHE='zebjus-flightcore-v18-3-46'" not in sw: fail('service-worker cache key is stale for V18.3.46')
+if "const CACHE='zebjus-flightcore-v18-3-48'" not in sw: fail('service-worker cache key is stale for V18.3.48')
 
 
 # V18.3.43 Python Flight Lab / real-FC tuning integration.
@@ -261,7 +275,7 @@ if "pythonTerminalWrite(pythonStderrBuffer,'error')" not in app or "pythonTermin
 # V18.3.43 continuous real-attitude fix.
 if 'Always sample/fuse the MPU6050 at 250 Hz, even when no RC source is active.' not in ino:
     fail('V18.3.43 continuous MPU6050 attitude sampling fix is missing')
-needle='if(activeRcSource==RC_NONE){armLowSeen=false;disarmFlight("RC timeout");return;}'
+needle='if(activeRcSource==RC_NONE){armLowSeen=false;resetArmGesture();disarmFlight("RC timeout");return;}'
 imu='float rr,rp,ry;if(!readMpuFlight(rr,rp,ry,accX,accY,accZ))'
 if ino.find(imu) < 0 or ino.find(needle) < 0 or ino.find(imu) > ino.find(needle):
     fail('IMU/Kalman update must occur before the RC_NONE early return')
@@ -294,46 +308,64 @@ if 'REAL KIT + TRIPOD MIRROR' not in html or 'simRealMirrorTick' not in app or '
 if "rcSource!=='NONE'" not in school or "api()?.controlSim?.({roll:(c[0]-1500)/500" not in school: fail('V18.3.43 active RC telemetry/Web joystick mirror is missing')
 if 'simulatorMirror:true' not in app: fail('V18.3.43 Python real-kit simulator mirror is missing')
 
-# V18.3.46 release integration and editable AP-page source consistency.
+# V18.3.48 release integration and editable AP-page source consistency.
 embedded=subprocess.run([sys.executable,str(ROOT/'tools/embed_ap_pages.py'),'--check'],capture_output=True,text=True)
 if embedded.returncode: fail('AP page sources differ from firmware: '+embedded.stderr.strip())
 for rel in ['tools/ap_portal_source.html','tools/ap_fly_source.html','python_companion/zebjus_client.py','python_companion/requirements-vision.txt','python_companion/imu_plot.py','python_companion/camera_telemetry.py','python_companion/cvzone_hands.py','SUPPORT/FLIGHT_VALIDATION_V18_3_44.md']:
-    if not (ROOT/rel).is_file(): fail(f'V18.3.46 project file missing: {rel}')
+    if not (ROOT/rel).is_file(): fail(f'V18.3.48 project file missing: {rel}')
 for token in ['ARMED_LOOP_GAP_LIMIT_US','loopOverruns','escPwmReady','prefs.begin("zjcal",false)','Wi-Fi scan blocked while armed','Level capture requires a level, motionless']:
-    if token not in ino: fail(f'V18.3.46 firmware guard missing: {token}')
+    if token not in ino: fail(f'V18.3.48 firmware guard missing: {token}')
 for token in ['settingsNetworkSummary','basicFlightMode','pythonCameraVideo','pythonHandsToggle','pythonPlotImage']:
-    if token not in html: fail(f'V18.3.46 UI control missing: {token}')
+    if token not in html: fail(f'V18.3.48 UI control missing: {token}')
 for token in ['sendPythonSafeFrame','pythonCameraFrame','togglePythonHands','pythonVisualImage','plot-imu','camera-opencv','hand-landmarks']:
-    if token not in app: fail(f'V18.3.46 Python/vision integration missing: {token}')
+    if token not in app: fail(f'V18.3.48 Python/vision integration missing: {token}')
 for token in ['camera_frame','hands','show_image','show_plot','loadPackagesFromImports']:
-    if token not in read('python-worker.js'): fail(f'V18.3.46 Python Worker method missing: {token}')
+    if token not in read('python-worker.js'): fail(f'V18.3.48 Python Worker method missing: {token}')
 
-# V18.3.46 Python / AP / measured RC integration.
+# V18.3.48 Python / AP / measured RC integration.
 for token in ['pythonOutputWindow','joyTxRate','joyRxRate','joyLoopRate','joyPythonValues','joyKeysYaw','zebjus-market-card']:
-    if token not in html: fail(f'V18.3.46 UI missing {token}')
+    if token not in html: fail(f'V18.3.48 UI missing {token}')
 for token in ['setPythonControlMode','mirrorPythonRc','renderJoystickKeyHints','updateRateUi','st.pythonRcActive']:
-    if token not in school: fail(f'V18.3.46 transmitter integration missing {token}')
+    if token not in school: fail(f'V18.3.48 transmitter integration missing {token}')
 for token in ['matplotlib.use("Agg", force=True)','browser_cv2.py','latestCameraFrame']:
-    if token not in read('python-worker.js'): fail(f'V18.3.46 Python Worker support missing {token}')
+    if token not in read('python-worker.js'): fail(f'V18.3.48 Python Worker support missing {token}')
 for token in ['ppmFrameHz','webRcFrameHz','flightLoopHz','updateControlRates()']:
-    if token not in ino: fail(f'V18.3.46 measured FC rates missing {token}')
+    if token not in ino: fail(f'V18.3.48 measured FC rates missing {token}')
 for token in ['KEYBOARD','arrowleft','ppmHz','fcHz']:
-    if token.lower() not in read('tools/ap_fly_source.html').lower(): fail(f'V18.3.46 AP keyboard/rate support missing {token}')
+    if token.lower() not in read('tools/ap_fly_source.html').lower(): fail(f'V18.3.48 AP keyboard/rate support missing {token}')
 for rel in ['python_companion/browser_cv2.py','python_companion/face_detection.py','python_companion/reference_uploads/legacy_udp_flight_client.py','python_companion/reference_uploads/legacy_mediapipe_face_detector.py','python_companion/reference_uploads/cvzone_face_camera.py','python_companion/reference_uploads/hand_distance_serial_legacy.py','python_companion/reference_uploads/opencv_camera_basics.py']:
-    if not (ROOT/rel).is_file(): fail(f'V18.3.46 supplied/adapted Python file missing {rel}')
+    if not (ROOT/rel).is_file(): fail(f'V18.3.48 supplied/adapted Python file missing {rel}')
 
 
-# V18.3.46 expansion firmware and UI contract.
+# V18.3.48 expansion firmware and UI contract.
 for token in ['escDutyFromUs','servoDutyFromUs','ledcAttachChannel(pin,250,12,i)','ledcAttachChannel(pin,50,12,4)','motorSlotsValid','loadExpansionSettings','ppmEdgeFalling','ppmReverse','expansionJson','expansionReadCommand','expansionWriteCommand','/io','FLIGHT_ANGLE','FLIGHT_RATE']:
-    if token not in ino: fail(f'V18.3.46 expansion firmware missing {token}')
+    if token not in ino: fail(f'V18.3.48 expansion firmware missing {token}')
 for token in ['motor_map_set','ppm_config','i2c_read','i2c_write','servo_config','servo_write','gps_config','gps_read','matrix_config','matrix_write','gpio_read','gpio_write','gpio_release']:
-    if token not in ino or token not in read('tools/ap_io_source.html') or token not in read('hardware-io.js'): fail(f'V18.3.46 I/O command mismatch: {token}')
+    if token not in ino or token not in read('tools/ap_io_source.html') or token not in read('hardware-io.js'): fail(f'V18.3.48 I/O command mismatch: {token}')
 for token in ['referenceWires()','fcHeaderForMotor','zebjus-expansion-change']:
-    if token not in app: fail(f'V18.3.46 dynamic 2D wiring missing {token}')
+    if token not in app: fail(f'V18.3.48 dynamic 2D wiring missing {token}')
+for token in ["{id:'M1',p:[-2.96,.96,2.96]}","{id:'M2',p:[2.96,.96,2.96]}","{id:'M3',p:[2.96,.96,-2.96]}","{id:'M4',p:[-2.96,.96,-2.96]}"]:
+    # Motor entries also carry a rotation; compare the position prefix only.
+    if token[:-1] not in app: fail(f'3D CC3D X motor placement missing: {token}')
+for token in ['optionalReferencePlan()','FC.AUX-${tx.name}','wireApplyAuxPins','migrateMotorLayout','assemblyWiringPreviewBox','wireGpsProtocol']:
+    if token not in app+html+read('hardware-io.js'): fail(f'CC3D optional 2D/assembly interface missing: {token}')
+for token in ['ioPpmArmMode','ioGpsProtocol','ioGpsTxPin','ioGpsRead']:
+    if token not in html+read('hardware-io.js'): fail(f'PPM/GPS Hardware I/O control missing: {token}')
 for token in ['pinmap_get','motor_map_set','ppm_config','i2c_read','servo_config','gps_read','matrix_write','gpio_write']:
-    if token not in read('python-worker.js') or token not in read('python_companion/zebjus_client.py'): fail(f'V18.3.46 Python hardware bridge missing {token}')
+    if token not in read('python-worker.js') or token not in read('python_companion/zebjus_client.py'): fail(f'V18.3.48 Python hardware bridge missing {token}')
 if "'./hardware-io.js'" not in sw: fail('offline cache omits hardware I/O script')
-if 'id="tab-io"' not in html or 'hardware-io.js?v=18.3.46' not in html: fail('V18.3.46 hardware I/O page is absent')
+if 'id="tab-io"' not in html or 'hardware-io.js?v=18.3.48' not in html: fail('V18.3.48 hardware I/O page is absent')
+
+# V18.3.48 safety, camera lifecycle, and calibration contract.
+for rel in ['python_companion/browser_cvzone.py','tools/test_camera_lifecycle.js','tools/test_browser_cvzone.py','SUPPORT/FLIGHTCORE_STAGE_GUIDE_V18_3_48.md','SUPPORT/FLIGHT_VALIDATION_V18_3_48.md']:
+    if not (ROOT/rel).is_file(): fail(f'V18.3.48 project file missing: {rel}')
+for token in ['ppmPending','ppmIndex>=6','ppmInvalidFrame','ppmPinAllowed','ppmReceiverPin','flightOutputSupervisor','flightWatchdogTripped','outputWatchdogTrips','takeMessageCounters().completeEpochs','batteryValid']:
+    if token not in ino: fail(f'V18.3.48 firmware receiver/output contract missing: {token}')
+for token in ['ioPpmPin','calSixFaces','calSixApply','cvzone-hands']:
+    if token not in html: fail(f'V18.3.48 UI missing: {token}')
+for token in ['pythonRunRequestId','stopPythonCamera();sendPythonSafeFrame()','browser_cvzone.py','latestHandData','hand-data']:
+    if token not in app+read('python-worker.js'): fail(f'V18.3.48 camera/cvzone lifecycle missing: {token}')
+if "'./python_companion/browser_cvzone.py'" not in sw: fail('offline source cache omits browser cvzone adapter')
 
 if warnings:
     for x in warnings: print('WARN:',x)
@@ -342,4 +374,3 @@ if errors:
     print(f'FAILED: {len(errors)} error(s)')
     sys.exit(1)
 print(f'PASS: {len(assets)} GLB models, {len(thumbs)} thumbnails, JSON/JS/catalog/file-reference checks OK')
-

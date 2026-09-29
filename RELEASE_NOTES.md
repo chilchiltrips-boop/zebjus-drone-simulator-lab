@@ -1,13 +1,20 @@
-# ZEBJUS V18.3.46 — real kit motor routing and Hardware I/O Studio
+# ZEBJUS V18.3.48 — receiver, camera and calibration update
 
-- Corrected ESC PWM conversion: firmware now converts 1000–2000 µs pulses to 12-bit ticks for a 250 Hz (4000 µs) period. M1–M4 output mapping can be reassigned among physical D0–D3 connectors, saved in NVS and verified with guarded individual tests. The 2D reference wiring follows the connected kit's map.
-- Added configurable PPM rising/falling edge and independent roll, pitch, throttle and yaw reversing. Receiver readings show actual PPM/Web input rates and active channels. CH6 still chooses Rate (inner rate PID directly) or Angle (outer angle PID cascaded into its own inner rate PID).
-- Added scan and register-level read/write for multiple I²C addresses, one 50 Hz servo output on an unreserved A2 D7–D10 pin, 9600 baud RX-only GPS NMEA, independent 3.3 V GPIO outputs with explicit pin release, and an HT16K33 8×8 matrix on 0x70–0x77. Pin assignments survive reboot; overlapping servo/GPS/GPIO pins are rejected. Expansion operations and bus scans are blocked while armed or bench motors run.
-- Added responsive Hardware I/O Studio in the WebApp and an embedded `/io` page hosted by the same real FC in both AP and STA modes. Both use the existing Device ID and exclusive control lock. Python browser examples and the desktop `ZebjusClient` expose the same commands.
-- The Python Lab, camera/OpenCV/MediaPipe bridges, scrollable editor, expanded terminal, resizable image output, joystick keyboard mapping and measured FC rates from V18.3.45 remain available.
+## FlightCore A2 source
 
-**Hardware limits:** These motor and spare-pin controls require the A2/XIAO ESP32-C6 profile. A1/ESP32-C3 is still a sensor/Wi-Fi bridge with no verified ESC pin map. A2 stabilized flight still requires the supported MPU6050 configuration. Generic I²C register access does not automatically implement a device driver; the included matrix driver supports HT16K33, and GPS currently returns raw NMEA rather than navigation control. Servo power must come from an appropriate external supply with a common ground.
+- Physical receiver pin can be selected as D6/GPIO16 (default) or D10/GPIO18 while disarmed. D10 cannot simultaneously serve PPM, servo, GPS or a digital output. WebApp Hardware I/O, kit `/io`, Python and 2D reference wiring show the selection.
+- PPM publishes only a validated complete frame containing CH1–CH6, with unused channels reset to safe defaults. Short and malformed frames no longer combine old arm/mode values with new stick values.
+- A FreeRTOS output supervisor attempts to drive all ESC PWM outputs to minimum after a flight/bench main-loop stall over 30 ms. A safe low-throttle receiver frame must clear the trip before arming. Status/telemetry report `outputWatchdogTripped` and `outputWatchdogTrips`. This is a software backstop, not a certified hardware failsafe; test on the exact board with propellers removed before flight.
+- Bundled NEO-7 GPS measurement counts every completed UBX epoch drained from the serial buffer, avoiding undercount when one poll parses multiple epochs. `gps_read.measuredHz` remains an observed rate; 10 Hz cannot be confirmed without the physical module.
+- Battery telemetry reports `battery: null` and `batteryValid: false` because this board profile has no wired voltage/current sensor. There is no implemented battery cutoff.
 
-**Build and safety:** The archive contains updated source and an automated GitHub build workflow, but no newly compiled firmware binary. Arduino CLI and a physical kit were unavailable here. Compile both profiles, then complete the propellers-removed and restrained checks in `SUPPORT/FLIGHT_VALIDATION_V18_3_46.md` before flight.
+## Python Lab and Calibration
 
-Previous release: `RELEASE_NOTES_V18_3_45.md`.
+- Camera and hand detection start for camera/cvzone programs on Run and stop on completion, exception, Stop, or leaving the Python page. A pending permission request is cancelled if the run stops first.
+- Browser Python includes a focused `cvzone.HandTrackingModule.HandDetector` subset (`findHands`, `fingersUp`) backed by the page MediaPipe hand model. Its cvzone-style skeleton, points, bounding box and label appear on video and processed OpenCV frames. `cv2.imshow` opens the movable, resizable output window. Full native cvzone and MediaPipe remain available through the laptop companion's requirements install.
+- Calibration page adds a six-face *check*: collect +X/-X/+Y/-Y/+Z/-Z raw MPU6050 readings with propellers removed, verify orientation and stillness, compare scale with 1 g, then explicitly save additive offsets through the existing guarded NVS calibration command. It does not pretend to correct sensor scale.
+- Larger default terminal and responsive six-face controls. Python editor and terminal remain scrollable.
+
+## Build and hardware status
+
+Source checks exercise PPM complete-frame publication, ESC/servo PWM conversion, Python example syntax, AP embedded scripts, browser camera cancellation and cvzone adapter logic. Firmware binaries are marked unavailable in the catalogs because no Arduino ESP32 toolchain or connected FlightCore was present. The real 250 Hz loop, motor directions, GPS measured Hz, webcam permission and flight behaviour must be checked on the actual kit. AP direct HTTP cannot expose a camera to standard secure-context browser APIs; use HTTPS or localhost for browser vision, or the laptop companion.
