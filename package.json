@@ -1,11 +1,12 @@
 {
   "name": "zebjus-flightcore-drone-lab",
-  "version": "18.3.56",
+  "version": "18.3.57",
   "private": true,
-  "description": "ZEBJUS FlightCore Drone Lab V18.3.56 with offline GLB components, stable firmware filenames, same-Wi-Fi kit access and browser firmware update center",
+  "description": "ZEBJUS FlightCore Drone Lab V18.3.57 with bundled offline Python, OpenCV, plots, smart editor and hand tracking",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "check": "python3 tools/validate_project.py"
+    "check": "python3 tools/validate_project.py && python3 tools/validate_offline_bundle.py",
+    "test:offline": "node tools/test_offline_browser.js"
   }
 }

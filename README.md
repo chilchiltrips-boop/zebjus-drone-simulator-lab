@@ -1,4 +1,8 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.56
+# ZEBJUS F450 Drone Engineering Lab V18.3.57
+
+## Full offline Python and hand tracking
+
+Extract the whole ZIP and open **Start_Offline.bat** (Windows) or **Start_Offline.command** (Mac), or run `python3 start_offline.py`. Open **http://localhost:8787/** and connect the laptop to the kit AP. Python, OpenCV/NumPy, Matplotlib/pandas, the smart editor and cvzone hand tracking use bundled local files, including on the first run with internet unavailable. Installed Python 3 or Node.js is needed to launch the local server; browser packages require no pip install. Settings → **Save for offline use** can also retain a complete verified browser copy. See [OFFLINE_START_HERE.md](OFFLINE_START_HERE.md) for phone/camera constraints, package scope and verification.
 
 ## Top bar Wi-Fi switch
 

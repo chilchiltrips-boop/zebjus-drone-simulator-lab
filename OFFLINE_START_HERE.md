@@ -1,0 +1,41 @@
+# Offline WebApp — V18.3.57
+
+## Laptop, including the first run without internet
+
+1. Extract the **whole ZIP**. Keep `vendor` beside `index.html`; do not copy only the top-level files.
+2. Windows: open `Start_Offline.bat`. Mac: open `Start_Offline.command`. Alternatively run `python3 start_offline.py` from Terminal, or run `start_offline.py` in PyCharm. Python 3 must already be installed. The launcher itself needs no pip packages. `npm start` also works with installed Node.js.
+3. Open **http://localhost:8787/**. Keep the launcher window running.
+4. Join the exact kit's AP Wi-Fi even if it says “No internet”. Kit Connect discovers `192.168.4.1`; verify its permanent Device ID and Take Control when using real hardware. Select Real kit in Python for LED/sensor/output code.
+5. Open Python Lab, type your code and press Run. Allow the laptop camera when requested.
+
+Python runs in the browser. No internet login, CDN fetch or per-run package installation is required for the included features. All runtimes and package wheels are in this ZIP. Browser OpenCV does not require desktop `pip install opencv-python`. `while True:`, simple `Drone` methods, `cv2.waitkey`/`cv2.waitKey`, Stop and Rerun retain their existing classroom behaviour.
+
+Mac may request permission to open a downloaded launcher. If double-click is blocked, use Terminal or PyCharm to run `start_offline.py`. Do not open `index.html` as a `file://` URL: browser workers, ES modules and WASM need the local HTTP server.
+
+## Save a browser copy
+
+Settings → **Save for offline use** stores and verifies the complete app, editor, Python runtimes/packages, models, images and 3D assets in this browser. Wait for **Browser offline copy ready**. **Check offline files** checks whether the copy is complete. Saving is blocked while Python runs or the selected kit is armed.
+
+After saving, reopen the **same address in the same browser/profile**. This copy can run even if internet and the laptop server are unavailable. Clearing site/browser data removes it; browsers can also evict storage. The extracted ZIP and launcher remain the reliable local fallback. Repeat Save for offline use after replacing app files with a new version. The settings screen reports the required storage size.
+
+## Included offline features
+
+- Monaco Python editor, suggestions and error markers.
+- Python 3.12 / Pyodide 0.27.7, standard library and bundled native extensions.
+- NumPy, OpenCV, Pillow, Matplotlib, pandas and their pinned dependencies. Plots use the local Agg backend and included fonts.
+- Browser camera and the existing cvzone HandDetector subset (`findHands`, `fingersUp`) with MediaPipe Tasks Vision 0.10.21. Both SIMD and non-SIMD WASM files and the hand-landmark model are included.
+- Joystick/simulator, 2D/3D assembly, kit connection, sensor/I/O APIs and the local USB flasher engine. Firmware binaries must still be supplied/built separately; this source ZIP does not manufacture an application `.bin`.
+
+New third-party Python packages are not automatically available offline. Native `mediapipe`, full native cvzone and SerialModule still use the desktop Python companion. The browser HandDetector API works through the included browser adapter. Companion pip packages must be installed before taking that separate desktop route offline.
+
+## AP page, phones and camera access
+
+The controller's **http://192.168.4.1/** still opens its small embedded Flight App. The complete Python/vision bundle is hosted on the laptop or cached in the browser, rather than stored in the controller flash. A firmware reflash is not needed solely for these browser offline changes when the current kit APIs already work.
+
+Browser cameras require localhost or HTTPS and camera permission. Plain HTTP to a kit or another laptop's LAN IP does not provide that permission context. For full phone/tablet browser vision, first open this full bundle on a suitable HTTPS host and save it offline in that browser; keep using that saved origin. Kit connectivity from a saved HTTPS app remains subject to browser local-network permission and platform restrictions. Captive portal mini-windows are not the supported Python/camera interface. Outdoor AP real-kit control should be verified on the intended device and browser; browser offline success does not establish radio range or real flight timing.
+
+## Rebuilding the bundle
+
+Development only: `python3 tools/bundle_offline_assets.py` downloads the pinned upstream dependencies and checks Python wheel hashes. It is not part of an end-user offline launch. `vendor/provenance.json` records sources and SHA-256 values. Upstream license files accompany the bundled runtimes; the esptool bundle also retains its pako notices. Regenerate `offline-manifest.json` with `python3 tools/make_offline_manifest.py` after changing runtime files, then update `FILE_COUNT.txt` and run project validation.
+
+Verification includes real browser WASM execution with external requests blocked, synthetic camera inference, and the same Python/plot/hand tests after stopping the local server and setting the browser offline. Synthetic camera frames establish model loading/inference and adapter behaviour, not recognition accuracy on real hands. No physical kit, real webcam, Windows/Mac double-click launcher or real flight was tested in this environment.

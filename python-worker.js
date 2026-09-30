@@ -1,5 +1,6 @@
 'use strict';
-const PYODIDE_URL='https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js';
+const PYODIDE_INDEX=new URL('./vendor/pyodide/',self.location.href).href;
+const PYODIDE_URL=PYODIDE_INDEX+'pyodide.js';
 let py=null,runTarget='sim',rpcSeq=0,latestCameraJpeg='',latestHandsJson='{}';const pending=new Map();
 const send=(type,data={})=>postMessage({type,...data});
 function rpc(method,args={}){return new Promise((resolve,reject)=>{const id=`rpc-${++rpcSeq}`;pending.set(id,{resolve,reject});send('rpc',{id,method,args,target:runTarget})})}
@@ -24,7 +25,7 @@ const PRELUDE=`import sys, types, json, asyncio, os\nos.environ["MPLBACKEND"] = 
         if value not in (0, 1, False, True): raise ValueError("LED value must be 0 or 1")
         return await self.led_set("on" if value else "off")
     async def gpio_read(self, pin, mode="pullup"): return await self._command("gpio_read", pin=int(pin), mode=str(mode).lower())\n    async def gpio_write(self, pin, value): return await self._command("gpio_write", pin=int(pin), value=int(bool(value)))\n    async def gpio_release(self, pin): return await self._command("gpio_release", pin=int(pin))\n\n\n_zebjus_module.Drone=Drone\nsys.modules["zebjus"]=_zebjus_module\n`;
-async function ensurePy(){if(py)return py;send('status',{text:'Loading Python 3 runtime…'});importScripts(PYODIDE_URL);py=await loadPyodide();py.setStdout({batched:x=>send('stdout',{text:String(x)+(String(x).endsWith('\n')?'':'\n')})});py.setStderr({batched:x=>send('stderr',{text:String(x)+(String(x).endsWith('\n')?'':'\n')})});py.setStdin({stdin:()=>'',isatty:false});await py.runPythonAsync(PRELUDE,{filename:'zebjus_runtime.py'});return py}
+async function ensurePy(){if(py)return py;send('status',{text:'Loading local Python 3 runtime…'});importScripts(PYODIDE_URL);py=await loadPyodide({indexURL:PYODIDE_INDEX});py.setStdout({batched:x=>send('stdout',{text:String(x)+(String(x).endsWith('\n')?'':'\n')})});py.setStderr({batched:x=>send('stderr',{text:String(x)+(String(x).endsWith('\n')?'':'\n')})});py.setStdin({stdin:()=>'',isatty:false});await py.runPythonAsync(PRELUDE,{filename:'zebjus_runtime.py'});return py}
 function writeFiles(files){try{py.FS.mkdirTree('/home/pyproject')}catch{}for(const [name,code] of Object.entries(files||{})){py.FS.writeFile(`/home/pyproject/${name}`,String(code??''))}}
 async function run(msg){
  runTarget=msg.target==='real'?'real':'sim';
