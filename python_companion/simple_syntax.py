@@ -15,7 +15,7 @@ IO_METHODS = frozenset({
     'motor_map_get', 'motor_map_set', 'ppm_config', 'i2c_read', 'i2c_write',
     'servo_config', 'servo_write', 'gps_config', 'gps_read', 'matrix_config',
     'matrix_write', 'matrix_read', 'gpio_read', 'gpio_write', 'gpio_release',
-    'led_set', 'led_read',
+    'led_set', 'led_read', 'led',
 })
 
 
@@ -31,6 +31,14 @@ def transform(source):
                 node.module = 'zebjus'
             return node
 
+        def visit_While(self, node):
+            self.generic_visit(node)
+            if isinstance(node.test, ast.Constant) and node.test.value is True:
+                # Every unconditional classroom loop yields to the browser/RC bridge.
+                delay = ast.parse('await asyncio.sleep(0.02)').body[0]
+                node.body.insert(0, ast.copy_location(delay, node.body[0]))
+            return node
+
         def visit_FunctionDef(self, node):
             self.generic_visit(node)
             return ast.copy_location(ast.AsyncFunctionDef(
@@ -41,6 +49,12 @@ def transform(source):
         def visit_Call(self, node):
             self.generic_visit(node)
             fn = node.func
+            if isinstance(fn, ast.Attribute) and isinstance(fn.value, ast.Name) and fn.value.id == 'cv2' and fn.attr in ('waitkey', 'waitKey'):
+                if len(node.args) != 1 or node.keywords:
+                    raise SyntaxError('cv2.waitkey needs one delay in milliseconds')
+                seconds = ast.BinOp(left=node.args[0], op=ast.Div(), right=ast.Constant(1000))
+                delay = ast.Call(func=ast.Attribute(value=ast.Name(id='asyncio', ctx=ast.Load()), attr='sleep', ctx=ast.Load()), args=[seconds], keywords=[])
+                return ast.copy_location(ast.Await(value=delay), node)
             needed = (isinstance(fn, ast.Attribute) and
                       isinstance(fn.value, ast.Name) and fn.value.id == 'drone' and
                       fn.attr in IO_METHODS)

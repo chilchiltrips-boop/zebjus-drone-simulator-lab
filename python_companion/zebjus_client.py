@@ -166,6 +166,11 @@ class ZebjusClient:
     def led_read(self):
         return self.command("led_read")
 
+    def led(self, value):
+        if value not in (0, 1, False, True):
+            raise ValueError("LED value must be 0 or 1")
+        return self.led_set("on" if value else "off")
+
     def gpio_read(self, pin, mode="pullup"):
         return self.command("gpio_read", pin=int(pin), mode=str(mode).lower())
 
