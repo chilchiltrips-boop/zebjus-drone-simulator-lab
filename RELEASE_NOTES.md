@@ -1,4 +1,12 @@
-# ZEBJUS V18.3.56 — top bar STA / AP toggle
+# ZEBJUS V18.3.57 — full offline browser Python and hands
+
+Pyodide, Python package wheels (NumPy, OpenCV, Pillow, Matplotlib, pandas and dependencies), Monaco, MediaPipe vision WASM and the hand model now load exclusively from bundled local paths. The USB flasher engine is also bundled. A dependency-free Python launcher and Windows/Mac launch files open the full WebApp on localhost while connected to the kit AP. No new firmware API is required.
+
+Settings adds Save for offline use with file/hash verification, progress and a complete-copy check. Saved browser copies can run without the local server; missing files or cache eviction do not report readiness. Complete local extraction supports an offline first run without preparing a browser cache. Camera output remains a single movable output window and clears when stopped. Example visibility remains off by default.
+
+Real browser tests cover local disk execution with external requests blocked, rendered plots, synchronous Drone API and while True loops, Stop/Rerun, camera/cvzone inference on synthetic frames, and repeats from cache after the local server is stopped and the browser is offline. Actual kit flight, real webcam hand accuracy and platform launchers are not hardware-tested. Source firmware/catalog version is bumped consistently; binaries remain unavailable until built with the matching toolchain.
+
+## V18.3.56 top bar STA / AP toggle
 
 The top bar now has an accessible STA/AP switch and live mode label. It uses the selected verified kit, acquires control when available, and blocks switching while armed, during motor tests or while another controller owns the kit. STA→AP uses the existing firmware command and displays the unique AP SSID/password in a dismissible notice visible on every page. AP→STA activates the saved preferred/current profile (or the only saved profile); if there is no unambiguous choice it opens Settings. No new firmware API is required. The computer must join the chosen network after the kit restarts. Existing V18.3.55 joystick/simulator fixes are retained.
 

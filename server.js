@@ -2,6 +2,7 @@
 const http=require('http'),fs=require('fs'),path=require('path');
 const PORT=Number(process.env.PORT||8787),ROOT=path.resolve(__dirname),VERSION=fs.readFileSync(path.join(ROOT,'VERSION.txt'),'utf8').trim();
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.glb':'model/gltf-binary','.txt':'text/plain; charset=utf-8','.md':'text/markdown; charset=utf-8','.bin':'application/octet-stream'};
+Object.assign(mime,{'.mjs':'text/javascript; charset=utf-8','.wasm':'application/wasm','.whl':'application/octet-stream','.task':'application/octet-stream'});
 http.createServer((req,res)=>{
  let u;try{u=new URL(req.url,'http://localhost')}catch{return res.writeHead(400).end('Bad request')}
  if(u.pathname==='/health'){res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});return res.end(JSON.stringify({ok:true,version:VERSION,mode:'static-local-kit'}))}
