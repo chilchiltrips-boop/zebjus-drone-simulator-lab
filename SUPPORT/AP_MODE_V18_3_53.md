@@ -1,8 +1,10 @@
 # AP and saved Wi-Fi mode · V18.3.53
 
+V18.3.54 moves the AP Wi-Fi settings page to `http://192.168.4.1/setup`; the AP root URL now opens the Flight App. The mode rules below still apply.
+
 ## Before closing the case
 
-1. Build and flash the matching A2 firmware. Keep the USB Serial monitor open at 115200 for the first AP boot. Label this **specific case** with the `ZEBJUS-FC-<12-hex>` SSID and its randomly generated 16-character AP password. Do not use a shared `12345678` label.
+1. Build and flash the matching A2 firmware. Keep the USB Serial monitor open at 115200 for the first AP boot. Label this **specific case** with its full Device ID, `ZEBJUS-FC-<12-hex>` SSID and randomly generated 16-character AP password. Do not use a shared `12345678` label.
 2. If the firmware is already connected to school Wi-Fi, connect the verified Device ID in Drone Lab, take control, and open **Settings → Show this kit's AP details**. Copy the displayed Device ID, SSID and password to the case before switching modes.
 3. Verify the label by joining the indicated AP from a phone and opening `http://192.168.4.1/`; confirm the displayed Device ID equals the label. Multiple kits may use that same IP, since each AP is a separate local network.
 

@@ -1,4 +1,26 @@
-# ZEBJUS V18.3.53 — case-safe AP and STA selection
+# ZEBJUS V18.3.55 — joystick and simulator stability
+
+- Both Control target choices remain selectable. Real kit readiness comes from the selected verified device status, with a Joystick-page Connect/Take Control action and explicit reasons for disconnected, view-only, RC-disabled or IMU-not-ready states.
+- The real Joystick ARM confirmation popup is removed. Intentional ARM, low throttle, verified Device ID, firmware Web RC capability, FlightCore readiness and the controller lock remain required.
+- RC telemetry updates receiver health but cannot overwrite active Tripod, Joystick or Python simulator controls. Receiver-loss handling stops only a receiver-owned simulation. Tripod real mirror sends frames only while its own page/input is active.
+- Simulator physics uses 4 ms steps independent of render frame timing. STOP/RUN resets PID integral/derivative history and Rate Hold captures the current attitude on start. Hidden Assembly/Tripod render work is reduced.
+- Sound no longer restarts because disarmed receiver telemetry interrupted local simulation. Motor sound scheduling is limited to 30 updates per second, and unmuting restores audio for a running simulator without requiring Reset.
+- Fixed-size metrics and receiver header keep Tripod gimbals in place as status text changes. Long receiver detail remains scrollable inside its reserved area.
+- Discovery checks the AP API at 192.168.4.1 alongside STA kit names. A sole discovered kit connects using its verified Device ID; multiple kits still need an explicit selection.
+
+## Verification
+
+`node tools/test_joystick_runtime.js` passes real-target selection, popup-free ARM, exact RC routing, changing targets safely, lock/IMU/board guards, disarmed/stale telemetry isolation, receiver-mirror loss, equal physics response at 30/60/120 display FPS, restart state, audio restoration and AP discovery/ID rejection checks. Camera and output lifecycle regression tests and `tools/validate_project.py` also pass.
+
+This is a source update. No firmware binary is included. No actual browser rendering/audio playback or hardware/network/flight test was completed in this environment; local Chromium was unavailable.
+
+## Earlier V18.3.54 changes
+
+The AP landing page now serves the Aerion Flight App with touch sticks, manual ARM/DISARM, ANGLE/RATE, keyboard, telemetry and links to Hardware I/O, Wi-Fi Settings and an offline Python guide. Captive network probe paths redirect to the same app at the canonical `192.168.4.1` address. Operating systems may show a Wi-Fi sign-in window; a normal browser at `http://192.168.4.1/` is the reliable control path. The former AP setup page moved to `/setup`, while `/fly` remains a controller alias. STA discovery still uses `/api/status` at `/`.
+
+`python_companion/pair_ap.py` verifies the full Device ID typed from the kit case and stores a local URL/ID pairing file. `zebjus_simple.Drone()` supports regular synchronous Python in PyCharm with no internet or Python packages for basic LED, status, IMU, GPIO and RC calls. The existing client includes the expected Device ID with commands and re-acquires its lock if it expired. Native camera/OpenCV work stays on the laptop and requires the appropriate packages installed before offline use. New examples and setup notes are in `python_companion/README.md` and `SUPPORT/AP_APP_V18_3_54.md`. There is still no onboard video or automated takeoff/landing in this firmware, and no firmware binary in the ZIP.
+
+## Earlier V18.3.53 changes
 
 The Settings page can select AP for a verified, disarmed kit without pressing a case-hidden BOOT button. AP remains the selected mode after reboot or power loss. Wi-Fi loss or unavailable saved Wi-Fi also selects persistent AP. In the kit's AP portal at `http://192.168.4.1/`, choose **Activate saved Wi-Fi mode** to return to STA, or save and successfully test a new profile. Network mode changes are blocked during armed flight or bench outputs.
 

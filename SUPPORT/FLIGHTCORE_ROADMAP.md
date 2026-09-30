@@ -22,7 +22,7 @@
 - BMP388 pressure/altitude integration and altitude-hold mode.
 - LiDAR/optical-flow/GPS navigation modes.
 - Extended fault logging / blackbox.
-- Secure device pairing and a unique AP password; the current default AP password is shared and should be changed before a classroom fleet is flown.
+- Per-user authentication and signed control requests remain pending. Per-controller AP passwords and Device ID checking are present; the browser control lock by itself is not user authentication.
 
 Initial motor order, direction, arming and mode-switch checks should be completed with propellers removed before any prop-on flight test.
 
