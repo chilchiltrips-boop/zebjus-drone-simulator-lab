@@ -1,4 +1,4 @@
-"""Small same-Wi-Fi client for computer-side ZEBJUS Python projects.
+"""Local AP or same-Wi-Fi client for computer-side ZEBJUS Python projects.
 
 Only read operations work without pairing to a permanent Device ID. A caller
 must supply that ID before any command that could change real hardware state.
@@ -11,7 +11,7 @@ import time
 import uuid
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request, ProxyHandler, build_opener
 
 READ_ONLY = frozenset({"ping", "pid_get", "receiver_read", "ppm_read", "attitude_read", "calibration_get", "bench_status", "pinmap_get", "gps_read", "matrix_read", "gpio_read", "i2c_read", "led_read"})
 
@@ -24,6 +24,7 @@ class ZebjusClient:
         self.expected_device_id = expected_device_id.strip().upper()
         self.timeout = float(timeout)
         self.client_id = "PY-" + uuid.uuid4().hex
+        self._opener = build_opener(ProxyHandler({}))  # Local kit traffic never needs a system proxy.
         self._owned = False
         self._last_seen_id = ""
 
@@ -31,7 +32,7 @@ class ZebjusClient:
         body = None if fields is None else urlencode(fields).encode("utf-8")
         request = Request(self.base_url + path, data=body, headers={"Content-Type": "application/x-www-form-urlencoded"} if body is not None else {})
         try:
-            with urlopen(request, timeout=self.timeout) as response:
+            with self._opener.open(request, timeout=self.timeout) as response:
                 result = json.load(response)
         except HTTPError as exc:
             try:
@@ -70,27 +71,27 @@ class ZebjusClient:
         status = self.status()
         if status.get("armed"):
             raise RuntimeError("The real kit is armed; disarm before changing parameters")
-        result = self._request("/api/control/acquire", {"clientId": self.client_id})
+        result = self._request("/api/control/acquire", {"clientId": self.client_id, "expectedDeviceId": self.expected_device_id})
         self._owned = True
         return result
 
     def release(self) -> None:
         if self._owned:
             try:
-                self._request("/api/control/release", {"clientId": self.client_id})
+                self._request("/api/control/release", {"clientId": self.client_id, "expectedDeviceId": self.expected_device_id})
             finally:
                 self._owned = False
 
     def command(self, type: str, **data) -> dict:
+        status = self.status()  # Check the real controller before every local command.
         if type not in READ_ONLY:
-            if not self._owned:
+            if not self._owned or not status.get("lockMine"):
+                self._owned = False
                 self.acquire()
-            # A hostname may be reused on a different kit. Verify on every mutation.
-            self.status()
-        else:
-            self.status()
-        fields = {"clientId": self.client_id, "type": type}
+        fields = {"clientId": self.client_id, "type": type, "expectedDeviceId": self.expected_device_id or self._last_seen_id}
         for key, value in data.items():
+            if key in {"clientId", "type", "expectedDeviceId"}:
+                raise ValueError(f"{key} is managed by ZebjusClient")
             if key == "channels":
                 if len(value) < 6 or len(value) > 10:
                     raise ValueError("RC frames require 6 to 10 channels")

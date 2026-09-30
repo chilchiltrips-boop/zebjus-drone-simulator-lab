@@ -153,7 +153,9 @@ async function scanDefaultKits({max=30,extraNames=[],onProgress=null}={}){
   async function worker(){
     while(cursor<names.length){const name=names[cursor++];try{const rs=await discoverName(name);for(const r of rs)if(!found.some(x=>sameDeviceIdentity(x.status.deviceId,r.status.deviceId)))found.push(r)}catch(_){}done++;if(onProgress)onProgress(done,names.length,found.length)}
   }
-  await Promise.all(Array.from({length:Math.min(8,names.length)},worker));
+  // AP mode has no mDNS responder: discover its local HTTP API alongside STA names.
+  async function scanAp(){try{const r=await probeBase('http://192.168.4.1');if(!found.some(x=>sameDeviceIdentity(x.status.deviceId,r.status.deviceId))){found.push(r);rememberKit(r.status,r.base)}}catch(_){}}
+  await Promise.all([...Array.from({length:Math.min(8,names.length)},worker),scanAp()]);
   return found.sort((a,b)=>{const n=String(a.status.name).localeCompare(String(b.status.name),undefined,{numeric:true});return n||String(a.status.deviceId).localeCompare(String(b.status.deviceId))});
 }
 

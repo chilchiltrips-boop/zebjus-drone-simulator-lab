@@ -1,8 +1,19 @@
 # Laptop Python companion
 
+## Offline PyCharm over the kit AP
+
+The basic `zebjus_simple.py` client uses only the Python standard library. Set up Python and PyCharm on the laptop ahead of time; then no internet connection or `pip install` is needed for the LED, IMU, GPIO, I²C and direct RC APIs.
+
+1. Copy this whole `python_companion` folder to the laptop and open it as a PyCharm project. Choose a working Python 3 interpreter. For OpenCV, cvzone or MediaPipe lessons, install the optional `requirements-vision.txt` while internet is available, or bring compatible local wheels; the basic examples do not need them.
+2. Join the kit's unique `ZEBJUS-FC-...` Wi-Fi using the password labeled on its case. On the laptop open `http://192.168.4.1/` and compare the Device ID on the app with the case. Accept **Stay connected / use without internet** if the OS prompts.
+3. Run `pair_ap.py` in PyCharm and type the complete Device ID from the case. This saves only the URL and ID to `zebjus_pairing.json` beside `zebjus_simple.py`. It never records the AP password or automatically trusts an arbitrary kit. Re-run it to switch to another kit.
+4. Run `main_ap.py` or write `from zebjus_simple import Drone; drone = Drone()` in a new script. `while True:` and `time.sleep()` are regular desktop Python. Press Stop / Ctrl+C to end repeating code. Use `with Drone() as drone:` or `drone.close()` to release control.
+
+The kit serves a local HTTP API at `192.168.4.1`; source code, OpenCV windows and camera frames remain on the laptop. The same client can target school Wi-Fi STA by explicitly setting `ZEBJUS_KIT_URL` and the verified `ZEBJUS_DEVICE_ID`. `Drone.rc()` sends one channel frame, not a complete flight loop; a flight controller's failsafe and real hardware timing must be checked before using live RC projects. Only one browser or Python client can hold control at a time. A captive Wi-Fi mini-window may close or hide; use a normal browser for the Flight App.
+
 Use this directory from macOS, Windows or Linux when a project needs native `cv2.VideoCapture`, MediaPipe Python, cvzone, or Matplotlib. These libraries run on the laptop; the ESP32 serves local status, IMU, telemetry, PID and calibration commands. The ZIP includes install instructions and source code, not OS-specific binary wheels.
 
-1. Install a supported desktop Python version and connect the laptop and FlightCore to the same Wi-Fi.
+1. Install a supported desktop Python version and connect the laptop and FlightCore to the same Wi-Fi. The kit's direct AP works too with its `192.168.4.1` address.
 2. Create a virtual environment and install once:
 
    ```bash

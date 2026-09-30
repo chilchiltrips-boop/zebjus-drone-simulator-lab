@@ -1,10 +1,23 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.53
+# ZEBJUS F450 Drone Engineering Lab V18.3.55
+
+## V18.3.55 joystick fix
+
+Joystick now keeps both targets available. Select **REAL KIT + TRIPOD MIRROR**, use **Connect selected kit / Take Control**, then turn the transmitter ON and ARM at low throttle. The ARM popup is removed. Inline status explains any actual firmware, IMU, connection or lock block. RC-enabled A2 FlightCore firmware and a ready MPU6050 are required for real flight output.
+
+Tripod, Joystick and Python own their simulator input while active, so kit telemetry cannot repeatedly stop or overwrite local controls. Simulator restart clears old PID state, physics uses fixed 4 ms steps, sound resumes after unmuting, and changing status text cannot move the gimbals. Existing firmware that already reports Web RC enabled does not need reflashing solely for these WebApp fixes; replace the WebApp files and reload.
+
+
+## Direct AP Flight App and offline PyCharm
+
+Connect a phone or laptop to this controller's labeled `ZEBJUS-FC-...` AP. Its captive network check serves the **Aerion Flight App**: touch joysticks, intentional ARM/DISARM, ANGLE/RATE choice, keyboard control, telemetry, Hardware I/O and a PyCharm guide. The reliable manual address is `http://192.168.4.1/` in a normal browser. Some operating systems show a captive Wi-Fi window after joining; they do not guarantee opening a full browser or keeping that small window active. AP settings and saved Wi-Fi are at `http://192.168.4.1/setup`; `/fly` remains an alias for the Flight App. No internet or cloud service is required for these locally served pages.
+
+On a laptop connected to the same AP, copy `python_companion`, run `pair_ap.py` to confirm the complete Device ID, then open `main_ap.py` in PyCharm. `from zebjus_simple import Drone`, `drone = Drone()` and ordinary `while True:` run locally and send commands to `192.168.4.1`. Basic LED, sensor and RC APIs use only the Python standard library; camera/OpenCV packages must be installed ahead of an offline session. Source is not uploaded or executed on the flight controller. Details: `SUPPORT/AP_APP_V18_3_54.md`.
 
 ## AP / STA with an enclosed FlightCore
 
 Flash this firmware before closing the case. Every controller uses a unique `ZEBJUS-FC-<12-hex Device ID suffix>` SSID and a random 16-character AP password. On first AP startup, copy both from USB Serial at 115200 onto the correct case. If the kit is already on school Wi-Fi, connect its verified Device ID in Drone Lab, take control and use **Settings → Show this kit's AP details**. Record the details before selecting **Switch selected kit to AP**. Disarm and stop bench outputs first.
 
-AP stays active through power cycles. If saved Wi-Fi cannot be reached at startup or drops while disarmed, the kit also enters persistent AP. Join its specific SSID with its specific password, then open `http://192.168.4.1/`. In the AP portal, **Activate saved Wi-Fi mode** tries saved profiles, or **Save & test Wi-Fi** verifies a new one. If that network is unavailable, the kit returns to AP and stays there. No physical BOOT access is required. A web factory reset preserves that board's AP password; a full flash erase does not.
+AP stays active through power cycles. If saved Wi-Fi cannot be reached at startup or drops while disarmed, the kit also enters persistent AP. Join its specific SSID with its specific password, then open `http://192.168.4.1/` for the Flight App. In **Settings** (`/setup`), **Activate saved Wi-Fi mode** tries saved profiles, or **Save & test Wi-Fi** verifies a new one. If that network is unavailable, the kit returns to AP and stays there. No physical BOOT access is required. A web factory reset preserves that board's AP password; a full flash erase does not.
 
 `192.168.4.1` is the private address within whichever kit AP your phone/laptop joins, so several nearby kits can use it independently. The browser checks Device ID when connecting and includes it with commands. The shared LAN control lock is not user authentication, and this release has no per-user secure pairing. See `SUPPORT/AP_MODE_V18_3_53.md` for setup, mode rules and limits.
 
@@ -21,7 +34,7 @@ Browser-based F450 assembly, 2D wiring, Python learning, simulator, local-kit co
 
 V18.3.48 builds on the Python Flight Lab, multi-kit Device ID and Tripod real-kit mirror. It includes the full assets in one GitHub-ready directory, a page-wise responsive AP interface, STA and flight-mode controls in Settings, safety fixes, browser plots/vision and a native laptop Python companion. See `RELEASE_NOTES.md`.
 
-For a new kit, join its labeled AP and use `http://192.168.4.1/`. The kit hosts Wi-Fi setup and status there; `/fly` hosts direct control on AP or STA. On a hosted secure Drone Lab page, students can use the browser Python editor, camera, MediaPipe hand landmarks, OpenCV and Matplotlib. `python_companion/` installs native MediaPipe/cvzone/OpenCV on the laptop for camera projects. The ESP32 does not install Python packages.
+For a new kit, join its labeled AP and use `http://192.168.4.1/` for direct control; `/setup` hosts Wi-Fi setup and status. On a hosted secure Drone Lab page, students can use the browser Python editor, camera, MediaPipe hand landmarks, OpenCV and Matplotlib. `python_companion/` installs native MediaPipe/cvzone/OpenCV on the laptop for camera projects. The ESP32 does not install Python packages.
 
 ## Hardware I/O quick start
 
