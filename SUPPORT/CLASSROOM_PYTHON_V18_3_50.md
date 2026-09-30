@@ -7,3 +7,9 @@ Settings > Python Classroom has a browser-local example visibility toggle, defau
 Keyboard lesson: W/S throttle, arrows for roll and pitch, A/D yaw, R arm only at low throttle, X disarm. It starts in simulator. Hand lesson uses browser camera and cvzone-compatible drawing; it commands neutral or gentle forward pitch in simulator with throttle held low and disarmed. Camera needs HTTPS/localhost and browser permission. Real flight from hand tracking is intentionally blocked while armed; video frame timing and gesture loss are not reliable flight control inputs.
 
 LED lesson requires V18.3.49+ firmware compiled and flashed; without it, the device returns unknown command. The archive does not include a newly built firmware binary.
+
+V18.3.51: type `while True:` exactly (capital T) and press Enter; indent the next line with four spaces. A bare `while True:` without an indented body is incomplete Python. Use the Stop button to end the loop.
+
+V18.3.52 accepts standard Python `while True:`, `drone.led(1)` / `drone.led(0)`, and `cv2.waitkey(1000)` in simple mode. Use capital T in `True`; the wait is milliseconds and yields to the browser. Select Real kit, connect the exact Device ID, and flash firmware with onboard LED support before running. The built-in LED is active-low internally but the Python API uses 1=ON, 0=OFF.
+
+V18.3.52 camera: the single Python output popup opens for camera runs. Its live frame is cleared when the camera stops; Matplotlib plots can remain in the same popup. The hidden video element is retained only for capture/MediaPipe.

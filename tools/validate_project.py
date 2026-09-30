@@ -249,7 +249,7 @@ styles=read('styles.css')
 if '#tab-python{--py-side-w:430px;--py-terminal-h:330px}' not in styles or 'python-row-resizer' not in styles or 'python-col-resizer' not in styles: fail('V18.3.43 draggable Python workspace sizing is missing')
 if '#tab-python .python-file-list{display:flex!important;flex-direction:row!important' not in styles: fail('Student Python Files is not a horizontal project strip')
 if '#pythonTerminal .python-terminal-error' not in styles or 'color:#ff7288' not in styles: fail('Python terminal error coloring is missing')
-if "const CACHE='zebjus-flightcore-v18-3-50'" not in sw: fail('service-worker cache key is stale for V18.3.48')
+if "const CACHE='zebjus-flightcore-v18-3-52'" not in sw: fail('service-worker cache key is stale for V18.3.48')
 
 
 # V18.3.43 Python Flight Lab / real-FC tuning integration.
@@ -315,7 +315,7 @@ for rel in ['tools/ap_portal_source.html','tools/ap_fly_source.html','python_com
     if not (ROOT/rel).is_file(): fail(f'V18.3.48 project file missing: {rel}')
 for token in ['ARMED_LOOP_GAP_LIMIT_US','loopOverruns','escPwmReady','prefs.begin("zjcal",false)','Wi-Fi scan blocked while armed','Level capture requires a level, motionless']:
     if token not in ino: fail(f'V18.3.48 firmware guard missing: {token}')
-for token in ['settingsNetworkSummary','basicFlightMode','pythonCameraVideo','pythonHandsToggle','pythonPlotImage']:
+for token in ['settingsNetworkSummary','basicFlightMode','pythonCameraVideo','pythonHandsToggle','pythonOutputImage']:
     if token not in html: fail(f'V18.3.48 UI control missing: {token}')
 for token in ['sendPythonSafeFrame','pythonCameraFrame','togglePythonHands','pythonVisualImage','plot-imu','camera-opencv','hand-landmarks']:
     if token not in app: fail(f'V18.3.48 Python/vision integration missing: {token}')
@@ -354,7 +354,7 @@ for token in ['ioPpmArmMode','ioGpsProtocol','ioGpsTxPin','ioGpsRead']:
 for token in ['pinmap_get','motor_map_set','ppm_config','i2c_read','servo_config','gps_read','matrix_write','gpio_write']:
     if token not in read('python-worker.js') or token not in read('python_companion/zebjus_client.py'): fail(f'V18.3.48 Python hardware bridge missing {token}')
 if "'./hardware-io.js'" not in sw: fail('offline cache omits hardware I/O script')
-if 'id="tab-io"' not in html or 'hardware-io.js?v=18.3.50' not in html: fail('V18.3.48 hardware I/O page is absent')
+if 'id="tab-io"' not in html or 'hardware-io.js?v=18.3.52' not in html: fail('V18.3.48 hardware I/O page is absent')
 
 # V18.3.48 safety, camera lifecycle, and calibration contract.
 for rel in ['python_companion/browser_cvzone.py','tools/test_camera_lifecycle.js','tools/test_browser_cvzone.py','SUPPORT/FLIGHTCORE_STAGE_GUIDE_V18_3_48.md','SUPPORT/FLIGHT_VALIDATION_V18_3_48.md']:
@@ -366,6 +366,7 @@ for token in ['ioPpmPin','calSixFaces','calSixApply','cvzone-hands']:
 for token in ['pythonRunRequestId','stopPythonCamera();sendPythonSafeFrame()','browser_cvzone.py','latestHandData','hand-data']:
     if token not in app+read('python-worker.js'): fail(f'V18.3.48 camera/cvzone lifecycle missing: {token}')
 if "'./python_companion/browser_cvzone.py'" not in sw: fail('offline source cache omits browser cvzone adapter')
+if "'./python_companion/simple_syntax.py'" not in sw: fail('offline source cache omits simple Python adapter')
 
 if warnings:
     for x in warnings: print('WARN:',x)

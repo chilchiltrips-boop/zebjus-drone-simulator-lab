@@ -1,4 +1,12 @@
-# ZEBJUS V18.3.50 — classroom Python and Aerion F1
+# ZEBJUS V18.3.52 — unified Python camera output
+
+The hidden browser video remains active for frame capture, while the sole visible Python output popup opens when a camera run starts. OpenCV/cvzone frames replace the preview in that popup. Stopping or finishing the camera clears its image source, download link, and popup instead of leaving a frozen frame. Plot output uses that same popup and remains available after a non-camera run. The simple Python adapter is included in the offline source cache. Classroom code also uses standard `while True:`, `drone.led(1/0)` and `cv2.waitkey(milliseconds)`; LED writes still require a verified real kit with compatible firmware. Python Stop/finish queues LED OFF after the last outstanding LED write when this browser owns control.
+
+## Earlier V18.3.51 changes
+
+Python autocomplete now inserts `while True:` with an indented body and a short delay. The fallback editor indents after `:` and inserts four spaces with Tab. Simple mode inserts a 20 ms yield at the beginning of unconditional loops, preventing a tight `while True` from monopolizing its Worker. Press Stop to terminate a repeating script.
+
+## Earlier V18.3.50 changes
 
 The Python example menu is hidden by default; Settings controls its visibility per browser. New keyboard, hand tracking and LED lessons use `from zebjus_simple import Drone` with regular function definitions and no explicit `await`. They retain the existing worker, camera lifecycle, RC control lock, and stop handling. Keyboard and hand lessons open in Simulator; real hand flight remains blocked while armed. User-facing board profile is ZEBJUS Aerion F1, with stable board ID ZFC-A2 and silicon target retained internally for build/pin safety. Hiding the board name in UI does not conceal hardware identity from physical inspection, firmware or source.
 
