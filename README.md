@@ -1,4 +1,8 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.55
+# ZEBJUS F450 Drone Engineering Lab V18.3.56
+
+## Top bar Wi-Fi switch
+
+Use the STA/AP toggle at the top of every page. The selected kit must be connected and disarmed. Switching to AP shows its SSID/password; switching back uses the saved preferred/current Wi-Fi profile. Join that network on the computer after the kit restarts.
 
 ## V18.3.55 joystick fix
 
