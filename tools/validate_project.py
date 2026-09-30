@@ -249,7 +249,7 @@ styles=read('styles.css')
 if '#tab-python{--py-side-w:430px;--py-terminal-h:330px}' not in styles or 'python-row-resizer' not in styles or 'python-col-resizer' not in styles: fail('V18.3.43 draggable Python workspace sizing is missing')
 if '#tab-python .python-file-list{display:flex!important;flex-direction:row!important' not in styles: fail('Student Python Files is not a horizontal project strip')
 if '#pythonTerminal .python-terminal-error' not in styles or 'color:#ff7288' not in styles: fail('Python terminal error coloring is missing')
-if "const CACHE='zebjus-flightcore-v18-3-52'" not in sw: fail('service-worker cache key is stale for V18.3.48')
+if "const CACHE='zebjus-flightcore-v18-3-53'" not in sw: fail('service-worker cache key is stale for V18.3.48')
 
 
 # V18.3.43 Python Flight Lab / real-FC tuning integration.
@@ -354,7 +354,7 @@ for token in ['ioPpmArmMode','ioGpsProtocol','ioGpsTxPin','ioGpsRead']:
 for token in ['pinmap_get','motor_map_set','ppm_config','i2c_read','servo_config','gps_read','matrix_write','gpio_write']:
     if token not in read('python-worker.js') or token not in read('python_companion/zebjus_client.py'): fail(f'V18.3.48 Python hardware bridge missing {token}')
 if "'./hardware-io.js'" not in sw: fail('offline cache omits hardware I/O script')
-if 'id="tab-io"' not in html or 'hardware-io.js?v=18.3.52' not in html: fail('V18.3.48 hardware I/O page is absent')
+if 'id="tab-io"' not in html or 'hardware-io.js?v=18.3.53' not in html: fail('V18.3.48 hardware I/O page is absent')
 
 # V18.3.48 safety, camera lifecycle, and calibration contract.
 for rel in ['python_companion/browser_cvzone.py','tools/test_camera_lifecycle.js','tools/test_browser_cvzone.py','SUPPORT/FLIGHTCORE_STAGE_GUIDE_V18_3_48.md','SUPPORT/FLIGHT_VALIDATION_V18_3_48.md']:

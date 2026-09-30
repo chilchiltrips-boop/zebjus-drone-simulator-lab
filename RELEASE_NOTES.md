@@ -1,4 +1,12 @@
-# ZEBJUS V18.3.52 — unified Python camera output
+# ZEBJUS V18.3.53 — case-safe AP and STA selection
+
+The Settings page can select AP for a verified, disarmed kit without pressing a case-hidden BOOT button. AP remains the selected mode after reboot or power loss. Wi-Fi loss or unavailable saved Wi-Fi also selects persistent AP. In the kit's AP portal at `http://192.168.4.1/`, choose **Activate saved Wi-Fi mode** to return to STA, or save and successfully test a new profile. Network mode changes are blocked during armed flight or bench outputs.
+
+Each board advertises `ZEBJUS-FC-` plus its complete Device ID suffix and generates a separate random 16-character AP password on first boot. The password is stored in a dedicated NVS namespace, preserved by the web factory reset, and shown in Settings to the browser holding control or on USB Serial at 115200 during AP startup. Record the SSID/password on the matching case before enclosing a fresh board. A full flash erase clears NVS and generates a new password. The same `192.168.4.1` on separate APs is normal; the client connects to only the chosen SSID. The browser also sends the expected Device ID with commands and the new firmware rejects mismatches. Existing LAN control lock is not a user authentication scheme.
+
+The AP uses its AP radio for ordinary operation, temporarily enabling station radio only for a Wi-Fi scan or an explicit Save & Test. AP password and radio behavior still require an actual firmware build, flash and hardware verification; this source ZIP does not include a binary.
+
+## Earlier V18.3.52 changes
 
 The hidden browser video remains active for frame capture, while the sole visible Python output popup opens when a camera run starts. OpenCV/cvzone frames replace the preview in that popup. Stopping or finishing the camera clears its image source, download link, and popup instead of leaving a frozen frame. Plot output uses that same popup and remains available after a non-camera run. The simple Python adapter is included in the offline source cache. Classroom code also uses standard `while True:`, `drone.led(1/0)` and `cv2.waitkey(milliseconds)`; LED writes still require a verified real kit with compatible firmware. Python Stop/finish queues LED OFF after the last outstanding LED write when this browser owns control.
 
