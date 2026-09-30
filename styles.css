@@ -1105,3 +1105,9 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 /* Keep the decoding video alive while showing only one output surface. */
 #tab-python .python-camera-stage{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important;clip-path:inset(50%)!important}
 #tab-python .python-camera-stage video{width:320px!important;height:240px!important}
+
+/* Network mode switch in the persistent top bar. */
+.top-network-control{display:flex;align-items:center;gap:6px;flex:none;padding:7px 9px;border:1px solid #315f6c;border-radius:11px;background:#0a2330;color:#b4dedc;font-size:10px;font-weight:800;order:-1}
+.top-network-control b{font-size:9px;min-width:67px;color:#75e8bf}.network-toggle{width:44px;height:25px;position:relative;border:1px solid #426b80;border-radius:20px;background:#214359;padding:0;flex:none}.network-toggle i{position:absolute;left:3px;top:3px;width:17px;height:17px;border-radius:50%;background:#e6f4ff;transition:transform .15s}.network-toggle[aria-checked=true]{background:#18765b;border-color:#51d6a6}.network-toggle[aria-checked=true] i{transform:translateX(19px)}.network-toggle:disabled{opacity:.45;cursor:default}.network-toggle:focus-visible{outline:2px solid #70efd0;outline-offset:3px}
+.top-network-notice{position:fixed;z-index:1100;top:82px;left:12px;right:12px;margin:auto;max-width:760px;display:flex;align-items:flex-start;gap:12px;padding:14px;background:#0b2d32;border:1px solid #56bcaa;border-radius:12px;box-shadow:0 10px 36px #0008;font-size:12px;line-height:1.5;overflow-wrap:anywhere}.top-network-notice[hidden]{display:none!important}.top-network-notice span{flex:1}.top-network-notice button{border:0;background:transparent;color:#c6f7ed;font-size:22px;line-height:1;flex:none}.topbar{gap:10px}
+@media(max-width:800px){.top-network-control{align-self:flex-start}.top-network-notice{top:12px}}

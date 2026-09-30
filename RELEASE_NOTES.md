@@ -1,4 +1,10 @@
-# ZEBJUS V18.3.55 — joystick and simulator stability
+# ZEBJUS V18.3.56 — top bar STA / AP toggle
+
+The top bar now has an accessible STA/AP switch and live mode label. It uses the selected verified kit, acquires control when available, and blocks switching while armed, during motor tests or while another controller owns the kit. STA→AP uses the existing firmware command and displays the unique AP SSID/password in a dismissible notice visible on every page. AP→STA activates the saved preferred/current profile (or the only saved profile); if there is no unambiguous choice it opens Settings. No new firmware API is required. The computer must join the chosen network after the kit restarts. Existing V18.3.55 joystick/simulator fixes are retained.
+
+Source-only package; no firmware binary or actual hardware validation.
+
+## Earlier V18.3.55 changes
 
 - Both Control target choices remain selectable. Real kit readiness comes from the selected verified device status, with a Joystick-page Connect/Take Control action and explicit reasons for disconnected, view-only, RC-disabled or IMU-not-ready states.
 - The real Joystick ARM confirmation popup is removed. Intentional ARM, low throttle, verified Device ID, firmware Web RC capability, FlightCore readiness and the controller lock remain required.

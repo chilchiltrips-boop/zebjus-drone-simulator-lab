@@ -104,7 +104,27 @@ function receiverModeFromChannels(c){const d=selected();return d?.flightCoreInte
 function applyPhysicalReceiver(t){
  const c=Array.isArray(t?.rc)?t.rc:Array.isArray(t?.channels)?t.channels:null;if(!c||c.length<4)return;const rc=c.slice(0,10).map((v,i)=>clamp(Math.round(+v||DEFAULT_CH[i]),1000,2000));while(rc.length<10)rc.push(DEFAULT_CH[rc.length]);st.rcMirrorSource=String(t?.rcSource||t?.source||'RC').toUpperCase();st.receiverChannels=rc;st.receiverLastAt=Date.now();st.sensorHealth.receiver='OK';st.receiverHealth='OK';if(!st.txOn&&!st.pythonRcActive&&api()?.canMirrorReceiver?.()){api()?.controlSim?.({roll:(rc[0]-1500)/500,pitch:(rc[1]-1500)/500,throttle:rc[2],yaw:(rc[3]-1500)/500},'receiver');api()?.setSimFlightMode?.(receiverModeFromChannels(rc));api()?.setSimRunning?.(rc[4]>=1500);st.joy=[...rc];renderJoy()}
 }
-function statusUi(){
+let networkSwitchBusy=false;
+function networkNotice(message){setText('wifiMessage',message);setText('topNetworkNoticeText',message);const box=$('#topNetworkNotice');if(box)box.hidden=false}
+function networkToggleUi(){
+ const d=selected(),linked=selectedConnected(),ap=linked&&String(d.mode||'').toUpperCase().includes('AP'),button=$('#topNetworkToggle');
+ if(button){button.setAttribute('aria-checked',String(!!ap));button.disabled=networkSwitchBusy||!linked||!!d.armed||Number(d.benchMode||0)!==0||!!(d.locked&&!d.lockMine);button.title=!linked?'Connect a kit first':d.armed?'Disarm before switching Wi-Fi mode':d.locked&&!d.lockMine?'Another controller owns this kit':ap?'Activate saved STA Wi-Fi':'Switch this kit to AP'}
+ setText('topNetworkMode',networkSwitchBusy?'SWITCHING…':!linked?'NO KIT':ap?'AP ACTIVE':'STA ACTIVE');
+}
+async function toggleNetworkMode(){
+ if(networkSwitchBusy)return;networkSwitchBusy=true;networkToggleUi();
+ try{
+  if(!selectedConnected()){networkNotice('Connect the selected kit first.');return}
+  if(!canControl()&&!await acquireLock(false)){networkNotice('Take Control before switching Wi-Fi mode.');return}
+  const d=selected();if(d.armed||Number(d.benchMode||0)!==0){networkNotice('Disarm and stop motor tests before switching Wi-Fi mode.');return}
+  if(!String(d.mode||'').toUpperCase().includes('AP')){await switchToAp();return}
+  const saved=await client.savedWifi(),profiles=saved.profiles||[],profile=profiles.find(n=>n.preferred)||profiles.find(n=>n.current)||(profiles.length===1?profiles[0]:null);
+  if(!profile){networkNotice('Choose a saved Wi-Fi network in Settings, or configure Wi-Fi at http://192.168.4.1/setup.');api()?.setActiveTab?.('settings');return}
+  if(!confirm(`Switch this kit to saved Wi-Fi “${profile.ssid}”? The AP connection will close.`))return;
+  await client.useWifi(profile.ssid);networkNotice(`Kit restarting in STA mode. Connect this computer to ${profile.ssid}, then reconnect the kit.`);disconnectKit(false);
+ }catch(e){networkNotice('Wi-Fi mode switch failed: '+e.message)}finally{networkSwitchBusy=false;networkToggleUi()}
+}
+function statusUi(){networkToggleUi();
  const b=$('#schoolCloudBadge');if(b){b.textContent=ready()?'LOCAL LINK':'UNAVAILABLE';b.className='status '+(ready()?'good':'')}
  const q=$('#kitSearchInput');if(q&&document.activeElement!==q)q.value=st.query;
  const ng=$('#networkGroupBadge');if(ng)ng.textContent='Same Wi-Fi • mDNS';
@@ -400,14 +420,15 @@ async function showApCredentials(){
  try{const r=await client.command({type:'ap_credentials'});if(!window.ZebjusDroneKit.sameDeviceIdentity(r.deviceId,d.deviceId))throw Error('Device ID mismatch. Reconnect the correct kit.');setText('apCredentials',`${r.deviceId} • ${r.apSsid} • AP password: ${r.apPassword}. Record these details on this kit's case.`)}catch(e){setText('apCredentials','Could not read AP details: '+e.message)}
 }
 async function switchToAp(){
- const d=selected();if(!selectedConnected())return setText('wifiMessage','Connect the selected kit first.');
- if(!canControl())return setText('wifiMessage','Take Control first.');
- if(d.armed||Number(d.benchMode)!==0)return setText('wifiMessage','Disarm and stop bench outputs before switching network mode.');
- if(String(d.mode||'').includes('AP'))return setText('wifiMessage','Kit AP is already active. Open http://192.168.4.1/ for control or /setup for Wi-Fi settings.');
+ const d=selected();if(!selectedConnected())return networkNotice('Connect the selected kit first.');
+ if(!canControl())return networkNotice('Take Control first.');
+ if(d.armed||Number(d.benchMode)!==0)return networkNotice('Disarm and stop bench outputs before switching network mode.');
+ if(String(d.mode||'').includes('AP'))return networkNotice('Kit AP is already active. Open http://192.168.4.1/ for control or /setup for Wi-Fi settings.');
  if(!confirm(`Switch ${d.deviceName||d.name||'the selected kit'} to AP mode? This Wi-Fi connection will close.`))return;
- try{const r=await client.command({type:'network_mode_set',mode:'AP'});if(!window.ZebjusDroneKit.sameDeviceIdentity(r.deviceId,d.deviceId))throw Error('Device ID mismatch. Reconnect the correct kit.');setText('wifiMessage',`Kit restarting in AP mode. Join ${r.apSsid} (password: ${r.apPassword}), then open http://192.168.4.1/ for the Flight App. Saved Wi-Fi mode is under /setup.`);disconnectKit(false)}catch(e){setText('wifiMessage','AP switch failed: '+e.message)}
+ try{const r=await client.command({type:'network_mode_set',mode:'AP'});if(!window.ZebjusDroneKit.sameDeviceIdentity(r.deviceId,d.deviceId))throw Error('Device ID mismatch. Reconnect the correct kit.');networkNotice(`Kit restarting in AP mode. Join ${r.apSsid} (password: ${r.apPassword}), then open http://192.168.4.1/ for the Flight App. Saved Wi-Fi mode is under /setup.`);disconnectKit(false)}catch(e){networkNotice('AP switch failed: '+e.message)}
 }
 function initUi(){
+ $('#topNetworkToggle')?.addEventListener('click',toggleNetworkMode);$('#closeNetworkNotice')?.addEventListener('click',()=>{const n=$('#topNetworkNotice');if(n)n.hidden=true});
  loadPrefs();initJoystick();const q=$('#kitSearchInput');if(q){q.value=st.query;q.addEventListener('keydown',e=>{if(e.key==='Enter')searchModules()})}const demo=$('#demoMode');if(demo){demo.checked=st.demoMode;demo.onchange=()=>{st.demoMode=demo.checked;savePrefs();if(st.demoMode)api()?.setFcConnected?.(false);statusUi()}}
  $('#kitSearchBtn')?.addEventListener('click',searchModules);$('#refreshModulesBtn')?.addEventListener('click',scanKitsUi);$('#disconnectKitBtn')?.addEventListener('click',()=>disconnectKit(true));$('#renameDeviceBtn')?.addEventListener('click',renameDevice);$('#resetKitNameBtn')?.addEventListener('click',resetKitName);$('#pingSelectedDeviceBtn')?.addEventListener('click',()=>sendDeviceCommand({type:'ping',time:Date.now()}));$('#takeControlBtn')?.addEventListener('click',()=>acquireLock(false));$('#releaseControlBtn')?.addEventListener('click',()=>releaseLock(false));$('#scanWifiBtn')?.addEventListener('click',scanWifi);$('#saveWifiBtn')?.addEventListener('click',saveWifi);$('#resetWifiBtn')?.addEventListener('click',resetWifi);$('#showApCredentialsBtn')?.addEventListener('click',showApCredentials);$('#switchApBtn')?.addEventListener('click',switchToAp);$('#refreshSavedWifiBtn')?.addEventListener('click',refreshSavedWifi);$('#useSavedWifiBtn')?.addEventListener('click',useSavedWifi);$('#forgetSavedWifiBtn')?.addEventListener('click',forgetSavedWifi);$('#kitSelect')?.addEventListener('change',e=>{const o=e.target.selectedOptions?.[0];if(!o?.value)return;if(q)q.value=o.value;const ip=$('#kitCachedIp');if(ip)ip.value=o.dataset.ip||'';st.query=o.value;savePrefs();setText('kitNameMessage',`${o.value} selected from automatic discovery.`);connectExact(o.value,true).then(refreshSavedWifi).catch(err=>simpleError(err.message))});
  window.addEventListener('pagehide',()=>{if(ownsLock())client.release({keepalive:true}).catch(()=>{})});statusUi();

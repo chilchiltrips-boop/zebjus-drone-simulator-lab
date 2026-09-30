@@ -2,12 +2,12 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
 const root=path.join(__dirname,'..'),app=fs.readFileSync(path.join(root,'app.js'),'utf8'),school=fs.readFileSync(path.join(root,'school-lab.js'),'utf8');
 function between(source,a,b){const start=source.indexOf(a),end=source.indexOf(b,start);assert(start>=0&&end>start);return source.slice(start,end)}
-function node(){return{textContent:'',innerHTML:'',value:'',hidden:false,disabled:false,style:{},className:'',classList:{add(){},remove(){},toggle(){}},querySelector:()=>null}}
-const nodes=new Map();for(const id of ['webJoyTarget','joyTargetBadge','joyTargetNote','joyTargetHelp','joyConnectKitBtn','joyTargetSummary','schoolLog','webArmBtn','webArmMessage','simRunBtn'])nodes.set('#'+id,node());
+function node(){return{setAttribute(k,v){this[k]=v},textContent:'',innerHTML:'',value:'',hidden:false,disabled:false,style:{},className:'',classList:{add(){},remove(){},toggle(){}},querySelector:()=>null}}
+const nodes=new Map();for(const id of ['webJoyTarget','joyTargetBadge','joyTargetNote','joyTargetHelp','joyConnectKitBtn','joyTargetSummary','schoolLog','webArmBtn','webArmMessage','simRunBtn','topNetworkToggle','topNetworkMode','topNetworkNotice','topNetworkNoticeText'])nodes.set('#'+id,node());
 nodes.set('#webJoyTarget option[value="device"]',node());nodes.get('#webJoyTarget').value='sim';
 const $=s=>nodes.get(s)||null;
 const commands=[];let client;
-class Client{constructor(){client=this;this.connected=false;this.deviceId='';this.status=null}command(frame){commands.push(JSON.parse(JSON.stringify(frame)));return Promise.resolve({ok:true})}disconnect(){this.connected=false}}
+class Client{constructor(){client=this;this.connected=false;this.deviceId='';this.status=null}command(frame){commands.push(JSON.parse(JSON.stringify(frame)));return Promise.resolve({ok:true,deviceId:this.deviceId,apSsid:'KIT-AP',apPassword:'test-ap-password'})}disconnect(){this.connected=false}}
 const window={addEventListener(){},ZebjusDroneKit:{LocalKitClient:Client,sameDeviceIdentity:(a,b)=>!!a&&a===b},__zebjusAppLoaded:false};
 const sandbox={window,document:{querySelector:$,querySelectorAll:()=>[],addEventListener(){},readyState:'loading'},localStorage:{getItem:()=>null,setItem(){}},location:{search:''},performance:{now:()=>1000},Date,console,setTimeout(){},setInterval(){},requestAnimationFrame(){},confirm(){throw Error('Controller ARM must not show a confirmation popup')}};
 vm.createContext(sandbox);
@@ -28,7 +28,7 @@ let sLast=0;
 globalThis.simTest={state,claimSimInput,releaseSimInput,canMirrorReceiver,controlSimInput,startSimRuntime,resetSimControllersOnly,stepSimPhysics,owner:()=>simInputOwner};
 `,Object.assign(sandbox,{$}));
 let stopCount=0;window.zebjusLabAPI={controlSim:sandbox.simTest.controlSimInput,claimSimInput:sandbox.simTest.claimSimInput,releaseSimInput:sandbox.simTest.releaseSimInput,canMirrorReceiver:sandbox.simTest.canMirrorReceiver,getSimInputOwner:sandbox.simTest.owner,getActiveTab:()=> 'joystick',setSimFlightMode:m=>{sandbox.simTest.state.sim.flightMode=m},setSimRunning:on=>{if(on)sandbox.simTest.startSimRuntime();else{stopCount++;sandbox.simTest.state.sim.running=false}},setActiveTab(){}};
-vm.runInContext(school.replace(/\}\)\(\);\s*$/,`window.controllerTest={st,targetUi,realKitAvailability,setTransmitter,tryToggleArm,joystickTick,enforceJoystickLink,switchJoystickTarget,applyPhysicalReceiver,telemetryTick};})();`),sandbox);
+vm.runInContext(school.replace(/\}\)\(\);\s*$/,`window.controllerTest={st,targetUi,realKitAvailability,setTransmitter,tryToggleArm,joystickTick,enforceJoystickLink,switchJoystickTarget,applyPhysicalReceiver,telemetryTick,toggleNetworkMode,networkToggleUi};})();`),sandbox);
 const ctl=window.controllerTest,sim=sandbox.simTest;
 const kit={deviceId:'ZFC-001122334455',deviceName:'Kit 1',online:true,webRc:true,flightCoreIntegrated:true,flightReady:true,lockMine:true};
 function choose(d){ctl.st.devices=[d];ctl.st.selectedDeviceId=d.deviceId;client.deviceId=d.deviceId;client.connected=true;client.status=d;ctl.targetUi()}
@@ -60,5 +60,14 @@ async function flush(){for(let i=0;i<8;i++)await Promise.resolve()}
  const storage=new Map(),localWindow={dispatchEvent(){}};const kitSandbox={window:localWindow,URLSearchParams,AbortController,setTimeout,clearTimeout,performance,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},sessionStorage:{getItem:()=>null,setItem(){}},fetch:async url=>({ok:String(url).startsWith('http://192.168.4.1/'),status:String(url).startsWith('http://192.168.4.1/')?200:404,text:async()=>JSON.stringify({ok:true,kit:'ZEBJUS_FLIGHTCORE',name:'zebjus_drone_1',deviceId:'ZFC-001122334455',ip:'192.168.4.1',mode:'AP SETUP'})})};vm.createContext(kitSandbox);vm.runInContext(fs.readFileSync(path.join(root,'kit-local.js'),'utf8'),kitSandbox);
  const found=await localWindow.ZebjusDroneKit.scanDefaultKits({max:1});assert.equal(found.length,1);assert.equal(found[0].base,'http://192.168.4.1');
  await assert.rejects(localWindow.ZebjusDroneKit.connect('ZFC-FFFFFFFFFFFF','192.168.4.1','ZFC-FFFFFFFFFFFF'),/Device ID mismatch/);
- console.log('PASS: real target / popup-free ARM / RC routing / telemetry ownership / receiver loss / fixed-step timing / clean restart / audio restore / AP discovery');
+ // The top-bar switch uses actual transport paths and refuses armed/in-use kits.
+ sandbox.confirm=()=>true;
+ choose({...kit,lockMine:true,locked:true,flightReady:true,armed:false,benchMode:0,mode:'STA / LOCAL'});ctl.st.txOn=false;
+ ctl.networkToggleUi();assert.equal($('#topNetworkToggle')['aria-checked'],'false');assert.equal($('#topNetworkToggle').disabled,false);
+ await ctl.toggleNetworkMode();assert.equal(commands.at(-1).type,'network_mode_set');assert.equal(commands.at(-1).mode,'AP');assert.match($('#topNetworkNoticeText').textContent,/KIT-AP/);assert.equal(client.connected,false,'STA to AP requires reconnect after the kit restart');
+ let used='';client.savedWifi=async()=>({profiles:[{ssid:'School',preferred:true},{ssid:'Other'}]});client.useWifi=async ssid=>{used=ssid;return{ok:true}};
+ choose({...kit,lockMine:true,locked:true,flightReady:true,armed:false,benchMode:0,mode:'AP SETUP'});ctl.networkToggleUi();assert.equal($('#topNetworkToggle')['aria-checked'],'true');await ctl.toggleNetworkMode();assert.equal(used,'School');assert.match($('#topNetworkNoticeText').textContent,/STA mode/);
+ choose({...kit,lockMine:true,flightReady:true,armed:true,benchMode:0,mode:'STA / LOCAL'});const n=commands.length;await ctl.toggleNetworkMode();assert.equal(commands.length,n,'armed kit must never switch network modes');assert.equal($('#topNetworkToggle').disabled,true);
+ choose({...kit,lockMine:true,flightReady:true,armed:false,benchMode:0,mode:'AP SETUP'});client.savedWifi=async()=>({profiles:[{ssid:'A'},{ssid:'B'}]});used='';await ctl.toggleNetworkMode();assert.equal(used,'','multiple profiles without a preference require explicit selection');assert.match($('#topNetworkNoticeText').textContent,/Choose a saved/);
+ console.log('PASS: real target / popup-free ARM / RC routing / telemetry ownership / receiver loss / fixed-step timing / clean restart / audio restore / AP discovery / top-bar STA-AP switch');
 })().catch(e=>{console.error(e);process.exitCode=1});
