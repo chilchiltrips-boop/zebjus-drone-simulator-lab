@@ -1,4 +1,12 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.48
+# ZEBJUS F450 Drone Engineering Lab V18.3.53
+
+## AP / STA with an enclosed FlightCore
+
+Flash this firmware before closing the case. Every controller uses a unique `ZEBJUS-FC-<12-hex Device ID suffix>` SSID and a random 16-character AP password. On first AP startup, copy both from USB Serial at 115200 onto the correct case. If the kit is already on school Wi-Fi, connect its verified Device ID in Drone Lab, take control and use **Settings → Show this kit's AP details**. Record the details before selecting **Switch selected kit to AP**. Disarm and stop bench outputs first.
+
+AP stays active through power cycles. If saved Wi-Fi cannot be reached at startup or drops while disarmed, the kit also enters persistent AP. Join its specific SSID with its specific password, then open `http://192.168.4.1/`. In the AP portal, **Activate saved Wi-Fi mode** tries saved profiles, or **Save & test Wi-Fi** verifies a new one. If that network is unavailable, the kit returns to AP and stays there. No physical BOOT access is required. A web factory reset preserves that board's AP password; a full flash erase does not.
+
+`192.168.4.1` is the private address within whichever kit AP your phone/laptop joins, so several nearby kits can use it independently. The browser checks Device ID when connecting and includes it with commands. The shared LAN control lock is not user authentication, and this release has no per-user secure pairing. See `SUPPORT/AP_MODE_V18_3_53.md` for setup, mode rules and limits.
 
 ## V18.3.48 receiver, camera and calibration changes
 
@@ -13,7 +21,7 @@ Browser-based F450 assembly, 2D wiring, Python learning, simulator, local-kit co
 
 V18.3.48 builds on the Python Flight Lab, multi-kit Device ID and Tripod real-kit mirror. It includes the full assets in one GitHub-ready directory, a page-wise responsive AP interface, STA and flight-mode controls in Settings, safety fixes, browser plots/vision and a native laptop Python companion. See `RELEASE_NOTES.md`.
 
-For a new kit, use `http://192.168.4.1/` on its setup AP. The kit hosts Wi-Fi setup and status there; `/fly` hosts direct control on AP or STA. On a hosted secure Drone Lab page, students can use the browser Python editor, camera, MediaPipe hand landmarks, OpenCV and Matplotlib. `python_companion/` installs native MediaPipe/cvzone/OpenCV on the laptop for camera projects. The ESP32 does not install Python packages.
+For a new kit, join its labeled AP and use `http://192.168.4.1/`. The kit hosts Wi-Fi setup and status there; `/fly` hosts direct control on AP or STA. On a hosted secure Drone Lab page, students can use the browser Python editor, camera, MediaPipe hand landmarks, OpenCV and Matplotlib. `python_companion/` installs native MediaPipe/cvzone/OpenCV on the laptop for camera projects. The ESP32 does not install Python packages.
 
 ## Hardware I/O quick start
 
