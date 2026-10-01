@@ -1,0 +1,2023 @@
+{
+  "version": "18.3.58",
+  "fileCount": 326,
+  "limits": {
+    "maxFiles": 100,
+    "maxBytes": 14500000
+  },
+  "batches": [
+    {
+      "batch": "UPLOAD_01",
+      "files": 100,
+      "bytes": 13066595
+    },
+    {
+      "batch": "UPLOAD_02",
+      "files": 83,
+      "bytes": 12560427
+    },
+    {
+      "batch": "UPLOAD_03",
+      "files": 4,
+      "bytes": 8506144
+    },
+    {
+      "batch": "UPLOAD_04",
+      "files": 2,
+      "bytes": 9778169
+    },
+    {
+      "batch": "UPLOAD_05",
+      "files": 89,
+      "bytes": 14399143
+    },
+    {
+      "batch": "UPLOAD_06",
+      "files": 25,
+      "bytes": 10429865
+    },
+    {
+      "batch": "UPLOAD_07",
+      "files": 3,
+      "bytes": 9802160
+    },
+    {
+      "batch": "UPLOAD_08",
+      "files": 3,
+      "bytes": 13533812
+    },
+    {
+      "batch": "UPLOAD_09",
+      "files": 6,
+      "bytes": 8284815
+    },
+    {
+      "batch": "UPLOAD_10",
+      "files": 10,
+      "bytes": 13971497
+    },
+    {
+      "batch": "UPLOAD_11",
+      "files": 1,
+      "bytes": 788172
+    }
+  ],
+  "files": [
+    {
+      "batch": "UPLOAD_01",
+      "path": ".github/workflows/build-flightcore-a1.yml",
+      "bytes": 5899,
+      "sha256": "5c8afef819729a65917df5f863969ecc55850e2c0b92aa17f86397250ce50a55"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "00_READ_ME_FIRST.txt",
+      "bytes": 1291,
+      "sha256": "0738f61c25ee221da6217bca9b90248bef1e044469f678189297539f90ea876c"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "DEVICE_PROTOCOL_V18.md",
+      "bytes": 11835,
+      "sha256": "ea50b209074d98e1e6a45c0d40037399ebceab06a61ecd50bcedaf302b2da26a"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FILE_COUNT.txt",
+      "bytes": 4,
+      "sha256": "053d13be01c62c12cf00285bd279d058f6bd8c3307b6937f55f1729b513ddf92"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FILE_REPLACEMENT_POLICY.md",
+      "bytes": 1415,
+      "sha256": "cf397ec7aad0133794918315f3271226158e748aefa711f2890e4d2d8a473400"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino",
+      "bytes": 156986,
+      "sha256": "3d6d9a89a9ef9854297ac66b35f32813cc3882d71609e8ff575ab2c6239cea67"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
+      "bytes": 1222704,
+      "sha256": "f6859a7cce1390bb6e5d21c4361277cede99bc3a25d4a827489678f993fda38c"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
+      "bytes": 4194304,
+      "sha256": "672c0863df5b6d621b05500a396440eab8df4caca48f8f3bd5d52f4f4bc12788"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin",
+      "bytes": 1287952,
+      "sha256": "73bfb159027ac17943ad4f40a15e0c928d97750c4e2c805812f48d47963bda10"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin",
+      "bytes": 4194304,
+      "sha256": "b8a7233f8c6e453f5213d18dbcea4bab1e0ffc7ec2aa3377dd6039d77b563b9d"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h",
+      "bytes": 863,
+      "sha256": "a9b021795ae0fb54f4b1bac30c62507f59d14636cd1d3f411c531a7559c04139"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/build-report.json",
+      "bytes": 1323,
+      "sha256": "a909f18b9cf8b3dfc26f6400848fbb18cdbc9e17f8e3f9d6e830fb23d8cd1d14"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/catalog.json",
+      "bytes": 2793,
+      "sha256": "2f6ab7f1e4dfbfc9136b7d1147e3071555bc96db2229fcd7f926de748cb02f59"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/latest.json",
+      "bytes": 259,
+      "sha256": "668593cfac3118afde614371824fd898d7e41af956c152db90b17babb12ac26c"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/src/DroneGPS.cpp",
+      "bytes": 26380,
+      "sha256": "e87486374b863dee99b80942b441027f3c410bfffb4956dd47a6c6ea8eeba2db"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/src/DroneGPS.h",
+      "bytes": 7001,
+      "sha256": "59bdb1b57716928aae1677f46a4372d4c5b1b1de0d2ea996af312f203f175157"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "FlightCore_Firmware/src/DroneGPS_README.md",
+      "bytes": 1879,
+      "sha256": "9ea023e379da6e913afb63c3c6b19b1b380760adc015815ee5c1def9d3efb0fa"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "GITHUB_UPLOAD_README.md",
+      "bytes": 1305,
+      "sha256": "2fcc77c882e45c5286cf470702184dbdd4827b2af44f92c074403436c6ac873a"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "OFFLINE_START_HERE.md",
+      "bytes": 5395,
+      "sha256": "736187acbc8e842b6c30d776b43006695e30e6e99ce57eb091a0dd67fe117c4e"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "README.md",
+      "bytes": 16320,
+      "sha256": "71c8e59b3902d1fd5574858329b902ca185a350d25825ec50dc0abdb8ee4e7cc"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES.md",
+      "bytes": 11745,
+      "sha256": "898cf2e908f3a4cc7bdbbd3761277e44d2242ba2a71c77d6c156a292083898d8"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_23.md",
+      "bytes": 923,
+      "sha256": "087afd4fc3c018ed21d0a9fc9bd178b08e23d246d03021f06d4b62f5be609a46"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_24.md",
+      "bytes": 1243,
+      "sha256": "b75e3525a244b443df7472cb7bb30f3d24b23f0bb8a37b35cb794d433b90060f"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_25.md",
+      "bytes": 1074,
+      "sha256": "26854939fe51a20351f0cd0509174453378feb6746c9afa1da0b9f2db2e8de29"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_26.md",
+      "bytes": 810,
+      "sha256": "b206a5a3f21570ce6bbebd2d6a53cebc6848bd11b2ec9e26d68b24956434e6c5"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_27.md",
+      "bytes": 2486,
+      "sha256": "ee9665308497399cd986eee0d4b83566465d07f270e5378c38ef17f98b915e13"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_29.md",
+      "bytes": 1271,
+      "sha256": "7cf7df420cdffadd9746a66520baf059ce15b72fc76281ecd03335df634b887b"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_30.md",
+      "bytes": 549,
+      "sha256": "5a3fcf5e4cfb3f439a16c81d76f44854217e6eb14a3722b23b87eb196f3d2cce"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_31.md",
+      "bytes": 120,
+      "sha256": "0a71f748e1cb1dc0bf45e986ec8126355748272e6823be92c8d6041618ecdda6"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_32.md",
+      "bytes": 177,
+      "sha256": "89a1cc24478336b45546fc91c6490bbbe836721571b5c75779d7474058b66a4d"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_33.md",
+      "bytes": 83,
+      "sha256": "9f8d9b7e1efb1a8246baa398b10bd903991e9862096f51754738fd7c6d5d4ced"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_34.md",
+      "bytes": 93,
+      "sha256": "a4594b1b80e62e69260c7e51059c2331d653b606a6ad468599d20f1383973479"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_35.md",
+      "bytes": 1243,
+      "sha256": "3d91c1b0f57409b1d6aaac3722e06a2df71e8272afba9a5e3f8aaf02a38be7bc"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_36.md",
+      "bytes": 132,
+      "sha256": "001b42c8552a555300aff94a445370c034c151dd8251adf402b827b413c7ecfb"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_37.md",
+      "bytes": 150,
+      "sha256": "bb917199198c06414a104d61819f3b000dc2a33f416b16edc5cfda6df732474b"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_38.md",
+      "bytes": 60,
+      "sha256": "1fc3d06f7bda9f5cfe4fb76894c6c94a6475830fa8aba4470559b4317c18ea47"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_39.md",
+      "bytes": 916,
+      "sha256": "4dac9e36a9cda3f0ae7150a20cc86b8866feaee882727396962a8b5d9a57036e"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_40.md",
+      "bytes": 498,
+      "sha256": "ef4d27f3e8c38de327b23d6216469ab8fb1c464c29bfedec4788357b5388e18d"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_41.md",
+      "bytes": 2003,
+      "sha256": "7fd52dc3488354783a2cd0590ab6dfe5f6313fdc6ad14cf52fb5b52c4dfb12b5"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_42.md",
+      "bytes": 1081,
+      "sha256": "24e3872a729c4dcfaef17ac83e5641ff6e3994503b2fb627b540c55c7cc3b2e0"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_43.md",
+      "bytes": 971,
+      "sha256": "bfee6f881cfa43c5df9a71951ce72382d1cdc5fb41fa935b49f2547a0630b2b9"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "RELEASE_NOTES_V18_3_44.md",
+      "bytes": 353,
+      "sha256": "aabfd96832186f2627d25b68c4acac818abde2f4e7a330a8874907950cf9d3e4"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/AP_APP_V18_3_54.md",
+      "bytes": 2049,
+      "sha256": "d9b520024aacee0035db20ae4d6089dcb003c2d8dd5cc203fed24d4a52746a31"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/AP_MODE_V18_3_53.md",
+      "bytes": 2858,
+      "sha256": "ed30037e0ab3ac33881f5c7b53963cd65362e50cafe713244a26aca43089a75a"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/CLASSROOM_PYTHON_V18_3_50.md",
+      "bytes": 2428,
+      "sha256": "0270f5e331ab0b6992660e64c96b7ab5a7a048769389b70e0ba0124db23d0209"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/FLIGHTCORE_ROADMAP.md",
+      "bytes": 2735,
+      "sha256": "9c7a58318c5a028a415851fb13d6f75a4af262e939f10a4cd17b643205e0780f"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/FLIGHTCORE_STAGE_GUIDE_V18_3_47.md",
+      "bytes": 4169,
+      "sha256": "42ce738534df9d8e18375faad96b5a69cb034d0fa3316038b05a825ffde4b5b3"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/FLIGHTCORE_STAGE_GUIDE_V18_3_48.md",
+      "bytes": 5770,
+      "sha256": "f08cc13b6cafab519b995dd7b501d12de04d5c4ca549635ae12686f20be72a84"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/FLIGHT_VALIDATION_V18_3_44.md",
+      "bytes": 3618,
+      "sha256": "843f176f93a2bb89b1fd4f8d8d4f30a1f68722b3fb17008eb7974e8265a7132e"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/FLIGHT_VALIDATION_V18_3_45.md",
+      "bytes": 4219,
+      "sha256": "5d81aaec3859eeb6864f8500552eef7dbfccb601405668888578f34c4256fa61"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/FLIGHT_VALIDATION_V18_3_46.md",
+      "bytes": 5878,
+      "sha256": "bca0178a57be9a56bd92a1032c7011719eb38ab0c198cdd7d676f61b6f114d11"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/FLIGHT_VALIDATION_V18_3_47.md",
+      "bytes": 5130,
+      "sha256": "be68202b8542bc9651928e98b6cb8abcc63c741e3d806bf59214fdf83e4923d7"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/FLIGHT_VALIDATION_V18_3_48.md",
+      "bytes": 1978,
+      "sha256": "d56ee0624ea1d492aefb50e70c8358539337ece8c4112efeebeec7aa56816d1c"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/LED_AND_SENSOR_IO_V18_3_49.md",
+      "bytes": 1981,
+      "sha256": "c93eb569f3c279afddff160963ee123b138103cdbcf1deb8a4b50e670f945a29"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/UPLOAD_BATCHES.md",
+      "bytes": 824,
+      "sha256": "f6cc6ca632a9efe13dde857e83d31ed3d544190fa7630c179ef4775e80e54ee2"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "SUPPORT/V18_3_58_UPDATE_AND_TEST.md",
+      "bytes": 6162,
+      "sha256": "065fc6b09eb1e46895b93d1721abb0df62e3a8fc5eef295f37eb014fe3e59fbd"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "Start_Offline.bat",
+      "bytes": 382,
+      "sha256": "1a7d4c39fc9d5907dd4bf448c5b4f873f93dc08d343ff5b689aae571127fbed8"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "Start_Offline.command",
+      "bytes": 454,
+      "sha256": "6b633af166cbf50828a8a51ba5adae1eeb0157a706335e83cafafd72e9f6476b"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "THREE-LICENSE.txt",
+      "bytes": 1082,
+      "sha256": "f8ea8e1b14776d862129c02e78297c1de103e958f8212c6c5d594ec07f78f7c9"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "UPLOAD_TO_REPO_ROOT.md",
+      "bytes": 920,
+      "sha256": "fdac82ee876a7e2b932321f8630f41eed268105cb320df01ad7f9df389b42373"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "VALIDATION_REPORT.txt",
+      "bytes": 1841,
+      "sha256": "d642949ef02c5f557be86def9becc627379b453bc04a48196d470134997877a3"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "VERSION.txt",
+      "bytes": 8,
+      "sha256": "67ae23437e18fe1aa2a7f607c8081361080d67e46992e9cf4d92665dbfe46934"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "WIX_EMBED.txt",
+      "bytes": 39,
+      "sha256": "3c7a97c33b1bf7657c3a0bfe4369e2855cb401a4b96488e11d86141b73753c21"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "a2212_1000kv_motor.glb",
+      "bytes": 20776,
+      "sha256": "31bfc783912a3f2d38021fa10476e71b991875f1dac2b36cb783c0098f107048"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "app.js",
+      "bytes": 318356,
+      "sha256": "cff577dd3951742405fe1ce2759127fb33f0601cd6f588b12008ffdb0edc2fdb"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "battery_strap.glb",
+      "bytes": 2180,
+      "sha256": "8b2911e9bddaaa66edcae28e08347e12f27e124b4756e4c8a8f21e9b67ce67eb"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "esc_30a.glb",
+      "bytes": 4496,
+      "sha256": "5b526eac67b13bad44ba245e4dcec4a50f38d55127db34c507315ffd093589a9"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "f450_arm_red.glb",
+      "bytes": 12812,
+      "sha256": "69368a2d2afe2928d425dd45720a54f81324b702a1917a57677065a059553edf"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "f450_arm_white.glb",
+      "bytes": 12820,
+      "sha256": "ff185a2dccc8944edfb977d4c907ccb5a04aee305cbd0e89033a7c40adcfa433"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "f450_bottom_pdb.glb",
+      "bytes": 11440,
+      "sha256": "e6a933db5fc907f957cbfe6d2526680c76ffb7f8d9d4776e38a2c0571c2b88f6"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "f450_prop_guard.glb",
+      "bytes": 47656,
+      "sha256": "b6e47a129fd08e67a18f3cb1006adf0a20b987949e400a457cea5d58f6ad516d"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "f450_top_plate.glb",
+      "bytes": 4464,
+      "sha256": "b153aadb5a710333b801ea2ba5490a54a67bffb5d6bff15fee8994a4fd8048f7"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "fc_board_reference.png",
+      "bytes": 977142,
+      "sha256": "db9d52e5e1ad45395d47cfaf5495b1c5977d34a0a8ecf6eb182c63bf814446a0"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "fc_top_layout.png",
+      "bytes": 173459,
+      "sha256": "8fcd2c2388aee4c695d6b94dac836a877b3af44705a50afba3375b6a5fb7bc20"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "firmware-catalog.json",
+      "bytes": 2793,
+      "sha256": "2f6ab7f1e4dfbfc9136b7d1147e3071555bc96db2229fcd7f926de748cb02f59"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "firmware-latest.json",
+      "bytes": 268,
+      "sha256": "5dd521ca271529294177946f01cc624061fc7df2f0b6de7c696c4f7310669e49"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "firmware-updater.js",
+      "bytes": 28929,
+      "sha256": "ef420c8bcf5a74bafb1d88c0c1fa0b9588e09470a3ec763f87cedff3f554a474"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "frame_screw_m25.glb",
+      "bytes": 6296,
+      "sha256": "f012eca6d0e6be5169671bab1f19cc076dce048d3dc814d6ed1b811486a27010"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "glb-loader.js",
+      "bytes": 6820,
+      "sha256": "150c9604faca8fd9a47acb426fa0553f447ef44a2a6b384ff62f695b197e0a67"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "hand-worker.js",
+      "bytes": 1220,
+      "sha256": "f0fd98734c4a094d8b73879dcfff91f1903869a57bc8056744cb2f2c5b1f3421"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "hardware-io.js",
+      "bytes": 11190,
+      "sha256": "9ded729b0233224eede1b0ecc96e17a422e6adaceec1a348afb801b9482ff033"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "icon-192.png",
+      "bytes": 2879,
+      "sha256": "c9b559708083fe417c59a9e3f0b68f45f5afde03bacc04fd564911954e69d1ce"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "icon-512.png",
+      "bytes": 8304,
+      "sha256": "0e3ca7c5ac90cc0d798ea04d4b770e575b4b27b8d59bdc91c6cbad67c05e2ee3"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "index.html",
+      "bytes": 75863,
+      "sha256": "d468cc88abc7946ad2419ac6b570aff4567517ad6c5433a9f1525d681fa99e79"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "kit-local.js",
+      "bytes": 17294,
+      "sha256": "a9ceca20d0a4af042b4527920df254feaf44701b9ce66f868f9fe18ea93dea98"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "lipo_2200_3s.glb",
+      "bytes": 3256,
+      "sha256": "5c1b6765eda7801324a6c046ef8c74fba0c4f4ad1c9305a49a70eb3d483b31a0"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "manifest.webmanifest",
+      "bytes": 611,
+      "sha256": "7b0660c6ba06376972129573156d2575987395ea8eedd8af340beaf91f123b23"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "monaco-worker.js",
+      "bytes": 171,
+      "sha256": "75e27238f4e61dd83bdd1cbcfc6e35d587e535f4b0bb04b1db3d09ce3170f4b0"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "motor_screw_m3.glb",
+      "bytes": 6300,
+      "sha256": "f3f588bfcffc5131c225e076ec6d99f0aabca6decf9379edcc85d667cd4f2638"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "offline-manifest.json",
+      "bytes": 39425,
+      "sha256": "a286ae1af968ed36e05d9ad16e81c5c5c6e958aff98c23cbc17d746965e710c5"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "offline-support.js",
+      "bytes": 4171,
+      "sha256": "c308874c20df78ca13dfe16deb094cc2991e2c79ef56f02183601289ce786aac"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "package.json",
+      "bytes": 735,
+      "sha256": "2e98ea130adf74a4d808d41cc02960f65631bd7d72ff0fb2e54d899193b2455e"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "prop_1045_ccw.glb",
+      "bytes": 6900,
+      "sha256": "8d2d10f0f49cbf4eecad05070bdb4409f7477f49a90bdd08dfae84fccee03f40"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "prop_1045_cw.glb",
+      "bytes": 6904,
+      "sha256": "612e22c3818065aae69fed046df2cd530ee254d376092bb088ea439c1641ef53"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "python-worker.js",
+      "bytes": 13712,
+      "sha256": "823d14346adba41b102d531d6047fe8f75db5559ba043e0586bc3a73ad263e12"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "python_companion/README.md",
+      "bytes": 5519,
+      "sha256": "3694aef8b6a3a803d2d4c577d663d0fac7081f6d4edd6a8dd136cc0fff731592"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "python_companion/browser_cv2.py",
+      "bytes": 2000,
+      "sha256": "e2e7d288edc5ad958b5ab55e4e4364dba664f133ed0fce6c95643ded16139668"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "python_companion/browser_cvzone.py",
+      "bytes": 3508,
+      "sha256": "eee628ce820fd96ef0615c5b0c86a51f692d3b17ea122c83a80f7805649cae60"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "python_companion/camera_telemetry.py",
+      "bytes": 1511,
+      "sha256": "01c4856903d0b7dd7d4d7c2b5cfefc32d913e90e4416a8faf0b4395524e74383"
+    },
+    {
+      "batch": "UPLOAD_01",
+      "path": "python_companion/cvzone_hands.py",
+      "bytes": 1697,
+      "sha256": "2149b1672935a5d5e87c5cb4507691071670325bde597e06141ec570939f045b"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/expansion_demo.py",
+      "bytes": 1720,
+      "sha256": "7def072d0413fa75cbda182d83921377cced65d0cf6607203d1adbc703618b33"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/face_detection.py",
+      "bytes": 1745,
+      "sha256": "7f6efb4c14bf492e5bb6aa3be2ef9eea8720e9ab263dfc9c411e88f36b6812ab"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/imu_plot.py",
+      "bytes": 1179,
+      "sha256": "aa240383d920e8765d5273e4b13f7db33a34316212a317eb02567e49b8380455"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/led_sensor_demo.py",
+      "bytes": 671,
+      "sha256": "8bd69fc994aa217f785889f79c38f3f49682c9af11de9a501e6353dd4660f743"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/main_ap.py",
+      "bytes": 560,
+      "sha256": "8d2b825951f0f188513a196037b1c83f40537d57fb34b9d7bb396ae86e097cd2"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/pair_ap.py",
+      "bytes": 1116,
+      "sha256": "5e6d907bacb4bea17ead25ce2df2ee960593f1b220b9d5da09018c622640166e"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/reference_uploads/README.md",
+      "bytes": 1145,
+      "sha256": "b9a83a20a40a5644332682fd89ed88ab3209fa07bf717f6cf79b8036e8406d42"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/reference_uploads/cvzone_face_camera.py",
+      "bytes": 259,
+      "sha256": "b888205fb2549bd2ac452c721fa46b261c14db2ab96982806f6f95a4b4244101"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/reference_uploads/hand_distance_serial_legacy.py",
+      "bytes": 1504,
+      "sha256": "1f442c144fbdf232d5ca18a8f187b0028c00ac8a84d1c0cff5eccc48b9800f8a"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/reference_uploads/legacy_mediapipe_face_detector.py",
+      "bytes": 4388,
+      "sha256": "1905f16c99011112827110072383c755d2d23dc5ac3dfa0941c052d1a1f2faf3"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/reference_uploads/legacy_udp_flight_client.py",
+      "bytes": 42157,
+      "sha256": "983f0a11f219e9972cd08bc69c9bf9dd15e15d64144fd7fcee82cd6c2d908d91"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/reference_uploads/opencv_camera_basics.py",
+      "bytes": 731,
+      "sha256": "be14d28464735f20a33cddb5b51c5ddf39222376cda1a9b862757d207b627c4f"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/requirements-vision.txt",
+      "bytes": 90,
+      "sha256": "634f2b02eb3598b5425601a4fb50ea8708f3b2465e8c6e8bb6050dfbb15b0d9c"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/simple_syntax.py",
+      "bytes": 3801,
+      "sha256": "42a6223bab84e4d0efb0620c428fef9d976b885f08fc101956bce8d461bde024"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/zebjus_client.py",
+      "bytes": 8793,
+      "sha256": "83ea147bdb1e9b7d34e59f584f975d87f513f576c97ca1fa0857775eafc7a2d6"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "python_companion/zebjus_simple.py",
+      "bytes": 2988,
+      "sha256": "07fab9397b26115ddfd25b947a96782e830e02f57c77b71c8cce28f3131c9a6b"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "receiver_module.glb",
+      "bytes": 2176,
+      "sha256": "897ca4d757c3e763c72b7a28f0fa4e10c4731857978a6cdd6d4ca88bcd928a6e"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_a2212-motor.png",
+      "bytes": 154160,
+      "sha256": "0cd5e81275b6bb0b4455a3691f8cd6904aa062e132e498891e14851250c58d9b"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_f450-arms.png",
+      "bytes": 149258,
+      "sha256": "60431553f296ba7f8463465b87a57273c413ac2be1e0ff18c5806253c8fddf96"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_f450-complete.png",
+      "bytes": 58726,
+      "sha256": "cd11d2f070cbdbac226f29fefbac7caa4417df282c61909f24e2569228bfc4d0"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_f450-frame-top-reference.png",
+      "bytes": 189087,
+      "sha256": "f28b0b1f6db7b719e1dc9c072d5d7d4bd38829fc654e009f0b3cfddf85def72f"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_f450-layout-reference.png",
+      "bytes": 4305464,
+      "sha256": "ae329c0c7ddf69b825924d0849791504fcf3708e64d2dd2f891a2e3c636bdd33"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_f450-plates.png",
+      "bytes": 66953,
+      "sha256": "d6fd535a424932380fdd7df8342593d2e09c46ef84e36c69ed1da79399aa8706"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_fc-pin-reference.png",
+      "bytes": 416521,
+      "sha256": "ce6df4df988c2225685d5cb3c2eb75b94b09c93ff4e1be6132a75b237fa75589"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_fc-port-layout-reference.png",
+      "bytes": 209106,
+      "sha256": "a3beadd3704e1a1cf202ff1e538a5865c731b6cb24c865c4f55784eec05d25f0"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_frame-assembly.png",
+      "bytes": 104079,
+      "sha256": "6e779370ec74257b7e5d57df3231d6531ddcc3b72a34c46aa70749f6921adddb"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_full-wiring-reference.png",
+      "bytes": 1292527,
+      "sha256": "a818ad031dcb18ab6a34790d814183b7e4ff0ecb248f3d4d88ce00584be1f6fb"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_guard-motor-closeup.png",
+      "bytes": 83735,
+      "sha256": "214426282c6a3ae662075add1c24a752f680b98d88226b35231c99921c2532c4"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_guarded-drone.png",
+      "bytes": 129417,
+      "sha256": "7946385ca58175f45e8015583c722dc0ccd21553d7600fc38b0d4d3d860b33ce"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_led-matrix-16x16.png",
+      "bytes": 249460,
+      "sha256": "180b6e0f03096f4c159758d8abc9c445b7ab0cef43432d23d8bafe995ada1a5e"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_lipo-2200.png",
+      "bytes": 86315,
+      "sha256": "2ab25789060df75f3cb1ab3604818db282e849ecf6e384cf9ced7855d056e766"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_pdb-soldering.png",
+      "bytes": 326450,
+      "sha256": "4741013697b67ec69cfe809eb54d32a9790c952731f64379cdbe6cb9f3e9f602"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_profile-required.svg",
+      "bytes": 1445,
+      "sha256": "1c2983b68d9cd92b9080a4020dc1eb0c7b93a1748afb2d8d18104573de522e81"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_propeller-guards.png",
+      "bytes": 207089,
+      "sha256": "171eabd47d8ce11bc975de66d3da3f239bec64f7384517a1c219f9368b4c9603"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_simonk-30a-esc.png",
+      "bytes": 142067,
+      "sha256": "48b3c207255c4f4987a7db6d966de674ccb5832d655a0c3c53b1895147bf83da"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ref_zebjus-fc-gerber-top.png",
+      "bytes": 41111,
+      "sha256": "9567536c6cb011003352f6df7a366a9694752a3c18249646e9cb8d9b18256ec0"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "school-lab.js",
+      "bytes": 69364,
+      "sha256": "580e10259c7ef0874947f06cab6d2ccd38c2af58db6bc34112c955b2306af6e4"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "server.js",
+      "bytes": 2010,
+      "sha256": "e610b414cd9358a833996cdb534cbc7218d3f145d9e9437884a3d909ff9e6b5b"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "service-worker.js",
+      "bytes": 6337,
+      "sha256": "9b9f3cd8cb7d5beb36e2c5ae14940768b57cff1416d64c5c20eb91fb31377fa6"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "start_offline.py",
+      "bytes": 3104,
+      "sha256": "ea2873bc9a590828b230844622029dcfe79572b8adf95625f24b6f0e2dfc155f"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "styles.css",
+      "bytes": 169704,
+      "sha256": "61063c6ad690a66110a1edb2dc84a33ce2e754f5014ee9f0bac00a92e8fb0005"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "three.module.min.js",
+      "bytes": 691649,
+      "sha256": "983135c6e8fa42610a6eea0a93e6c08bff97b283e985221b1e6d2179a3fef944"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_armRed.png",
+      "bytes": 9502,
+      "sha256": "637c5b50aeb83824a7a78f4675addb308e230ece27c985872cf15e0c13260cae"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_armWhite.png",
+      "bytes": 10197,
+      "sha256": "eefcc3ac5ad056f2a66b7693e3e16241480ec29a367280629397cea3f25440d0"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_battery.png",
+      "bytes": 6715,
+      "sha256": "cb9fb10e17747b5b89acf3b4559f249ab7fcfc07792b7fd9b5fc207d16bce884"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_batteryStrap.png",
+      "bytes": 4083,
+      "sha256": "d3e5a5ead2e50c9ca9ea129e0bbd3bd09100cbfd46e08aea8cf4fdc40954297b"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_bottomPlate.png",
+      "bytes": 5140,
+      "sha256": "928047d352b174a9f67f44e4d771c096b6415ccaed1874fd68782a6dafffb689"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_esc.png",
+      "bytes": 6575,
+      "sha256": "b873a2f7927e2c76159449eced8d333830a4f3a11ef953d382ec0651ed36b251"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_fc.png",
+      "bytes": 44741,
+      "sha256": "71da970704cce33eb1b70a03382de86ecb10dfd482a657156926f748258d08be"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_frameScrew.png",
+      "bytes": 11335,
+      "sha256": "fbbc3a65dcc5ee2266667cba2dad389de6b2a153afc843f41e6946f05f5fd06c"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_guard.png",
+      "bytes": 13368,
+      "sha256": "58426d321f9df54b8376d41c1c45c353316a6cd503156b8271546fa5e3251b79"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_matrix.png",
+      "bytes": 82236,
+      "sha256": "b9b900bc319adb414c3263f7a88bf656a63f2f106ffab4eddabdd2c666cd6ccf"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_motor.png",
+      "bytes": 14805,
+      "sha256": "324225a9af3089a4b18e2d709c973b7036def896d03c79086831dbf01ceb99e0"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_motorScrew.png",
+      "bytes": 11182,
+      "sha256": "4007ec6822847f40c8c067f3e730bb48e92e2f07f145b9cd7e3b1ab63db14473"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_prop.png",
+      "bytes": 5757,
+      "sha256": "72876290b09e9b62439579274c7e724efe305249f376af24f1bd7a604c41662b"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_receiver.png",
+      "bytes": 5525,
+      "sha256": "4807855b1e57689f7732761dc0779584187e6c3a81a64e4d10094e0f1ba74341"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "thumb_topPlate.png",
+      "bytes": 5090,
+      "sha256": "7bc54a6229ce2f94df2641b087f5feb8ecc5ddd552c3c12aeb85e423bcdaaa7e"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/ap_fly_source.html",
+      "bytes": 15645,
+      "sha256": "41910ab677d2401efd90843ec843ad73d1a1d9b470ed63566f2366f694eaddbc"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/ap_io_source.html",
+      "bytes": 15261,
+      "sha256": "c335c02406fa28fa92b760ed0f02a56e14d0b85f95bd6b5e641aa1134af5f653"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/ap_portal_source.html",
+      "bytes": 10153,
+      "sha256": "bc9dc07634662004b5ba96357d211ff767f2fe06f1be52db46a27aa4127d94ff"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/build_firmware.py",
+      "bytes": 8152,
+      "sha256": "7e7410a2c5c317bea59342b2710a1cd026aca506ec996721f809d341aa6133f9"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/bundle_offline_assets.py",
+      "bytes": 4515,
+      "sha256": "9057c1e4078d7611d7e82fc03a4fdb46b68b13e109f7f65ad7f262ed1b55243d"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/cleanup_repo.py",
+      "bytes": 2213,
+      "sha256": "e69627dd1d4d4a66b6367b7fd10e293eec0600a50b596c55e0fa8cee32a7af73"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/embed_ap_pages.py",
+      "bytes": 2084,
+      "sha256": "da8711f91ce17bcb943fa73910545c929a85e8b65cefa3f596f980095c8b16ba"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/make_offline_manifest.py",
+      "bytes": 1339,
+      "sha256": "5b13ba8b4e04b73887ddec2a1a204f87111f2c53b6812ede4f77b34142c44c3a"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/package_upload_batches.py",
+      "bytes": 6752,
+      "sha256": "45c10530a7dc19826b25d11b9453ce0b3726b711ab33db66c6035e1487336a44"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/test_ap_python_client.py",
+      "bytes": 4130,
+      "sha256": "3e4cde792663d4a8fb3a675ca1ababd55b6c033be31787f3859b5ecc4952f48c"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/test_browser_cvzone.py",
+      "bytes": 1475,
+      "sha256": "0077b34886243f2ad5668489dd0d6bf549a41b4b8f0eca780f52d15468553725"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/test_camera_lifecycle.js",
+      "bytes": 2080,
+      "sha256": "d02391dd6a4d1a478181abe4855e407e393fc3f8ce9d712594434db617a6b5d9"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/test_expansion_contract.py",
+      "bytes": 4903,
+      "sha256": "5e6fec2f89ba5894a4c9a793663a967905bd74c4f40b8a18866c98ec285290ba"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/test_firmware_updater.js",
+      "bytes": 3984,
+      "sha256": "b346e4b03a5585c313d17dc0355cab92aa5f1717148bee9ec78d3b9640ea6d63"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/test_joystick_runtime.js",
+      "bytes": 12697,
+      "sha256": "ab6914e8948cc8feada328e9b7098505e6ed01e97fb0c24aa7a926f404b53558"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/test_offline_browser.js",
+      "bytes": 8903,
+      "sha256": "cb50a0061e7273957b3d2e098c4adcac77b967a2d68de1e10bdc78dfbf076375"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/test_python_output_lifecycle.js",
+      "bytes": 2013,
+      "sha256": "53c23c5e10058d7f5f5f0d1debc1d7a0b61b40699574d05ed365042bcd875cc0"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/test_real_control_browser.js",
+      "bytes": 8247,
+      "sha256": "b4337fdbdbdf0ccc048f4330736d22145adba443162c62cbef1e7b48dda57a5c"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/test_reconnect_runtime.js",
+      "bytes": 5072,
+      "sha256": "ccc64d5b51aef03fda547bd008d55b3d071cfa7d628c789a6b23f1531309d111"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/validate_offline_bundle.py",
+      "bytes": 2385,
+      "sha256": "aff9f0fb3f61039f883eb888a0e56442e95a2260aea0bbe3fcdbdc5c134a0b27"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tools/validate_project.py",
+      "bytes": 34096,
+      "sha256": "2df68e22f0cffeb3777feadbb00f9f9caf40410fa1932cd2be91f23dc48b2405"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "tripod_reference.png",
+      "bytes": 2691367,
+      "sha256": "52c9eda3320cec61ff4e878cb7360f15f86516a89315a1b82fdd670d3388418f"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "ui-runtime.js",
+      "bytes": 4302,
+      "sha256": "a7852017ee372b55dc9993b5b6732b5df4489872b1ef2c285bfeb487417e3c3c"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "vendor/esptool/LICENSE",
+      "bytes": 11365,
+      "sha256": "1c25f29242785d63e9adb0be7fdc137551dfbbc0756b622fcd26d9cd7de3a4f3"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "vendor/esptool/bundle.mjs",
+      "bytes": 218551,
+      "sha256": "ef7d5a237d3f273ecf546bcee65dddad90bd82cf02f22a980d1537e0cd79a152"
+    },
+    {
+      "batch": "UPLOAD_02",
+      "path": "vendor/mediapipe/LICENSE",
+      "bytes": 12331,
+      "sha256": "8707eef0533987efc5b155d64761eeb6e20793f50b9bd1a68dad1cf4719d0ed8"
+    },
+    {
+      "batch": "UPLOAD_03",
+      "path": "vendor/mediapipe/hand_landmarker.task",
+      "bytes": 7819105,
+      "sha256": "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1"
+    },
+    {
+      "batch": "UPLOAD_03",
+      "path": "vendor/mediapipe/vision_bundle.mjs",
+      "bytes": 137735,
+      "sha256": "40f4123dfcd75cfa58add046919cc6f52fde66f009ff582997c09ba54c6ba27c"
+    },
+    {
+      "batch": "UPLOAD_03",
+      "path": "vendor/mediapipe/vision_bundle.mjs.map",
+      "bytes": 345020,
+      "sha256": "9325eb72c187f2273ae03d4c5931654953f2c359aba8bbe37973506a4e947545"
+    },
+    {
+      "batch": "UPLOAD_03",
+      "path": "vendor/mediapipe/wasm/vision_wasm_internal.js",
+      "bytes": 204284,
+      "sha256": "4a97e2520ba506c680ecd6ba6acfb146888afa0e2746d57f205352bc6ebb82eb"
+    },
+    {
+      "batch": "UPLOAD_04",
+      "path": "vendor/mediapipe/wasm/vision_wasm_internal.wasm",
+      "bytes": 9574032,
+      "sha256": "f00ec4731faa23b3e714d00e88d4d10e2df5c0a427d3a2b4ae6e3526fdd14ef7"
+    },
+    {
+      "batch": "UPLOAD_04",
+      "path": "vendor/mediapipe/wasm/vision_wasm_nosimd_internal.js",
+      "bytes": 204137,
+      "sha256": "927def7b465c51b86e4b3060f93646aca4e27121f4b8fc0483786e407ea9cf1f"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/mediapipe/wasm/vision_wasm_nosimd_internal.wasm",
+      "bytes": 9448638,
+      "sha256": "3821ea9b1f7fb8c549ef2a064ef5c85750bf375c545a49fd6eea0df44a95f1f4"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/LICENSE",
+      "bytes": 1098,
+      "sha256": "33e4ff1a06ef62ba21788ea162564ee8165269a24a9ce6ef301837447eab0ac6"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/ThirdPartyNotices.txt",
+      "bytes": 63064,
+      "sha256": "790537262fc78a764e121e6b92b959bcd3f5c310b47d9d9b9e92e17fe0af5336"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/base/browser/ui/codicons/codicon/codicon.ttf",
+      "bytes": 80340,
+      "sha256": "0f1d5219934e96e83b8db162d60b4d8c09b5de1e7d38031cbafe4a3c0f2889c9"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/base/worker/workerMain.js",
+      "bytes": 376515,
+      "sha256": "dbe4aa4f2874f5768e8d98e94281667c0bc493e02dd9760adca930699ff3279b"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/abap/abap.js",
+      "bytes": 14986,
+      "sha256": "dc732450731b12d051879da8f2338fa30168af60c8fdbe60bfadfe74068b4d7b"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/apex/apex.js",
+      "bytes": 4775,
+      "sha256": "96d67c25a6cdf6ade6542e737cead9f6441d2d8bcae85d2989d44477ef276165"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/azcli/azcli.js",
+      "bytes": 1673,
+      "sha256": "579b894877cdded3c2c6b8ef90a30ece802fbed44d9dab9ae12221a4be485e9a"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/bat/bat.js",
+      "bytes": 2666,
+      "sha256": "75cbd235b127d3eef0a6b90cd83edc049cb264381971cba3d0fce660f9e5a68f"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/bicep/bicep.js",
+      "bytes": 3361,
+      "sha256": "94fb7442cec7b669ff87aeb58d0d7c264830f0bd72072647b563d4c49698f48a"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/cameligo/cameligo.js",
+      "bytes": 3016,
+      "sha256": "b667c861eeb35eca8dd39ebe952a251c66e104267cd16344856a6cd6c1e88c57"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/clojure/clojure.js",
+      "bytes": 10472,
+      "sha256": "1ac122e851515c788c65589dfabe18fa40b03a90d67b6c835bf27fdd678d8fc5"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/coffee/coffee.js",
+      "bytes": 4417,
+      "sha256": "4756a8c0d68cc19b2490403f39b22bcf3a518364eace045eaf87ca36fc7a3124"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/cpp/cpp.js",
+      "bytes": 6121,
+      "sha256": "52124e8e802797f89ca8e4415c6b9d63a55264de54ea1b38b5aa663159c46c1b"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/csharp/csharp.js",
+      "bytes": 5351,
+      "sha256": "efe2ca37b83f691348ccfa1b310fe4ddd1f42653fe13f4354e4e724e39153e95"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/csp/csp.js",
+      "bytes": 2240,
+      "sha256": "4b05496f741b764550cddb54651233e618e2aed867e4891fd2575191a10cc4fe"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/css/css.js",
+      "bytes": 5331,
+      "sha256": "92220aad32d0a817016e500ff7f7d1b072d6c8c36367742c133f83882c1b7ffe"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/cypher/cypher.js",
+      "bytes": 4212,
+      "sha256": "00135bea5372b4c0e8cf411b18853968e39f041605bf5252a2c8105849d6fb9c"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/dart/dart.js",
+      "bytes": 5073,
+      "sha256": "9ed4583d2ad0605822f006d25c04525e5869891f884808a43c79c1a96b658473"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/dockerfile/dockerfile.js",
+      "bytes": 2704,
+      "sha256": "0de466e07b2045975ebdfe8ee61fc6adeba7aa5a36bb7bb0b1532762650fb342"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/ecl/ecl.js",
+      "bytes": 6163,
+      "sha256": "0d9dd1b6eb7dd32d114d3ed87803afb1216ce9bd917dedc37f32bb139292ddc7"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/elixir/elixir.js",
+      "bytes": 11084,
+      "sha256": "89f7bd4629f8261e33fed69c2efddcd66d01b8346392ac74c453e2116e809dd9"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/flow9/flow9.js",
+      "bytes": 2635,
+      "sha256": "9982918be402c06f9c703345648f7bc625d38eb9b15da88124d79418217575ba"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/freemarker2/freemarker2.js",
+      "bytes": 17149,
+      "sha256": "6a9b441e058915a320129a4ab64c5778cf99ffc2b7f6661b7ca5a07d2a434efa"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/fsharp/fsharp.js",
+      "bytes": 3810,
+      "sha256": "f53a2d0921e03d232f07f0014cdd07d99558ad98d3478717ccd74e968434248c"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/go/go.js",
+      "bytes": 3476,
+      "sha256": "b94f30b9854f995a608da2bac17802da8cc83234a34b374b307569df850ec839"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/graphql/graphql.js",
+      "bytes": 3089,
+      "sha256": "5bab64815245a9e79fe922f0d010d5028395f31c92b3aa4e187113c968b6c58b"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/handlebars/handlebars.js",
+      "bytes": 7827,
+      "sha256": "55f04266be83009aebd6b25a5fa46452f524c99d17ad17c4b18c24b8e6f89496"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/hcl/hcl.js",
+      "bytes": 4411,
+      "sha256": "14b490d77d2d02678b17ae34b1796f5fa31a32be2569f834b65b60a429bf97bf"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/html/html.js",
+      "bytes": 6055,
+      "sha256": "001b44bd88d864aa5cd165d2c326d0ea253f80647a88b92683759eaee4b0702d"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/ini/ini.js",
+      "bytes": 1922,
+      "sha256": "25e9a52de4fd77a5f87bf22baa94703d2bcee82d119f93cf58921a751f3c203f"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/java/java.js",
+      "bytes": 4044,
+      "sha256": "f5a6e854d70a317188bdc3000928665d811bc1ad63237312f8954e10037a28b1"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/javascript/javascript.js",
+      "bytes": 7137,
+      "sha256": "169988c69c81eeccdd58435c502efcb7d6c1a667da072f0bba3a0022f8b85e46"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/julia/julia.js",
+      "bytes": 8052,
+      "sha256": "03319b1c3b9d780c9ec06575a2c349d5e48f262bd7af42716007efbccdb563ed"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/kotlin/kotlin.js",
+      "bytes": 4266,
+      "sha256": "d736176b14856a1ebb09bdfd043a898da4b97cc3c5145b0996832f8ef73baa1c"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/less/less.js",
+      "bytes": 4721,
+      "sha256": "47c17c686d409d11023d1b9e470d7e4c4971d8418fe6ffb6d7844a8f27a6c979"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/lexon/lexon.js",
+      "bytes": 3262,
+      "sha256": "d97e007cca8271a087222884eb94e9b17b2b02eaca0c933888ee2e2d773afd78"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/liquid/liquid.js",
+      "bytes": 5005,
+      "sha256": "47765d89a06e1c9d06895c35249534dfcad1b748a039e8ffc0ac66f97d456b8f"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/lua/lua.js",
+      "bytes": 2944,
+      "sha256": "5d46959daacfc940fc177d59e1dcf75fc18b0aa3d0ccf18594316c297c71da86"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/m3/m3.js",
+      "bytes": 3636,
+      "sha256": "b8301f00a5efd7104ce3166542ba0b544e477999509d0c646133de9625fd7a3a"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/markdown/markdown.js",
+      "bytes": 4619,
+      "sha256": "0e3ddec8d09da9e89b0e8f46786f30b781982f759f29c5e6c22b0b4b00acae78"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/mdx/mdx.js",
+      "bytes": 5916,
+      "sha256": "f7969b7c567c43ced6303da0f5c080c97d65b09932ca2ec56bb406c0074bcf6f"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/mips/mips.js",
+      "bytes": 3402,
+      "sha256": "52628efb022d4042fd4986eb25573e7c57761a58927ca7692aeed0d63cc8943a"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/msdax/msdax.js",
+      "bytes": 5737,
+      "sha256": "5f419eb81cb11ebda7a368724a2fba75e5b75489ae5aee64e358077959205659"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/mysql/mysql.js",
+      "bytes": 12099,
+      "sha256": "5516f47c461e3c2db7bf70bb061c80011bd57e3db48da5a407f62a8681a49d85"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/objective-c/objective-c.js",
+      "bytes": 3239,
+      "sha256": "ac02b80f4ecaf3650cac477ce9f9fc810d7dfc9083805adeba6b272c85548712"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/pascal/pascal.js",
+      "bytes": 3822,
+      "sha256": "9bef71e3ff29a179df2f36090501f30719c4d20156b943cbfbbd719898743dd4"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/pascaligo/pascaligo.js",
+      "bytes": 2833,
+      "sha256": "b46f6456a71622af82592bfec7aaf68e3d71d1d3792f8153f9f2e62b1e3fe1f0"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/perl/perl.js",
+      "bytes": 9078,
+      "sha256": "ed897b714002e7089e1c10074e3694db1d4d702ebb52cf84de63bd9e093f9add"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/pgsql/pgsql.js",
+      "bytes": 14289,
+      "sha256": "08d8e6d366aec43961a38fe17142f44339752b05928c68a35c65de90f930ddd5"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/php/php.js",
+      "bytes": 8848,
+      "sha256": "ce048845100cdc880feb2e6d13474eb9963bb0e76beb6d7a9363d25acd6c44c8"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/pla/pla.js",
+      "bytes": 2504,
+      "sha256": "20f527dafd1b353840ba7f0b1dde986474b106a18e859eac8ef0b46cb1adf8a2"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/postiats/postiats.js",
+      "bytes": 8687,
+      "sha256": "da8833778aab6f7d9ea0ab7349d0e1b10739a3c8e1e712c4fe01bd0323f8da9e"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/powerquery/powerquery.js",
+      "bytes": 17774,
+      "sha256": "3270ec1992045a0fedeef66cbb14245c8183dc5f12cd4dfe71dd21eeeda48da9"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/powershell/powershell.js",
+      "bytes": 4104,
+      "sha256": "948d8bccfa1045b07b87f1d8f9c9058a507d2a167aad14f3b83c64b6523e588c"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/protobuf/protobuf.js",
+      "bytes": 9877,
+      "sha256": "1ec0534959a0499a9165892506f98c465cdc9a7c25ad3868a20e9c99e71db335"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/pug/pug.js",
+      "bytes": 5649,
+      "sha256": "158264e710b017168f70696b910e47585f0b81358d65f5cd934f46b23b71c02a"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/python/python.js",
+      "bytes": 5239,
+      "sha256": "043c66f7b48025022bd6fc15db72ea18d566534c4e8859774e6f52f23210d720"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/qsharp/qsharp.js",
+      "bytes": 4016,
+      "sha256": "6d718f23d8606e554dbfe1fccaedfb991d9abb5234ab846f034af3c93d75a287"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/r/r.js",
+      "bytes": 3948,
+      "sha256": "b717d83cb4dfd7129826e2d9d42e39a5e099b49b434b2bfab85de3e3a459dc65"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/razor/razor.js",
+      "bytes": 9821,
+      "sha256": "1887bd1f50cd42c344ca2060eb6c3faa60bb2d9f554880c8924c80d6d8084046"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/redis/redis.js",
+      "bytes": 4381,
+      "sha256": "f7a90a1c8e21b8ab30fff50986acbcc9ac83f2574729dada292f65243841377b"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/redshift/redshift.js",
+      "bytes": 12631,
+      "sha256": "b566247e8c2d17fabb0b31b072487bc9631420899b829d8d26ea3f9c6b564527"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/restructuredtext/restructuredtext.js",
+      "bytes": 4740,
+      "sha256": "ff914084b03c669e101d35406a65b5d1f3b1ce2415a1d9c4201fb941546361e5"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/ruby/ruby.js",
+      "bytes": 9327,
+      "sha256": "69da50c3194c76a3530dc36309ea85a933c75aa9e7058cf29e7516ac80951729"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/rust/rust.js",
+      "bytes": 4983,
+      "sha256": "37dc707b3ea97d761a3bab49359d32fd7b641f58bad4e2fd8c4c1cd0800cb4d2"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/sb/sb.js",
+      "bytes": 2648,
+      "sha256": "acfd18f27b1cc052d78cb7a762ba9502e9fd4d9292e7e2b271302a8377a445bb"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/scala/scala.js",
+      "bytes": 8143,
+      "sha256": "d513b09bbfbc050b372beac78e2584608212046ad068a08f8ab4e0dd1207b621"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/scheme/scheme.js",
+      "bytes": 2594,
+      "sha256": "8b78b406fbe3040658387262678eeb00e2029c7a767a4212590130ae0686551d"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/scss/scss.js",
+      "bytes": 7232,
+      "sha256": "6cf67bc2644efec58329cf02036c11215524007fe09ac2460ab46989bc6ae3cf"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/shell/shell.js",
+      "bytes": 3898,
+      "sha256": "fd62075e804809482b0ffa432f40b927564527fc4150f5251072e8ac455a6886"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/solidity/solidity.js",
+      "bytes": 19428,
+      "sha256": "5dee98e9f5a38c98589fdbc594f9f5461f7ec9792d76ede6270218e77ebc75e9"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/sophia/sophia.js",
+      "bytes": 3591,
+      "sha256": "3e3f4067b39cc667b3bac7da769dd811650c7c9dc9e074362ab7e7d1c5b47c5f"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/sparql/sparql.js",
+      "bytes": 3379,
+      "sha256": "da82319ca8f88c2cca55b324b07390b558669b1b96cd540cf808425c1b9faca5"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/sql/sql.js",
+      "bytes": 11118,
+      "sha256": "17d3fa62658c8d29a806dbf786b8b5f90f913845daa18b24896710164a1661d8"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/st/st.js",
+      "bytes": 8222,
+      "sha256": "9607a2e6eef6cc1a195b23885a7138b539f1b08b83033769ec4a130c8d42d649"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/swift/swift.js",
+      "bytes": 5997,
+      "sha256": "cdc358689959b892a4b0a0d284e405adc22603bf9a8202fd8d4d1e4a0d16ae9a"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/systemverilog/systemverilog.js",
+      "bytes": 8444,
+      "sha256": "c570635e92cfe48a6795319a366b550126126d23277d6157aa58b260a3e34f84"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/tcl/tcl.js",
+      "bytes": 4392,
+      "sha256": "44ae6a3a45937c23d03704880a81acb3bcc1f511303b0d8105ff68a68db1e1a7"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/twig/twig.js",
+      "bytes": 6796,
+      "sha256": "d24fa72811b4a2f80b4f596f78042c03045df005c80ff9716693ce4b1b5ce409"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/typescript/typescript.js",
+      "bytes": 6460,
+      "sha256": "c4da8cd5fa6ea11fb7e9734f512b848877c1b5bf7f0faea76402ceb4da618887"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/typespec/typespec.js",
+      "bytes": 3627,
+      "sha256": "4e0eddfae2fc8524a552056f6f7efa2b4d0fe422952664fbe1c5bcc0493c84d1"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/vb/vb.js",
+      "bytes": 6610,
+      "sha256": "93fbb1402356f40341924c2de339c9def343b949220ef065cca9f97ee896a30d"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/wgsl/wgsl.js",
+      "bytes": 8146,
+      "sha256": "b5044b6ae1d2c58fa4c3a944c3d52632a88366bc0f22aa4e2e0e8da12e727f8e"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/xml/xml.js",
+      "bytes": 3452,
+      "sha256": "d5cc3332e96b3300636a1677e535d16e8fa444538dcea17abe7b7ccdba6aab55"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/basic-languages/yaml/yaml.js",
+      "bytes": 5056,
+      "sha256": "f4407dcc5601eec349552548557f3656a907b094575e7395402390aa08f8d7f2"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/editor/editor.main.css",
+      "bytes": 131858,
+      "sha256": "857bc0beafefbcc83ab5cf3510e929391c0314add43ee1a4cb8ecaf4726abbac"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/editor/editor.main.js",
+      "bytes": 3766654,
+      "sha256": "90b588bc0b624e24052a576e1bcab2eaffec7bc666895188862eebd9c9745782"
+    },
+    {
+      "batch": "UPLOAD_05",
+      "path": "vendor/monaco/min/vs/language/css/cssMode.js",
+      "bytes": 33094,
+      "sha256": "4d30d446fe1afe1e93325c6e2f363e67f4ca402fec5fccbb66b9a6342b191930"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/language/css/cssWorker.js",
+      "bytes": 778035,
+      "sha256": "83e129c073104332b16b9bdc69dca3446534abd77aa6a9edc63b7b957f6816f1"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/language/html/htmlMode.js",
+      "bytes": 33634,
+      "sha256": "0766d33510c464c14f09607a8fe85c1925c0b827844b72a87742e9b37af310bb"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/language/html/htmlWorker.js",
+      "bytes": 449070,
+      "sha256": "2c246b7c0288fe575bc3bc187fe394a3ac27c2e7db7df52f154b5ac39097a67c"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/language/json/jsonMode.js",
+      "bytes": 42545,
+      "sha256": "9200ffce4ac390675f6cb4c64ffaf4b4d8e650d3888caf631709cb136615e379"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/language/json/jsonWorker.js",
+      "bytes": 131177,
+      "sha256": "4b197c4165e356a04857e9317ec3d536fdbb92b91077bc483590c4f51056e3df"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/language/typescript/tsMode.js",
+      "bytes": 23919,
+      "sha256": "fb2707ee84013e2be4c58f5654e3d623ccf73cfc33dbcdd0bf82a780945cfcf1"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/language/typescript/tsWorker.js",
+      "bytes": 5749518,
+      "sha256": "ffdf8b0d4d41c145afae6919beba110336860759dce0bdadc2a145c06a1a48ed"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/loader.js",
+      "bytes": 30051,
+      "sha256": "28f3584fd04b182dfce15a9a1ce35b25bea22b31464aee500372bed18b7fee1a"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/nls.messages.de.js",
+      "bytes": 119967,
+      "sha256": "7d3663431bcb00ff23e79181ad36e1f8ef09e2d2ad636eef05acf357779ebc35"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/nls.messages.es.js",
+      "bytes": 120624,
+      "sha256": "dc0747303240ad82f821d167a47e2e6713ba7c5f7a9f10ddd386ccd66e756a2f"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/nls.messages.fr.js",
+      "bytes": 133124,
+      "sha256": "ebc0552b03c7e245c4224e7d4c0bc68c225c56b0cbee8066e263447c69e5642d"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/nls.messages.it.js",
+      "bytes": 122202,
+      "sha256": "0e6c73b8774c833a990554ead25cbe661b1dc0f5f1da6944ecd267d4104eb2d8"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/nls.messages.ja.js",
+      "bytes": 256463,
+      "sha256": "47452b43fe520fb5b032c3bea212641ff9e3798cf85487038ed24c4268b30757"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/nls.messages.ko.js",
+      "bytes": 210086,
+      "sha256": "1afadd53fe7aca015667d178fe0e39dbbad83c2cb5507ffed28da2576f640b06"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/nls.messages.ru.js",
+      "bytes": 538578,
+      "sha256": "b80e1fedccf097cb5c5b99d6bc6acc2e584b5dffdca80d62ec980fb85400b141"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/nls.messages.zh-cn.js",
+      "bytes": 157372,
+      "sha256": "a263c87401fe71aa24da1abd78cbca7e71a48475ba6c1a36aaf8d636f15661d5"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/monaco/min/vs/nls.messages.zh-tw.js",
+      "bytes": 161126,
+      "sha256": "a61e221b8f8ec102db26c8d10a12908d7619ac1af649e68243d6144a784c64e6"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/provenance.json",
+      "bytes": 40260,
+      "sha256": "f896818027084099c777c01e31693c96ade2b1e03dda8bea162f1a23f36a6a69"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/pyodide/LICENSE",
+      "bytes": 16725,
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/pyodide/contourpy-1.3.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 112207,
+      "sha256": "f6ca0437a039c40691be53ff5bd3c9774868add8d5c2d032167495c6ff1f1c4b"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/pyodide/cycler-0.12.1-py3-none-any.whl",
+      "bytes": 8321,
+      "sha256": "e33687b4269fe3eda13c2d38006f9a5daa602c95f5c4f8d0576aff0717d001a6"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/pyodide/fonttools-4.51.0-py3-none-any.whl",
+      "bytes": 1073094,
+      "sha256": "0c9a46b9246333de02d0fe02c0580840d7136744121f256a870218ed7482b607"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/pyodide/hashlib-1.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 11179,
+      "sha256": "4a6971a70bf547ad93f011e121392803ce1595e62e8b3ca719ffa3ec91384722"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/pyodide/kiwisolver-1.4.5-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 35233,
+      "sha256": "d7652d88b3390d9d1d0175d6c79da675b42bac2cd748cc9b5766a3235da4b762"
+    },
+    {
+      "batch": "UPLOAD_06",
+      "path": "vendor/pyodide/lzma-1.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 75355,
+      "sha256": "51b77233960d4353deee46bd23b39ebfd53039835693f7dc2fa8858c88e8eee8"
+    },
+    {
+      "batch": "UPLOAD_07",
+      "path": "vendor/pyodide/matplotlib-3.8.4-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 6714844,
+      "sha256": "50d4641b32e84ecb0a2c271728d4be73b1e0a0f5f29aa7dd6ea280f888b91340"
+    },
+    {
+      "batch": "UPLOAD_07",
+      "path": "vendor/pyodide/matplotlib_pyodide-0.2.3-py3-none-any.whl",
+      "bytes": 26183,
+      "sha256": "070d6244e7ae44f8753d3a78cf5c30f93c8d781e620991af848dcfd44112839f"
+    },
+    {
+      "batch": "UPLOAD_07",
+      "path": "vendor/pyodide/numpy-2.0.2-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 3061133,
+      "sha256": "ebb61241d962b98b21597d7ce43b67668a6d5bab3acec4fbe958657320d7cd08"
+    },
+    {
+      "batch": "UPLOAD_08",
+      "path": "vendor/pyodide/opencv_python-4.10.0.84-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 11435963,
+      "sha256": "fae5731bfaa3590eefd92b70fb78a090882031f31905451230b2804e3d576800"
+    },
+    {
+      "batch": "UPLOAD_08",
+      "path": "vendor/pyodide/openssl-1.1.1w.zip",
+      "bytes": 2025919,
+      "sha256": "20b92cd9b9adb1a739af9f93772b60c084203aacf63ae1b2353951bd80c97f08"
+    },
+    {
+      "batch": "UPLOAD_08",
+      "path": "vendor/pyodide/packaging-24.2-py3-none-any.whl",
+      "bytes": 71930,
+      "sha256": "fbf6a5ace596eb8e28fe0089ecfc0bca2eb3930563e9ca06acb98ea5302b99f7"
+    },
+    {
+      "batch": "UPLOAD_09",
+      "path": "vendor/pyodide/pandas-2.2.3-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 5707178,
+      "sha256": "5502f0f94f93a482b851d0b8ca43be692c1b8d20215a168313656847ff74d63a"
+    },
+    {
+      "batch": "UPLOAD_09",
+      "path": "vendor/pyodide/pillow-10.2.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 987254,
+      "sha256": "43eab147a9355385a99eeac18fb577d4af2fe4bd0bbd23d3ba3ddb92e72c2815"
+    },
+    {
+      "batch": "UPLOAD_09",
+      "path": "vendor/pyodide/pydecimal-1.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 49190,
+      "sha256": "b580c39e5573e4a22be030aec5ef141fbb725f52a3ef71d0ee903c3d17c01d2b"
+    },
+    {
+      "batch": "UPLOAD_09",
+      "path": "vendor/pyodide/pydoc_data-1.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 173300,
+      "sha256": "7b0b5ff6ecc0dbfbc644516d9b87c4ae78c291c15334ae89aab9e1f24ca0ea9a"
+    },
+    {
+      "batch": "UPLOAD_09",
+      "path": "vendor/pyodide/pyodide-lock.json",
+      "bytes": 112205,
+      "sha256": "9c45b916001a750f4102fc287494f3eab215909c7535c626a20db80fd6333e2c"
+    },
+    {
+      "batch": "UPLOAD_09",
+      "path": "vendor/pyodide/pyodide.asm.js",
+      "bytes": 1255688,
+      "sha256": "6b4c90de5b7172873f04f21884d0e9d2274e305fe32116558fe3e4fbe3618d51"
+    },
+    {
+      "batch": "UPLOAD_10",
+      "path": "vendor/pyodide/pyodide.asm.wasm",
+      "bytes": 10105545,
+      "sha256": "a50dd1843f805a0b7c45b61037ee0d7b26dfe85efe0e18ef95a34ad24e401f5f"
+    },
+    {
+      "batch": "UPLOAD_10",
+      "path": "vendor/pyodide/pyodide.js",
+      "bytes": 14913,
+      "sha256": "b4cb23a53aba19c221659b9fb40a2f18281d685691dc06647fb0afd0681baf98"
+    },
+    {
+      "batch": "UPLOAD_10",
+      "path": "vendor/pyodide/pyodide.mjs",
+      "bytes": 13931,
+      "sha256": "04c052c815abb0bf2981fa38c2dfa58e3120ee5288c956df2b2a15e301782c5f"
+    },
+    {
+      "batch": "UPLOAD_10",
+      "path": "vendor/pyodide/pyparsing-3.1.2-py3-none-any.whl",
+      "bytes": 103246,
+      "sha256": "9070866557845375d8180e9236021fdecb2b93be75a7c8de48841f1465133a60"
+    },
+    {
+      "batch": "UPLOAD_10",
+      "path": "vendor/pyodide/python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+      "bytes": 229892,
+      "sha256": "02811ea3714f6697d639c07dc5ec63f5774dc7a688e4e1cbbe9beb2f33c3e6c9"
+    },
+    {
+      "batch": "UPLOAD_10",
+      "path": "vendor/pyodide/python_stdlib.zip",
+      "bytes": 2360737,
+      "sha256": "16611534726e5d8ac2bd8f926410b2dcb8d6f49aa24913463533b457a2115c16"
+    },
+    {
+      "batch": "UPLOAD_10",
+      "path": "vendor/pyodide/pytz-2024.1-py2.py3-none-any.whl",
+      "bytes": 505474,
+      "sha256": "fcfc168155da8d19057b17bee735fef71dc3a39f1dccd83514e16ecc6abaddc4"
+    },
+    {
+      "batch": "UPLOAD_10",
+      "path": "vendor/pyodide/six-1.16.0-py2.py3-none-any.whl",
+      "bytes": 11053,
+      "sha256": "f61235bc3a15086f0369585e5071ae9ba0bd244a111d12b37f683862e6850c0a"
+    },
+    {
+      "batch": "UPLOAD_10",
+      "path": "vendor/pyodide/sqlite3-1.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 563076,
+      "sha256": "43061928762b03482676a1e11dcef99a003148e59fe914b6a3e41180c382cfc3"
+    },
+    {
+      "batch": "UPLOAD_10",
+      "path": "vendor/pyodide/ssl-1.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "bytes": 63630,
+      "sha256": "1af0b011a3043331a8a2a358832dcee736deff73a55ad0393222ea533942094a"
+    },
+    {
+      "batch": "UPLOAD_11",
+      "path": "zebjus_flight_controller.glb",
+      "bytes": 788172,
+      "sha256": "b5aab075ecf3c3c12a71ff8c5935efc0bf2ee582a72adfce8f65c423a686ea48"
+    }
+  ]
+}
