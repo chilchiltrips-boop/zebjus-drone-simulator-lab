@@ -69,6 +69,20 @@ cap.release()
 print("HAND_OFFLINE_OK")`;
 async function exercise(page,label){
  assert.equal(await page.evaluate(async()=>typeof(await import('./vendor/esptool/bundle.mjs')).ESPLoader),'function');
+ const images=await page.evaluate(async()=>{
+  const cat=await(await fetch('./firmware-catalog.json')).json();const out=[];
+  for(const board of cat.boards)for(const kind of ['app','factory']){
+   const pkg=board.latest[kind],data=new Uint8Array(await(await fetch('./FlightCore_Firmware/'+pkg.file)).arrayBuffer());
+   const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',data)),b=>b.toString(16).padStart(2,'0')).join('');
+   out.push({available:pkg.available,hashOK:hash===pkg.sha256,sizeOK:data.length===pkg.size,chipOK:board.imageChipIds.includes(data[12]|data[13]<<8)});
+  }return out;
+ });
+ assert.equal(images.length,4);assert(images.every(i=>i.available&&i.hashOK&&i.sizeOK&&i.chipOK));
+ await page.click('.tab[data-tab="firmware"]');await page.selectOption('#fwBoardProfile','ZFC-A2');
+ await page.waitForFunction(()=>document.querySelector('#fwFileName').textContent.includes('A2_APP.bin'));
+ await page.selectOption('#fwImageType','factory');await page.waitForFunction(()=>document.querySelector('#fwFileName').textContent.includes('A2_FACTORY.bin'));
+ await page.selectOption('#fwImageType','app');await page.waitForFunction(()=>document.querySelector('#fwFileName').textContent.includes('A2_APP.bin'));
+ console.log(label+': four compiled images / checksums / profile and APP-FACTORY switching PASS');
  assert(await page.locator('#pythonExample').isHidden(),'Examples must be hidden by default');
  await run(page,plotCode,'PLOT_OFFLINE_OK');
  assert((await page.locator('#pythonOutputImage').getAttribute('src')).startsWith('data:image/png;base64,'));

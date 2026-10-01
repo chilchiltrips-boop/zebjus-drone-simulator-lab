@@ -354,7 +354,7 @@ for token in ['ioPpmArmMode','ioGpsProtocol','ioGpsTxPin','ioGpsRead']:
 for token in ['pinmap_get','motor_map_set','ppm_config','i2c_read','servo_config','gps_read','matrix_write','gpio_write']:
     if token not in read('python-worker.js') or token not in read('python_companion/zebjus_client.py'): fail(f'V18.3.48 Python hardware bridge missing {token}')
 if "'./hardware-io.js'" not in sw: fail('offline cache omits hardware I/O script')
-if 'id="tab-io"' not in html or 'hardware-io.js?v=18.3.57' not in html: fail('V18.3.48 hardware I/O page is absent')
+if 'id="tab-io"' not in html or 'hardware-io.js?v=18.3.58' not in html: fail('V18.3.48 hardware I/O page is absent')
 
 # V18.3.48 safety, camera lifecycle, and calibration contract.
 for rel in ['python_companion/browser_cvzone.py','tools/test_camera_lifecycle.js','tools/test_browser_cvzone.py','SUPPORT/FLIGHTCORE_STAGE_GUIDE_V18_3_48.md','SUPPORT/FLIGHT_VALIDATION_V18_3_48.md']:
@@ -363,7 +363,7 @@ for token in ['ppmPending','ppmIndex>=6','ppmInvalidFrame','ppmPinAllowed','ppmR
     if token not in ino: fail(f'V18.3.48 firmware receiver/output contract missing: {token}')
 for token in ['ioPpmPin','calSixFaces','calSixApply','cvzone-hands']:
     if token not in html: fail(f'V18.3.48 UI missing: {token}')
-for token in ['pythonRunRequestId','stopPythonCamera();sendPythonSafeFrame()','browser_cvzone.py','latestHandData','hand-data']:
+for token in ['pythonRunRequestId','Promise.allSettled([sendPythonSafeFrame(),sendPythonLedOff()','browser_cvzone.py','latestHandData','hand-data']:
     if token not in app+read('python-worker.js'): fail(f'V18.3.48 camera/cvzone lifecycle missing: {token}')
 if "'./python_companion/browser_cvzone.py'" not in sw: fail('offline source cache omits browser cvzone adapter')
 if "'./python_companion/simple_syntax.py'" not in sw: fail('offline source cache omits simple Python adapter')

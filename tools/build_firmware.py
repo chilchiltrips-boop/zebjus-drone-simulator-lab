@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, hashlib, json, re, shutil, subprocess, tempfile
+import argparse, hashlib, json, re, shutil, struct, subprocess, tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -45,6 +45,29 @@ def find_factory_bin(build):
     return bins[0] if bins else None
 
 
+def verify_build(build, board, version):
+    app=find_app_bin(build).read_bytes()
+    if len(app)<24 or app[0]!=0xE9: raise RuntimeError('Invalid ESP application header')
+    chip=struct.unpack_from('<H',app,12)[0]
+    if chip not in board['imageChipIds']: raise RuntimeError(f'Wrong image chip ID: {chip}')
+    if version.encode() not in app: raise RuntimeError('Release version is absent from compiled application')
+    table=next(build.glob('*.partitions.bin')).read_bytes()
+    slots=[]
+    for offset in range(0,len(table)-31,32):
+        magic,typ,sub,address,size,label,flags=struct.unpack_from('<HBBII16sI',table,offset)
+        if magic!=0x50AA: break
+        if typ==0 and sub in (0x10,0x11): slots.append({'address':address,'bytes':size})
+    if len(slots)!=2 or slots[0]['address']!=int(board['appAddress'],0): raise RuntimeError('Matching dual OTA partition layout is required')
+    if any(len(app)>slot['bytes'] for slot in slots): raise RuntimeError('Application exceeds an OTA slot')
+    factory=find_factory_bin(build)
+    if not factory: raise RuntimeError('Merged USB factory image was not produced')
+    merged=factory.read_bytes()
+    if merged[0]!=0xE9 or struct.unpack_from('<H',merged,12)[0]!=chip: raise RuntimeError('Factory bootloader chip/offset mismatch')
+    address=slots[0]['address']
+    if merged[address:address+len(app)]!=app: raise RuntimeError('Factory image application differs from OTA image')
+    return {'boardId':board['id'],'fqbn':board['build']['fqbn'],'chipId':chip,'appBytes':len(app),'otaSlots':slots,'factoryBytes':len(merged),'factoryAddress':'0x0','checks':['image magic','profile chip ID','release version','dual OTA slots','slot size','factory bootloader at 0x0','factory/APP identical']}
+
+
 def sync_catalog_version(catalog,version):
     catalog['version']=version
     for board in catalog.get('boards',[]):
@@ -66,6 +89,7 @@ def main():
     ap=argparse.ArgumentParser(description='Build verified ZEBJUS FlightCore firmware packages with stable replace-in-place filenames.')
     ap.add_argument('--board',default='all',help='Board profile ID from catalog.json, or all')
     ap.add_argument('--skip-core-install',action='store_true')
+    ap.add_argument('--config-file',help='Optional Arduino CLI configuration file')
     args=ap.parse_args()
     if not SRC.exists(): raise SystemExit(f'Missing source: {SRC}')
     if not CAT.exists(): raise SystemExit(f'Missing catalog: {CAT}')
@@ -76,10 +100,12 @@ def main():
     if args.board!='all' and args.board not in ids: raise SystemExit(f'Unknown/non-buildable board profile: {args.board}. Available: {", ".join(ids)}')
     cli=shutil.which('arduino-cli')
     if not cli: raise SystemExit('arduino-cli not found. Install Arduino CLI, then rerun this script.')
+    command=[cli]+(['--config-file',args.config_file] if args.config_file else [])
     if not args.skip_core_install:
-        run([cli,'core','update-index','--additional-urls',INDEX_URL])
-        run([cli,'core','install',f'esp32:esp32@{CORE_VERSION}','--additional-urls',INDEX_URL])
+        run(command+['core','update-index','--additional-urls',INDEX_URL])
+        run(command+['core','install',f'esp32:esp32@{CORE_VERSION}','--additional-urls',INDEX_URL])
     targets=[b for b in catalog['boards'] if b['id'] in ids and (args.board=='all' or b['id']==args.board)]
+    report={'version':version,'builtAt':built_at,'arduinoEsp32':CORE_VERSION,'hardwareFlashingTested':False,'boards':[]}
     for b in targets:
         cfg=b['build']; pkg=b['latest']['app']; filename=pkg['file']
         with tempfile.TemporaryDirectory(prefix='zfc-build-') as td:
@@ -89,7 +115,8 @@ def main():
             if (OUT/'src').is_dir(): shutil.copytree(OUT/'src',sketch/'src')
             build=td/'build'; build.mkdir()
             print(f'\n=== BUILD {b["id"]} • {b["name"]} • {cfg["fqbn"]} ===',flush=True)
-            run([cli,'compile','--fqbn',cfg['fqbn'],'--warnings','all','--output-dir',str(build),str(sketch)], f'{b["id"]} ({cfg["fqbn"]}) compile')
+            run(command+['compile','--fqbn',cfg['fqbn'],'--warnings','all','--output-dir',str(build),str(sketch)], f'{b["id"]} ({cfg["fqbn"]}) compile')
+            report['boards'].append(verify_build(build,b,version))
             srcbin=find_app_bin(build); dst=OUT/filename; shutil.copy2(srcbin,dst); digest=sha(dst)
             build_id=f'{version}-{b["id"]}-{digest[:12]}'
             pkg.update({'available':True,'sha256':digest,'size':dst.stat().st_size,'builtAt':built_at,'buildId':build_id}); b['latest']['builtAt']=built_at
@@ -105,6 +132,7 @@ def main():
                 factory_pkg.update({'available':False,'sha256':'','size':0,'builtAt':built_at,'buildId':''})
             print(f'{b["name"]}: {dst.name} {dst.stat().st_size} bytes SHA256 {digest} buildId {build_id}')
     write_metadata(catalog,version,built_at)
+    (OUT/'build-report.json').write_text(json.dumps(report,indent=2)+'\n')
     print(f'Updated firmware metadata for {version}; Arduino-ESP32 core {CORE_VERSION}')
 
 

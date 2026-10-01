@@ -15,7 +15,7 @@ const nodes = {
 let resolvePermission;
 const sandbox = {
   navigator:{mediaDevices:{getUserMedia:()=>new Promise(resolve=>{resolvePermission=resolve})}},
-  $:selector=>nodes[selector],pythonWorker:null,console,clearInterval:()=>{},startPythonOutputPreview:()=>{},clearPythonCameraOutput:()=>{}
+  $:selector=>nodes[selector],pythonWorker:null,console,clearTimeout:()=>{},clearInterval:()=>{},startPythonOutputPreview:()=>{},clearPythonCameraOutput:()=>{}
 };
 vm.runInNewContext(source.slice(begin,end)+'\nglobalThis.cameraApi={startPythonCamera,stopPythonCamera,active:()=>!!pythonCameraStream};', sandbox);
 function fakeStream(){const track={stopped:false,stop(){this.stopped=true}};return {track,getTracks:()=>[track]}}
