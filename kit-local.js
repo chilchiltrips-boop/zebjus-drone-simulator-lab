@@ -90,11 +90,13 @@ function knownMatches(query){
   if(isDeviceId(q))return list.filter(x=>sameDeviceIdentity(x.deviceId,q));
   const n=normalizeKitName(q);return list.filter(x=>normalizeKitName(x.name)===n).sort((a,b)=>(+b.lastSeen||0)-(+a.lastSeen||0));
 }
-function candidateBases(name,knownList=[],ipHint=''){
+function candidateBases(name,knownList=[],ipHint='',includeAp=true){
   const bases=[];
   if(ipHint&&/^\d{1,3}(?:\.\d{1,3}){3}$/.test(ipHint))bases.push(`http://${ipHint}`);
   knownList.forEach(k=>{if(k?.ip)bases.push(`http://${k.ip}`);if(k?.base)bases.push(k.base)});
   if(name)bases.push(baseFromName(name));
+  // AP has no mDNS. Every candidate is still verified against the requested ID/name.
+  if(includeAp)bases.push('http://192.168.4.1');
   return [...new Set(bases.filter(Boolean))];
 }
 async function probeBase(base,{expected='',name='',clientId=''}={}){
@@ -111,7 +113,7 @@ function uniqueResults(results){
 }
 async function discoverName(name,clientId=''){
   name=String(name||'').trim();if(!name||isDeviceId(name))return[];
-  const bases=candidateBases(name,knownMatches(name));if(!bases.length)return[];
+  const bases=candidateBases(name,knownMatches(name),'',false);if(!bases.length)return[];
   const settled=await Promise.allSettled(bases.map(base=>probeBase(base,{name,clientId})));
   const ok=uniqueResults(settled.filter(x=>x.status==='fulfilled').map(x=>x.value));ok.forEach(r=>rememberKit(r.status,r.base));return ok;
 }
@@ -160,31 +162,31 @@ async function scanDefaultKits({max=30,extraNames=[],onProgress=null}={}){
 }
 
 class LocalKitClient{
-  constructor(){this.base='';this.status=null;this.name='';this.deviceId='';this.ipHint='';this.clientId=sessionId();this._reconnectPromise=null;this._lastGoodAt=0}
+  constructor(){this.base='';this.status=null;this.name='';this.deviceId='';this.ipHint='';this.clientId=sessionId();this._reconnectPromise=null;this._lastGoodAt=0;this._generation=0}
   get connected(){return !!this.base&&!!this.status}
   get lastGoodAgeMs(){return this._lastGoodAt?Date.now()-this._lastGoodAt:Infinity}
   _accept(st,base){this.base=base;this.status=st;this.name=st?.name||this.name;this.deviceId=st?.deviceId||this.deviceId;this.ipHint=st?.ip||this.ipHint;this._lastGoodAt=Date.now();rememberKit(st,base);return st}
-  async connect(query='',ipHint='',expectedDeviceId=''){const explicit=String(query||'').trim(),q=explicit||this.name||this.deviceId,expected=expectedDeviceId||(explicit?'':this.deviceId),r=await connect(q,ipHint||this.ipHint,expected,this.clientId);return this._accept(r.status,r.base)}
-  disconnect({forgetIdentity=false}={}){this.base='';this.status=null;this._lastGoodAt=0;if(forgetIdentity){this.name='';this.deviceId='';this.ipHint=''}}
-  async refresh(timeout=2100){if(!this.base)throw new Error('Kit not connected.');const st=await requestBase(this.base,`/api/status?clientId=${encodeURIComponent(this.clientId)}`,{timeout});if(this.deviceId&&!sameDeviceIdentity(st.deviceId,this.deviceId))throw new Error('Connected device identity changed.');return this._accept(st,this.base)}
+  async connect(query='',ipHint='',expectedDeviceId=''){const generation=++this._generation,explicit=String(query||'').trim(),q=explicit||this.name||this.deviceId,expected=expectedDeviceId||(explicit?'':this.deviceId),r=await connect(q,ipHint||this.ipHint,expected,this.clientId);if(generation!==this._generation)throw new Error('Connection request cancelled.');return this._accept(r.status,r.base)}
+  disconnect({forgetIdentity=false}={}){this._generation++;this.base='';this.status=null;this._lastGoodAt=0;if(forgetIdentity){this.name='';this.deviceId='';this.ipHint=''}}
+  async refresh(timeout=2100){if(!this.base)throw new Error('Kit not connected.');const base=this.base,id=this.deviceId,generation=this._generation,st=await requestBase(base,`/api/status?clientId=${encodeURIComponent(this.clientId)}`,{timeout});if(generation!==this._generation)throw new Error('Status request cancelled.');if(id&&!sameDeviceIdentity(st.deviceId,id))throw new Error('Connected device identity changed.');return this._accept(st,base)}
   async reconnect(retries=4){if(this._reconnectPromise)return this._reconnectPromise;this._reconnectPromise=(async()=>{let last;const waits=[0,350,800,1500,2500];for(let i=0;i<Math.max(1,retries);i++){if(waits[i])await new Promise(r=>setTimeout(r,waits[i]));try{return await this.connect(this.name||this.deviceId,this.ipHint,this.deviceId)}catch(e){last=e}}throw last||new Error('Kit reconnect failed.')})();try{return await this._reconnectPromise}finally{this._reconnectPromise=null}}
   async telemetry(){return requestBase(this.base,'/api/telemetry',{timeout:1400})}
   async i2cScan(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/i2c/scan',{timeout:6500})}
   async imuRead(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/imu',{timeout:2200})}
-  async acquire(){const r=await requestBase(this.base,'/api/control/acquire',{method:'POST',data:{clientId:this.clientId},timeout:1800});await this.refresh();return r}
-  async heartbeat(){return requestBase(this.base,'/api/control/ping',{method:'POST',data:{clientId:this.clientId},timeout:1500})}
-  async release({keepalive=false}={}){if(!this.base)return{ok:true};try{return await requestBase(this.base,'/api/control/release',{method:'POST',data:{clientId:this.clientId},timeout:1200,keepalive})}finally{if(this.status)this.status.lockMine=false}}
+  async acquire(){const generation=this._generation,r=await requestBase(this.base,'/api/control/acquire',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,expectedDeviceId:this.deviceId},timeout:1800});if(generation!==this._generation)throw new Error('Control request cancelled.');await this.refresh();return r}
+  async heartbeat(){return requestBase(this.base,'/api/control/ping',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,expectedDeviceId:this.deviceId},timeout:1500})}
+  async release({keepalive=false}={}){if(!this.base)return{ok:true};const generation=this._generation;try{return await requestBase(this.base,'/api/control/release',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,expectedDeviceId:this.deviceId},timeout:1200,keepalive})}finally{if(generation===this._generation&&this.status)this.status.lockMine=false}}
   async command(command){if(!this.base)throw new Error('Kit not connected.');const c=command||{},data={clientId:this.clientId,type:String(c.type||''),expectedDeviceId:this.deviceId};Object.entries(c).forEach(([k,v])=>{if(k==='type'||k==='expectedDeviceId')return;data[k]=Array.isArray(v)?v.join(','):(typeof v==='object'&&v!==null?JSON.stringify(v):v)});return requestBase(this.base,'/api/command',{method:'POST',data,timeout:2200})}
-  async rename(name){const r=await requestBase(this.base,'/api/name',{method:'POST',data:{clientId:this.clientId,name},timeout:3200});if(r?.status){const ip=r.status.ip||this.ipHint,base=ip?`http://${ip}`:this.base;return this._accept(r.status,base)}return this.refresh()}
-  async resetName(){return requestBase(this.base,'/api/name/reset',{method:'POST',data:{clientId:this.clientId},timeout:4200})}
+  async rename(name){const r=await requestBase(this.base,'/api/name',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,name},timeout:3200});if(r?.status){const ip=r.status.ip||this.ipHint,base=ip?`http://${ip}`:this.base;return this._accept(r.status,base)}return this.refresh()}
+  async resetName(){return requestBase(this.base,'/api/name/reset',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:4200})}
   async scanWifi(){return requestBase(this.base,'/api/wifi/scan',{timeout:9000})}
   async savedWifi(){return requestBase(this.base,'/api/wifi/saved',{timeout:2200})}
-  async setWifi(ssid,password){return requestBase(this.base,'/api/wifi/set',{method:'POST',data:{clientId:this.clientId,ssid,password},timeout:2600})}
-  async useWifi(ssid){return requestBase(this.base,'/api/wifi/use',{method:'POST',data:{clientId:this.clientId,ssid},timeout:2200})}
-  async forgetWifi(ssid){return requestBase(this.base,'/api/wifi/forget',{method:'POST',data:{clientId:this.clientId,ssid},timeout:2200})}
-  async resetWifi(){return requestBase(this.base,'/api/wifi/reset',{method:'POST',data:{clientId:this.clientId},timeout:2200})}
+  async setWifi(ssid,password){return requestBase(this.base,'/api/wifi/set',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,ssid,password},timeout:2600})}
+  async useWifi(ssid){return requestBase(this.base,'/api/wifi/use',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,ssid},timeout:2200})}
+  async forgetWifi(ssid){return requestBase(this.base,'/api/wifi/forget',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,ssid},timeout:2200})}
+  async resetWifi(){return requestBase(this.base,'/api/wifi/reset',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:2200})}
   async firmwareInfo(){return requestBase(this.base,'/api/firmware/info',{timeout:2200})}
-  async reboot(){return requestBase(this.base,'/api/reboot',{method:'POST',data:{clientId:this.clientId},timeout:2200})}
+  async reboot(){return requestBase(this.base,'/api/reboot',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:2200})}
 }
 
 global.ZebjusDroneKit={normalizeKitName,hostFromName,baseFromName,loadKnown,rememberKit,clearKnownAddress,isDeviceId,sameDeviceIdentity,isCompatibleKit,connect,discoverName,scanDefaultKits,LocalKitClient};

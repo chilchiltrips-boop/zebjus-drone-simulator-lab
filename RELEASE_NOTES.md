@@ -1,16 +1,12 @@
-# ZEBJUS V18.3.57 — full offline browser Python and hands
+# ZEBJUS V18.3.58 — compiled firmware, same-ID reconnect and real hand RC
 
-Pyodide, Python package wheels (NumPy, OpenCV, Pillow, Matplotlib, pandas and dependencies), Monaco, MediaPipe vision WASM and the hand model now load exclusively from bundled local paths. The USB flasher engine is also bundled. A dependency-free Python launcher and Windows/Mac launch files open the full WebApp on localhost while connected to the kit AP. No new firmware API is required.
+A1 and A2 APP/FACTORY binaries are included, compiled with Arduino-ESP32 3.3.12. Board chip IDs, release versions, dual OTA partitions, image sizes and factory/APP contents were verified. Catalogs contain current sizes and SHA-256 values. Firmware Center checks the application descriptor and loads a separate file when APP/FACTORY changes. OTA requests carry the physical Device ID, and firmware rejects mismatched or armed/bench-active uploads.
 
-Settings adds Save for offline use with file/hash verification, progress and a complete-copy check. Saved browser copies can run without the local server; missing files or cache eviction do not report readiness. Complete local extraction supports an offline first run without preparing a browser cache. Camera output remains a single movable output window and clears when stopped. Example visibility remains off by default.
+Refresh and AP/STA recovery reconnect only to the saved Device ID, including through 192.168.4.1. Same-name boards cannot silently replace it. Python and joystick TX stay stopped after recovery. In-flight status requests cannot undo disconnect, and lock/admin requests carry the expected ID.
 
-Real browser tests cover local disk execution with external requests blocked, rendered plots, synchronous Drone API and while True loops, Stop/Rerun, camera/cvzone inference on synthetic frames, and repeats from cache after the local server is stopped and the browser is offline. Actual kit flight, real webcam hand accuracy and platform launchers are not hardware-tested. Source firmware/catalog version is bumped consistently; binaries remain unavailable until built with the matching toolchain.
+Camera and hand tracking continue while the real target is armed. Local hand inference runs in a separate Worker with one frame in flight. Hand RC rejects missing/stale hands, stops on link/control/selection loss and pins commands and cleanup to the run's Device ID. A simple Hand + Keyboard RC instructor example was added; example visibility remains off by default.
 
-## V18.3.56 top bar STA / AP toggle
-
-The top bar now has an accessible STA/AP switch and live mode label. It uses the selected verified kit, acquires control when available, and blocks switching while armed, during motor tests or while another controller owns the kit. STA→AP uses the existing firmware command and displays the unique AP SSID/password in a dismissible notice visible on every page. AP→STA activates the saved preferred/current profile (or the only saved profile); if there is no unambiguous choice it opens Settings. No new firmware API is required. The computer must join the chosen network after the kit restarts. Existing V18.3.55 joystick/simulator fixes are retained.
-
-Source-only package; no firmware binary or actual hardware validation.
+Local browser tests executed actual Pyodide, OpenCV, plots and MediaPipe inference with external network blocked, including from the complete browser cache. Actual UI/RC tests used synthetic hands and kit HTTP; USB/OTA transports were simulated. Physical flashing, radio reconnect, recognition accuracy, motor response and flight still require the real kit. See SUPPORT/V18_3_58_UPDATE_AND_TEST.md for sizes, checks and acceptance steps.
 
 ## Earlier V18.3.55 changes
 

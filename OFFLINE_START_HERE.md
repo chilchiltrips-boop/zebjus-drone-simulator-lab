@@ -1,4 +1,4 @@
-# Offline WebApp — V18.3.57
+# Offline WebApp — V18.3.58
 
 ## Laptop, including the first run without internet
 
@@ -24,7 +24,7 @@ After saving, reopen the **same address in the same browser/profile**. This copy
 - Python 3.12 / Pyodide 0.27.7, standard library and bundled native extensions.
 - NumPy, OpenCV, Pillow, Matplotlib, pandas and their pinned dependencies. Plots use the local Agg backend and included fonts.
 - Browser camera and the existing cvzone HandDetector subset (`findHands`, `fingersUp`) with MediaPipe Tasks Vision 0.10.21. Both SIMD and non-SIMD WASM files and the hand-landmark model are included.
-- Joystick/simulator, 2D/3D assembly, kit connection, sensor/I/O APIs and the local USB flasher engine. Firmware binaries must still be supplied/built separately; this source ZIP does not manufacture an application `.bin`.
+- Joystick/simulator, 2D/3D assembly, kit connection, sensor/I/O APIs and the local USB flasher engine. Matching A1/A2 APP and FACTORY binaries are included and saved by the complete offline-cache preparation. See `SUPPORT/V18_3_58_UPDATE_AND_TEST.md` before choosing a firmware image.
 
 New third-party Python packages are not automatically available offline. Native `mediapipe`, full native cvzone and SerialModule still use the desktop Python companion. The browser HandDetector API works through the included browser adapter. Companion pip packages must be installed before taking that separate desktop route offline.
 

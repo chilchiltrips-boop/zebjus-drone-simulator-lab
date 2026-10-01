@@ -1,12 +1,14 @@
 {
   "name": "zebjus-flightcore-drone-lab",
-  "version": "18.3.57",
+  "version": "18.3.58",
   "private": true,
-  "description": "ZEBJUS FlightCore Drone Lab V18.3.57 with bundled offline Python, OpenCV, plots, smart editor and hand tracking",
+  "description": "ZEBJUS FlightCore Drone Lab V18.3.58 with bundled offline Python, OpenCV, plots, smart editor and hand tracking",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "check": "python3 tools/validate_project.py && python3 tools/validate_offline_bundle.py",
-    "test:offline": "node tools/test_offline_browser.js"
+    "test:offline": "node tools/test_offline_browser.js",
+    "test:control": "node tools/test_joystick_runtime.js && node tools/test_reconnect_runtime.js && node tools/test_firmware_updater.js && node tools/test_camera_lifecycle.js && node tools/test_python_output_lifecycle.js",
+    "test:real-browser": "node tools/test_real_control_browser.js"
   }
 }

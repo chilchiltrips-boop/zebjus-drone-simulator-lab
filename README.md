@@ -1,4 +1,8 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.57
+# ZEBJUS F450 Drone Engineering Lab V18.3.58
+
+## Compiled firmware, reconnect and hand control
+
+V18.3.58 includes both controller profiles, strict saved Device ID recovery and real-target camera/hand RC. Hardware tests remain pending; browser/transport checks are recorded in [the update guide](SUPPORT/V18_3_58_UPDATE_AND_TEST.md).
 
 ## Full offline Python and hand tracking
 
@@ -51,7 +55,7 @@ For a new kit, join its labeled AP and use `http://192.168.4.1/` for direct cont
 3. Scan I²C, use a sensor's own register datasheet for generic read/write, then configure free A2 D7–D10 pins for 50 Hz servo, 3.3 V GPIO or GPS. Generic NMEA 9600 needs GPS TX→FC RX; bundled DroneGPS UBX 10 Hz mode additionally needs FC TX→GPS RX. The 2D reference automatically chooses free signal pins for selected accessories and can apply supported assignments. The matrix editor supports HT16K33 at 0x70–0x77. Never power a servo/load from a signal GPIO.
 4. The same controls are hosted at **`http://192.168.4.1/io`** in setup AP, or `http://<kit-address>/io` in STA. The FC's `/fly` page supplies direct sticks and keyboard control. Browser Python examples include the pin map, PPM, multi-I²C, servo, GPS, matrix and GPIO; `python_companion/expansion_demo.py` is a read-only desktop/PyCharm starter.
 
-This ZIP contains source rather than a prebuilt `.bin`. A2 stabilized flight currently requires MPU6050; A1 remains bridge-only. Review the real-hardware sequence in `SUPPORT/FLIGHT_VALIDATION_V18_3_47.md` before using motors. The GPS 10 Hz request is implemented but only `gps_read.measuredHz` on a connected kit can verify the actual rate.
+This ZIP includes verified A1/A2 APP and FACTORY `.bin` builds. See [V18.3.58 update and test guide](SUPPORT/V18_3_58_UPDATE_AND_TEST.md) for image selection and physical checks. A2 stabilized flight currently requires MPU6050; A1 remains bridge-only. Review the real-hardware sequence in `SUPPORT/FLIGHT_VALIDATION_V18_3_47.md` before using motors. The GPS 10 Hz request is implemented but only `gps_read.measuredHz` on a connected kit can verify the actual rate.
 
 ## Unified control mirror
 

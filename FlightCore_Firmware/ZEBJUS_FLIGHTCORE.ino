@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.57 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
+  ZEBJUS FlightCore V18.3.58 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -54,7 +54,7 @@
 #endif
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.57";
+static const char* FW_VERSION="18.3.58";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -400,7 +400,7 @@ void expireLock(){if(controlOwner.length()&&(long)(millis()-controlExpiresAt)>=0
 bool lockMine(const String& id){expireLock();return id.length()&&controlOwner==id;}
 bool lockActive(){expireLock();return controlOwner.length();}
 bool controlAuthorized(){String id=server.arg("clientId");if(lockMine(id)){controlExpiresAt=millis()+LOCK_TIMEOUT_MS;return true;}return false;}
-bool requireControl(){if(controlAuthorized())return true;sendMessage(lockActive()?423:409,lockActive()?"Kit is controlled by another browser. View-only mode is active.":"Take Control before changing real hardware.");return false;}
+bool requireControl(){if(server.hasArg("expectedDeviceId")&&!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){sendMessage(409,"Device ID mismatch: this request belongs to another kit");return false;}if(controlAuthorized())return true;sendMessage(lockActive()?423:409,lockActive()?"Kit is controlled by another browser. View-only mode is active.":"Take Control before changing real hardware.");return false;}
 
 // ============================================================
 // Physical PPM receiver
@@ -862,7 +862,7 @@ void telemetryApi(){
   j+=",\"sensorHealth\":{\"imu\":\""+imuHealth+"\",\"barometer\":\"NOT_FOUND\",\"lidar\":\"NOT_FOUND\",\"receiver\":\""+rx+"\"}}";sendJson(200,j);
 }
 void acquireApi(){String id=server.arg("clientId");id.trim();if(server.hasArg("expectedDeviceId")&&!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){sendMessage(409,"Device ID mismatch: control belongs to another kit");return;}if(id.length()<4){sendMessage(400,"Invalid browser session ID");return;}if(setupMode&&(wifiTestState==WT_RUNNING||wifiTestState==WT_SUCCESS)){sendMessage(423,"Control unavailable during Wi-Fi setup/restart");return;}expireLock();if(!controlOwner.length()||controlOwner==id){controlOwner=id;controlExpiresAt=millis()+LOCK_TIMEOUT_MS;sendJson(200,"{\"ok\":true,\"lockMine\":true,\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+"}");return;}sendMessage(423,"Another browser is controlling this kit. View-only mode is active.");}
-void lockPingApi(){String id=server.arg("clientId");if(!lockMine(id)){sendMessage(423,"Control lock is no longer owned by this browser.");return;}controlExpiresAt=millis()+LOCK_TIMEOUT_MS;sendJson(200,"{\"ok\":true}");}
+void lockPingApi(){if(!requireControl())return;controlExpiresAt=millis()+LOCK_TIMEOUT_MS;sendJson(200,"{\"ok\":true}");}
 void releaseApi(){String id=server.arg("clientId");if(server.hasArg("expectedDeviceId")&&!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){sendMessage(409,"Device ID mismatch: release belongs to another kit");return;}if(lockMine(id)){if(webRcFresh()||activeRcSource==RC_WEB_AP||activeRcSource==RC_WEB_STA)disarmFlight("control released");armLowSeen=false;webRcLastMs=0;controlOwner="";controlExpiresAt=0;}sendJson(200,"{\"ok\":true}");}
 int parseRcCsv(const String& csv,uint16_t out[10]){int n=0,start=0;while(n<10&&start<(int)csv.length()){int comma=csv.indexOf(',',start);String part=comma<0?csv.substring(start):csv.substring(start,comma);part.trim();if(!part.length()||part.length()>4)return -1;for(size_t k=0;k<part.length();k++)if(!isdigit((unsigned char)part[k]))return -1;long v=part.toInt();if(v<1000||v>2000)return -1;out[n++]=(uint16_t)v;if(comma<0)break;start=comma+1;if(start>=(int)csv.length())return -1;}if(n==10&&csv.indexOf(',',start)>=0)return -1;return n;}
 void commandApi(){
@@ -1136,13 +1136,19 @@ void firmwareUploadHandler(){
   HTTPUpload& upload=server.upload();
   if(upload.status==UPLOAD_FILE_START){
     firmwareUploadActive=true;firmwareUploadSuccess=false;firmwareUploadError="";firmwareUploadName=upload.filename;firmwareUploadBytes=0;
-    if(effectiveArmed()){firmwareUploadError="Firmware update blocked while armed";return;}
+    if(effectiveArmed()||benchMode!=BENCH_NONE){firmwareUploadError="Firmware update blocked while armed or bench outputs active";return;}
+    if(server.hasArg("expectedDeviceId")&&!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){firmwareUploadError="Firmware Device ID mismatch";return;}
     String targetBoard=server.arg("boardId");targetBoard.trim();if(targetBoard.length()&&targetBoard!=String(BOARD_ID)){firmwareUploadError="Firmware board profile mismatch";return;}
     if(!controlAuthorized()){firmwareUploadError=lockActive()?"Another browser controls this kit":"Take Control before firmware update";return;}
     if(!Update.begin(UPDATE_SIZE_UNKNOWN,U_FLASH)){firmwareUploadError=String("Update begin failed: ")+Update.errorString();return;}
     Serial.println("Firmware upload started: "+firmwareUploadName);
   }else if(upload.status==UPLOAD_FILE_WRITE){
     if(firmwareUploadError.length())return;
+    if(firmwareUploadBytes==0){
+      // ESP image header: magic at 0, little-endian chip ID at 12. OTA accepts APP only.
+      const uint16_t expectedChip=FLIGHT_CONTROL_ENABLED?13:5;
+      if(upload.currentSize<24||upload.buf[0]!=0xE9||uint16_t(upload.buf[12]|(uint16_t(upload.buf[13])<<8))!=expectedChip){firmwareUploadError="Wrong or invalid application image for this controller profile";Update.abort();return;}
+    }
     size_t written=Update.write(upload.buf,upload.currentSize);firmwareUploadBytes+=written;
     if(written!=upload.currentSize)firmwareUploadError=String("Flash write failed: ")+Update.errorString();
   }else if(upload.status==UPLOAD_FILE_END){
@@ -1176,7 +1182,7 @@ void setupRoutes(){
 }
 void startNormalServer(){
   setupMode=false;dnsServer.stop();WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.57 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.58 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
   setupMode=true;if(!preferredApMode())setPreferredApMode(true);controlOwner="";controlExpiresAt=0;if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());dnsServer.start(DNS_PORT,"*",AP_IP);server.begin();wifiTestState=WT_IDLE;
@@ -1199,7 +1205,7 @@ void setup(){
   if(USER_LED_PIN>=0){pinMode(USER_LED_PIN,OUTPUT);digitalWrite(USER_LED_PIN,HIGH);}
   Serial.begin(115200);delay(300);WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);loadExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}
   deviceId=getDeviceId();loadKitName();updateApName();loadApPassword();loadSavedWiFi();loadPidSettings();loadCalibrationSettings();probeImuAtBoot();setupFlightCore();flightHeartbeatUs=micros();if(FLIGHT_CONTROL_ENABLED&&xTaskCreate(flightOutputSupervisor,"fc-output-guard",3072,nullptr,3,nullptr)!=pdPASS){flightReady=false;motorsSafe();Serial.println("Output supervisor unavailable: arming disabled");}setupExpansionPeripherals();setupRoutes();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.57 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.58 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
   bool forceApOnce=consumeForceSetupFlag();if(forceApOnce||preferredApMode()){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }
