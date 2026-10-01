@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict'),path=require('node:path'),{spawn}=require('node:child_process'),{chromium}=require('playwright');
 const root=path.resolve(__dirname,'..'),port=18788,url=`http://localhost:${port}/`,ID='ZFC-001122334455',OTHER='ZFC-FFEEDDCCBBAA';
 let server,browser,owner='',armed=false,reachable=true,id=ID,mode='AP SETUP',ip='192.168.4.1';const frames=[],errors=[];
-const status=cid=>({ok:true,kit:'ZEBJUS_FLIGHTCORE',deviceId:id,name:'zebjus_drone_1',ip,mode,boardId:'ZFC-A2',boardName:'ZEBJUS Aerion F1',firmware:'18.3.58',armed,benchMode:0,flightCoreIntegrated:true,webRc:true,flightReady:true,locked:!!owner,lockMine:!!owner&&owner===cid,receiverHealth:'NOT_FOUND'});
+const status=cid=>({ok:true,kit:'ZEBJUS_FLIGHTCORE',deviceId:id,name:'zebjus_drone_1',ip,mode,boardId:'ZFC-A2',boardName:'ZEBJUS Aerion F1',firmware:'18.3.60',armed,benchMode:0,flightCoreIntegrated:true,webRc:true,flightReady:true,locked:!!owner,lockMine:!!owner&&owner===cid,receiverHealth:'NOT_FOUND'});
 const syntheticWorker=`let stale=false;self.onmessage=e=>{const m=e.data;if(m.type==='test-stale'){stale=true;return}if(m.type==='init'){postMessage({type:'ready'});return}if(m.type==='frame'){m.bitmap.close();if(!stale)postMessage({type:'hands',data:{landmarks:[Array.from({length:21},(_,i)=>({x:.25+i*.01,y:.3+i*.01,z:0}))],handedness:['Right'],timestampMs:m.capturedAt}})}};`;
 async function wait(page,predicate,arg){await page.waitForFunction(predicate,arg,{timeout:150000})}
 (async()=>{

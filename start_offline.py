@@ -44,8 +44,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', type=int, default=8787)
     parser.add_argument('--no-browser', action='store_true')
+    parser.add_argument('--flight', action='store_true', help='Open the joystick-only Flight App')
     args = parser.parse_args()
-    url = f'http://localhost:{args.port}/'
+    base_url = f'http://localhost:{args.port}/'
+    url = base_url + ('flight/' if args.flight else '')
     handler = functools.partial(Handler, directory=str(ROOT))
     try:
         server = http.server.ThreadingHTTPServer(('127.0.0.1', args.port), handler)
@@ -53,7 +55,7 @@ def main():
         # A second launch should open the existing app without starting another server.
         try:
             opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-            with opener.open(url + 'health', timeout=2) as response:
+            with opener.open(base_url + 'health', timeout=2) as response:
                 status = json.load(response)
             if status.get('version') != VERSION or status.get('mode') != 'static-local-kit':
                 raise RuntimeError('Another application uses this port')

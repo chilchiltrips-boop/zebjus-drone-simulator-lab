@@ -29,8 +29,20 @@ def main():
     if destination.exists():
         raise SystemExit(f'Output already exists: {destination}. Choose an empty output directory.')
     files=sorted(p for p in ROOT.rglob('*') if p.is_file() and '.git' not in p.parts and '__pycache__' not in p.parts)
+    # Upload build-trigger inputs together after ordinary assets. This prevents
+    # an early web-upload commit from compiling partly uploaded Android sources
+    # or publishing older firmware while the new release is still being staged.
+    final_paths={'VERSION.txt','FILE_COUNT.txt','firmware-catalog.json','firmware-latest.json','firmware-updater.js','tools/build_firmware.py','tools/cleanup_repo.py','tools/validate_project.py','tools/make_offline_manifest.py','tools/validate_offline_bundle.py'}
+    def final_input(path):
+        relative=path.relative_to(ROOT)
+        return relative.parts[0] in {'.github','FlightCore_Firmware','android-app'} or relative.as_posix() in final_paths
+    files=sorted((p for p in files if not final_input(p)))+sorted(p for p in files if final_input(p))
     groups=[];group=[];total=0
+    final_started=False
     for p in files:
+        if final_input(p) and not final_started:
+            if group:groups.append(group);group=[];total=0
+            final_started=True
         size=p.stat().st_size
         if size>args.max_bytes:raise SystemExit(f'Single file exceeds batch limit: {p.relative_to(ROOT)}')
         if group and (len(group)>=args.max_files or total+size>args.max_bytes):
@@ -64,7 +76,9 @@ def main():
 
 Local offline use: install ചെയ്ത Python ഉപയോഗിച്ച് `python assemble_project.py` അല്ലെങ്കിൽ `python3 assemble_project.py` run ചെയ്യുക. Hash verify ചെയ്ത complete project `ZEBJUS_Local` folder-ൽ ലഭിക്കും. അതിലെ `Start_Offline.bat`, `Start_Offline.command` അല്ലെങ്കിൽ `python3 start_offline.py` ഉപയോഗിക്കുക.
 
-Compiled A1/A2 APP/FACTORY `.bin` files ഉൾപ്പെടുത്തിയിട്ടുണ്ട്. Update guide: assembled project-ലെ `SUPPORT/V18_3_58_UPDATE_AND_TEST.md`. Physical USB/OTA, radio and flight checks pending ആണ്; automated browser/transport checks pass ആയി.
+Compiled A1/A2 APP/FACTORY `.bin` files ഉൾപ്പെടുത്തിയിട്ടുണ്ട്. Update guide: assembled project-ലെ `SUPPORT/V18_3_60_UPDATE_AND_TEST.md`. Physical USB/OTA, radio and flight checks pending ആണ്; automated browser/transport checks pass ആയി.
+
+AP password: **12345678**. Android APKയും sourceഉം `android-app/`-ൽ ഉണ്ട്. Firmware, Android app, workflow inputs അവസാന batch-ൽ ഒരുമിച്ച് നൽകിയിട്ടുണ്ട്; അതിനാൽ മുഴുവൻ assets upload ചെയ്ത ശേഷമാണ് പുതിയ build inputs commit ആകുന്നത്. അവസാന batch കഴിഞ്ഞ് Actions → Build Aerion Android APK അല്ലെങ്കിൽ Build ZEBJUS FlightCore Firmware → Run workflow ഉപയോഗിക്കാം.
 ''')
     (destination/'assemble_project.py').write_text('''#!/usr/bin/env python3
 """Merge and verify all extracted upload folders into a new local project."""

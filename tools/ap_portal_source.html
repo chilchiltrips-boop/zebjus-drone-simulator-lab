@@ -9,7 +9,7 @@
 <div class="kv"><div><small>Permanent Device ID</small><b class="id">{{DEVICE_ID}}</b></div><div><small>AP network</small><b class="id">{{AP_NAME}}</b></div></div><p class="hint">Use the unique password recorded on this kit's case. AP and saved Wi-Fi are separate modes; this AP remains active after power cycles until you activate saved Wi-Fi.</p>
 <label for="name">Kit name (optional)</label><input id="name" maxlength="28" placeholder="Automatic name" value="{{KIT_NAME}}">
 <label for="wifi">Nearby networks</label><select id="wifi"><option value="">Scan nearby Wi-Fi</option></select><div class="actions"><button id="scan" type="button">Scan Wi-Fi</button></div>
-<label for="ssid">Wi-Fi SSID (you can type a hidden network)</label><input id="ssid" autocomplete="off" placeholder="School Wi-Fi network name">
+<p class="hint">Kit AP password: <b>12345678</b>. Use the unique kit SSID on its case.</p><label for="ssid">Wi-Fi SSID (you can type a hidden network)</label><input id="ssid" autocomplete="off" placeholder="School Wi-Fi network name">
 <label for="pass">Wi-Fi password</label><input id="pass" type="password" autocomplete="new-password" placeholder="Network password">
 <div class="actions"><button class="primary" id="save" type="button">Save &amp; test Wi-Fi</button></div>
 <p class="hint">Credentials are saved only after the kit connects successfully. Keep this page open until verification finishes.</p><div class="log" id="out" role="status">Ready. Scan Wi-Fi or type an SSID.</div><a class="button primary" id="openWeb" hidden href="#">Open Drone Lab</a>

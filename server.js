@@ -6,7 +6,7 @@ Object.assign(mime,{'.mjs':'text/javascript; charset=utf-8','.wasm':'application
 http.createServer((req,res)=>{
  let u;try{u=new URL(req.url,'http://localhost')}catch{return res.writeHead(400).end('Bad request')}
  if(u.pathname==='/health'){res.writeHead(200,{'content-type':'application/json','cache-control':'no-store'});return res.end(JSON.stringify({ok:true,version:VERSION,mode:'static-local-kit'}))}
- let rel;try{rel=decodeURIComponent(u.pathname)}catch{res.writeHead(400);return res.end('Bad path')}if(rel==='/'||!rel)rel='/index.html';const file=path.resolve(ROOT,'.'+rel);
+ let rel;try{rel=decodeURIComponent(u.pathname)}catch{res.writeHead(400);return res.end('Bad path')}if(!rel)rel='/';if(rel.endsWith('/'))rel+='index.html';const file=path.resolve(ROOT,'.'+rel);
  if(!file.startsWith(ROOT+path.sep)){res.writeHead(403);return res.end('Forbidden')}
  fs.stat(file,(err,st)=>{if(err||!st.isFile()){res.writeHead(404);return res.end('Not found')}const ext=path.extname(file).toLowerCase(),base=path.basename(file);let cache='public, max-age=300';if(base==='service-worker.js')cache='no-store';else if(ext==='.bin'||ext==='.json')cache='no-store';else if(['.html','.js','.css','.webmanifest'].includes(ext))cache='no-cache, must-revalidate';res.writeHead(200,{'content-type':mime[ext]||'application/octet-stream','cache-control':cache});fs.createReadStream(file).pipe(res)});
 }).listen(PORT,'0.0.0.0',()=>console.log(`ZEBJUS FlightCore V${VERSION} static webapp: http://0.0.0.0:${PORT}`));

@@ -8,6 +8,7 @@ firmware = root / "FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino"
 source = firmware.read_text(encoding="utf-8")
 portal = (root / "tools/ap_portal_source.html").read_text(encoding="utf-8")
 fly = (root / "tools/ap_fly_source.html").read_text(encoding="utf-8")
+standalone = root / "flight/index.html"
 io = (root / "tools/ap_io_source.html").read_text(encoding="utf-8")
 assert ")rawliteral" not in portal + fly + io, "raw string terminator in AP page"
 
@@ -29,9 +30,13 @@ if n == 0:
     source = source.replace('void sendFlyPage(){', io_cpp + '\nvoid sendIoPage(){server.sendHeader("Cache-Control","no-store");server.send(200,"text/html",ioPage());}\nvoid sendFlyPage(){', 1)
     assert source != firmware.read_text(encoding="utf-8"), "sendFlyPage not found"
 if "--check" in sys.argv:
+    if not standalone.is_file() or standalone.read_text(encoding="utf-8") != fly:
+        raise SystemExit("Standalone Flight App differs. Run python3 tools/embed_ap_pages.py")
     if firmware.read_text(encoding="utf-8") != source:
         raise SystemExit("AP page templates differ from embedded firmware. Run python3 tools/embed_ap_pages.py")
     print("AP page templates match embedded firmware")
 else:
+    standalone.parent.mkdir(exist_ok=True)
+    standalone.write_text(fly, encoding="utf-8")
     firmware.write_text(source, encoding="utf-8")
     print("Embedded AP setup and direct control pages")

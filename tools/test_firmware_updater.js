@@ -6,7 +6,7 @@ const catalog=JSON.parse(fs.readFileSync(path.join(root,'firmware-catalog.json')
 function node(){return{textContent:'',value:'app',checked:false,style:{},classList:{toggle(){}},setAttribute(){}}}
 for(const s of ['#fwImageType','#fwEraseUsb','#fwLog','#fwOverallBadge','#fwProgressBar'])nodes.set(s,node());
 const ID='ZFC-001122334455';let selected=null;
-const client={base:'http://192.168.4.1',deviceId:ID,clientId:'WEB-TEST',connected:true,firmwareInfo:async()=>({boardId:'ZFC-A2',firmware:'18.3.58',freeSketchBytes:1310720,armed:selected?.armed})};
+const client={base:'http://192.168.4.1',deviceId:ID,clientId:'WEB-TEST',connected:true,firmwareInfo:async()=>({boardId:'ZFC-A2',firmware:'18.3.60',freeSketchBytes:1310720,armed:selected?.armed})};
 const school={client,getSelectedDevice:()=>selected,canControl:()=>true,markOffline(){},reconnectAfterFirmware:async()=>selected,refreshNow:async()=>selected};
 class XHR{constructor(){this.upload={}}open(method,url){this.method=method;this.url=url}send(form){posts.push({url:this.url,form});this.status=200;this.responseText='{"ok":true}';this.onload()}}
 const sandbox={window:{zebjusSchool:school,addEventListener(){}},document:{querySelector:s=>nodes.get(s)||null,readyState:'loading',addEventListener(){}},console,Uint8Array,Blob,FormData,XMLHttpRequest:XHR,setTimeout:f=>{queueMicrotask(f)},setInterval:()=>1,clearInterval(){},confirm:()=>true,Date};
