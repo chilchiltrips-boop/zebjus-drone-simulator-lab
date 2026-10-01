@@ -10,6 +10,8 @@ on:
       - 'VERSION.txt'
       - 'tools/build_firmware.py'
       - 'tools/cleanup_repo.py'
+      - 'tools/make_offline_manifest.py'
+      - 'tools/validate_offline_bundle.py'
       - '.github/workflows/build-flightcore-a1.yml'
 
 permissions:
@@ -38,6 +40,8 @@ jobs:
         run: python3 tools/build_firmware.py --board all
       - name: Clean obsolete release leftovers and refresh inventory
         run: python3 tools/cleanup_repo.py
+      - name: Refresh offline hashes after firmware build
+        run: python3 tools/make_offline_manifest.py
       - name: Validate produced firmware
         run: |
           test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
@@ -51,6 +55,7 @@ jobs:
             sha256sum "$f"
           done
           python3 tools/validate_project.py
+          python3 tools/validate_offline_bundle.py
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -78,7 +83,7 @@ jobs:
             [ -e "$f" ] || continue
             cp "$f" "$PUB_DIR/FlightCore_Firmware/"
           done
-          cp FlightCore_Firmware/catalog.json FlightCore_Firmware/latest.json "$PUB_DIR/FlightCore_Firmware/"
+          cp FlightCore_Firmware/catalog.json FlightCore_Firmware/latest.json FlightCore_Firmware/build-report.json "$PUB_DIR/FlightCore_Firmware/"
           cp firmware-catalog.json firmware-latest.json "$PUB_DIR/"
 
           VERSION="$(python3 -c 'import json; print(json.load(open("FlightCore_Firmware/catalog.json"))["version"])')"
@@ -91,7 +96,7 @@ jobs:
             echo "Publish attempt ${attempt}/4"
             git fetch origin main
 
-            if ! git diff --quiet "${GITHUB_SHA}" origin/main --               FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino               FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h               FlightCore_Firmware/src               VERSION.txt tools/build_firmware.py tools/cleanup_repo.py               .github/workflows/build-flightcore-a1.yml; then
+            if ! git diff --quiet "${GITHUB_SHA}" origin/main --               FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino               FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h               FlightCore_Firmware/src               FlightCore_Firmware/catalog.json               VERSION.txt tools/build_firmware.py tools/cleanup_repo.py tools/make_offline_manifest.py tools/validate_offline_bundle.py               .github/workflows/build-flightcore-a1.yml; then
               echo "A newer firmware source/build workflow is already on main."
               echo "This run will not publish stale binaries; the newer workflow run owns publication."
               exit 0
@@ -103,13 +108,18 @@ jobs:
               [ -e "$f" ] || continue
               cp "$f" FlightCore_Firmware/
             done
-            cp "$PUB_DIR/FlightCore_Firmware/catalog.json" "$PUB_DIR/FlightCore_Firmware/latest.json" FlightCore_Firmware/
+            cp "$PUB_DIR/FlightCore_Firmware/catalog.json" "$PUB_DIR/FlightCore_Firmware/latest.json" "$PUB_DIR/FlightCore_Firmware/build-report.json" FlightCore_Firmware/
             cp "$PUB_DIR/firmware-catalog.json" "$PUB_DIR/firmware-latest.json" ./
 
+            # Reapply compiled metadata to the current updater source, preserving
+            # newer unrelated UI edits after the rebase. Refresh every cached hash.
+            python3 -c 'import json,runpy; c=json.load(open("FlightCore_Firmware/catalog.json")); runpy.run_path("tools/build_firmware.py")["write_metadata"](c,c["version"],c["builtAt"])'
+            python3 tools/make_offline_manifest.py
             python3 tools/cleanup_repo.py
             test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
             test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin
             python3 tools/validate_project.py
+            python3 tools/validate_offline_bundle.py
 
             git add -A
             if git diff --cached --quiet; then
