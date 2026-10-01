@@ -22,7 +22,7 @@
 - BMP388 pressure/altitude integration and altitude-hold mode.
 - LiDAR/optical-flow/GPS navigation modes.
 - Extended fault logging / blackbox.
-- Per-user authentication and signed control requests remain pending. Per-controller AP passwords and Device ID checking are present; the browser control lock by itself is not user authentication.
+- Per-user authentication and signed control requests remain pending. Unique per-controller AP SSIDs, the configured `12345678` AP password and Device ID checking are present; the browser control lock by itself is not user authentication.
 
 Initial motor order, direction, arming and mode-switch checks should be completed with propellers removed before any prop-on flight test.
 

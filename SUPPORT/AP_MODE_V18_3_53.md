@@ -4,11 +4,11 @@ V18.3.54 moves the AP Wi-Fi settings page to `http://192.168.4.1/setup`; the AP 
 
 ## Before closing the case
 
-1. Build and flash the matching A2 firmware. Keep the USB Serial monitor open at 115200 for the first AP boot. Label this **specific case** with its full Device ID, `ZEBJUS-FC-<12-hex>` SSID and randomly generated 16-character AP password. Do not use a shared `12345678` label.
+1. Build and flash the matching A2 firmware. Keep the USB Serial monitor open at 115200 for the first AP boot. Label this **specific case** with its full Device ID, `ZEBJUS-FC-<12-hex>` SSID and AP password **`12345678`**. V18.3.60 migrates an older random password automatically after firmware update.
 2. If the firmware is already connected to school Wi-Fi, connect the verified Device ID in Drone Lab, take control, and open **Settings → Show this kit's AP details**. Copy the displayed Device ID, SSID and password to the case before switching modes.
 3. Verify the label by joining the indicated AP from a phone and opening `http://192.168.4.1/`; confirm the displayed Device ID equals the label. Multiple kits may use that same IP, since each AP is a separate local network.
 
-The AP key is stored in a separate `zjap` NVS namespace. Ordinary web factory reset preserves it, as do firmware updates that preserve NVS. Erasing the **whole flash** generates a new key and invalidates the old label. If the key is lost while the board is offline, the USB Serial log is the available recovery path; record it before enclosing the board.
+V18.3.60 uses AP password **12345678**. The first reboot after firmware update replaces an older saved random password in `zjap`; later boots avoid repeated NVS writes. A web factory reset or full erase/reflash of V18.3.60 still uses 12345678. The unique SSID and Device ID identify the kit. On Android, open Aerion Flight and use its in-app Wi-Fi connection; the AP page also offers Open Aerion Flight app when joined manually.
 
 ## Mode rules
 
@@ -22,4 +22,4 @@ The AP key is stored in a separate `zjap` NVS namespace. Ordinary web factory re
 
 The ordinary AP mode runs the AP radio only. A Wi-Fi scan or explicit Save & Test temporarily enables the station radio; successful setup restarts into STA. Mode switching is blocked while armed or during bench outputs. The physical BOOT button is optional recovery and is not required for mode changes. The AP portal also hosts `/fly` and `/io`; browser camera permission normally requires HTTPS or localhost, so direct AP HTTP is for direct kit controls rather than camera Python lessons.
 
-The browser verifies the permanent Device ID on connection and sends the expected ID on commands; the firmware rejects commands addressed to another kit. Unique AP passwords prevent using the same credential for different kits, but the local control lock is not user authentication. Treat this as device selection and network isolation, not as a full secure pairing system.
+The browser verifies the permanent Device ID on connection and sends the expected ID on commands; the firmware rejects commands addressed to another kit. Unique AP SSIDs and checked Device IDs distinguish kits even with the shared password 12345678; the local control lock is not user authentication. Treat this as device selection and network isolation, not as a full secure pairing system.

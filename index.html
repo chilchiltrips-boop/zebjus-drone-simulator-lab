@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content" name="viewport"/>
 <meta content="#07111b" name="theme-color"/>
-<title>ZEBJUS F450 Drone Engineering Lab V18.3.58</title>
-<link href="styles.css?v=18.3.58" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
+<title>ZEBJUS F450 Drone Engineering Lab V18.3.60</title>
+<link href="styles.css?v=18.3.60" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
 <link href="icon-192.png" rel="apple-touch-icon"/>
 <meta content="#07111b" name="theme-color"/>
 </head>
@@ -13,8 +13,8 @@
 <div id="app">
 <header class="topbar">
 <div class="top-network-control"><span>STA</span><button id="topNetworkToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Switch kit between STA and AP" disabled><i></i></button><span>AP</span><b id="topNetworkMode">NO KIT</b></div>
-<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.58 • Same-Wi-Fi Auto Discovery • TX10 Safety • Local Kit Access • Python + Simulator</span></div></div>
-<div class="top-actions"><span class="adaptive-layout-badge" id="adaptiveLayoutBadge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com/category/all-products" rel="noopener" target="_blank"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span class="top-kit-status offline" id="topKitStatus" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span><span class="status" id="assetStatus">Loading V18.3.58 local-kit module…</span><span class="status good" id="saveState">Ready</span><button class="btn ghost" disabled="" id="undoBtn">↶ Undo</button><button class="btn ghost" disabled="" id="redoBtn">↷ Redo</button><button class="btn ghost" id="saveBtn">Save</button><button class="btn danger ghost" id="resetBtn">Reset</button></div>
+<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS F450 Drone Engineering Lab</b><span>V18.3.60 • Same-Wi-Fi Auto Discovery • TX10 Safety • Local Kit Access • Python + Simulator</span></div></div>
+<div class="top-actions"><span class="adaptive-layout-badge" id="adaptiveLayoutBadge">AUTO LAYOUT</span><a class="zebjus-top-shop" href="https://www.zebjus.com/category/all-products" rel="noopener" target="_blank"><span>BUILD IT FOR REAL</span><b>Shop ZEBJUS Components ↗</b></a><span class="top-kit-status offline" id="topKitStatus" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span><span class="status" id="assetStatus">Loading V18.3.60 local-kit module…</span><span class="status good" id="saveState">Ready</span><button class="btn ghost" disabled="" id="undoBtn">↶ Undo</button><button class="btn ghost" disabled="" id="redoBtn">↷ Redo</button><button class="btn ghost" id="saveBtn">Save</button><button class="btn danger ghost" id="resetBtn">Reset</button></div>
 </header>
 <div id="topNetworkNotice" class="top-network-notice" hidden role="status"><span id="topNetworkNoticeText"></span><button id="closeNetworkNotice" type="button" aria-label="Close network message">×</button></div>
 <nav class="tabs">
@@ -195,7 +195,7 @@
 <section class="panel tab-panel" id="tab-joystick">
 <div class="joystick-page-grid">
 <section class="form-card joystick-main-card joystick-console">
-<div class="panel-head joystick-head"><div><small>10-CHANNEL CONTROL LAB</small><h2>Virtual Transmitter</h2><p>Mouse, touch or keyboard control with visual safety interlocks.</p></div><div class="tx-power-wrap"><span class="status" id="webJoyRoleBadge">LOCAL</span><button class="tx-power-btn off" id="webTxPowerBtn" type="button"><i></i><span>TRANSMITTER OFF</span></button></div></div>
+<a class="btn primary small" id="openFlightApp" href="flight/index.html">Open Aerion Flight App ↗</a><div class="panel-head joystick-head"><div><small>10-CHANNEL CONTROL LAB</small><h2>Virtual Transmitter</h2><p>Mouse, touch or keyboard control with visual safety interlocks.</p></div><div class="tx-power-wrap"><span class="status" id="webJoyRoleBadge">LOCAL</span><button class="tx-power-btn off" id="webTxPowerBtn" type="button"><i></i><span>TRANSMITTER OFF</span></button></div></div>
 <div aria-label="Transmitter status indicators" class="tx-led-strip">
 <div><i class="tx-led" id="webTxLedPower"></i><span>POWER</span><b id="webTxPowerText">OFF</b></div>
 <div><i class="tx-led" id="webTxLedLink"></i><span>LINK</span><b id="webTxLinkText">SIM</b></div>
@@ -415,11 +415,11 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option selected="" value="balanced">Balanced</option><option value="low">Low-end laptop</option></select></label><button class="btn ghost full" id="applyPerformanceBtn">Apply graphics profile</button><pre class="terminal mini" id="startupDiagnostics">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.58"></script>
-<script src="offline-support.js?v=18.3.58"></script>
-<script src="kit-local.js?v=18.3.58"></script>
-<script src="app.js?v=18.3.58" type="module"></script>
-<script src="school-lab.js?v=18.3.58"></script>
-<script src="hardware-io.js?v=18.3.58"></script>
-<script src="firmware-updater.js?v=18.3.58"></script>
+<script src="ui-runtime.js?v=18.3.60"></script>
+<script src="offline-support.js?v=18.3.60"></script>
+<script src="kit-local.js?v=18.3.60"></script>
+<script src="app.js?v=18.3.60" type="module"></script>
+<script src="school-lab.js?v=18.3.60"></script>
+<script src="hardware-io.js?v=18.3.60"></script>
+<script src="firmware-updater.js?v=18.3.60"></script>
 </body></html>

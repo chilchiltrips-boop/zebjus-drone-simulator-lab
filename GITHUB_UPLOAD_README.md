@@ -1,4 +1,4 @@
-# GitHub upload — V18.3.48
+# GitHub upload — V18.3.60
 
 Upload the **contents** of this folder to the repository root. Keep `index.html`, `.github`, `FlightCore_Firmware`, `tools` and all web assets at their current relative paths.
 
@@ -22,3 +22,9 @@ After it is added/replaced, `.github/workflows/build-flightcore-a1.yml` installs
 The workflow also updates `FlightCore_Firmware/catalog.json`, `FlightCore_Firmware/latest.json`, `firmware-catalog.json` and `firmware-latest.json` and commits them with the binary.
 
 This avoids stale `...V18_3_xx...ino/.bin` files. Version history is kept in Git commits, `VERSION.txt`, firmware metadata and release notes rather than mutable filenames.
+
+## Android app
+
+Keep the complete Android source under `android-app/`; `.github/workflows/build-aerion-android.yml` builds a development-signed APK. After all upload batches finish, use Actions → Build Aerion Android APK → Run workflow; download the result from Artifacts. The current compiled APK is already included under `android-app/dist/`. AP password is **12345678** after flashing this firmware.
+
+Upload each batch to repository root, replacing matching paths; commit the final batch last. The ZIP itself is a download container and is not uploaded as source.

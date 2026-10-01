@@ -1,36 +1,36 @@
 {
-  "version": "18.3.58",
-  "totalBytes": 114171904,
+  "version": "18.3.60",
+  "totalBytes": 114242473,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
-      "bytes": 1222704,
-      "sha256": "f6859a7cce1390bb6e5d21c4361277cede99bc3a25d4a827489678f993fda38c"
+      "bytes": 1240928,
+      "sha256": "590074d60c9687fa3c60727d8cf989419cc0a260255609995f40ba7a0ff37502"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "672c0863df5b6d621b05500a396440eab8df4caca48f8f3bd5d52f4f4bc12788"
+      "sha256": "396a16bf4b7195676e18b8a85d7bef034bf2fce3af230a46e9ec798cb1f05a20"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin",
-      "bytes": 1287952,
-      "sha256": "73bfb159027ac17943ad4f40a15e0c928d97750c4e2c805812f48d47963bda10"
+      "bytes": 1306192,
+      "sha256": "0e947a48fa5b250b923bebd673339399f04f5d8c72d05674dcf2e782e905ac1f"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "b8a7233f8c6e453f5213d18dbcea4bab1e0ffc7ec2aa3377dd6039d77b563b9d"
+      "sha256": "30ebe9f6cb3976df812ede4174738b49c0dccb27ec27cbaa310ac8a62115e4eb"
     },
     {
       "path": "FlightCore_Firmware/catalog.json",
       "bytes": 2793,
-      "sha256": "2f6ab7f1e4dfbfc9136b7d1147e3071555bc96db2229fcd7f926de748cb02f59"
+      "sha256": "8ae5f9582795ddf171ded59425051e2248b381f58764d6f632d0a790c8b061e3"
     },
     {
       "path": "FlightCore_Firmware/latest.json",
       "bytes": 259,
-      "sha256": "668593cfac3118afde614371824fd898d7e41af956c152db90b17babb12ac26c"
+      "sha256": "b7000bffce3d82cb0c7b0ea82ad8c7993a7b8f60e685f0b2ea3a209d8a0a92d7"
     },
     {
       "path": "a2212_1000kv_motor.glb",
@@ -39,8 +39,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 318356,
-      "sha256": "cff577dd3951742405fe1ce2759127fb33f0601cd6f588b12008ffdb0edc2fdb"
+      "bytes": 318746,
+      "sha256": "ce7d4c7666ec082a6244efd05392d1a0b70b2115f06dea8ad224dd19e68584f7"
     },
     {
       "path": "battery_strap.glb",
@@ -90,17 +90,32 @@
     {
       "path": "firmware-catalog.json",
       "bytes": 2793,
-      "sha256": "2f6ab7f1e4dfbfc9136b7d1147e3071555bc96db2229fcd7f926de748cb02f59"
+      "sha256": "8ae5f9582795ddf171ded59425051e2248b381f58764d6f632d0a790c8b061e3"
     },
     {
       "path": "firmware-latest.json",
       "bytes": 268,
-      "sha256": "5dd521ca271529294177946f01cc624061fc7df2f0b6de7c696c4f7310669e49"
+      "sha256": "47da951a7a61098447bc0439e30fec2b84aeabcc7ce10b1730cb4b17b26910ac"
     },
     {
       "path": "firmware-updater.js",
       "bytes": 28929,
-      "sha256": "ef420c8bcf5a74bafb1d88c0c1fa0b9588e09470a3ec763f87cedff3f554a474"
+      "sha256": "5d2bd96e03c60cdddbed02e65abb82c0ddfb6e828eb6d28b082c035a391e272b"
+    },
+    {
+      "path": "flight/app.webmanifest",
+      "bytes": 332,
+      "sha256": "f66b60d3938ee20d6cafd2c7ebd6ee26e2b1bf0e2715776ac38523062cc87e6b"
+    },
+    {
+      "path": "flight/index.html",
+      "bytes": 32090,
+      "sha256": "990b8cb494a58e754c30bd6e6ecee2a8a96537ae2cfb46777d39868237d20148"
+    },
+    {
+      "path": "flight/service-worker.js",
+      "bytes": 1172,
+      "sha256": "9e2cf583e596834dcb10ded3b55f96600bf5da3249d39d676a713130e2532098"
     },
     {
       "path": "frame_screw_m25.glb",
@@ -134,8 +149,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 75863,
-      "sha256": "d468cc88abc7946ad2419ac6b570aff4567517ad6c5433a9f1525d681fa99e79"
+      "bytes": 75966,
+      "sha256": "d52e1eb0493520796a18e3a737d1485aacaae044596f07b3a6136d225aa545b1"
     },
     {
       "path": "kit-local.js",
@@ -304,8 +319,8 @@
     },
     {
       "path": "server.js",
-      "bytes": 2010,
-      "sha256": "e610b414cd9358a833996cdb534cbc7218d3f145d9e9437884a3d909ff9e6b5b"
+      "bytes": 2028,
+      "sha256": "def37932b920d39cc979df6831fcbf671f4ed8beef0a2068ea7faba629718e92"
     },
     {
       "path": "styles.css",

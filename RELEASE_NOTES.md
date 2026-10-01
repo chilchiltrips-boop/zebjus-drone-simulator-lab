@@ -1,12 +1,18 @@
-# ZEBJUS V18.3.58 — compiled firmware, same-ID reconnect and real hand RC
+# V18.3.60
 
-A1 and A2 APP/FACTORY binaries are included, compiled with Arduino-ESP32 3.3.12. Board chip IDs, release versions, dual OTA partitions, image sizes and factory/APP contents were verified. Catalogs contain current sizes and SHA-256 values. Firmware Center checks the application descriptor and loads a separate file when APP/FACTORY changes. OTA requests carry the physical Device ID, and firmware rejects mismatched or armed/bench-active uploads.
+- Fixed AP password to **12345678**, including migration from older saved random credentials; unique SSIDs and Device IDs remain unchanged.
+- Added Android source and a signed development APK under `android-app/`, with in-app kit Wi-Fi connection on Android 10+ and read-only identity verification.
+- Android AP landing now offers a native app intent link; Android app links cannot ARM, acquire control automatically or replace a saved different Device ID. APK flight navigation opens no external browser.
+- Added a GitHub Actions Android build; firmware/app/build inputs are grouped into the final upload batch after assets.
 
-Refresh and AP/STA recovery reconnect only to the saved Device ID, including through 192.168.4.1. Same-name boards cannot silently replace it. Python and joystick TX stay stopped after recovery. In-flight status requests cannot undo disconnect, and lock/admin requests carry the expected ID.
+- Added the Aerion Flight App: dark full-screen control view, no Python interface, floating/fixed sticks with permanent left throttle/yaw and right pitch/roll assignments.
+- Added top connection/AP/STA/actual ARM status, ANGLE/RATE mode, manual ARM/DISARM, STOP, settings and a connection-help screen for an unconnected kit.
+- Throttle now ramps from the current value without a first-touch jump; directional axes center and throttle holds on release. Two-finger touch works independently.
+- Refresh/reconnect remain read-only until Take control. Link/lock loss, hidden pages, focus changes, settings and rotation stop output; cancelled late grants cannot resume RC. A fresh session on every Take control rejects previously delayed RC/ARM frames.
+- The embedded AP page and standalone `flight/` page share one editable source. Added flight-only launchers and an independent offline PWA cache; the engineering lab retains its separate Python/hand functions.
+- Includes rebuilt matching A1/A2 APP and FACTORY binaries, current catalogs and offline hashes. Upload folders remain limited to 100 files and 14.5 MB raw data per batch.
 
-Camera and hand tracking continue while the real target is armed. Local hand inference runs in a separate Worker with one frame in flight. Hand RC rejects missing/stale hands, stops on link/control/selection loss and pins commands and cleanup to the run's Device ID. A simple Hand + Keyboard RC instructor example was added; example visibility remains off by default.
-
-Local browser tests executed actual Pyodide, OpenCV, plots and MediaPipe inference with external network blocked, including from the complete browser cache. Actual UI/RC tests used synthetic hands and kit HTTP; USB/OTA transports were simulated. Physical flashing, radio reconnect, recognition accuracy, motor response and flight still require the real kit. See SUPPORT/V18_3_58_UPDATE_AND_TEST.md for sizes, checks and acceptance steps.
+See `SUPPORT/V18_3_60_UPDATE_AND_TEST.md` for opening the app, controls, firmware offsets and hardware acceptance. Automated browser/transport checks do not replace physical USB/OTA or flight testing.
 
 ## Earlier V18.3.55 changes
 
