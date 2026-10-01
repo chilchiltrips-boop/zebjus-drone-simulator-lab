@@ -1,8 +1,8 @@
 {
   "schema": 2,
   "product": "ZEBJUS_FLIGHTCORE",
-  "version": "18.3.58",
-  "builtAt": "2026-10-01T05:32:15Z",
+  "version": "18.3.60",
+  "builtAt": "2026-10-01T18:20:55Z",
   "catalog": "catalog.json",
   "note": "Board-aware firmware catalog. Build automation marks each verified package available after compilation."
 }

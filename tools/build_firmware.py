@@ -79,6 +79,11 @@ def write_metadata(catalog,version,built_at):
     catalog['builtAt']=built_at
     data=json.dumps(catalog,indent=2)+'\n'
     CAT.write_text(data); (ROOT/'firmware-catalog.json').write_text(data)
+    updater=ROOT/'firmware-updater.js'
+    source=updater.read_text()
+    source,count=re.subn(r'^const EMBEDDED_CATALOG=.*?;$',lambda _: 'const EMBEDDED_CATALOG='+json.dumps(catalog,separators=(',',':'))+';',source,count=1,flags=re.M)
+    if count!=1: raise RuntimeError('Embedded firmware updater catalog was not found')
+    updater.write_text(source)
     sub={'schema':2,'product':'ZEBJUS_FLIGHTCORE','version':version,'builtAt':built_at,'catalog':'catalog.json','note':'Board-aware firmware catalog. Build automation marks each verified package available after compilation.'}
     top={**sub,'catalog':'firmware-catalog.json'}
     (OUT/'latest.json').write_text(json.dumps(sub,indent=2)+'\n')

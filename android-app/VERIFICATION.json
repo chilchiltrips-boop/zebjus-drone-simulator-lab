@@ -1,0 +1,49 @@
+{
+  "version": "18.3.60-android.1",
+  "apk_sha256": "b7668e5df97fa67302f5efa1b8bc20a0e7163ad5cb22d53072c12a2bd06b11f5",
+  "checks": {
+    "compiled_Dex_and_resources": "passed",
+    "APK_v2_v3_signature": "passed",
+    "APK_zipalign_and_ZIP_integrity": "passed",
+    "APK_manifest_and_exact_bundled_asset_match": "passed",
+    "native_Java_policy_tests": "passed",
+    "bundled_UI_and_Android_JS_adapter_in_Chromium": "passed"
+  },
+  "browser_checks": [
+    "disconnected flow",
+    "native Wi-Fi settings action",
+    "identity pairing",
+    "ARM and keyboard RC",
+    "native lifecycle pause hook",
+    "read-only resume",
+    "timeout AbortSignal/native cancellation",
+    "unique per-document reply IDs",
+    "reload does not reacquire",
+    "wrong Device ID refusal",
+    "no external runtime or browser API traffic",
+    "in-app Wi-Fi selection bridge action",
+    "Wi-Fi connect performs read-only verification",
+    "app link performs read-only verification",
+    "app link cannot switch a saved different kit",
+    "external configuration links hidden"
+  ],
+  "test_boundary": {
+    "browser_native_bridge": "simulated",
+    "browser_controller_API": "simulated",
+    "Android_phone_or_emulator_tested": false,
+    "physical_drone_tested": false,
+    "Gradle_build_executed": false
+  },
+  "build_toolchain": {
+    "Android_SDK_Platform": "36 r02",
+    "Android_Build_Tools": "36.0.0",
+    "Java_runtime": "17",
+    "Java_source_target": "8",
+    "compiler": "Eclipse ECJ 3.39.0",
+    "packaging": "aapt2, D8, zipalign, apksigner"
+  },
+  "signing": "development key included for development updates; not private production signing",
+  "source_archive_constraint": "Android source below 100 files; full repository delivered in <=100-file / <=14.5MB batches",
+  "native_network_specifier_on_phone_tested": false,
+  "captive_portal_intent_handoff_on_phone_tested": false
+}
