@@ -9,10 +9,18 @@ on:
       - 'android-app/tests/**'
       - 'android-app/signing/aerion-development.p12'
       - '.github/workflows/build-aerion-android.yml'
+      - 'tools/embed_ap_pages.py'
+      - 'tools/ap_fly_source.html'
+      - 'control-sticks.js'
+      - 'kit-console.js'
   pull_request:
     paths:
       - 'android-app/**'
       - '.github/workflows/build-aerion-android.yml'
+      - 'tools/embed_ap_pages.py'
+      - 'tools/ap_fly_source.html'
+      - 'control-sticks.js'
+      - 'kit-console.js'
 
 permissions:
   contents: read
@@ -41,6 +49,8 @@ jobs:
           aerion_sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
           test -n "$aerion_sdk"
           "$aerion_sdk/cmdline-tools/latest/bin/sdkmanager" --install 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Verify shared offline UI
+        run: python3 ../tools/embed_ap_pages.py --check
       - name: Test native control and app-link policy
         run: |
           set -euo pipefail

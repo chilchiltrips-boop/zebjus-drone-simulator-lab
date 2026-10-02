@@ -4,7 +4,11 @@ on:
   push:
     paths:
       - 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino'
-      - 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h'
+      - 'FlightCore_Firmware/*.h'
+      - 'tools/embed_ap_pages.py'
+      - 'tools/ap_*_source.html'
+      - 'control-sticks.js'
+      - 'kit-console.js'
       - 'FlightCore_Firmware/src/**'
       - 'FlightCore_Firmware/catalog.json'
       - 'VERSION.txt'
@@ -36,6 +40,12 @@ jobs:
         uses: arduino/setup-arduino-cli@v2
         with:
           version: '1.5.1'
+      - name: Generate self-contained compressed AP pages
+        run: python3 tools/embed_ap_pages.py
+      - name: Check flight math
+        run: |
+          g++ -std=c++17 tools/test_flight_math.cpp -o /tmp/aerion-flight-math
+          /tmp/aerion-flight-math
       - name: Compile all supported FlightCore boards
         run: python3 tools/build_firmware.py --board all
       - name: Clean obsolete release leftovers and refresh inventory
@@ -96,7 +106,7 @@ jobs:
             echo "Publish attempt ${attempt}/4"
             git fetch origin main
 
-            if ! git diff --quiet "${GITHUB_SHA}" origin/main --               FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino               FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h               FlightCore_Firmware/src               FlightCore_Firmware/catalog.json               VERSION.txt tools/build_firmware.py tools/cleanup_repo.py tools/make_offline_manifest.py tools/validate_offline_bundle.py               .github/workflows/build-flightcore-a1.yml; then
+            if ! git diff --quiet "${GITHUB_SHA}" origin/main --               FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino               FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h FlightCore_Firmware/FlightControlMath.h FlightCore_Firmware/FlightFeatures.h FlightCore_Firmware/AP_ASSETS.h tools/embed_ap_pages.py tools/ap_portal_source.html tools/ap_fly_source.html tools/ap_io_source.html control-sticks.js kit-console.js               FlightCore_Firmware/src               FlightCore_Firmware/catalog.json               VERSION.txt tools/build_firmware.py tools/cleanup_repo.py tools/make_offline_manifest.py tools/validate_offline_bundle.py               .github/workflows/build-flightcore-a1.yml; then
               echo "A newer firmware source/build workflow is already on main."
               echo "This run will not publish stale binaries; the newer workflow run owns publication."
               exit 0
