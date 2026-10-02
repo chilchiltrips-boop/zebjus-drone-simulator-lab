@@ -13,7 +13,7 @@ const sandbox={window,URLSearchParams,AbortController,setTimeout,clearTimeout,pe
 }};
 vm.createContext(sandbox);vm.runInContext(fs.readFileSync(path.join(root,'kit-local.js'),'utf8'),sandbox);
 const kit=window.ZebjusDroneKit;
-function node(){return{textContent:'',innerHTML:'',value:'',style:{},setAttribute(){},classList:{toggle(){}},matches:()=>false}}
+function node(){return{textContent:'',dataset:{},innerHTML:'',value:'',style:{},setAttribute(){},classList:{toggle(){}},matches:()=>false}}
 const nodes=new Map([['#webJoyTarget',{...node(),value:'sim'}]]);
 let stopped=0,commands=0;
 Object.assign(sandbox,{document:{querySelector:s=>nodes.get(s)||null,querySelectorAll:()=>[],addEventListener(){},readyState:'loading'},location:{search:''},requestAnimationFrame(){},setInterval(){}});

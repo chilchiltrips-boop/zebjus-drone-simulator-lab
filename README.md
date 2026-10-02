@@ -1,16 +1,16 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.60
+# ZEBJUS F450 Drone Engineering Lab V18.3.61
 
 ## Aerion Flight App
 
-Android APK/source: **`android-app/`**. AP password is **12345678**; older saved passwords migrate after this firmware update. Android 10+ can connect kit Wi-Fi inside the installed app. On a manually joined Android AP, the landing page offers **Open Aerion Flight app**. See [V18.3.60 setup](SUPPORT/V18_3_60_UPDATE_AND_TEST.md).
+Android APK/source: **`android-app/`**. AP password is **12345678**; older saved passwords migrate after this firmware update. Android 10+ can connect kit Wi-Fi inside the installed app. On a manually joined Android AP, the landing page offers **Open Aerion Flight app**. See [V18.3.61 setup](SUPPORT/V18_3_61_UPDATE_AND_TEST.md).
 
 Open **Start_Flight_App.bat** (Windows), **Start_Flight_App.command** (Mac), or `python3 start_offline.py --flight`; the flight-only browser page is **http://localhost:8787/flight/**. After installing the matching firmware, joining the kit AP and opening **http://192.168.4.1/** gives the same self-contained screen without a laptop server.
 
-This dark, full-screen app has no Python interface/runtime: left floating stick = throttle/yaw, right = pitch/roll, fixed sides, top connection status and ANGLE/RATE mode. A disconnected kit shows Connect instructions. ARM/DISARM is manual; STOP releases control. Refresh, reconnection and settings never automatically resume output. See the [V18.3.60 guide](SUPPORT/V18_3_60_UPDATE_AND_TEST.md).
+This dark, full-screen app has no Python interface/runtime: left floating stick = throttle/yaw, right = pitch/roll, fixed sides, top connection status and ANGLE/RATE mode. A disconnected kit shows Connect instructions. ARM/DISARM is manual; STOP releases control. Refresh and reconnection never automatically resume output. Explicit mobile connection reserves ownership; a connected laptop becomes view-only and mirrors received sticks. Settings include AP/STA, PID/calibration, flight limits and diagnostics. See the [V18.3.61 guide](SUPPORT/V18_3_61_UPDATE_AND_TEST.md).
 
 ## Compiled firmware, reconnect and hand control
 
-V18.3.60 includes both controller profiles, strict saved Device ID recovery and real-target camera/hand RC. Hardware tests remain pending; browser/transport checks are recorded in [the update guide](SUPPORT/V18_3_60_UPDATE_AND_TEST.md).
+V18.3.61 includes both controller profiles, strict saved Device ID recovery and real-target camera/hand RC. Hardware tests remain pending; browser/transport checks are recorded in [the update guide](SUPPORT/V18_3_61_UPDATE_AND_TEST.md).
 
 ## Full offline Python and hand tracking
 
@@ -35,7 +35,7 @@ On a laptop connected to the same AP, copy `python_companion`, run `pair_ap.py` 
 
 ## AP / STA with an enclosed FlightCore
 
-Flash this firmware before closing the case. Every controller uses a unique `ZEBJUS-FC-<12-hex Device ID suffix>` SSID and AP password **`12345678`**. V18.3.60 replaces older saved random AP passwords on the first reboot after firmware update. On first AP startup, copy both from USB Serial at 115200 onto the correct case. If the kit is already on school Wi-Fi, connect its verified Device ID in Drone Lab, take control and use **Settings → Show this kit's AP details**. Record the details before selecting **Switch selected kit to AP**. Disarm and stop bench outputs first.
+Flash this firmware before closing the case. Every controller uses a unique `ZEBJUS-FC-<12-hex Device ID suffix>` SSID and AP password **`12345678`**. V18.3.61 replaces older saved random AP passwords on the first reboot after firmware update. On first AP startup, copy both from USB Serial at 115200 onto the correct case. If the kit is already on school Wi-Fi, connect its verified Device ID in Drone Lab, take control and use **Settings → Show this kit's AP details**. Record the details before selecting **Switch selected kit to AP**. Disarm and stop bench outputs first.
 
 AP stays active through power cycles. If saved Wi-Fi cannot be reached at startup or drops while disarmed, the kit also enters persistent AP. Join its specific SSID with password `12345678`, then open `http://192.168.4.1/` for the Flight App. In **Settings** (`/setup`), **Activate saved Wi-Fi mode** tries saved profiles, or **Save & test Wi-Fi** verifies a new one. If that network is unavailable, the kit returns to AP and stays there. No physical BOOT access is required. AP password remains `12345678` after a web factory reset or full erase/reflash of this firmware.
 
@@ -63,7 +63,7 @@ For a new kit, join its labeled AP and use `http://192.168.4.1/` for direct cont
 3. Scan I²C, use a sensor's own register datasheet for generic read/write, then configure free A2 D7–D10 pins for 50 Hz servo, 3.3 V GPIO or GPS. Generic NMEA 9600 needs GPS TX→FC RX; bundled DroneGPS UBX 10 Hz mode additionally needs FC TX→GPS RX. The 2D reference automatically chooses free signal pins for selected accessories and can apply supported assignments. The matrix editor supports HT16K33 at 0x70–0x77. Never power a servo/load from a signal GPIO.
 4. The same controls are hosted at **`http://192.168.4.1/io`** in setup AP, or `http://<kit-address>/io` in STA. The FC's `/fly` page supplies direct sticks and keyboard control. Browser Python examples include the pin map, PPM, multi-I²C, servo, GPS, matrix and GPIO; `python_companion/expansion_demo.py` is a read-only desktop/PyCharm starter.
 
-This ZIP includes verified A1/A2 APP and FACTORY `.bin` builds. See [V18.3.60 update and test guide](SUPPORT/V18_3_60_UPDATE_AND_TEST.md) for image selection and physical checks. A2 stabilized flight currently requires MPU6050; A1 remains bridge-only. Review the real-hardware sequence in `SUPPORT/FLIGHT_VALIDATION_V18_3_47.md` before using motors. The GPS 10 Hz request is implemented but only `gps_read.measuredHz` on a connected kit can verify the actual rate.
+This ZIP includes verified A1/A2 APP and FACTORY `.bin` builds. See [V18.3.61 update and test guide](SUPPORT/V18_3_61_UPDATE_AND_TEST.md) for image selection and physical checks. A2 stabilized flight currently requires MPU6050; A1 remains bridge-only. Review the real-hardware sequence in `SUPPORT/FLIGHT_VALIDATION_V18_3_47.md` before using motors. The GPS 10 Hz request is implemented but only `gps_read.measuredHz` on a connected kit can verify the actual rate.
 
 ## Unified control mirror
 
