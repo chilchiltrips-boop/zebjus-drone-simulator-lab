@@ -1113,3 +1113,7 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 @media(max-width:800px){.top-network-control{align-self:flex-start}.top-network-notice{top:12px}}
 .offline-progress{width:100%;height:8px;margin:14px 0 4px;accent-color:#62e7ba}
 .offline-settings [role="status"]{min-height:3.5em;overflow-wrap:anywhere}
+
+/* Keep observed mobile sticks legible while input remains disabled. */
+.mobile-view-only .aerion-stick-zone.disabled .aerion-stick-base{opacity:.85}
+.mobile-view-only #webJoyDisarmBtn,.mobile-view-only #webJoyCenterBtn{opacity:.45;cursor:default}
