@@ -79,8 +79,8 @@ function updateTopKitStatus(){
 }
 function targetUi(){
  const mobile=!!window.__zebjusMobileViewOnly;
- const realTarget=$('#webJoyTarget')?.value==='device';for(const selector of ['#webMode','#basicFlightMode']){const field=$(selector);if(field){for(const opt of [...field.options||[]]){const key=+opt.value>=1900?'altitude':+opt.value>=1400?'rate':'angle';opt.disabled=realTarget&&selected()?.capabilities?.[key]!==true}field.disabled=!!window.__zebjusMobileViewOnly||(realTarget&&!!selected()?.armed&&!selected()?.capabilities?.inflightModeSwitch)}}
- const devOpt=$('#webJoyTarget option[value="device"]'),dev=selected(),linkState=realKitAvailability();if(devOpt){devOpt.disabled=false;devOpt.textContent='REAL KIT + TRIPOD MIRROR';devOpt.title=linkState.text}
+ const realTarget=$('#webJoyTarget')?.value==='device';for(const selector of ['#webMode','#basicFlightMode']){const field=$(selector);if(field){for(const opt of [...field.options||[]]){const key=+opt.value>=1900?'altitude':+opt.value>=1400?'rate':'angle';const disabled=realTarget&&selected()?.capabilities?.[key]!==true;if(opt.disabled!==disabled)opt.disabled=disabled}const fieldDisabled=!!window.__zebjusMobileViewOnly||(realTarget&&!!selected()?.armed&&!selected()?.capabilities?.inflightModeSwitch);if(field.disabled!==fieldDisabled)field.disabled=fieldDisabled}}
+ const devOpt=$('#webJoyTarget option[value="device"]'),dev=selected(),linkState=realKitAvailability();if(devOpt){if(devOpt.disabled)devOpt.disabled=false;if(devOpt.textContent!=='REAL KIT + TRIPOD MIRROR')devOpt.textContent='REAL KIT + TRIPOD MIRROR';if(devOpt.title!==linkState.text)devOpt.title=linkState.text}
  const target=$('#webJoyTarget')?.value||'sim',tb=$('#joyTargetBadge');if(tb){tb.textContent=mobile?'MOBILE · VIEW ONLY':target==='sim'?'SIMULATOR':linkState.ok?'REAL + SIM MIRROR':'REAL • WAITING';tb.className='target-mode-badge '+(target==='sim'?'sim':'real')}
  const tn=$('#joyTargetNote');if(tn)tn.textContent=mobile?'Received mobile commands are mirrored here. This laptop cannot transmit or ARM.':target==='device'&&!linkState.ok?linkState.text:!st.txOn?'Transmitter is OFF. Outputs are held safe.':target==='sim'?'Simulator transmitter active. No real kit commands are sent.':'The same joystick frame drives Tripod Simulator and the selected FlightCore.';
  setText('joyTargetSummary',target==='sim'?'SIMULATOR':linkState.ok?'REAL KIT + SIM':'REAL KIT • WAITING');setText('joyTargetHelp',linkState.text);
@@ -127,8 +127,8 @@ async function toggleNetworkMode(){
   await client.useWifi(profile.ssid);networkNotice(`Kit restarting in STA mode. Connect this computer to ${profile.ssid}, then reconnect the kit.`);disconnectKit(false);
  }catch(e){networkNotice('Wi-Fi mode switch failed: '+e.message)}finally{networkSwitchBusy=false;networkToggleUi()}
 }
-function statusUi(){networkToggleUi();const current=selected(),mobileView=!!(selectedConnected()&&current?.controlRole==='MOBILE'&&!current.lockMine);const targetSelect=$('#webJoyTarget');if(mobileView&&!window.__zebjusMobileViewOnly){st.preMobileTarget=targetSelect?.value||'sim';if(targetSelect)targetSelect.value='device'}else if(!mobileView&&window.__zebjusMobileViewOnly&&targetSelect){targetSelect.value=st.preMobileTarget||'sim'}window.__zebjusMobileViewOnly=mobileView;
- for(const id of ['webJoyTarget','webTxPowerBtn','webJoyDisarmBtn','webJoyCenterBtn','webCh9','webLed','simRunBtn','simResetBtn','simFlightMode','simCalibrateLevelBtn','simDisturbBtn']){const el=$('#'+id);if(!el)continue;if(mobileView){el.disabled=true;el.dataset.mobileDisabled='1'}else if(el.dataset.mobileDisabled){el.disabled=false;delete el.dataset.mobileDisabled}}
+function statusUi(){networkToggleUi();const current=selected(),mobileView=!!(selectedConnected()&&current?.controlRole==='MOBILE'&&!current.lockMine);const targetSelect=$('#webJoyTarget');if(mobileView&&!window.__zebjusMobileViewOnly){st.preMobileTarget=targetSelect?.value||'sim';if(targetSelect)targetSelect.value='device'}else if(!mobileView&&window.__zebjusMobileViewOnly&&targetSelect){targetSelect.value=st.preMobileTarget||'sim'}window.__zebjusMobileViewOnly=mobileView;if(targetSelect){if(targetSelect.disabled!==st.pythonRcActive)targetSelect.disabled=st.pythonRcActive;const title=st.pythonRcActive?'Stop Python before changing the control target':mobileView?'Choose the display target. Mobile flight control remains view only.':'Choose Simulator or Real kit';if(targetSelect.title!==title)targetSelect.title=title};
+ for(const id of ['webTxPowerBtn','webJoyDisarmBtn','webJoyCenterBtn','webCh9','webLed','simRunBtn','simResetBtn','simFlightMode','simCalibrateLevelBtn','simDisturbBtn']){const el=$('#'+id);if(!el)continue;if(mobileView){el.disabled=true;el.dataset.mobileDisabled='1'}else if(el.dataset.mobileDisabled){el.disabled=false;delete el.dataset.mobileDisabled}}
  document.body?.classList.toggle('mobile-view-only',mobileView);const banner=$('#mobileMirrorBanner');if(banner)banner.hidden=!mobileView;const take=$('#takeControlBtn');if(take)take.disabled=mobileView;
  const b=$('#schoolCloudBadge');if(b){b.textContent=ready()?'LOCAL LINK':'UNAVAILABLE';b.className='status '+(ready()?'good':'')}
  const q=$('#kitSearchInput');if(q&&document.activeElement!==q)q.value=st.query;
@@ -308,7 +308,8 @@ async function telemetryTick(now){
 }
 async function lockTick(now){if(!ownsLock()||now-st.lastLockBeat<2500)return;st.lastLockBeat=now;try{await client.heartbeat()}catch(_){window.zebjusStopPythonForSafety?.('Control heartbeat lost');if(selected())selected().lockMine=false;healthRefresh(true)}}
 
-function setJoyKnob(which,x,y){const k=$(which==='left'?'#webLeftKnob':'#webRightKnob');if(k){k.style.left=`${50+x*31}%`;k.style.top=`${50+y*31}%`}}
+const webStickHandles={};
+function setJoyKnob(which,x,y){if(webStickHandles[which]?.state.pointer!=null)return;const k=$(which==='left'?'#webLeftKnob':'#webRightKnob');if(k){k.style.left=`${50+x*31}%`;k.style.top=`${50+y*31}%`}}
 function modeName(){return st.joy[5]>=1900?'ALTITUDE':st.joy[5]>=1400?'RATE':'ANGLE'}
 function altitudeMode(){return modeName()==='ALTITUDE'}
 function armGate(){
@@ -334,8 +335,8 @@ function updateTxIndicators(){
 function renderJoy(){
  const c=st.joy;setJoyKnob('left',(c[3]-1500)/500,0);setJoyKnob('right',(c[0]-1500)/500,(1500-c[1])/500);
  const l=$('#webLeftRead'),r=$('#webRightRead');if(l)l.textContent=`T ${c[2]} • Y ${Math.round((c[3]-1500)/5)}%`;if(r)r.textContent=`P ${Math.round((c[1]-1500)/5)}% • R ${Math.round((c[0]-1500)/5)}%`;
- const m=$('#webMode');if(m)m.value=String(c[5]);const ch9=$('#webCh9');if(ch9)ch9.value=c[8];const o=$('#webCh9Out');if(o)o.textContent=c[8];const led=$('#webLed');if(led)led.checked=c[9]>1500;
- const basic=$('#basicFlightMode');if(basic)basic.value=String(c[5]>=1500?1500:1000);
+ const m=$('#webMode');if(m&&document.activeElement!==m&&m.value!==String(c[5]))m.value=String(c[5]);const ch9=$('#webCh9');if(ch9)ch9.value=c[8];const o=$('#webCh9Out');if(o)o.textContent=c[8];const led=$('#webLed');if(led)led.checked=c[9]>1500;
+ const basic=$('#basicFlightMode');if(basic&&document.activeElement!==basic&&basic.value!==String(c[5]>=1500?1500:1000))basic.value=String(c[5]>=1500?1500:1000);
  const labels=['ROLL','PITCH','THROTTLE','YAW','ARM','MODE','ALT','AUX','CAM/AUX','LED'];const g=$('#webChannelGrid');if(g)g.innerHTML=c.map((v,i)=>`<div><span>CH${i+1} • ${labels[i]}</span><b>${v}</b><i style="--p:${(v-1000)/10}%"></i></div>`).join('');
  updateArmGuidance();updateTxIndicators();targetUi();
 }
@@ -358,9 +359,9 @@ function tryToggleArm(){
  st.joy[4]=2000;renderJoy();log('ARMED • '+modeName());
 }
 function bindWebStick(el,which){
- if(!el)return;window.AerionSticks.bind(el,{knob:el.querySelector('i'),enabled:()=>st.txOn&&!st.pythonRcActive&&!window.__zebjusMobileViewOnly,
- start:()=>{st.joyPointerActive++;noteJoyInput()},finish:()=>{st.joyPointerActive=Math.max(0,st.joyPointerActive-1)},
- change:(x,y,dt)=>{noteJoyInput();if(which==='left'){st.joy[3]=Math.round(1500+x*500);if(dt)st.joy[2]=Math.round(clamp(st.joy[2]-y*window.AerionSticks.settings().throttleSpeed*dt,1000,2000))}else{st.joy[0]=Math.round(1500+x*500);st.joy[1]=Math.round(1500-y*500)}renderJoy()}});
+ if(!el)return;let preciseThrottle=st.joy[2],publishedThrottle=st.joy[2];webStickHandles[which]=window.AerionSticks.bind(el,{knob:el.querySelector('i'),enabled:()=>st.txOn&&!st.pythonRcActive&&!window.__zebjusMobileViewOnly&&api()?.getActiveTab?.()==='joystick',
+ start:()=>{preciseThrottle=publishedThrottle=st.joy[2];st.joyPointerActive++;noteJoyInput()},finish:()=>{st.joyPointerActive=Math.max(0,st.joyPointerActive-1)},
+ change:(x,y,dt)=>{noteJoyInput();if(which==='left'){st.joy[3]=Math.round(1500+x*500);if(dt){if(st.joy[2]!==publishedThrottle)preciseThrottle=st.joy[2];preciseThrottle=clamp(preciseThrottle-y*window.AerionSticks.settings().throttleSpeed*dt,1000,2000);st.joy[2]=publishedThrottle=Math.round(preciseThrottle)}}else{st.joy[0]=Math.round(1500+x*500);st.joy[1]=Math.round(1500-y*500)}renderJoy()}});
 }
 function centerJoy(){const mode=st.joy[5];st.joy=[1500,1500,1000,1500,1000,mode,mode>=1900?2000:1000,1000,1500,st.joy[9]>1500?2000:1000];renderJoy();log('Sticks centered • throttle held low at 1000.')}
 function joyTypingTarget(el){return !!(el&&(el.matches?.('input,textarea,select')||el.isContentEditable))}
@@ -392,6 +393,7 @@ function queueSafeJoystickFrame(force=false){if(canControl()&&realRcCapable()&&(
 function enforceJoystickLink(){if(st.pythonRcActive&&st.activeJoyTarget==='device'&&!realKitAvailability().ok){window.zebjusStopPythonForSafety?.('Real control link lost');return}if(st.pythonRcActive||$('#webJoyTarget')?.value!=='device'||!st.txOn||realKitAvailability().ok)return;setTxSafe();st.txOn=false;queueSafeJoystickFrame();api()?.setSimRunning?.(false);renderJoy();log('Real transmitter stopped • '+realKitAvailability().text)}
 function switchJoystickTarget(target){
  const sel=$('#webJoyTarget');if(!sel)return;if(st.pythonRcActive){sel.value=($('#pythonTarget')?.value||'sim')==='real'?'device':'sim';renderJoy();return}
+ if(window.__zebjusMobileViewOnly){st.activeJoyTarget=target;sel.value=target;renderJoy();return}
  const previous=st.activeJoyTarget;setTxSafe();st.txOn=false;api()?.setSimRunning?.(false);if(previous==='device')queueSafeJoystickFrame(true);st.activeJoyTarget=target;sel.value=target;
  if(target==='device'&&st.joy[5]>=1900){st.joy[5]=1500;st.joy[6]=1000}renderJoy();if(target==='device'&&!realKitAvailability().ok)log(realKitAvailability().text);
 }

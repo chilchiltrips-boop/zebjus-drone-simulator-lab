@@ -66,3 +66,16 @@ Configure monitor kind/address/cells; compare against a multimeter at two pack v
 | Android files | Export/restore with actual system picker | Files saved/read, control remains stopped after resume |
 
 Do not mark these physical rows passed using browser simulation. Rate/Angle and the new transitions need real-kit acceptance before flight.
+
+
+## R2 fix installation (2026-10-02)
+
+Use `ZEBJUS_V18_3_61_R2_FIXES.zip` on an existing complete V18.3.61 repository. Extract it and upload the **contents of UPLOAD_01** to the repository root, keeping `.github/` and `tools/` paths. Commit all changed files together. Do not upload the ZIP or the UPLOAD_01 folder itself. The full source alternative remains four balanced batches of at most 100 files each.
+
+After the new commit, use **Actions → Build ZEBJUS FlightCore Firmware → Run workflow → main** if the automatic build has not started. Re-running the old failed job executes its old commit and will not include these fixes. The upstream download server must eventually respond; retries cannot repair a persistent server outage.
+
+Open/reload the WebApp after replacement. The title is **ZEBJUS Aerion**. If an old page remains visible, stop any active program/control session and reload once more when the update is ready. Run **Settings → Save offline copy** again to refresh the browser's verified copy. Use the same browser and address for offline access.
+
+Hardware firmware and the Android APK remain the verified V18.3.61 build. No wiring changes or new APK installation are required for this web interface fix. Do not flash another controller profile to solve an HTTP 500 during dependency installation.
+
+Automated R2 checks cover dependency retry recovery/exhaustion, one-attempt compiler failure reporting, unchanged install-only firmware, native target selection, throttle drag/hold, fractional throttle accumulation, keyboard SAFE, Tripod controls, page-exit cancellation, responsive header layout, refresh/identity reconnect, mobile ownership and view-only target selection, armed configuration guards, Python output cleanup, offline Python/OpenCV/plots and synthetic-camera hand tracking. Kit transport and some hand-control tests use synthetic fixtures. Real phone/radio/flight, USB/OTA flashing and loaded-loop timing still require hardware validation. This session did not execute GitHub Actions on the user's repository.
