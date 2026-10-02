@@ -1,30 +1,20 @@
-# GitHub upload — V18.3.60
+# ZEBJUS Aerion V18.3.61 R3 — GitHub upload
 
-Upload the **contents** of this folder to the repository root. Keep `index.html`, `.github`, `FlightCore_Firmware`, `tools` and all web assets at their current relative paths.
+Batch upload ചെയ്യാൻ എടുക്കുന്ന സമയം files corrupt ചെയ്യില്ല. എന്നാൽ live `main` branch-ൽ ഓരോ batch-ഉം commit ചെയ്താൽ, ഇടവേളയിൽ പഴയ/new files ഒരുമിച്ച് publish ആകാം. അതിനാൽ:
 
-The active source filename is permanently:
+1. `main`-ൽ നിന്ന് **upload-v18-3-61-r3** എന്ന branch create ചെയ്യുക. Pages publishing source `main` ആയി നിലനിർത്തുക.
+2. എല്ലാ batches-ന്റെയും **ഉള്ളിലെ files/folders** അതേ branch-ന്റെ repository root-ൽ upload ചെയ്ത് commit ചെയ്യുക. `UPLOAD_01` folder/ZIP തന്നെ upload ചെയ്യരുത്.
+3. macOS-ൽ **Cmd+Shift+.** ഉപയോഗിച്ച് `.github`, `.gitignore`, `android-app/.gitignore` കാണിക്കുക. Folder paths നിലനിർത്തുക; `vendor/vendor` ഉണ്ടാകരുത്.
+4. അവസാന batch-ൽ `release-integrity.json` completion marker ഉണ്ട്. ഇത് project file ആണ്; upload ചെയ്യണം. Outer `UPLOAD_MANIFEST.json`, `READ_FIRST.md`, `BATCH_INVENTORY.csv`, `assemble_project.py` wrapper files upload ചെയ്യരുത്.
+5. എല്ലാ batches-ഉം കഴിഞ്ഞ് upload branch → `main` Pull Request create ചെയ്യുക. **Verify complete upload** check pass ആയശേഷം merge ചെയ്യുക. Partial upload-ൽ ഈ check fail ആകുന്നതാണ് ശരിയായ behavior.
+6. Merge കഴിഞ്ഞ് firmware workflow automatically runs. മറ്റൊരു branch-ൽ manual run ചെയ്താലും അത് `main`-ലേക്ക് binaries publish ചെയ്യില്ല. Current main upload incomplete ആണെങ്കിൽ older build അതിനെ overwrite ചെയ്യില്ല.
 
-`FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino`
+Source edits intentional ആണെങ്കിൽ local project-ൽ `npm run release:seal` നടത്തി `release-integrity.json`, `FILE_COUNT.txt`, `offline-manifest.json` കൂടി commit ചെയ്യുക. `npm run release:check` / `npm run check` പരിശോധിക്കുക.
 
-Companion compile-safe type definitions and the bundled 10 Hz UBX GPS driver are kept at:
+Current verified A1/A2 **APP + FACTORY `.bin` files** `FlightCore_Firmware/`-ൽ ഉൾപ്പെടുത്തിയിട്ടുണ്ട്. Current Android APK: `android-app/dist/ZEBJUS_Aerion_V18_3_61_Android.apk`. R3 changes build/inventory/upload tooling; firmware/APK and runtime bytes are unchanged, so a new flash/APK install is not required for these corrections.
 
-`FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h`
-`FlightCore_Firmware/src/DroneGPS.h`
-`FlightCore_Firmware/src/DroneGPS.cpp`
+Arduino core **3.3.12** remains pinned. Temporary download failures have four attempts with 10/20/40-second backoff; completed downloads are cached. A persistent upstream server outage can still fail setup.
 
-The workflow watches the firmware source, header and `src/**`; the builder copies them into the temporary Arduino sketch before compilation.
+Full source uses the minimum number of batches (100 files maximum each). Patch ZIP, when supplied, needs only one batch on an existing complete R2 repository. Known obsolete upload wrappers and the previous APK are removed by `tools/cleanup_repo.py`; this cleanup is committed by the next successful main firmware publication. To normalize locally without downloading a toolchain: `python3 -B tools/cleanup_repo.py`.
 
-After it is added/replaced, `.github/workflows/build-flightcore-a1.yml` installs Arduino-ESP32 **3.3.12**, compiles both ZFC-A1/ESP32-C3 and ZFC-A2/XIAO ESP32-C6 applications, and overwrites:
-
-`FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin`
-`FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin`
-
-The workflow also updates `FlightCore_Firmware/catalog.json`, `FlightCore_Firmware/latest.json`, `firmware-catalog.json` and `firmware-latest.json` and commits them with the binary.
-
-This avoids stale `...V18_3_xx...ino/.bin` files. Version history is kept in Git commits, `VERSION.txt`, firmware metadata and release notes rather than mutable filenames.
-
-## Android app
-
-Keep the complete Android source under `android-app/`; `.github/workflows/build-aerion-android.yml` builds a development-signed APK. After all upload batches finish, use Actions → Build Aerion Android APK → Run workflow; download the result from Artifacts. The current compiled APK is already included under `android-app/dist/`. AP password is **12345678** after flashing this firmware.
-
-Upload each batch to repository root, replacing matching paths; commit the final batch last. The ZIP itself is a download container and is not uploaded as source.
+Physical phone/radio/flight, USB/OTA flashing and loaded 250 Hz timing require real-hardware validation. GitHub Actions execution/Pages settings were not inspected directly in this ZIP audit.

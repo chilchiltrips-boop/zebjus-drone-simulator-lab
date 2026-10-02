@@ -1,5 +1,15 @@
 # V18.3.61
 
+## R3 — Uploaded GitHub snapshot audit
+
+- The snapshot contained all 379 R2 project paths except `android-app/.gitignore`, plus ten obsolete packaging/old-APK/thumbnail files. Runtime hashes and compiled images matched. Cleanup now removes those known leftovers and restores a consistent count.
+- Validation, cleanup and packaging share one inventory. Python caches, Node dependencies and Android build outputs do not become release files. Hidden ignore files are supplied.
+- Uploads use a staging branch and one final merge. Release-integrity hashes reject missing, mixed or unexpected files before toolchain installation. PR validation does not download the ESP32 toolchain.
+- Automatic firmware/Android builds watch main; firmware publication is main-only and verifies the latest main before restoring generated outputs. Newer partial uploads cannot receive stale generated binaries.
+- Android artifacts list the current APK explicitly, avoiding accidental inclusion of the old V18.3.60 package. Current upload guides now correctly describe the included compiled images.
+- Firmware/APK/runtime bytes are unchanged. Physical flight, USB/OTA, loaded timing and actual GitHub Actions execution are not claimed by this source audit.
+
+
 ## R2 — Aerion interface and build reliability
 
 - Main WebApp is named **ZEBJUS Aerion**. The header has separate identity/control and notification rows, with navigation positioned using the actual header height. Desktop, tablet and phone widths are covered.
