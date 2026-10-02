@@ -6,12 +6,17 @@ on:
     branches: [main]
     paths:
       - 'android-app/app/**'
+      - 'VERSION.txt'
+      - 'release-integrity.json'
+      - 'tools/cleanup_repo.py'
+      - 'tools/project_files.py'
+      - 'tools/release_integrity.py'
       - 'android-app/tools/build_apk.py'
       - 'android-app/tests/**'
       - 'android-app/signing/aerion-development.p12'
       - '.github/workflows/build-aerion-android.yml'
       - 'tools/embed_ap_pages.py'
-      - 'tools/ap_fly_source.html'
+      - 'tools/flight_app_source.html'
       - 'control-sticks.js'
       - 'kit-console.js'
   pull_request:
@@ -19,7 +24,7 @@ on:
       - 'android-app/**'
       - '.github/workflows/build-aerion-android.yml'
       - 'tools/embed_ap_pages.py'
-      - 'tools/ap_fly_source.html'
+      - 'tools/flight_app_source.html'
       - 'control-sticks.js'
       - 'kit-console.js'
 
@@ -40,6 +45,16 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v5
+      - name: Require all upload helpers before checking the release
+        working-directory: .
+        run: |
+          set -euo pipefail
+          for aerion_required in tools/cleanup_repo.py tools/project_files.py tools/release_integrity.py release-integrity.json; do
+            if [ ! -s "$aerion_required" ]; then
+              echo "::error file=$aerion_required::Incomplete upload: missing $aerion_required. Upload the complete final batch to the same branch before rerunning."
+              exit 1
+            fi
+          done
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -72,7 +87,7 @@ jobs:
           name: Aerion-Android-APK
           if-no-files-found: error
           path: |
-            android-app/dist/ZEBJUS_Aerion_V18_3_61_Android.apk
+            android-app/dist/ZEBJUS_Aerion_V18_3_62_Android.apk
             android-app/dist/BUILD_REPORT.json
             android-app/dist/APK_SIGNATURE.txt
             android-app/dist/APK_MANIFEST.txt

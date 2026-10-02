@@ -44,6 +44,16 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v5
+      - name: Require every final-batch helper
+        working-directory: .
+        run: |
+          set -euo pipefail
+          for aerion_required in tools/cleanup_repo.py tools/project_files.py tools/release_integrity.py release-integrity.json; do
+            if [ ! -s "$aerion_required" ]; then
+              echo "::error file=$aerion_required::Incomplete upload: missing $aerion_required. Upload the complete final batch to the same branch before rerunning."
+              exit 1
+            fi
+          done
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -101,7 +111,7 @@ jobs:
           path: |
             ${{ runner.temp }}/zebjus-arduino
           key: ${{ steps.arduino-setup.outcome == 'success' && format('{0}-arduino-1.5.1-esp32-3.3.12-complete-v1', runner.os) || format('{0}-arduino-1.5.1-esp32-3.3.12-partial-v1-{1}-{2}', runner.os, github.run_id, github.run_attempt) }}
-      - name: Generate self-contained compressed AP pages
+      - name: Generate shared offline flight app
         run: python3 tools/embed_ap_pages.py
       - name: Check flight math
         run: |
@@ -170,7 +180,7 @@ jobs:
             echo "Publish attempt ${attempt}/4"
             git fetch origin main
 
-            if ! git diff --quiet "${GITHUB_SHA}" origin/main --               FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino               FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h FlightCore_Firmware/FlightControlMath.h FlightCore_Firmware/FlightFeatures.h FlightCore_Firmware/AP_ASSETS.h tools/embed_ap_pages.py tools/ap_portal_source.html tools/ap_fly_source.html tools/ap_io_source.html control-sticks.js kit-console.js               FlightCore_Firmware/src               FlightCore_Firmware/catalog.json               VERSION.txt release-integrity.json tools/release_integrity.py tools/project_files.py tools/test_upload_integrity.py tools/build_firmware.py tools/cleanup_repo.py tools/make_offline_manifest.py tools/validate_offline_bundle.py               .github/workflows/build-flightcore-a1.yml; then
+            if ! git diff --quiet "${GITHUB_SHA}" origin/main --               FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino               FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h FlightCore_Firmware/FlightControlMath.h FlightCore_Firmware/FlightFeatures.h FlightCore_Firmware/AP_ASSETS.h tools/embed_ap_pages.py tools/ap_portal_source.html tools/flight_app_source.html tools/ap_io_source.html control-sticks.js kit-console.js               FlightCore_Firmware/src               FlightCore_Firmware/catalog.json               VERSION.txt release-integrity.json tools/release_integrity.py tools/project_files.py tools/test_upload_integrity.py tools/build_firmware.py tools/cleanup_repo.py tools/make_offline_manifest.py tools/validate_offline_bundle.py               .github/workflows/build-flightcore-a1.yml; then
               echo "A newer firmware source/build workflow is already on main."
               echo "This run will not publish stale binaries; the newer workflow run owns publication."
               exit 0
