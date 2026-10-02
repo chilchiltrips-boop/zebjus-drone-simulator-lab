@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, hashlib, json, re, shutil, struct, subprocess, tempfile
+import argparse, hashlib, json, re, shutil, struct, subprocess, tempfile, time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -12,12 +12,24 @@ CORE_VERSION='3.3.12'
 INDEX_URL='https://espressif.github.io/arduino-esp32/package_esp32_index.json'
 
 
-def run(cmd, label='command'):
-    print('+',' '.join(map(str,cmd)),flush=True)
-    try:
-        subprocess.run(cmd,check=True)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f'{label} failed with exit code {e.returncode}. See the compiler output immediately above this message.') from e
+def run(cmd, label='command', attempts=1):
+    for attempt in range(1, attempts + 1):
+        print('+', ' '.join(map(str, cmd)), flush=True)
+        try:
+            subprocess.run(cmd, check=True)
+            return
+        except subprocess.CalledProcessError as error:
+            if attempt == attempts:
+                raise RuntimeError(f'{label} failed with exit code {error.returncode} after {attempt} attempt(s). See the command output above.') from error
+            delay = min(10 * 2 ** (attempt - 1), 40)
+            print(f'{label}: attempt {attempt}/{attempts} failed; retrying in {delay}s. Cached downloads are retained.', flush=True)
+            time.sleep(delay)
+
+
+def install_core(command):
+    # Network setup is retried; compiler errors are reported after one attempt.
+    run(command + ['core', 'update-index', '--additional-urls', INDEX_URL], 'Arduino package index download', attempts=4)
+    run(command + ['core', 'install', f'esp32:esp32@{CORE_VERSION}', '--additional-urls', INDEX_URL], 'ESP32 core installation', attempts=4)
 
 
 def sha(path):
@@ -93,7 +105,9 @@ def write_metadata(catalog,version,built_at):
 def main():
     ap=argparse.ArgumentParser(description='Build verified ZEBJUS FlightCore firmware packages with stable replace-in-place filenames.')
     ap.add_argument('--board',default='all',help='Board profile ID from catalog.json, or all')
-    ap.add_argument('--skip-core-install',action='store_true')
+    setup=ap.add_mutually_exclusive_group()
+    setup.add_argument('--skip-core-install',action='store_true')
+    setup.add_argument('--install-only',action='store_true',help='Install the pinned core without compiling or changing firmware files')
     ap.add_argument('--config-file',help='Optional Arduino CLI configuration file')
     args=ap.parse_args()
     if not SRC.exists(): raise SystemExit(f'Missing source: {SRC}')
@@ -107,8 +121,10 @@ def main():
     if not cli: raise SystemExit('arduino-cli not found. Install Arduino CLI, then rerun this script.')
     command=[cli]+(['--config-file',args.config_file] if args.config_file else [])
     if not args.skip_core_install:
-        run(command+['core','update-index','--additional-urls',INDEX_URL])
-        run(command+['core','install',f'esp32:esp32@{CORE_VERSION}','--additional-urls',INDEX_URL])
+        install_core(command)
+    if args.install_only:
+        print(f'Arduino-ESP32 {CORE_VERSION} setup complete; no firmware files changed.')
+        return
     targets=[b for b in catalog['boards'] if b['id'] in ids and (args.board=='all' or b['id']==args.board)]
     report={'version':version,'builtAt':built_at,'arduinoEsp32':CORE_VERSION,'hardwareFlashingTested':False,'boards':[]}
     for b in targets:

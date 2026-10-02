@@ -379,10 +379,12 @@ function updateAdaptiveLayout(){
  document.documentElement.style.setProperty('--app-vh',`${h*.01}px`);
  document.documentElement.style.setProperty('--app-vw',`${w*.01}px`);
  const badge=$('#adaptiveLayoutBadge');if(badge)badge.textContent=`${mode.toUpperCase()} • ${w}×${h}`;
+ const header=$('.topbar');if(header)document.documentElement.style.setProperty('--topbar-height',`${header.getBoundingClientRect().height}px`);
  clearTimeout(adaptiveTimer);adaptiveTimer=setTimeout(refreshAdaptiveCanvases,90)
 }
 function initAdaptiveLayout(){
  updateAdaptiveLayout();
+ const header=document.querySelector('.topbar');if(header&&window.ResizeObserver)new ResizeObserver(()=>{document.documentElement.style.setProperty('--topbar-height',`${header.getBoundingClientRect().height}px`)}).observe(header);
  const run=()=>requestAnimationFrame(updateAdaptiveLayout);
  window.addEventListener('resize',run,{passive:true});
  window.addEventListener('orientationchange',()=>setTimeout(run,120),{passive:true});
@@ -1656,13 +1658,14 @@ function initPidLearning(){
  if(loop){loop.value=state.sim.teachLoop;loop.disabled=state.sim.teachAxis==='yaw'||state.sim.flightMode!=='angle';loop.onchange=()=>{state.sim.teachLoop=loop.value;chart=[];updatePidCoach()}}
  updatePidCoach()
 }
+const simStickHandles={};
 function initSticks(){bindStick($('#rightStick'),'right');bindStick($('#leftStick'),'left');setStickVisual('right',0,0);setStickVisual('left',0,1)}
 function bindStick(el,which){
- if(!el)return;window.AerionSticks.bind(el,{knob:el.querySelector('i'),enabled:()=>!window.__zebjusViewOnly&&!window.__zebjusMobileViewOnly,
- start:()=>claimSimInput('tripod'),change:(x,y,dt)=>{if(which==='right'){state.sim.cmdRoll=x;state.sim.cmdPitch=-y;setStickVisual('right',x,y)}else{state.sim.cmdYaw=x;if(dt)state.sim.throttle=Math.round(clamp(state.sim.throttle-y*window.AerionSticks.settings().throttleSpeed*dt,1000,2000));setStickVisual('left',x,y)}updateStickText()}});
+ if(!el)return;let preciseThrottle=state.sim.throttle,publishedThrottle=state.sim.throttle;simStickHandles[which]=window.AerionSticks.bind(el,{knob:el.querySelector('i'),enabled:()=>!window.__zebjusViewOnly&&!window.__zebjusMobileViewOnly&&$('#tab-sim')?.classList.contains('active'),
+ start:()=>{claimSimInput('tripod');preciseThrottle=publishedThrottle=state.sim.throttle},change:(x,y,dt)=>{if(which==='right'){state.sim.cmdRoll=x;state.sim.cmdPitch=-y;setStickVisual('right',x,y)}else{state.sim.cmdYaw=x;if(dt){if(state.sim.throttle!==publishedThrottle)preciseThrottle=state.sim.throttle;preciseThrottle=clamp(preciseThrottle-y*window.AerionSticks.settings().throttleSpeed*dt,1000,2000);state.sim.throttle=publishedThrottle=Math.round(preciseThrottle)}setStickVisual('left',x,y)}updateStickText()}});
 }
 function releaseSimDirectionalInput(){heldKeys.clear();state.sim.cmdRoll=0;state.sim.cmdPitch=0;state.sim.cmdYaw=0;setStickVisual('right',0,0);setStickVisual('left',0,(1500-state.sim.throttle)/500);updateStickText()}
-function setStickVisual(which,x,y){const k=$(which==='right'?'#rightStickKnob':'#leftStickKnob');if(k){k.style.left=`${50+x*30}%`;k.style.top=`${50+y*30}%`}}
+function setStickVisual(which,x,y){if(simStickHandles[which]?.state.pointer!=null)return;const k=$(which==='right'?'#rightStickKnob':'#leftStickKnob');if(k){k.style.left=`${50+x*30}%`;k.style.top=`${50+y*30}%`}}
 function simEffectiveKeys(){return{roll:(heldKeys.has(keyMap.rollRight)?1:0)-(heldKeys.has(keyMap.rollLeft)?1:0)||state.sim.cmdRoll,pitch:(heldKeys.has(keyMap.pitchForward)?1:0)-(heldKeys.has(keyMap.pitchBack)?1:0)||state.sim.cmdPitch,yaw:(heldKeys.has(keyMap.yawRight)?1:0)-(heldKeys.has(keyMap.yawLeft)?1:0)||state.sim.cmdYaw}}
 function updateStickText(){const c=simEffectiveKeys();if($('#rightStickRead'))$('#rightStickRead').textContent=`P ${Math.round(c.pitch*100)} • R ${Math.round(c.roll*100)}`;if($('#leftStickRead'))$('#leftStickRead').textContent=`T ${state.sim.throttle} • Y ${Math.round(c.yaw*100)}`}
 function simKeyDown(e){if(window.__zebjusViewOnly||window.__zebjusMobileViewOnly)return;if(keyCaptureAction){e.preventDefault();const key=e.key.length===1?e.key.toLowerCase():e.key;if(['t','m','x'].includes(key)||Object.entries(keyMap).some(([action,value])=>action!==keyCaptureAction&&value===key)){notify('This key is reserved or already assigned. Choose another.','bad');return}keyMap[keyCaptureAction]=key;keyCaptureAction=null;heldKeys.clear();renderKeySettings();window.dispatchEvent(new Event('zebjus-keymap-change'));return}if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||''))return;if(!$('#tab-sim')?.classList.contains('active'))return;const key=e.key.length===1?e.key.toLowerCase():e.key;if(!Object.values(keyMap).includes(key))return;e.preventDefault();if(key===keyMap.run){if(!e.repeat)toggleSimRun();return}claimSimInput('tripod');heldKeys.add(key);if(key===keyMap.throttleUp)state.sim.throttle=clamp(state.sim.throttle+25,1000,2000);if(key===keyMap.throttleDown)state.sim.throttle=clamp(state.sim.throttle-25,1000,2000);const c=simEffectiveKeys();setStickVisual('right',c.roll,-c.pitch);setStickVisual('left',c.yaw,(1500-state.sim.throttle)/500);updateStickText()}

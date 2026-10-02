@@ -250,7 +250,7 @@ styles=read('styles.css')
 if '#tab-python{--py-side-w:430px;--py-terminal-h:330px}' not in styles or 'python-row-resizer' not in styles or 'python-col-resizer' not in styles: fail('V18.3.43 draggable Python workspace sizing is missing')
 if '#tab-python .python-file-list{display:flex!important;flex-direction:row!important' not in styles: fail('Student Python Files is not a horizontal project strip')
 if '#pythonTerminal .python-terminal-error' not in styles or 'color:#ff7288' not in styles: fail('Python terminal error coloring is missing')
-if f"const CACHE='zebjus-flightcore-v{version.replace('.', '-')}'" not in sw: fail('service-worker cache key is stale for V18.3.48')
+if not re.search(r"const CACHE='zebjus-flightcore-v"+re.escape(version.replace('.', '-'))+r"(?:-r[1-9][0-9]*)?'",sw): fail('service-worker cache key does not match the release or its web revision')
 
 
 # V18.3.43 Python Flight Lab / real-FC tuning integration.
