@@ -15,7 +15,7 @@ for p in sorted(ROOT.rglob('*')):
     allowed |= rel.as_posix() in {'python_companion/browser_cv2.py', 'python_companion/browser_cvzone.py', 'python_companion/simple_syntax.py', 'FlightCore_Firmware/catalog.json', 'FlightCore_Firmware/latest.json'}
     allowed |= rel.parts[0] == 'FlightCore_Firmware' and p.suffix == '.bin'
     allowed |= rel.parts[0] == 'flight' and p.suffix in {'.html', '.js', '.webmanifest', '.png'}
-    if allowed and (p.name not in {'offline-manifest.json', 'service-worker.js', 'package.json'} or rel.parts[0] == 'flight'):
+    if allowed and (p.name not in {'offline-manifest.json', 'service-worker.js', 'package.json', 'release-integrity.json'} or rel.parts[0] == 'flight'):
         data = p.read_bytes()
         files.append({'path': rel.as_posix(), 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
 payload = {'version': (ROOT / 'VERSION.txt').read_text().strip(), 'totalBytes': sum(f['bytes'] for f in files), 'files': files}

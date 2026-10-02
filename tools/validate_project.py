@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import hashlib, json, re, struct, subprocess, sys
 from pathlib import Path
+sys.dont_write_bytecode = True
+from project_files import project_files
 
 ROOT=Path(__file__).resolve().parents[1]
 errors=[]; warnings=[]
@@ -29,7 +31,7 @@ for rel in ['drone3d.js','wiring2d.js','learning-lab.js']:
     if (ROOT/rel).exists(): fail(f'orphan legacy runtime should be removed: {rel}')
 
 # Package inventory / active release note / duplicate HTML IDs.
-actual_count=sum(1 for p in ROOT.rglob('*') if p.is_file() and '.git' not in p.parts)
+actual_count=len(project_files(ROOT))
 try:
     declared_count=int(read('FILE_COUNT.txt').strip())
     if declared_count!=actual_count: fail(f'FILE_COUNT.txt={declared_count}, actual packaged files={actual_count}')
@@ -37,8 +39,8 @@ except Exception as e: fail(f'invalid FILE_COUNT.txt: {e}')
 if f'V{version}' not in read('RELEASE_NOTES.md').splitlines()[0]: fail('RELEASE_NOTES.md heading does not match VERSION.txt')
 html_ids=re.findall(r'\bid=[\"\']([^\"\']+)',read('index.html'))
 for ident in sorted(set(x for x in html_ids if html_ids.count(x)>1)): fail(f'duplicate HTML id: {ident}')
-for p in ROOT.rglob('*'):
-    if p.is_file() and p.stat().st_size==0: fail(f'zero-byte packaged file: {p.relative_to(ROOT)}')
+for p in project_files(ROOT):
+    if p.stat().st_size==0: fail(f'zero-byte packaged file: {p.relative_to(ROOT)}')
 
 # JSON syntax and version consistency.
 json_files=['package.json','manifest.webmanifest','firmware-catalog.json','firmware-latest.json','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json']

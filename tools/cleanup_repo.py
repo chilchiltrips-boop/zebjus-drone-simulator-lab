@@ -6,7 +6,9 @@ were removed from a newer ZIP. CI runs this after firmware compilation so old ru
 copies cannot keep breaking validation.
 """
 from pathlib import Path
-import argparse, re
+import argparse, re, sys
+sys.dont_write_bytecode = True
+from project_files import project_files
 
 ROOT = Path(__file__).resolve().parents[1]
 FW = ROOT / 'FlightCore_Firmware'
@@ -16,6 +18,11 @@ LEGACY_FILES = [
     'wiring2d.js',
     'learning-lab.js',
     'fc_standoff.glb',
+    'thumb_fcStandoff.png',
+    # Packaging wrappers are outside the project and must not remain in GitHub.
+    'UPLOAD_MANIFEST.json', 'BATCH_INVENTORY.csv', 'READ_FIRST.md', 'assemble_project.py',
+    'UPLOAD_INVENTORY.json', 'UPLOAD_03_INVENTORY.json', 'UPLOAD_03_GUIDE.md', 'UPLOAD_GUIDE.md',
+    'android-app/dist/ZEBJUS_Aerion_V18_3_60_Android.apk',
 ]
 
 # Old naming schemes. Stable files are ZEBJUS_FLIGHTCORE.ino and
@@ -37,7 +44,7 @@ def remove(path: Path, dry_run=False):
 
 
 def packaged_file_count():
-    return sum(1 for p in ROOT.rglob('*') if p.is_file() and '.git' not in p.parts)
+    return len(project_files(ROOT))
 
 
 def main():
