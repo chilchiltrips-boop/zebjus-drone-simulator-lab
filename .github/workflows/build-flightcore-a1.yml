@@ -32,6 +32,10 @@ jobs:
   build-flightcore:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    env:
+      ARDUINO_DIRECTORIES_DATA: ${{ runner.temp }}/zebjus-arduino/data
+      ARDUINO_DIRECTORIES_DOWNLOADS: ${{ runner.temp }}/zebjus-arduino/downloads
+      ARDUINO_NETWORK_CONNECTION_TIMEOUT: 120s
     steps:
       - uses: actions/checkout@v5
         with:
@@ -40,6 +44,28 @@ jobs:
         uses: arduino/setup-arduino-cli@v2
         with:
           version: '1.5.1'
+      - name: Restore pinned Arduino core and downloaded packages
+        id: arduino-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ runner.temp }}/zebjus-arduino
+          key: ${{ runner.os }}-arduino-1.5.1-esp32-3.3.12-complete-v1
+          restore-keys: |
+            ${{ runner.os }}-arduino-1.5.1-esp32-3.3.12-partial-v1-
+      - name: Check dependency setup failure handling
+        run: python3 -B tools/test_firmware_setup.py
+      - name: Install pinned ESP32 core with bounded download retries
+        id: arduino-setup
+        run: python3 -B tools/build_firmware.py --install-only
+      - name: Preserve completed downloads even if installation fails
+        if: ${{ always() && (steps.arduino-setup.outcome == 'success' || steps.arduino-setup.outcome == 'failure') && steps.arduino-cache.outputs.cache-hit != 'true' }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ runner.temp }}/zebjus-arduino
+          key: ${{ steps.arduino-setup.outcome == 'success' && format('{0}-arduino-1.5.1-esp32-3.3.12-complete-v1', runner.os) || format('{0}-arduino-1.5.1-esp32-3.3.12-partial-v1-{1}-{2}', runner.os, github.run_id, github.run_attempt) }}
       - name: Generate self-contained compressed AP pages
         run: python3 tools/embed_ap_pages.py
       - name: Check flight math
@@ -47,7 +73,7 @@ jobs:
           g++ -std=c++17 tools/test_flight_math.cpp -o /tmp/aerion-flight-math
           /tmp/aerion-flight-math
       - name: Compile all supported FlightCore boards
-        run: python3 tools/build_firmware.py --board all
+        run: python3 -B tools/build_firmware.py --board all --skip-core-install
       - name: Clean obsolete release leftovers and refresh inventory
         run: python3 tools/cleanup_repo.py
       - name: Refresh offline hashes after firmware build
