@@ -1,17 +1,17 @@
-# ZEBJUS V18.3.60 — upload batches
+# ZEBJUS V18.3.61 — 4 upload batches
 
-ഈ ZIP extract ചെയ്യുക. **ZIP GitHub-ലേക്ക് upload ചെയ്യരുത്.**
+ഈ ZIP extract ചെയ്യുക. ZIP GitHub-ലേക്ക് upload ചെയ്യരുത്.
 
-1. Repository root-ൽ Add file → Upload files തുറക്കുക.
-2. `UPLOAD_01` folder-ന്റെ **ഉള്ളിലെ files/folders** select ചെയ്ത് drag ചെയ്യുക. `UPLOAD_01` folder തന്നെ upload ചെയ്യരുത്. Mac-ൽ **Command + Shift + .** അമർത്തി hidden `.github` folder കാണിക്കുക; അവസാന batch-ലെ അതും upload ചെയ്യണം.
-3. Commit പൂർത്തിയായശേഷം `UPLOAD_02` മുതൽ അതേ രീതിയിൽ ഓരോ batch വീതം upload ചെയ്യുക. എല്ലാം repository root-ലേക്കാണ്.
-4. `vendor` folder-ന്റെ ഉള്ളിൽ upload ചെയ്യരുത്: അങ്ങനെ ചെയ്താൽ `vendor/vendor` path വരാം. Existing files replace ചെയ്യുക.
-5. എല്ലാ 12 batches upload ചെയ്തശേഷം മാത്രമാണ് project complete. Outer `READ_FIRST.md`, inventory, manifest, assembly helper എന്നിവ upload ചെയ്യേണ്ടതില്ല.
+1. Repository root → Add file → Upload files.
+2. `UPLOAD_01`-ന്റെ **ഉള്ളിലെ files/folders** drag ചെയ്യുക. `UPLOAD_01` folder തന്നെ upload ചെയ്യരുത്.
+3. Commit കഴിഞ്ഞ് ബാക്കിയുള്ള batches ക്രമത്തിൽ upload ചെയ്യുക. എല്ലാം repository root-ലേക്കാണ്.
+4. `vendor`-ന്റെ അകത്ത് upload ചെയ്യരുത്; `vendor/vendor` path ഉണ്ടാകരുത്. Existing paths replace ചെയ്യുക.
+5. അവസാന batch-ൽ firmware/APK/workflow inputs ഉണ്ട്. അതിനു മുമ്പ് എല്ലാ batches-ഉം upload ചെയ്യണം. macOS-ൽ hidden `.github` കാണാൻ Cmd+Shift+. ഉപയോഗിക്കുക.
 
-ഓരോ batch-ലും പരമാവധി 100 files, 14.5 MB raw data മാത്രം. ഓരോ original path-ഉം ഒരു batch-ൽ മാത്രമാണ്. Vendor files split ചെയ്തിട്ടില്ല; folders വിവിധ batches-ൽ merge ചെയ്യപ്പെടും. `BATCH_INVENTORY.csv`-ൽ counts/size ഉണ്ട്.
+ഓരോ batch-ലും പരമാവധി 100 files. ഓരോ file-ഉം 25 MiB-യിൽ താഴെ. Files split ചെയ്തിട്ടില്ല. Inventory-യിലെ batch bytes ആകെ വലുപ്പമാണ്; single-file limit അല്ല. 377 files-ന് 4 ആണ് ഏറ്റവും കുറഞ്ഞ batch എണ്ണം.
 
-Local offline use: install ചെയ്ത Python ഉപയോഗിച്ച് `python assemble_project.py` അല്ലെങ്കിൽ `python3 assemble_project.py` run ചെയ്യുക. Hash verify ചെയ്ത complete project `ZEBJUS_Local` folder-ൽ ലഭിക്കും. അതിലെ `Start_Offline.bat`, `Start_Offline.command` അല്ലെങ്കിൽ `python3 start_offline.py` ഉപയോഗിക്കുക.
-
-Compiled A1/A2 APP/FACTORY `.bin` files ഉൾപ്പെടുത്തിയിട്ടുണ്ട്. Update guide: assembled project-ലെ `SUPPORT/V18_3_60_UPDATE_AND_TEST.md`. Physical USB/OTA, radio and flight checks pending ആണ്; automated browser/transport checks pass ആയി.
-
-AP password: **12345678**. Android APKയും sourceഉം `android-app/`-ൽ ഉണ്ട്. Firmware, Android app, workflow inputs അവസാന batch-ൽ ഒരുമിച്ച് നൽകിയിട്ടുണ്ട്; അതിനാൽ മുഴുവൻ assets upload ചെയ്ത ശേഷമാണ് പുതിയ build inputs commit ആകുന്നത്. അവസാന batch കഴിഞ്ഞ് Actions → Build Aerion Android APK അല്ലെങ്കിൽ Build ZEBJUS FlightCore Firmware → Run workflow ഉപയോഗിക്കാം.
+Wrapper `READ_FIRST.md`, inventory, manifest, assembly helper എന്നിവ repository-ലേക്ക് upload ചെയ്യേണ്ടതില്ല.
+Local use: `python3 assemble_project.py` (Windows: `python assemble_project.py`). Hash verified project `ZEBJUS_Local`-ൽ ലഭിക്കും. അതിലെ offline launcher ഉപയോഗിക്കുക.
+APK: `android-app/dist/`. A1/A2 APP + FACTORY binaries: `FlightCore_Firmware/`.
+AP password: **12345678**. Guide: `SUPPORT/V18_3_61_UPDATE_AND_TEST.md`.
+Real-phone, USB/OTA, sensor voltage and loaded 250 Hz measurements are pending.
