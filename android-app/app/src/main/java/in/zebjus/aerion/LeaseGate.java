@@ -8,6 +8,7 @@ public final class LeaseGate {
         public final Object network;
         private long ack;
         private volatile int mode=1000;
+        private boolean streaming=false;
         Lease(String origin, String id, String client, Object network, long now) {
             this.origin=origin; deviceId=id; clientId=client; this.network=network; ack=now;
         }
@@ -48,7 +49,8 @@ public final class LeaseGate {
     }
     public synchronized boolean isCurrent(Lease lease) { return foreground && current==lease; }
     public synchronized void ack(Lease lease, long now) { if (current==lease && foreground) current.ack=now; }
-    public synchronized void ack(Lease lease, long now, int mode) { if (current==lease && foreground) { current.ack=now; lease.mode=mode; } }
+    public synchronized void ack(Lease lease, long now, int mode) { if (current==lease && foreground) { current.ack=now; lease.mode=mode; lease.streaming=true; } }
+    public synchronized void rcAck(Lease lease,long now,int[] channels) { if(current==lease && foreground){lease.ack=now;lease.mode=channels[5];lease.streaming=!LocalPolicy.safe(channels);} }
     public synchronized void release(String base, String id, String client) {
         if (current!=null && current.matches(base,id,client)) current=null;
     }
@@ -57,6 +59,6 @@ public final class LeaseGate {
         Lease old=current; current=null; return old;
     }
     public synchronized Lease watchdog(long now) {
-        return current!=null && now-current.ack>ACK_TIMEOUT_MS ? fence(false) : null;
+        return current!=null && now-current.ack>(current.streaming?ACK_TIMEOUT_MS:5000) ? fence(false) : null;
     }
 }

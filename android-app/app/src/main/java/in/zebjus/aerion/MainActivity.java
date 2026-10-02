@@ -24,6 +24,8 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.ValueCallback;
+import android.app.AlertDialog;
 import android.window.OnBackInvokedDispatcher;
 import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
@@ -47,6 +49,9 @@ import java.util.concurrent.TimeUnit;
 
 public final class MainActivity extends Activity {
     private static final String ASSET_HOST="appassets.androidplatform.net";
+    private ValueCallback<Uri[]> filePicker;
+    private String exportText;
+    private static final int PICK_BACKUP=701,SAVE_EXPORT=702;
     private static final String HOME="https://"+ASSET_HOST+"/assets/flight/index.html";
     private final String token=UUID.randomUUID().toString();
     private final LeaseGate gate=new LeaseGate();
@@ -83,7 +88,12 @@ public final class MainActivity extends Activity {
         settings.setSupportMultipleWindows(false);settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         WebView.setWebContentsDebuggingEnabled(false);
-        web.setWebChromeClient(new WebChromeClient());web.addJavascriptInterface(new NativeBridge(),"NativeAerion");
+        web.setWebChromeClient(new WebChromeClient(){
+            @Override public boolean onShowFileChooser(WebView view,ValueCallback<Uri[]> callback,FileChooserParams params){
+                if(filePicker!=null)filePicker.onReceiveValue(null);filePicker=callback;pauseControl();
+                Intent pick=new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE);startActivityForResult(pick,PICK_BACKUP);return true;
+            }
+        });web.addJavascriptInterface(new NativeBridge(),"NativeAerion");
         web.setWebViewClient(new WebViewClient(){
             @Override public void onPageStarted(WebView view,String url,android.graphics.Bitmap icon){emergency(gate.fence(false));}
             @Override public void onPageFinished(WebView view,String url){deliverLaunch();}
@@ -230,21 +240,26 @@ public final class MainActivity extends Activity {
     private final class Job implements Runnable{
         final String id,method,body;final URL url;final Network network;final int timeout;
         final LeaseGate.Grant grant;final LeaseGate.Lease lease;final Map<String,String> fields;
-        final boolean safeFrame;
+        final boolean safeFrame,readCommand;
         volatile boolean cancelled;volatile HttpURLConnection connection;
         Job(String id,URL url,String method,String body,int timeout,Network network)throws Exception{
             this.id=id;this.url=url;this.method=method;this.body=body;this.timeout=timeout;this.network=network;
-            fields=LocalPolicy.form(body);String path=url.getPath();LeaseGate.Grant g=null;LeaseGate.Lease l=null;boolean safe=false;
+            fields=LocalPolicy.form(body);String path=url.getPath();LeaseGate.Grant g=null;LeaseGate.Lease l=null;boolean safe=false,readonly=false;
             if(method.equals("POST")){
                 LocalPolicy.identity(fields);
                 String base=LocalPolicy.origin(url),device=fields.get("expectedDeviceId"),client=fields.get("clientId");
                 if(path.equals("/api/control/acquire"))g=gate.beginGrant(base,device,client,network);
-                else if(path.equals("/api/command")){safe=LocalPolicy.safe(LocalPolicy.channels(fields));if(!safe)l=gate.authorize(base,device,client);else if(gate.isForeground()){try{l=gate.authorize(base,device,client);}catch(IllegalStateException ignored){}}}
+                else if(path.equals("/api/command")){
+                    readonly=LocalPolicy.readCommand(fields);
+                    if("rc_frame".equals(fields.get("type"))){safe=LocalPolicy.safe(LocalPolicy.channels(fields));if(!safe)l=gate.authorize(base,device,client);else if(gate.isForeground()){try{l=gate.authorize(base,device,client);}catch(IllegalStateException ignored){}}}
+                    else if(!readonly){if(!LocalPolicy.configCommand(fields))throw new IllegalArgumentException("Unsupported controller setting.");l=gate.authorize(base,device,client);}
+                }
+                else if(path.equals("/api/wifi/use")||path.equals("/api/wifi/set")||path.equals("/api/setup/test"))l=gate.authorize(base,device,client);
                 else if(path.equals("/api/control/ping"))l=gate.authorize(base,device,client);
             }
-            grant=g;lease=l;safeFrame=safe;
+            grant=g;lease=l;safeFrame=safe;readCommand=readonly;
         }
-        boolean allowed(){return !cancelled && (method.equals("GET") || safeFrame || url.getPath().equals("/api/control/release") || grant!=null && gate.isPending(grant) || lease!=null && gate.isCurrent(lease));}
+        boolean allowed(){return !cancelled && (method.equals("GET") || readCommand || safeFrame || url.getPath().equals("/api/control/release") || grant!=null && gate.isPending(grant) || lease!=null && gate.isCurrent(lease));}
         void cancel(){cancelled=true;if(grant!=null)gate.cancel(grant);if(connection!=null)connection.disconnect();}
         @Override public void run(){
             try{
@@ -252,7 +267,7 @@ public final class MainActivity extends Activity {
                 Result result=http(network,url,method,body,timeout,this);
                 boolean ok=result.code>=200 && result.code<300 && new JSONObject(result.body).optBoolean("ok",true);
                 if(grant!=null){if(ok && !cancelled && gate.accept(grant,now())){}else{gate.cancel(grant);if(ok)releaseGrant(grant);if(ok)throw new IllegalStateException("Control request cancelled. Take control again.");}}
-                if(ok && url.getPath().equals("/api/command") && lease!=null)gate.ack(lease,now(),LocalPolicy.channels(fields)[5]);
+                if(ok && lease!=null){if("rc_frame".equals(fields.get("type")))gate.rcAck(lease,now(),LocalPolicy.channels(fields));else gate.ack(lease,now());}
                 if(ok && url.getPath().equals("/api/control/release"))gate.release(LocalPolicy.origin(url),fields.get("expectedDeviceId"),fields.get("clientId"));
                 if(!cancelled)reply(id,result.code,result.body);
             }catch(Exception e){
@@ -261,14 +276,23 @@ public final class MainActivity extends Activity {
             }finally{jobs.remove(id,this);}
         }
     }
+    @Override protected void onActivityResult(int request,int result,Intent data){
+        super.onActivityResult(request,result,data);
+        if(request==PICK_BACKUP && filePicker!=null){ValueCallback<Uri[]> callback=filePicker;filePicker=null;callback.onReceiveValue(result==RESULT_OK&&data!=null&&data.getData()!=null?new Uri[]{data.getData()}:null);}
+        if(request==SAVE_EXPORT){String value=exportText;exportText=null;if(result==RESULT_OK&&data!=null&&data.getData()!=null&&value!=null){try(OutputStream out=getContentResolver().openOutputStream(data.getData())){if(out!=null)out.write(value.getBytes(StandardCharsets.UTF_8));}catch(Exception e){emit("exportFailed");}}}
+    }
     private final class NativeBridge{
         @JavascriptInterface public void request(String key,String id,String address,String method,String form,int requestedTimeout){
             if(!token.equals(key) || destroyed || id==null || !id.matches("[A-Za-z0-9-]{1,96}"))return;
             Job job=null;
-            try{URL url=LocalPolicy.api(address,method);job=new Job(id,url,method,form,Math.max(150,Math.min(1500,requestedTimeout)),wifi);if(jobs.putIfAbsent(id,job)!=null)throw new IllegalArgumentException("Duplicate request.");workers.execute(job);}
+            try{URL url=LocalPolicy.api(address,method);if(url.getPath().equals("/api/control/acquire"))form=form.replaceAll("(?:^|&)clientRole=[^&]*","")+"&clientRole=MOBILE";job=new Job(id,url,method,form,Math.max(150,Math.min("rc_frame".equals(LocalPolicy.form(form).get("type"))?1500:8000,requestedTimeout)),wifi);if(jobs.putIfAbsent(id,job)!=null)throw new IllegalArgumentException("Duplicate request.");workers.execute(job);}
             catch(Exception e){if(job!=null){job.cancel();jobs.remove(id,job);}failure(id,e.getMessage()==null?"Join your kit Wi-Fi and retry.":e.getMessage());}
         }
         @JavascriptInterface public void cancel(String key,String id){if(token.equals(key)){Job job=jobs.get(id);if(job!=null)job.cancel();}}
+        @JavascriptInterface public void saveFile(String key,String name,String body,String mime){
+            if(!token.equals(key)||destroyed||body==null||body.length()>1500000||name==null||!name.matches("[A-Za-z0-9_.-]{1,100}")||!("application/json".equals(mime)||"text/csv".equals(mime)))return;
+            runOnUiThread(()->{pauseControl();exportText=body;Intent save=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mime).putExtra(Intent.EXTRA_TITLE,name);startActivityForResult(save,SAVE_EXPORT);});
+        }
         @JavascriptInterface public void openWifi(String key){if(token.equals(key))runOnUiThread(()->{pauseControl();startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));});}
         @JavascriptInterface public void joinWifi(String key,String deviceId){if(token.equals(key))runOnUiThread(()->joinKitWifi(deviceId));}
     }

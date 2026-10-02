@@ -2,14 +2,14 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
 const root=path.join(__dirname,'..'),app=fs.readFileSync(path.join(root,'app.js'),'utf8'),school=fs.readFileSync(path.join(root,'school-lab.js'),'utf8');
 function between(source,a,b){const start=source.indexOf(a),end=source.indexOf(b,start);assert(start>=0&&end>start);return source.slice(start,end)}
-function node(){return{setAttribute(k,v){this[k]=v},textContent:'',innerHTML:'',value:'',hidden:false,disabled:false,style:{},className:'',classList:{add(){},remove(){},toggle(){}},querySelector:()=>null}}
+function node(){return{setAttribute(k,v){this[k]=v},textContent:'',innerHTML:'',value:'',hidden:false,disabled:false,style:{},className:'',dataset:{},classList:{add(){},remove(){},toggle(){}},querySelector:()=>null}}
 const nodes=new Map();for(const id of ['webJoyTarget','joyTargetBadge','joyTargetNote','joyTargetHelp','joyConnectKitBtn','joyTargetSummary','schoolLog','webArmBtn','webArmMessage','simRunBtn','topNetworkToggle','topNetworkMode','topNetworkNotice','topNetworkNoticeText'])nodes.set('#'+id,node());
 nodes.set('#webJoyTarget option[value="device"]',node());nodes.get('#webJoyTarget').value='sim';
 const $=s=>nodes.get(s)||null;
 const commands=[];let client;
 class Client{constructor(){client=this;this.connected=false;this.deviceId='';this.status=null}command(frame){commands.push(JSON.parse(JSON.stringify(frame)));return Promise.resolve({ok:true,deviceId:this.deviceId,apSsid:'KIT-AP',apPassword:'test-ap-password'})}disconnect(){this.connected=false}}
 const window={addEventListener(){},ZebjusDroneKit:{LocalKitClient:Client,sameDeviceIdentity:(a,b)=>!!a&&a===b},__zebjusAppLoaded:false};
-const sandbox={window,document:{querySelector:$,querySelectorAll:()=>[],addEventListener(){},readyState:'loading'},localStorage:{getItem:()=>null,setItem(){}},location:{search:''},performance:{now:()=>1000},Date,console,setTimeout(){},setInterval(){},requestAnimationFrame(){},confirm(){throw Error('Controller ARM must not show a confirmation popup')}};
+const sandbox={window,document:{body:node(),querySelector:$,querySelectorAll:()=>[],addEventListener(){},readyState:'loading'},localStorage:{getItem:()=>null,setItem(){}},location:{search:''},performance:{now:()=>1000},Date,console,setTimeout(){},setInterval(){},requestAnimationFrame(){},confirm(){throw Error('Controller ARM must not show a confirmation popup')}};
 vm.createContext(sandbox);
 const stateSource=between(app,'const state=','function normalizePidShape');
 const ownership=between(app,"let simInputOwner='idle'",'const keyDefaults=');

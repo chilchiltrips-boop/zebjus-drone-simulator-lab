@@ -1,42 +1,24 @@
-"""Regenerate embedded ESP32 AP HTML from editable, responsive source pages."""
+"""Generate deterministic gzip firmware pages and identical offline Flight App copies."""
 from pathlib import Path
-import re
-import sys
-
-root = Path(__file__).resolve().parents[1]
-firmware = root / "FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino"
-source = firmware.read_text(encoding="utf-8")
-portal = (root / "tools/ap_portal_source.html").read_text(encoding="utf-8")
-fly = (root / "tools/ap_fly_source.html").read_text(encoding="utf-8")
-standalone = root / "flight/index.html"
-io = (root / "tools/ap_io_source.html").read_text(encoding="utf-8")
-assert ")rawliteral" not in portal + fly + io, "raw string terminator in AP page"
-
-portal_cpp = '''String portalPage(){
-  String h=R"rawliteral(%s)rawliteral";
-  h.replace("{{DEVICE_ID}}",htmlEscape(deviceId));
-  h.replace("{{AP_NAME}}",htmlEscape(apName));
-  h.replace("{{KIT_NAME}}",htmlEscape(kitName));
-  return h;
-}''' % portal.rstrip()
-fly_cpp = 'String flyPage(){return R"rawliteral(%s)rawliteral";}' % fly.rstrip()
-io_cpp = 'String ioPage(){return R"rawliteral(%s)rawliteral";}' % io.rstrip()
-source, n = re.subn(r"String portalPage\(\)\{.*?\n\}", lambda _: portal_cpp, source, count=1, flags=re.S)
-assert n == 1, "portalPage not found"
-source, n = re.subn(r'String flyPage\(\)\{return R"rawliteral\(.*?\)rawliteral";\}', lambda _: fly_cpp, source, count=1, flags=re.S)
-assert n == 1, "flyPage not found"
-source, n = re.subn(r'String ioPage\(\)\{return R"rawliteral\(.*?\)rawliteral";\}', lambda _: io_cpp, source, count=1, flags=re.S)
-if n == 0:
-    source = source.replace('void sendFlyPage(){', io_cpp + '\nvoid sendIoPage(){server.sendHeader("Cache-Control","no-store");server.send(200,"text/html",ioPage());}\nvoid sendFlyPage(){', 1)
-    assert source != firmware.read_text(encoding="utf-8"), "sendFlyPage not found"
-if "--check" in sys.argv:
-    if not standalone.is_file() or standalone.read_text(encoding="utf-8") != fly:
-        raise SystemExit("Standalone Flight App differs. Run python3 tools/embed_ap_pages.py")
-    if firmware.read_text(encoding="utf-8") != source:
-        raise SystemExit("AP page templates differ from embedded firmware. Run python3 tools/embed_ap_pages.py")
-    print("AP page templates match embedded firmware")
-else:
-    standalone.parent.mkdir(exist_ok=True)
-    standalone.write_text(fly, encoding="utf-8")
-    firmware.write_text(source, encoding="utf-8")
-    print("Embedded AP setup and direct control pages")
+import gzip,sys,re
+root=Path(__file__).resolve().parents[1]
+fly=root/'tools/ap_fly_source.html'
+text=fly.read_text()
+shared='<script>\n'+(root/'control-sticks.js').read_text()+'\n'+(root/'kit-console.js').read_text()+'\n</script>'
+text=re.sub(r'<!-- AERION_SHARED_BEGIN -->.*?<!-- AERION_SHARED_END -->',lambda _: '<!-- AERION_SHARED_BEGIN -->\n'+shared+'\n<!-- AERION_SHARED_END -->',text,flags=re.S)
+if '--check' in sys.argv and text!=fly.read_text():raise SystemExit('Regenerate shared AP scripts')
+if '--check' not in sys.argv:fly.write_text(text)
+parts=['#pragma once\n#include <Arduino.h>\n']
+for kind,name in [('PORTAL','ap_portal_source.html'),('FLY','ap_fly_source.html'),('IO','ap_io_source.html')]:
+    raw=(root/'tools'/name).read_bytes()
+    data=gzip.compress(raw,compresslevel=9,mtime=0)
+    rows=[','.join(f'0x{x:02x}' for x in data[i:i+24]) for i in range(0,len(data),24)]
+    parts.append(f'// {name}: {len(raw)} HTML bytes, {len(data)} gzip bytes\nstatic const uint8_t AP_{kind}[] PROGMEM={{\n'+',\n'.join(rows)+'\n};\n')
+header=''.join(parts)
+flight=(root/'tools/ap_fly_source.html').read_bytes()
+outputs={root/'FlightCore_Firmware/AP_ASSETS.h':header.encode(),root/'flight/index.html':flight,root/'android-app/app/src/main/assets/flight/index.html':flight.replace(b'<script>\n(()=>',b'<script src="../android-transport.js"></script>\n<script>\n(()=>',1)}
+for path,data in outputs.items():
+    if '--check' in sys.argv:
+        if not path.is_file() or path.read_bytes()!=data:raise SystemExit('Regenerate embedded pages: '+str(path))
+    else:path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
+print('Deterministic compressed AP pages '+('verified' if '--check' in sys.argv else 'generated'))

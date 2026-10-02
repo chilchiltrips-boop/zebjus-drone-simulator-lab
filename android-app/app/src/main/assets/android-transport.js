@@ -9,10 +9,11 @@
   if(signal?.aborted){reject(new DOMException('Request cancelled.','AbortError'));return}
   const abort=()=>{const item=pending.get(id);if(!item)return;pending.delete(id);clearTimeout(item.timer);item.remove();native.cancel(token,id);reject(new DOMException('Request cancelled.','AbortError'));};
   const remove=()=>signal?.removeEventListener('abort',abort);
-  const timer=setTimeout(abort,1600);pending.set(id,{resolve,reject,timer,remove});signal?.addEventListener('abort',abort,{once:true});
-  try{native.request(token,id,String(address),method,options.body?String(options.body):'',1500)}catch(e){pending.delete(id);clearTimeout(timer);remove();reject(e)}
+  const timeout=Math.max(150,Math.min(8000,Number(options.aerionTimeout)||1500)),timer=setTimeout(abort,timeout+100);pending.set(id,{resolve,reject,timer,remove});signal?.addEventListener('abort',abort,{once:true});
+  try{native.request(token,id,String(address),method,options.body?String(options.body):'',timeout)}catch(e){pending.delete(id);clearTimeout(timer);remove();reject(e)}
  });
  navigator.sendBeacon=(address,body)=>{window.fetch(String(address),{method:'POST',body}).catch(()=>{});return true};
+ android.saveFile=(name,body,mime)=>native.saveFile(token,name,body,mime);
  android.openWifi=()=>native.openWifi(token);
  android.joinWifi=()=>native.joinWifi(token,document.getElementById('expectedId').value.trim());
  const wifiUi=(message,busy=false)=>{document.getElementById('pairMessage').textContent=message;document.getElementById('androidWifi').disabled=busy;document.getElementById('checkConnection').disabled=busy;};

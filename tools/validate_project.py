@@ -224,8 +224,9 @@ for token in ['runFlightLoop()','FLIGHT_LOOP_US=4000','MOTOR_PINS[4]={D1,D2,D3,D
     if token not in ino: fail(f'Rate/Angle multi-source flight integration missing: {token}')
 if 'rc[5]>=1500?FLIGHT_RATE:FLIGHT_ANGLE' not in ino: fail('CH6 Angle/Rate mode mapping missing')
 if 'rc[4]<1500' not in ino or 'rc[2]<=1050' not in ino: fail('CH5 arm / low-throttle arming gates missing')
-if 'm1=1.024f*(throttle+inputRoll-inputPitch+inputYaw)' not in ino or 'm2=1.024f*(throttle-inputRoll-inputPitch-inputYaw)' not in ino or 'm3=1.024f*(throttle-inputRoll+inputPitch+inputYaw)' not in ino or 'm4=1.024f*(throttle+inputRoll+inputPitch-inputYaw)' not in ino or 'writeFlightDutyOutputs(m1,m2,m3,m4)' not in ino: fail('CC3D X duty-tick mixer signs/order are missing')
-if ino.count('max(1180.0f,constrain(')!=4 or 'writeEscMicroseconds(i,(int)motorInput[i])' not in ino: fail('armed idle and independent microsecond bench output contract missing')
+for mix in ['throttle+inputRoll-inputPitch+inputYaw','throttle-inputRoll-inputPitch-inputYaw','throttle-inputRoll+inputPitch+inputYaw','throttle+inputRoll+inputPitch-inputYaw']:
+    if mix not in ino: fail('CC3D X mixer signs/order are missing')
+if ino.count('1.024f*constrain(raw[')!=4 or 'flightSettings.idleUs' not in ino or 'flightSettings.maxMotorUs' not in ino or 'writeEscMicroseconds(i,(int)motorInput[i])' not in ino: fail('physical-us idle/output limits and independent bench PWM missing')
 for token in ['ppmYawStickArm=true','ARM_GESTURE_HOLD_MS=1000','IDLE_AUTO_DISARM_MS=15000','if(rc[2]>1050){idleLastMovementMs=now','armMode','resetArmGesture()']:
     if token not in ino: fail(f'PPM yaw arm/idle disarm safety missing: {token}')
 for token in ['src/DroneGPS.h','gpsUbx10Hz','gpsMeasuredHz','gpsDriver->takeMessageCounters().completeEpochs','gpsDriver->configurationReport()','UBX_10HZ']:
@@ -291,7 +292,7 @@ if "'pinmap_get','gps_read','matrix_read','gpio_read','i2c_read'" not in school:
     fail('Read-only real-kit commands are not explicitly separated from mutating commands')
 if 'const ok=await acquireLock(true)' not in school:
     fail('Mutating Python real-kit commands do not auto-acquire the selected Device ID control lock')
-for token in ['loadCalibrationSettings()','saveCalibrationSettings()','accelOffsetX','accelOffsetY','accelOffsetZ','levelTrimRoll','levelTrimPitch','Level accelerometer offsets and gyro bias captured']:
+for token in ['loadCalibrationSettings()','saveCalibrationSettings()','accelOffsetX','accelOffsetY','accelOffsetZ','levelTrimRoll','levelTrimPitch','level_calibrate']:
     if token not in ino: fail(f'Persistent A2 level calibration missing: {token}')
 for method in ['get_calibration','set_accel_offsets','level_calibrate','restore_calibration_defaults']:
     if method not in app or method not in read('python-worker.js'): fail(f'Python calibration API method missing: {method}')
@@ -313,7 +314,7 @@ embedded=subprocess.run([sys.executable,str(ROOT/'tools/embed_ap_pages.py'),'--c
 if embedded.returncode: fail('AP page sources differ from firmware: '+embedded.stderr.strip())
 for rel in ['tools/ap_portal_source.html','tools/ap_fly_source.html','python_companion/zebjus_client.py','python_companion/requirements-vision.txt','python_companion/imu_plot.py','python_companion/camera_telemetry.py','python_companion/cvzone_hands.py','SUPPORT/FLIGHT_VALIDATION_V18_3_44.md']:
     if not (ROOT/rel).is_file(): fail(f'V18.3.48 project file missing: {rel}')
-for token in ['ARMED_LOOP_GAP_LIMIT_US','loopOverruns','escPwmReady','prefs.begin("zjcal",false)','Wi-Fi scan blocked while armed','Level capture requires a level, motionless']:
+for token in ['ARMED_LOOP_GAP_LIMIT_US','loopOverruns','escPwmReady','prefs.begin("zjcal",false)','Disarm before Wi-Fi scan','Place the frame level and still with its top facing up']:
     if token not in ino: fail(f'V18.3.48 firmware guard missing: {token}')
 for token in ['settingsNetworkSummary','basicFlightMode','pythonCameraVideo','pythonHandsToggle','pythonOutputImage']:
     if token not in html: fail(f'V18.3.48 UI control missing: {token}')
@@ -354,7 +355,7 @@ for token in ['ioPpmArmMode','ioGpsProtocol','ioGpsTxPin','ioGpsRead']:
 for token in ['pinmap_get','motor_map_set','ppm_config','i2c_read','servo_config','gps_read','matrix_write','gpio_write']:
     if token not in read('python-worker.js') or token not in read('python_companion/zebjus_client.py'): fail(f'V18.3.48 Python hardware bridge missing {token}')
 if "'./hardware-io.js'" not in sw: fail('offline cache omits hardware I/O script')
-if 'id="tab-io"' not in html or 'hardware-io.js?v=18.3.60' not in html: fail('V18.3.48 hardware I/O page is absent')
+if 'id="tab-io"' not in html or f'hardware-io.js?v={version}' not in html: fail('V18.3.48 hardware I/O page is absent')
 
 # V18.3.48 safety, camera lifecycle, and calibration contract.
 for rel in ['python_companion/browser_cvzone.py','tools/test_camera_lifecycle.js','tools/test_browser_cvzone.py','SUPPORT/FLIGHTCORE_STAGE_GUIDE_V18_3_48.md','SUPPORT/FLIGHT_VALIDATION_V18_3_48.md']:
@@ -370,6 +371,16 @@ if "'./python_companion/simple_syntax.py'" not in sw: fail('offline source cache
 
 if warnings:
     for x in warnings: print('WARN:',x)
+# V18.3.61 firmware/UI capability and task closure.
+features=read('FlightCore_Firmware/FlightFeatures.h')
+for token in ['esp_timer_start_periodic(flightTimer,4000)','xTaskCreate(flightControlTask','ulTaskNotifyTake','settings_restore','Incomplete PID backup','serviceBattery','sixface_capture','inflightHandover','usedInFlight']:
+    if token not in features: fail('V18.3.61 feature missing: '+token)
+for token in ['rc_source_set','flight_stop','MOBILE','configurationBusy','Matched RC handover','FlightMath::canHandover','rateFilterPrimed','if(saturated)']:
+    if token not in ino: fail('V18.3.61 flight/ownership guard missing: '+token)
+for rel in ['control-sticks.js','kit-console.js','flight-diagnostics.js','tools/test_flight_math.cpp','tools/test_mobile_view_browser.js','SUPPORT/V18_3_61_UPDATE_AND_TEST.md']:
+    if not (ROOT/rel).is_file(): fail('V18.3.61 release file missing: '+rel)
+if 'runFlightLoop();' in ino[ino.rfind('void loop(){'):]:fail('Flight task regressed into networking main loop')
+
 if errors:
     for x in errors: print('ERROR:',x)
     print(f'FAILED: {len(errors)} error(s)')

@@ -1,32 +1,17 @@
 {
-  "version": "18.3.60-android.1",
-  "apk_sha256": "b7668e5df97fa67302f5efa1b8bc20a0e7163ad5cb22d53072c12a2bd06b11f5",
+  "version": "18.3.61-android.1",
+  "apk_sha256": "39dc2d0fa7eb3fd344c13f156b17754df06a2291cd8369dd9da9886dc02d4910",
   "checks": {
-    "compiled_Dex_and_resources": "passed",
-    "APK_v2_v3_signature": "passed",
-    "APK_zipalign_and_ZIP_integrity": "passed",
-    "APK_manifest_and_exact_bundled_asset_match": "passed",
-    "native_Java_policy_tests": "passed",
-    "bundled_UI_and_Android_JS_adapter_in_Chromium": "passed"
+    "compiled_DEX_resources_manifest": "passed",
+    "APK_v2_v3_signature_and_zip_alignment": "passed",
+    "bundled_asset_exact_equality": "passed",
+    "native_Java_policy_and_config_reservation": "passed",
+    "native_bridge_browser_lifecycle_reconnect": "passed",
+    "mobile_owner_laptop_live_mirror": "passed",
+    "armed_configuration_guard": "passed",
+    "settings_backup_identity_restore_CSV": "passed",
+    "branding_and_shared_floating_sticks": "passed"
   },
-  "browser_checks": [
-    "disconnected flow",
-    "native Wi-Fi settings action",
-    "identity pairing",
-    "ARM and keyboard RC",
-    "native lifecycle pause hook",
-    "read-only resume",
-    "timeout AbortSignal/native cancellation",
-    "unique per-document reply IDs",
-    "reload does not reacquire",
-    "wrong Device ID refusal",
-    "no external runtime or browser API traffic",
-    "in-app Wi-Fi selection bridge action",
-    "Wi-Fi connect performs read-only verification",
-    "app link performs read-only verification",
-    "app link cannot switch a saved different kit",
-    "external configuration links hidden"
-  ],
   "test_boundary": {
     "browser_native_bridge": "simulated",
     "browser_controller_API": "simulated",
@@ -42,8 +27,14 @@
     "compiler": "Eclipse ECJ 3.39.0",
     "packaging": "aapt2, D8, zipalign, apksigner"
   },
-  "signing": "development key included for development updates; not private production signing",
-  "source_archive_constraint": "Android source below 100 files; full repository delivered in <=100-file / <=14.5MB batches",
-  "native_network_specifier_on_phone_tested": false,
-  "captive_portal_intent_handoff_on_phone_tested": false
+  "signing": "same included development key; not private production signing",
+  "physical_pending": [
+    "screen lock",
+    "incoming call",
+    "Wi-Fi loss/resume",
+    "SAF export/restore",
+    "AP/STA on phone",
+    "kit flight behavior"
+  ],
+  "source_archive_constraint": "minimum count of <=100-file batches; each individual file <25 MiB"
 }

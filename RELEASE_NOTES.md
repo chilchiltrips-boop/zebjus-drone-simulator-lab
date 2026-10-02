@@ -1,18 +1,15 @@
-# V18.3.60
+# V18.3.61
 
-- Fixed AP password to **12345678**, including migration from older saved random credentials; unique SSIDs and Device IDs remain unchanged.
-- Added Android source and a signed development APK under `android-app/`, with in-app kit Wi-Fi connection on Android 10+ and read-only identity verification.
-- Android AP landing now offers a native app intent link; Android app links cannot ARM, acquire control automatically or replace a saved different Device ID. APK flight navigation opens no external browser.
-- Added a GitHub Actions Android build; firmware/app/build inputs are grouped into the final upload batch after assets.
+- Mobile session reservation makes connected laptop clients view-only. WebApp Joystick/Tripod mirrors received mobile RC. Explicit connection reserves the phone; Take control and ARM remain separate actions. Reload/resume stay read-only.
+- APK and full WebApp include in-app AP/STA, saved/new Wi-Fi, joystick feel, controller limits, PID/calibration and device/profile-bound backup/restore. Armed/bench configuration is blocked in firmware and UI. Settings observation does not interrupt an armed flight.
+- ZEBJUS/Aerion opening animation; APK header shows identity, ownership and actual firmware mode/ARM. All WebApp gimbals use shared floating centers and gradual throttle.
+- PID angle/rate/motor graphs, CSV export, measured loop/RC/request diagnostics and explicit fresh/calibrated/in-use sensor status. Modes require implemented firmware capabilities; barometer detection alone does not enable altitude/position modes.
+- Dedicated timer-notified 250 Hz control task, networking task separation, recursive I²C mutex, measured dt, gyro/D-term filters, saturation-aware integral rollback and output watchdog. Physical loaded 250 Hz measurement remains pending.
+- Guarded Rate/Angle changes and matched Web↔PPM handover blend outputs rather than unconditionally disarming. Invalid requests retain current source/mode; RC loss, IMU fault or loop stall retain explicit failsafe disarm behavior.
+- Persisted mounting orientation, six-face accelerometer calibration, physical motor pulse limits/idle, INA219/INA226 voltage monitoring and configurable visual battery alerts. Monitor hardware is required; voltage is unavailable by default. Critical/missing configured voltage blocks new ARM. Automatic landing is not implemented.
+- Compiled A1/A2 APP/FACTORY binaries, same-certificate development APK, deterministic compressed offline AP pages, refreshed offline hashes and minimum-count upload batches (100 files per batch, 25 MiB per file).
 
-- Added the Aerion Flight App: dark full-screen control view, no Python interface, floating/fixed sticks with permanent left throttle/yaw and right pitch/roll assignments.
-- Added top connection/AP/STA/actual ARM status, ANGLE/RATE mode, manual ARM/DISARM, STOP, settings and a connection-help screen for an unconnected kit.
-- Throttle now ramps from the current value without a first-touch jump; directional axes center and throttle holds on release. Two-finger touch works independently.
-- Refresh/reconnect remain read-only until Take control. Link/lock loss, hidden pages, focus changes, settings and rotation stop output; cancelled late grants cannot resume RC. A fresh session on every Take control rejects previously delayed RC/ARM frames.
-- The embedded AP page and standalone `flight/` page share one editable source. Added flight-only launchers and an independent offline PWA cache; the engineering lab retains its separate Python/hand functions.
-- Includes rebuilt matching A1/A2 APP and FACTORY binaries, current catalogs and offline hashes. Upload folders remain limited to 100 files and 14.5 MB raw data per batch.
-
-See `SUPPORT/V18_3_60_UPDATE_AND_TEST.md` for opening the app, controls, firmware offsets and hardware acceptance. Automated browser/transport checks do not replace physical USB/OTA or flight testing.
+Software/build tests and hardware acceptance boundaries: `SUPPORT/V18_3_61_UPDATE_AND_TEST.md`. Real Android phone, USB/OTA flash, calibrated voltage, flight transitions and timing under radio/network load have not been tested on hardware.
 
 ## Earlier V18.3.55 changes
 
