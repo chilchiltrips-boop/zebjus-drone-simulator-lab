@@ -9,12 +9,14 @@ on:
       - 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino'
       - 'FlightCore_Firmware/*.h'
       - 'tools/embed_ap_pages.py'
-      - 'tools/ap_*_source.html'
+      - 'tools/flight_app_source.html'
       - 'control-sticks.js'
       - 'kit-console.js'
       - 'FlightCore_Firmware/src/**'
       - 'FlightCore_Firmware/catalog.json'
       - 'VERSION.txt'
+      - '.gitignore'
+      - 'android-app/.gitignore'
       - 'release-integrity.json'
       - 'tools/release_integrity.py'
       - 'tools/project_files.py'
@@ -50,7 +52,7 @@ jobs:
           set -euo pipefail
           for aerion_required in tools/cleanup_repo.py tools/project_files.py tools/release_integrity.py release-integrity.json; do
             if [ ! -s "$aerion_required" ]; then
-              echo "::error file=$aerion_required::Incomplete upload: missing $aerion_required. Upload the complete final batch to the same branch before rerunning."
+              echo "::error file=$aerion_required::Incomplete upload: missing $aerion_required. Upload the complete final batch to the same branch, then start a new workflow run on that updated branch."
               exit 1
             fi
           done
@@ -74,13 +76,14 @@ jobs:
     if: github.actor != 'github-actions[bot]' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     env:
-      ARDUINO_DIRECTORIES_DATA: ${{ runner.temp }}/zebjus-arduino/data
-      ARDUINO_DIRECTORIES_DOWNLOADS: ${{ runner.temp }}/zebjus-arduino/downloads
       ARDUINO_NETWORK_CONNECTION_TIMEOUT: 120s
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+      - name: Configure Arduino cache directories
+        run: |
+          printf '%s\n' "ARDUINO_DIRECTORIES_DATA=$RUNNER_TEMP/zebjus-arduino/data" "ARDUINO_DIRECTORIES_DOWNLOADS=$RUNNER_TEMP/zebjus-arduino/downloads" >> "$GITHUB_ENV"
       - name: Normalize repository inventory
         run: python3 -B tools/cleanup_repo.py
       - name: Verify this checkout before dependency setup

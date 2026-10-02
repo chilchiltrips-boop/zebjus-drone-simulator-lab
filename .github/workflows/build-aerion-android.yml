@@ -7,6 +7,8 @@ on:
     paths:
       - 'android-app/app/**'
       - 'VERSION.txt'
+      - '.gitignore'
+      - 'android-app/.gitignore'
       - 'release-integrity.json'
       - 'tools/cleanup_repo.py'
       - 'tools/project_files.py'
@@ -21,6 +23,7 @@ on:
       - 'kit-console.js'
   pull_request:
     paths:
+      - '.gitignore'
       - 'android-app/**'
       - '.github/workflows/build-aerion-android.yml'
       - 'tools/embed_ap_pages.py'
@@ -51,7 +54,7 @@ jobs:
           set -euo pipefail
           for aerion_required in tools/cleanup_repo.py tools/project_files.py tools/release_integrity.py release-integrity.json; do
             if [ ! -s "$aerion_required" ]; then
-              echo "::error file=$aerion_required::Incomplete upload: missing $aerion_required. Upload the complete final batch to the same branch before rerunning."
+              echo "::error file=$aerion_required::Incomplete upload: missing $aerion_required. Upload the complete final batch to the same branch, then start a new workflow run on that updated branch."
               exit 1
             fi
           done
