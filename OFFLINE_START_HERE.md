@@ -1,10 +1,10 @@
-# Offline WebApp — V18.3.60
+# Offline WebApp — V18.3.61
 
 ## Joystick-only Aerion Flight App
 
 On Windows open `Start_Flight_App.bat`; on Mac open `Start_Flight_App.command`. Or run `python3 start_offline.py --flight`, or `node server.js` and open **http://localhost:8787/flight/**. This flight page has no editor or Python runtime. The launcher's Python/Node server only serves static files.
 
-The matching V18.3.60 firmware serves the same screen at **http://192.168.4.1/** or `/fly` after joining the kit AP. See `SUPPORT/V18_3_60_UPDATE_AND_TEST.md` for installation and controls. This is a browser app; it is not an Android APK/iOS native package.
+The matching V18.3.61 firmware serves the same screen at **http://192.168.4.1/** or `/fly` after joining the kit AP. See `SUPPORT/V18_3_61_UPDATE_AND_TEST.md` for installation and controls. This is a browser app; the separate Android APK is included under `android-app/dist/`. No iOS native package is included.
 
 ## Laptop, including the first run without internet
 
@@ -30,13 +30,13 @@ After saving, reopen the **same address in the same browser/profile**. This copy
 - Python 3.12 / Pyodide 0.27.7, standard library and bundled native extensions.
 - NumPy, OpenCV, Pillow, Matplotlib, pandas and their pinned dependencies. Plots use the local Agg backend and included fonts.
 - Browser camera and the existing cvzone HandDetector subset (`findHands`, `fingersUp`) with MediaPipe Tasks Vision 0.10.21. Both SIMD and non-SIMD WASM files and the hand-landmark model are included.
-- Joystick/simulator, 2D/3D assembly, kit connection, sensor/I/O APIs and the local USB flasher engine. Matching A1/A2 APP and FACTORY binaries are included and saved by the complete offline-cache preparation. See `SUPPORT/V18_3_60_UPDATE_AND_TEST.md` before choosing a firmware image.
+- Joystick/simulator, 2D/3D assembly, kit connection, sensor/I/O APIs and the local USB flasher engine. Matching A1/A2 APP and FACTORY binaries are included and saved by the complete offline-cache preparation. See `SUPPORT/V18_3_61_UPDATE_AND_TEST.md` before choosing a firmware image.
 
 New third-party Python packages are not automatically available offline. Native `mediapipe`, full native cvzone and SerialModule still use the desktop Python companion. The browser HandDetector API works through the included browser adapter. Companion pip packages must be installed before taking that separate desktop route offline.
 
 ## AP page, phones and camera access
 
-The controller's **http://192.168.4.1/** still opens its small embedded Flight App. The complete Python/vision bundle is hosted on the laptop or cached in the browser, rather than stored in the controller flash. Install the matching V18.3.60 APP or FACTORY firmware to replace the kit-hosted flight screen. The standalone Flight App can use an existing kit with compatible APIs.
+The controller's **http://192.168.4.1/** still opens its small embedded Flight App. The complete Python/vision bundle is hosted on the laptop or cached in the browser, rather than stored in the controller flash. Install the matching V18.3.61 APP or FACTORY firmware to replace the kit-hosted flight screen. The standalone Flight App can use an existing kit with compatible APIs.
 
 Browser cameras require localhost or HTTPS and camera permission. Plain HTTP to a kit or another laptop's LAN IP does not provide that permission context. For full phone/tablet browser vision, first open this full bundle on a suitable HTTPS host and save it offline in that browser; keep using that saved origin. Kit connectivity from a saved HTTPS app remains subject to browser local-network permission and platform restrictions. Captive portal mini-windows are not the supported Python/camera interface. Outdoor AP real-kit control should be verified on the intended device and browser; browser offline success does not establish radio range or real flight timing.
 

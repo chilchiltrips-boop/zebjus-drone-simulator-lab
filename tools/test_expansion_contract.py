@@ -33,10 +33,19 @@ for line in result.stdout.splitlines():
 assert examples >= 40, f'Expected 40+ student templates, found {examples}'
 for name in ('ap_portal_source.html','ap_fly_source.html','ap_io_source.html'):
     html=(ROOT/'tools'/name).read_text()
-    script=re.search(r'<script>([\s\S]*?)</script>',html)
-    assert script, name
-    result=subprocess.run([node,'--check'],input=script.group(1),text=True,capture_output=True)
-    if result.returncode: raise SystemExit(f'{name}: {result.stderr}')
+    scripts=re.findall(r'<script>([\s\S]*?)</script>',html)
+    assert scripts, name
+    for script in scripts:
+        result=subprocess.run([node,'--check'],input=script,text=True,capture_output=True)
+        if result.returncode: raise SystemExit(f'{name}: {result.stderr}')
+# Firmware serves exactly these self-contained HTML documents as gzip.
+import gzip
+assets=(ROOT/'FlightCore_Firmware/AP_ASSETS.h').read_text()
+for kind,name in [('PORTAL','ap_portal_source.html'),('FLY','ap_fly_source.html'),('IO','ap_io_source.html')]:
+    encoded=re.search(r'AP_'+kind+r'\[\].*?=\{(.*?)\};',assets,re.S)
+    assert encoded, kind
+    data=bytes(int(v,16) for v in re.findall(r'0x([0-9a-f]{2})',encoded.group(1)))
+    assert gzip.decompress(data)==(ROOT/'tools'/name).read_bytes()
 ino=(ROOT/'FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino').read_text()
 match=re.search(r'uint32_t escDutyFromUs\(int us\)\{[^}]+\}',ino)
 servo=re.search(r'uint32_t servoDutyFromUs\(int us\)\{[^}]+\}',ino)

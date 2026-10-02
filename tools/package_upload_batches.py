@@ -1,116 +1,81 @@
 #!/usr/bin/env python3
-"""Package complete repository paths into <=100-file, <15 MB upload folders."""
-import argparse
-import csv
-import hashlib
-import json
-import shutil
-import zipfile
+"""Minimum GitHub web-upload batches: <=100 files, <=25 MiB per file."""
+import argparse,csv,hashlib,json,math,shutil,zipfile
 from pathlib import Path
-
 ROOT=Path(__file__).resolve().parents[1]
-
-
-def digest(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
+def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def main():
-    parser=argparse.ArgumentParser()
-    parser.add_argument('--output',type=Path,default=ROOT.parent)
-    parser.add_argument('--max-files',type=int,default=100)
-    parser.add_argument('--max-bytes',type=int,default=14_500_000)
-    args=parser.parse_args()
-    if not 1<=args.max_files<=100 or not 1<=args.max_bytes<=14_500_000:
-        raise SystemExit('Keep limits at <=100 files and <=14,500,000 bytes.')
-    version=(ROOT/'VERSION.txt').read_text().strip()
-    name='ZEBJUS_V'+version.replace('.','_')+'_UPLOAD_BATCHES'
-    destination=args.output.resolve()/name
-    if destination.exists():
-        raise SystemExit(f'Output already exists: {destination}. Choose an empty output directory.')
-    files=sorted(p for p in ROOT.rglob('*') if p.is_file() and '.git' not in p.parts and '__pycache__' not in p.parts)
-    # Upload build-trigger inputs together after ordinary assets. This prevents
-    # an early web-upload commit from compiling partly uploaded Android sources
-    # or publishing older firmware while the new release is still being staged.
-    final_paths={'VERSION.txt','FILE_COUNT.txt','firmware-catalog.json','firmware-latest.json','firmware-updater.js','tools/build_firmware.py','tools/cleanup_repo.py','tools/validate_project.py','tools/make_offline_manifest.py','tools/validate_offline_bundle.py'}
-    def final_input(path):
-        relative=path.relative_to(ROOT)
-        return relative.parts[0] in {'.github','FlightCore_Firmware','android-app'} or relative.as_posix() in final_paths
-    files=sorted((p for p in files if not final_input(p)))+sorted(p for p in files if final_input(p))
-    groups=[];group=[];total=0
-    final_started=False
+    parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,default=ROOT.parent);parser.add_argument('--max-files',type=int,default=100);args=parser.parse_args()
+    if not 1<=args.max_files<=100:raise SystemExit('Use 1..100 files per upload.')
+    version=(ROOT/'VERSION.txt').read_text().strip();name='ZEBJUS_V'+version.replace('.','_')+'_UPLOAD_BATCHES';destination=args.output.resolve()/name
+    if destination.exists():raise SystemExit('Choose an empty destination: '+str(destination))
+    files=sorted(p for p in ROOT.rglob('*') if p.is_file() and '.git' not in p.parts and '__pycache__' not in p.parts and not p.relative_to(ROOT).as_posix().startswith('android-app/build/'))
     for p in files:
-        if final_input(p) and not final_started:
-            if group:groups.append(group);group=[];total=0
-            final_started=True
-        size=p.stat().st_size
-        if size>args.max_bytes:raise SystemExit(f'Single file exceeds batch limit: {p.relative_to(ROOT)}')
-        if group and (len(group)>=args.max_files or total+size>args.max_bytes):
-            groups.append(group);group=[];total=0
-        group.append(p);total+=size
-    if group:groups.append(group)
-    destination.mkdir(parents=True)
-    entries=[];rows=[]
+        if p.stat().st_size>25*1024*1024:raise SystemExit('GitHub web single-file limit exceeded: '+str(p.relative_to(ROOT)))
+    final_paths={'VERSION.txt','FILE_COUNT.txt','firmware-catalog.json','firmware-latest.json','firmware-updater.js','tools/build_firmware.py','tools/cleanup_repo.py','tools/validate_project.py','tools/make_offline_manifest.py','tools/validate_offline_bundle.py','tools/embed_ap_pages.py','tools/ap_portal_source.html','tools/ap_fly_source.html','tools/ap_io_source.html','tools/test_flight_math.cpp','control-sticks.js','kit-console.js','flight-diagnostics.js','flight/index.html'}
+    def final(p):
+        rel=p.relative_to(ROOT);return rel.parts[0] in {'.github','FlightCore_Firmware','android-app'} or rel.as_posix() in final_paths
+    reserved=[p for p in files if final(p)]
+    if len(reserved)>args.max_files:raise SystemExit('Final workflow-input group exceeds file limit.')
+    count=math.ceil(len(files)/args.max_files);capacities=[len(files)//count+(i<len(files)%count) for i in range(count)]
+    while capacities[-1]<len(reserved):
+        i=max(range(count-1),key=lambda i:capacities[i]);capacities[i]-=1;capacities[-1]+=1
+    groups=[[] for _ in range(count)];groups[-1]=reserved[:];sizes=[0]*(count-1)+[sum(p.stat().st_size for p in reserved)]
+    for p in sorted((p for p in files if not final(p)),key=lambda p:(-p.stat().st_size,str(p))):
+        i=min((i for i in range(count) if len(groups[i])<capacities[i]),key=lambda i:sizes[i]);groups[i].append(p);sizes[i]+=p.stat().st_size
+    assert all(len(g)<=args.max_files for g in groups) and len(groups)==math.ceil(len(files)/args.max_files)
+    destination.mkdir(parents=True);entries=[];rows=[]
     for i,group in enumerate(groups,1):
         batch=f'UPLOAD_{i:02d}'
-        for p in group:
-            relative=p.relative_to(ROOT).as_posix();out=destination/batch/relative
-            out.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(p,out)
+        for p in sorted(group):
+            relative=p.relative_to(ROOT).as_posix();out=destination/batch/relative;out.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(p,out)
             entries.append({'batch':batch,'path':relative,'bytes':p.stat().st_size,'sha256':digest(p)})
-        rows.append({'batch':batch,'files':len(group),'bytes':sum(p.stat().st_size for p in group)})
-    manifest={'version':version,'fileCount':len(files),'limits':{'maxFiles':args.max_files,'maxBytes':args.max_bytes},'batches':rows,'files':entries}
+        rows.append({'batch':batch,'files':len(group),'bytes':sizes[i-1]})
+    manifest={'version':version,'fileCount':len(files),'maxFilesPerBatch':args.max_files,'maxFileBytes':25*1024*1024,'batches':rows,'files':entries}
     (destination/'UPLOAD_MANIFEST.json').write_text(json.dumps(manifest,indent=2)+'\n')
     with (destination/'BATCH_INVENTORY.csv').open('w',newline='') as f:
-        writer=csv.DictWriter(f,fieldnames=['batch','files','bytes']);writer.writeheader();writer.writerows(rows)
-    (destination/'READ_FIRST.md').write_text(f'''# ZEBJUS V{version} — upload batches
+        w=csv.DictWriter(f,fieldnames=['batch','files','bytes']);w.writeheader();w.writerows(rows)
+    (destination/'READ_FIRST.md').write_text(f'''# ZEBJUS V{version} — {len(groups)} upload batches
 
-ഈ ZIP extract ചെയ്യുക. **ZIP GitHub-ലേക്ക് upload ചെയ്യരുത്.**
+ഈ ZIP extract ചെയ്യുക. ZIP GitHub-ലേക്ക് upload ചെയ്യരുത്.
 
-1. Repository root-ൽ Add file → Upload files തുറക്കുക.
-2. `UPLOAD_01` folder-ന്റെ **ഉള്ളിലെ files/folders** select ചെയ്ത് drag ചെയ്യുക. `UPLOAD_01` folder തന്നെ upload ചെയ്യരുത്.
-3. Commit പൂർത്തിയായശേഷം `UPLOAD_02` മുതൽ അതേ രീതിയിൽ ഓരോ batch വീതം upload ചെയ്യുക. എല്ലാം repository root-ലേക്കാണ്.
-4. `vendor` folder-ന്റെ ഉള്ളിൽ upload ചെയ്യരുത്: അങ്ങനെ ചെയ്താൽ `vendor/vendor` path വരാം. Existing files replace ചെയ്യുക.
-5. എല്ലാ {len(groups)} batches upload ചെയ്തശേഷം മാത്രമാണ് project complete. Outer `READ_FIRST.md`, inventory, manifest, assembly helper എന്നിവ upload ചെയ്യേണ്ടതില്ല.
+1. Repository root → Add file → Upload files.
+2. `UPLOAD_01`-ന്റെ **ഉള്ളിലെ files/folders** drag ചെയ്യുക. `UPLOAD_01` folder തന്നെ upload ചെയ്യരുത്.
+3. Commit കഴിഞ്ഞ് ബാക്കിയുള്ള batches ക്രമത്തിൽ upload ചെയ്യുക. എല്ലാം repository root-ലേക്കാണ്.
+4. `vendor`-ന്റെ അകത്ത് upload ചെയ്യരുത്; `vendor/vendor` path ഉണ്ടാകരുത്. Existing paths replace ചെയ്യുക.
+5. അവസാന batch-ൽ firmware/APK/workflow inputs ഉണ്ട്. അതിനു മുമ്പ് എല്ലാ batches-ഉം upload ചെയ്യണം. macOS-ൽ hidden `.github` കാണാൻ Cmd+Shift+. ഉപയോഗിക്കുക.
 
-ഓരോ batch-ലും പരമാവധി {args.max_files} files, {args.max_bytes/1_000_000:g} MB raw data മാത്രം. ഓരോ original path-ഉം ഒരു batch-ൽ മാത്രമാണ്. Vendor files split ചെയ്തിട്ടില്ല; folders വിവിധ batches-ൽ merge ചെയ്യപ്പെടും. `BATCH_INVENTORY.csv`-ൽ counts/size ഉണ്ട്.
+ഓരോ batch-ലും പരമാവധി {args.max_files} files. ഓരോ file-ഉം 25 MiB-യിൽ താഴെ. Files split ചെയ്തിട്ടില്ല. Inventory-യിലെ batch bytes ആകെ വലുപ്പമാണ്; single-file limit അല്ല. {len(files)} files-ന് {len(groups)} ആണ് ഏറ്റവും കുറഞ്ഞ batch എണ്ണം.
 
-Local offline use: install ചെയ്ത Python ഉപയോഗിച്ച് `python assemble_project.py` അല്ലെങ്കിൽ `python3 assemble_project.py` run ചെയ്യുക. Hash verify ചെയ്ത complete project `ZEBJUS_Local` folder-ൽ ലഭിക്കും. അതിലെ `Start_Offline.bat`, `Start_Offline.command` അല്ലെങ്കിൽ `python3 start_offline.py` ഉപയോഗിക്കുക.
-
-Compiled A1/A2 APP/FACTORY `.bin` files ഉൾപ്പെടുത്തിയിട്ടുണ്ട്. Update guide: assembled project-ലെ `SUPPORT/V18_3_60_UPDATE_AND_TEST.md`. Physical USB/OTA, radio and flight checks pending ആണ്; automated browser/transport checks pass ആയി.
-
-AP password: **12345678**. Android APKയും sourceഉം `android-app/`-ൽ ഉണ്ട്. Firmware, Android app, workflow inputs അവസാന batch-ൽ ഒരുമിച്ച് നൽകിയിട്ടുണ്ട്; അതിനാൽ മുഴുവൻ assets upload ചെയ്ത ശേഷമാണ് പുതിയ build inputs commit ആകുന്നത്. അവസാന batch കഴിഞ്ഞ് Actions → Build Aerion Android APK അല്ലെങ്കിൽ Build ZEBJUS FlightCore Firmware → Run workflow ഉപയോഗിക്കാം.
+Wrapper `READ_FIRST.md`, inventory, manifest, assembly helper എന്നിവ repository-ലേക്ക് upload ചെയ്യേണ്ടതില്ല.
+Local use: `python3 assemble_project.py` (Windows: `python assemble_project.py`). Hash verified project `ZEBJUS_Local`-ൽ ലഭിക്കും. അതിലെ offline launcher ഉപയോഗിക്കുക.
+APK: `android-app/dist/`. A1/A2 APP + FACTORY binaries: `FlightCore_Firmware/`.
+AP password: **12345678**. Guide: `SUPPORT/V18_3_61_UPDATE_AND_TEST.md`.
+Real-phone, USB/OTA, sensor voltage and loaded 250 Hz measurements are pending.
 ''')
     (destination/'assemble_project.py').write_text('''#!/usr/bin/env python3
-"""Merge and verify all extracted upload folders into a new local project."""
 import hashlib,json,shutil
 from pathlib import Path
-root=Path(__file__).resolve().parent
-manifest=json.loads((root/'UPLOAD_MANIFEST.json').read_text())
-out=root/'ZEBJUS_Local'
-if out.exists():raise SystemExit('ZEBJUS_Local already exists. Rename it before assembling a new copy.')
-for entry in manifest['files']:
-    relative=Path(entry['path'])
-    if relative.is_absolute() or '..' in relative.parts:raise SystemExit('Invalid manifest path')
-    source=root/entry['batch']/relative
-    if not source.is_file() or source.stat().st_size!=entry['bytes'] or hashlib.sha256(source.read_bytes()).hexdigest()!=entry['sha256']:
-        raise SystemExit('Missing or changed upload file: '+str(source))
+r=Path(__file__).resolve().parent;m=json.loads((r/'UPLOAD_MANIFEST.json').read_text());out=r/'ZEBJUS_Local'
+if out.exists():raise SystemExit('Rename existing ZEBJUS_Local before assembly.')
+assert len(m['files'])==m['fileCount']==len({e['path'] for e in m['files']})
+for e in m['files']:
+    rel=Path(e['path'])
+    if rel.is_absolute() or '..' in rel.parts or e['batch'] not in {b['batch'] for b in m['batches']}:raise SystemExit('Invalid path')
+    p=r/e['batch']/rel
+    if not p.is_file() or p.stat().st_size!=e['bytes'] or hashlib.sha256(p.read_bytes()).hexdigest()!=e['sha256']:raise SystemExit('Missing/changed: '+str(p))
 out.mkdir()
-for entry in manifest['files']:
-    destination=out/entry['path'];destination.parent.mkdir(parents=True,exist_ok=True)
-    shutil.copy2(root/entry['batch']/entry['path'],destination)
-print('Verified',manifest['fileCount'],'files. Open',out/'OFFLINE_START_HERE.md')
+for e in m['files']:
+    p=out/e['path'];p.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(r/e['batch']/e['path'],p)
+print('Verified',m['fileCount'],'files. Open',out/'OFFLINE_START_HERE.md')
 ''')
     archive=destination.with_suffix('.zip')
     with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
         for p in sorted(destination.rglob('*')):
             if p.is_file():z.write(p,p.relative_to(destination.parent))
-    # Verify the delivered ZIP reconstructs the exact source, not just the staging tree.
     with zipfile.ZipFile(archive) as z:
-        for entry in entries:
-            data=z.read(f"{name}/{entry['batch']}/{entry['path']}")
-            assert len(data)==entry['bytes'] and hashlib.sha256(data).hexdigest()==entry['sha256']
-    assert len({entry['path'] for entry in entries})==len(files)
+        assert z.testzip() is None
+        for e in entries:
+            data=z.read(f"{name}/{e['batch']}/{e['path']}");assert len(data)==e['bytes'] and hashlib.sha256(data).hexdigest()==e['sha256']
     print(json.dumps({'zip':str(archive),'zipBytes':archive.stat().st_size,'projectFiles':len(files),'batches':rows},indent=2))
-
-
 if __name__=='__main__':main()

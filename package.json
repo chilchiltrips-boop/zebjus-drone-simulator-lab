@@ -1,8 +1,8 @@
 {
   "name": "zebjus-flightcore-drone-lab",
-  "version": "18.3.60",
+  "version": "18.3.61",
   "private": true,
-  "description": "ZEBJUS FlightCore Drone Lab V18.3.60 with bundled offline Python, OpenCV, plots, smart editor and hand tracking",
+  "description": "ZEBJUS FlightCore Drone Lab V18.3.61 with bundled offline Python, OpenCV, plots, smart editor and hand tracking",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,6 +10,8 @@
     "test:flight": "node tools/test_flight_app_browser.js",
     "test:offline": "node tools/test_offline_browser.js",
     "test:control": "node tools/test_joystick_runtime.js && node tools/test_reconnect_runtime.js && node tools/test_firmware_updater.js && node tools/test_camera_lifecycle.js && node tools/test_python_output_lifecycle.js",
-    "test:real-browser": "node tools/test_real_control_browser.js"
+    "test:real-browser": "node tools/test_real_control_browser.js",
+    "test:mobile-view": "node tools/test_mobile_view_browser.js",
+    "test:flight-math": "g++ -std=c++17 tools/test_flight_math.cpp -o /tmp/aerion-flight-math && /tmp/aerion-flight-math"
   }
 }
