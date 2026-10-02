@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process'),{chromium}=require('playwright');
 const root=path.resolve(__dirname,'..'),port=18790,origin=`http://localhost:${port}`,ID='ZFC-001122334455';
 let server,browser,owner='',role='',armed=false,flightMode='ANGLE',pref='AUTO',rc=[1500,1500,1000,1500,1000,1000,1000,1000,1500,1000];
-const calls=[],errors=[],fileExports=[];let writes=0;const output=process.env.ZEBJUS_TEST_OUTPUT||path.join(path.dirname(root),'aerion_r2_checks');
+const calls=[],errors=[],fileExports=[];let writes=0,failTelemetry=0;const output=process.env.ZEBJUS_TEST_OUTPUT||path.join(path.dirname(root),'aerion_r2_checks');
 const capabilities={angle:true,rate:true,altitude:false,position:false,inflightModeSwitch:true,inflightHandover:true};
 const config={schema:1,maxTilt:50,maxRate:75,gyroHz:60,dtermHz:30,orientation:0,idleUs:1152,maxMotorUs:1952,maxThrottle:1800,modeSwitch:true,handover:true,batteryKind:0,batteryAddress:64,cells:3,batteryFactor:1,lowCell:3.5,criticalCell:3.3};
 const pid=Object.fromEntries(['rateRoll','ratePitch','rateYaw','angleRateRoll','angleRatePitch','angleRateYaw','angleRoll','anglePitch'].map(k=>[k,{P:1,I:0,D:0}]));
@@ -15,6 +15,7 @@ async function api(address,form='',actor='browser'){
  const reject=(c,m)=>{code=c;body={ok:false,message:m}};
  if(d.expectedDeviceId&&d.expectedDeviceId!==ID)reject(409,'Different Device ID');
  else if(u.pathname==='/api/status')body=status(cid);
+ else if(u.pathname==='/api/telemetry'&&failTelemetry>0){failTelemetry--;reject(503,'Transient telemetry failure');}
  else if(u.pathname==='/api/telemetry')body={...status(cid),rc:[...rc],rcAgeMs:10,roll:2,pitch:3,yaw:4,gyroX:5,gyroY:6,gyroZ:7,targetAngle:[10,20],targetRate:[30,40,50],motors:[1200,1201,1202,1203],flightLoopHz:250,loopPeriodUs:4000,maxLoopGapUs:4100,loopOverruns:0,webRcFrameHz:25,ppmFrameHz:50,lastDisarmReason:'CH5 low',batteryValid:true,battery:10.6,batteryLow:true};
  else if(u.pathname==='/api/control/acquire'){if(owner&&owner!==cid&&!(d.clientRole==='MOBILE'&&role!=='MOBILE'&&!armed))reject(423,'Mobile app owns this kit');else{owner=cid;role=d.clientRole||'WEB'}}
  else if(u.pathname==='/api/control/ping'){if(owner!==cid)reject(423,'View only')}
@@ -51,15 +52,15 @@ const wait=(page,f,arg)=>page.waitForFunction(f,arg,{timeout:30000});
  await laptop.click('.tab[data-tab="connect"]');await laptop.fill('#kitSearchInput','zebjus_drone_1');await laptop.fill('#kitCachedIp','192.168.4.1');await laptop.locator('#kitSearchBtn').evaluate(e=>e.click());await wait(laptop,()=>window.__zebjusMobileViewOnly);
  assert(await laptop.locator('#takeControlBtn').isDisabled());await laptop.click('.tab[data-tab="joystick"]');assert(await laptop.locator('#mobileMirrorBanner').isVisible());
  await laptop.locator('#webTxPowerBtn').evaluate(e=>e.click());assert.equal(await laptop.evaluate(()=>window.zebjusSchool.state.txOn),false);
- await phone.click('#heroAction');await wait(phone,()=>document.getElementById('hero').hidden);await phone.click('#arm');await pause(120);assert(armed);await phone.keyboard.down('ArrowRight');await pause(150);
+ await phone.click('#heroAction');await wait(phone,()=>document.getElementById('hero').hidden);await phone.click('#arm');await pause(120);assert(armed);const retainedOwner=owner;failTelemetry=1;await phone.keyboard.down('w');await pause(900);await phone.keyboard.up('w');assert(armed);assert.equal(owner,retainedOwner,'one telemetry failure cannot release active control');assert((await phone.locator('#identityHint').textContent()).includes(ID));await phone.keyboard.down('ArrowRight');await pause(150);
  await wait(laptop,()=>window.zebjusSchool.state.joy[0]>1500);assert.equal(await laptop.evaluate(()=>window.zebjusLabAPI.getSimInputOwner()),'receiver');await phone.screenshot({path:path.join(output,'mobile_control.png')});await laptop.screenshot({path:path.join(output,'laptop_mirror.png')});await phone.keyboard.up('ArrowRight');
  await laptop.selectOption('#webJoyTarget','sim');assert(armed,'changing a view target cannot disarm the phone');await laptop.selectOption('#webJoyTarget','device');assert.equal(calls.filter(c=>c.actor==='laptop'&&c.type==='rc_frame').length,0,'laptop cannot publish control frames');
  await phone.click('#kitSettings');assert(armed,'opening settings must keep flight state');await wait(phone,()=>document.querySelector('[data-kc="savePid"]')?.disabled);assert(await phone.locator('[data-kc="saveSettings"]').isDisabled());
  const n=writes;await phone.locator('[data-kc="savePid"]').evaluate(e=>e.click());assert.equal(writes,n,'armed UI cannot mutate PID');
  await phone.locator('[data-close="kitDialog"]').click();await phone.click('#kill');await pause(220);assert(!armed);assert.equal(owner,'');
  // Reconnect is observation only, then explicitly reserve mobile ownership.
- await phone.reload();await pause(600);assert.equal(owner,'');assert(!armed);await phone.click('#connect');await phone.click('#checkConnection');await wait(phone,()=>document.getElementById('controlHint').textContent==='MOBILE SESSION');
- await phone.click('#networkMode');await phone.click('[data-kc="saved"]');await wait(phone,()=>document.querySelector('[data-kc="savedSsid"]').options.length===2);assert.equal(await phone.locator('[data-kc="savedSsid"]').inputValue(),'School');
+ await phone.reload();await pause(600);assert.equal(role,'MOBILE');assert(!armed);await phone.click('#connect');await phone.click('#checkConnection');await wait(phone,()=>document.getElementById('controlHint').textContent==='MOBILE SESSION');
+ await phone.click('#kitSettings');await phone.click('[data-kc-tab="0"]');await phone.click('[data-kc="saved"]');await wait(phone,()=>document.querySelector('[data-kc="savedSsid"]').options.length===2);assert.equal(await phone.locator('[data-kc="savedSsid"]').inputValue(),'School');
  await phone.click('[data-kc-tab="1"]');await phone.fill('[data-setting="maxTilt"]','35');await phone.click('[data-kc="saveSettings"]');await pause(250);assert.equal(config.maxTilt,35);
  await phone.screenshot({path:path.join(output,'controls_settings.png')});await phone.click('[data-kc="handover"]');await pause(100);assert.equal(pref,'AUTO');
  await phone.click('[data-kc-tab="3"]');await phone.click('[data-kc="backup"]');await wait(phone,()=>true);await pause(150);const backup=fileExports.find(x=>x.name.endsWith('_settings.json'));assert(backup);const saved=JSON.parse(backup.body);assert.equal(saved.deviceId,ID);assert.equal(saved.flightSettings.maxTilt,35);

@@ -31,21 +31,14 @@ for line in result.stdout.splitlines():
     compile(item['code'], f"{item['file']}:{item['name']}", 'exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
     examples += item['name'].startswith('PY_')
 assert examples >= 40, f'Expected 40+ student templates, found {examples}'
-for name in ('ap_portal_source.html','ap_fly_source.html','ap_io_source.html'):
-    html=(ROOT/'tools'/name).read_text()
-    scripts=re.findall(r'<script>([\s\S]*?)</script>',html)
-    assert scripts, name
+for name in ('tools/flight_app_source.html','flight/index.html','android-app/app/src/main/assets/flight/index.html'):
+    html=(ROOT/name).read_text()
+    scripts=re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>',html)
+    assert scripts,name
     for script in scripts:
         result=subprocess.run([node,'--check'],input=script,text=True,capture_output=True)
-        if result.returncode: raise SystemExit(f'{name}: {result.stderr}')
-# Firmware serves exactly these self-contained HTML documents as gzip.
-import gzip
-assets=(ROOT/'FlightCore_Firmware/AP_ASSETS.h').read_text()
-for kind,name in [('PORTAL','ap_portal_source.html'),('FLY','ap_fly_source.html'),('IO','ap_io_source.html')]:
-    encoded=re.search(r'AP_'+kind+r'\[\].*?=\{(.*?)\};',assets,re.S)
-    assert encoded, kind
-    data=bytes(int(v,16) for v in re.findall(r'0x([0-9a-f]{2})',encoded.group(1)))
-    assert gzip.decompress(data)==(ROOT/'tools'/name).read_bytes()
+        if result.returncode:raise SystemExit(f'{name}: {result.stderr}')
+subprocess.run([sys.executable,'-B',ROOT/'tools/embed_ap_pages.py','--check'],check=True)
 ino=(ROOT/'FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino').read_text()
 match=re.search(r'uint32_t escDutyFromUs\(int us\)\{[^}]+\}',ino)
 servo=re.search(r'uint32_t servoDutyFromUs\(int us\)\{[^}]+\}',ino)
@@ -97,7 +90,9 @@ int main(){
         subprocess.run([out],check=True)
 else:
     print('WARN: g++ unavailable; ESC duty C++ check skipped')
-assert 'server.on("/io",HTTP_GET,sendIoPage)' in ino
+assert 'server.on("/io",HTTP_GET,sendIoPage)' not in ino
+assert 'server.on("/",HTTP_GET,noPortal)' in ino
+assert 'DNSServer' not in ino
 assert 'ledcAttachChannel(pin,250,12,i)' in ino and 'ledcAttachChannel(pin,50,12,4)' in ino
 assert ino.count('requireControl()')>=1
-print(f'PASS: {examples} student examples, Python preludes, three AP scripts, PWM endpoints, complete-frame PPM parser and /io route')
+print(f'PASS: {examples} student examples, Python preludes, installed Flight App scripts, PWM endpoints, complete-frame PPM parser and API-only AP')

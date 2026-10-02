@@ -1,10 +1,10 @@
-# Offline WebApp — V18.3.61
+# Offline WebApp — V18.3.62
 
 ## Joystick-only Aerion Flight App
 
 On Windows open `Start_Flight_App.bat`; on Mac open `Start_Flight_App.command`. Or run `python3 start_offline.py --flight`, or `node server.js` and open **http://localhost:8787/flight/**. This flight page has no editor or Python runtime. The launcher's Python/Node server only serves static files.
 
-The matching V18.3.61 firmware serves the same screen at **http://192.168.4.1/** or `/fly` after joining the kit AP. See `SUPPORT/V18_3_61_UPDATE_AND_TEST.md` for installation and controls. This is a browser app; the separate Android APK is included under `android-app/dist/`. No iOS native package is included.
+The V18.3.62 controller serves only the API at 192.168.4.1, with no browser/captive page. Use the locally served/cached Flight App or installed Android APK after joining kit Wi-Fi. See SUPPORT/V18_3_62_UPDATE_AND_TEST.md.
 
 ## Laptop, including the first run without internet
 
@@ -34,11 +34,11 @@ After saving, reopen the **same address in the same browser/profile**. This copy
 
 New third-party Python packages are not automatically available offline. Native `mediapipe`, full native cvzone and SerialModule still use the desktop Python companion. The browser HandDetector API works through the included browser adapter. Companion pip packages must be installed before taking that separate desktop route offline.
 
-## AP page, phones and camera access
+## AP, phones and camera access
 
-The controller's **http://192.168.4.1/** still opens its small embedded Flight App. The complete Python/vision bundle is hosted on the laptop or cached in the browser, rather than stored in the controller flash. Install the matching V18.3.61 APP or FACTORY firmware to replace the kit-hosted flight screen. The standalone Flight App can use an existing kit with compatible APIs.
+AP serves API endpoints only. Install matching V18.3.62 firmware and the new APK. Laptop uses the local/cached full WebApp; camera requires localhost/HTTPS and permission. A phone browser Python/vision session needs the full WebApp saved from a suitable HTTPS origin, retained in the same browser/profile. Local kit access remains subject to browser network permission. APK has no Python/camera interface.
 
-Browser cameras require localhost or HTTPS and camera permission. Plain HTTP to a kit or another laptop's LAN IP does not provide that permission context. For full phone/tablet browser vision, first open this full bundle on a suitable HTTPS host and save it offline in that browser; keep using that saved origin. Kit connectivity from a saved HTTPS app remains subject to browser local-network permission and platform restrictions. Captive portal mini-windows are not the supported Python/camera interface. Outdoor AP real-kit control should be verified on the intended device and browser; browser offline success does not establish radio range or real flight timing.
+After replacing WebApp files, repeat Save for offline use. The full extracted bundle supports first-run offline use with the local launcher.
 
 ## Rebuilding the bundle
 

@@ -20,7 +20,7 @@ version=read('VERSION.txt').strip()
 print(f'ZEBJUS project validation • {version}')
 
 # Required active files and stable mutable names.
-required=['hardware-io.js','tools/ap_io_source.html','RELEASE_NOTES.md','index.html','styles.css','app.js','python-worker.js','glb-loader.js','three.module.min.js','service-worker.js','kit-local.js','school-lab.js','ui-runtime.js','firmware-updater.js','FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino','FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json','firmware-catalog.json','firmware-latest.json','.github/workflows/build-flightcore-a1.yml','tools/build_firmware.py']
+required=['hardware-io.js','RELEASE_NOTES.md','index.html','styles.css','app.js','python-worker.js','glb-loader.js','three.module.min.js','service-worker.js','kit-local.js','school-lab.js','ui-runtime.js','firmware-updater.js','FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino','FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h','FlightCore_Firmware/catalog.json','FlightCore_Firmware/latest.json','firmware-catalog.json','firmware-latest.json','.github/workflows/build-flightcore-a1.yml','tools/build_firmware.py']
 for rel in required:
     if not (ROOT/rel).is_file(): fail(f'missing required file: {rel}')
 for p in (ROOT/'FlightCore_Firmware').glob('*.ino'):
@@ -222,7 +222,7 @@ if 'interval=selectedConnected()?30000:15000' not in school: fail('background mu
 if 'matches.length===1' not in school or 'duplicate-kit-name' not in school: fail('duplicate Kit Names are not surfaced/guarded in the multi-kit selector')
 if 'flightCoreIntegrated' not in ino or 'RATE_ANGLE_FLIGHT_CORE' not in ino or 'WIFI_SENSOR_BRIDGE' not in ino: fail('board-aware bridge/flight-core firmware roles are not explicit')
 if 'enum FlightModeKind' not in types_header or 'enum RcSourceKind' not in types_header: fail('flight-control custom enums must live in the companion header for Arduino prototype safety')
-for token in ['runFlightLoop()','FLIGHT_LOOP_US=4000','MOTOR_PINS[4]={D1,D2,D3,D0}','chooseRcSource()','RC_PPM','RC_WEB_STA','RC_WEB_AP','parseRcCsv','/fly','WEB_RC_STALE_MS=300']:
+for token in ['runFlightLoop()','FLIGHT_LOOP_US=4000','MOTOR_PINS[4]={D1,D2,D3,D0}','chooseRcSource()','RC_PPM','RC_WEB_STA','RC_WEB_AP','parseRcCsv','noPortal()','WEB_RC_STALE_MS=300']:
     if token not in ino: fail(f'Rate/Angle multi-source flight integration missing: {token}')
 if 'rc[5]>=1500?FLIGHT_RATE:FLIGHT_ANGLE' not in ino: fail('CH6 Angle/Rate mode mapping missing')
 if 'rc[4]<1500' not in ino or 'rc[2]<=1050' not in ino: fail('CH5 arm / low-throttle arming gates missing')
@@ -313,8 +313,8 @@ if 'simulatorMirror:true' not in app: fail('V18.3.43 Python real-kit simulator m
 
 # V18.3.48 release integration and editable AP-page source consistency.
 embedded=subprocess.run([sys.executable,str(ROOT/'tools/embed_ap_pages.py'),'--check'],capture_output=True,text=True)
-if embedded.returncode: fail('AP page sources differ from firmware: '+embedded.stderr.strip())
-for rel in ['tools/ap_portal_source.html','tools/ap_fly_source.html','python_companion/zebjus_client.py','python_companion/requirements-vision.txt','python_companion/imu_plot.py','python_companion/camera_telemetry.py','python_companion/cvzone_hands.py','SUPPORT/FLIGHT_VALIDATION_V18_3_44.md']:
+if embedded.returncode: fail('Installed Flight App copies differ: '+embedded.stderr.strip())
+for rel in ['tools/flight_app_source.html','python_companion/zebjus_client.py','python_companion/requirements-vision.txt','python_companion/imu_plot.py','python_companion/camera_telemetry.py','python_companion/cvzone_hands.py','SUPPORT/FLIGHT_VALIDATION_V18_3_44.md']:
     if not (ROOT/rel).is_file(): fail(f'V18.3.48 project file missing: {rel}')
 for token in ['ARMED_LOOP_GAP_LIMIT_US','loopOverruns','escPwmReady','prefs.begin("zjcal",false)','Disarm before Wi-Fi scan','Place the frame level and still with its top facing up']:
     if token not in ino: fail(f'V18.3.48 firmware guard missing: {token}')
@@ -335,16 +335,16 @@ for token in ['matplotlib.use("Agg", force=True)','browser_cv2.py','latestCamera
 for token in ['ppmFrameHz','webRcFrameHz','flightLoopHz','updateControlRates()']:
     if token not in ino: fail(f'V18.3.48 measured FC rates missing {token}')
 for token in ['KEYBOARD','arrowleft','ppmHz','fcHz']:
-    if token.lower() not in read('tools/ap_fly_source.html').lower(): fail(f'V18.3.48 AP keyboard/rate support missing {token}')
+    if token.lower() not in read('tools/flight_app_source.html').lower(): fail(f'V18.3.48 AP keyboard/rate support missing {token}')
 for rel in ['python_companion/browser_cv2.py','python_companion/face_detection.py','python_companion/reference_uploads/legacy_udp_flight_client.py','python_companion/reference_uploads/legacy_mediapipe_face_detector.py','python_companion/reference_uploads/cvzone_face_camera.py','python_companion/reference_uploads/hand_distance_serial_legacy.py','python_companion/reference_uploads/opencv_camera_basics.py']:
     if not (ROOT/rel).is_file(): fail(f'V18.3.48 supplied/adapted Python file missing {rel}')
 
 
 # V18.3.48 expansion firmware and UI contract.
-for token in ['escDutyFromUs','servoDutyFromUs','ledcAttachChannel(pin,250,12,i)','ledcAttachChannel(pin,50,12,4)','motorSlotsValid','loadExpansionSettings','ppmEdgeFalling','ppmReverse','expansionJson','expansionReadCommand','expansionWriteCommand','/io','FLIGHT_ANGLE','FLIGHT_RATE']:
+for token in ['escDutyFromUs','servoDutyFromUs','ledcAttachChannel(pin,250,12,i)','ledcAttachChannel(pin,50,12,4)','motorSlotsValid','loadExpansionSettings','ppmEdgeFalling','ppmReverse','expansionJson','expansionReadCommand','expansionWriteCommand','FLIGHT_ANGLE','FLIGHT_RATE']:
     if token not in ino: fail(f'V18.3.48 expansion firmware missing {token}')
 for token in ['motor_map_set','ppm_config','i2c_read','i2c_write','servo_config','servo_write','gps_config','gps_read','matrix_config','matrix_write','gpio_read','gpio_write','gpio_release']:
-    if token not in ino or token not in read('tools/ap_io_source.html') or token not in read('hardware-io.js'): fail(f'V18.3.48 I/O command mismatch: {token}')
+    if token not in ino or token not in read('hardware-io.js'): fail(f'V18.3.48 I/O command mismatch: {token}')
 for token in ['referenceWires()','fcHeaderForMotor','zebjus-expansion-change']:
     if token not in app: fail(f'V18.3.48 dynamic 2D wiring missing {token}')
 for token in ["{id:'M1',p:[-2.96,.96,2.96]}","{id:'M2',p:[2.96,.96,2.96]}","{id:'M3',p:[2.96,.96,-2.96]}","{id:'M4',p:[-2.96,.96,-2.96]}"]:
@@ -379,7 +379,7 @@ for token in ['esp_timer_start_periodic(flightTimer,4000)','xTaskCreate(flightCo
     if token not in features: fail('V18.3.61 feature missing: '+token)
 for token in ['rc_source_set','flight_stop','MOBILE','configurationBusy','Matched RC handover','FlightMath::canHandover','rateFilterPrimed','if(saturated)']:
     if token not in ino: fail('V18.3.61 flight/ownership guard missing: '+token)
-for rel in ['control-sticks.js','kit-console.js','flight-diagnostics.js','tools/test_flight_math.cpp','tools/test_mobile_view_browser.js','SUPPORT/V18_3_61_UPDATE_AND_TEST.md']:
+for rel in ['control-sticks.js','kit-console.js','flight-diagnostics.js','tools/test_flight_math.cpp','tools/test_mobile_view_browser.js','SUPPORT/V18_3_62_UPDATE_AND_TEST.md']:
     if not (ROOT/rel).is_file(): fail('V18.3.61 release file missing: '+rel)
 if 'runFlightLoop();' in ino[ino.rfind('void loop(){'):]:fail('Flight task regressed into networking main loop')
 

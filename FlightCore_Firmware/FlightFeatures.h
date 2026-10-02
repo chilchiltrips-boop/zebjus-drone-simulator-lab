@@ -1,6 +1,5 @@
 #pragma once
 // Included after core helpers: configuration APIs remain on the networking task.
-void sendCompressedPage(const uint8_t* data,size_t bytes){server.sendHeader("Cache-Control","no-store");server.sendHeader("Content-Encoding","gzip");server.send_P(200,"text/html",(const char*)data,bytes);}
 void loadFlightSettings(){prefs.begin("zjflight",true);if(prefs.getUInt("schema",0)==1){prefs.getBytes("config",&flightSettings,sizeof(flightSettings));}prefs.end();if(!FlightMath::valid(flightSettings))flightSettings=FlightSettings();prefs.begin("zjcal",true);accelScaleX=prefs.getFloat("scaleX",1);accelScaleY=prefs.getFloat("scaleY",1);accelScaleZ=prefs.getFloat("scaleZ",1);sixFaceValid=prefs.getBool("sixValid",false);prefs.end();}
 void saveFlightSettings(){prefs.begin("zjflight",false);prefs.putUInt("schema",1);prefs.putBytes("config",&flightSettings,sizeof(flightSettings));prefs.end();}
 void saveSixCalibration(){saveCalibrationSettings();prefs.begin("zjcal",false);prefs.putFloat("scaleX",accelScaleX);prefs.putFloat("scaleY",accelScaleY);prefs.putFloat("scaleZ",accelScaleZ);prefs.putBool("sixValid",sixFaceValid);prefs.end();}

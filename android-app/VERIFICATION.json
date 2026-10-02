@@ -1,6 +1,6 @@
 {
-  "version": "18.3.61-android.1",
-  "apk_sha256": "39dc2d0fa7eb3fd344c13f156b17754df06a2291cd8369dd9da9886dc02d4910",
+  "version": "18.3.62-android.1",
+  "apk_sha256": "048f00ca704f124fb1d5ac0fa62bc2d1f4fe56a8b54ea82f5762de8660fba233",
   "checks": {
     "compiled_DEX_resources_manifest": "passed",
     "APK_v2_v3_signature_and_zip_alignment": "passed",
@@ -10,7 +10,13 @@
     "mobile_owner_laptop_live_mirror": "passed",
     "armed_configuration_guard": "passed",
     "settings_backup_identity_restore_CSV": "passed",
-    "branding_and_shared_floating_sticks": "passed"
+    "branding_and_shared_floating_sticks": "passed",
+    "API_only_AP_and_no_captive_assets": "passed",
+    "actual_AP_STA_and_same_ID_router_reconnect": "passed with simulated native/API",
+    "telemetry_failure_while_throttling_retains_identity_and_owner": "passed with synthetic HTTP failure",
+    "external_mobile_PPM_TX_display_without_local_RC": "passed with simulated kit telemetry",
+    "configuration_release_preserves_PPM": "passed",
+    "top_ownership_control_and_responsive_header": "passed"
   },
   "test_boundary": {
     "browser_native_bridge": "simulated",
@@ -24,7 +30,7 @@
     "Android_Build_Tools": "36.0.0",
     "Java_runtime": "17",
     "Java_source_target": "8",
-    "compiler": "Eclipse ECJ 3.39.0",
+    "compiler": "JDK javac via java com.sun.tools.javac.Main",
     "packaging": "aapt2, D8, zipalign, apksigner"
   },
   "signing": "same included development key; not private production signing",

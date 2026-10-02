@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Incomplete batches, wrong bytes and generated build files must be handled consistently."""
-import tempfile, unittest
+import subprocess, tempfile, unittest
 from pathlib import Path
 from release_integrity import verify_manifest, write_manifest
 from project_files import project_files
@@ -57,6 +57,23 @@ class UploadIntegrityTest(unittest.TestCase):
         write_manifest(self.root)
         self.assertEqual(int((self.root / 'FILE_COUNT.txt').read_text()), len(project_files(self.root)))
         self.assertEqual(verify_manifest(self.root), 4)
+
+    def test_actual_workflows_explain_missing_helper(self):
+        project=Path(__file__).resolve().parents[1]
+        required=['tools/cleanup_repo.py','tools/project_files.py','tools/release_integrity.py','release-integrity.json']
+        for name in required:
+            p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text('present\n')
+        for name in ['build-aerion-android.yml','build-flightcore-a1.yml']:
+            with self.subTest(workflow=name):
+                lines=(project/'.github/workflows'/name).read_text().splitlines()
+                start=next(i for i,line in enumerate(lines) if 'for aerion_required in ' in line)-1
+                indentation=len(lines[start])-len(lines[start].lstrip());end=start
+                while end<len(lines) and lines[end].startswith(' '*indentation):end+=1
+                guard='\n'.join(line[indentation:] for line in lines[start:end]);p=self.root/'tools/release_integrity.py';p.unlink()
+                missing=subprocess.run(['bash','-c',guard],cwd=self.root,capture_output=True,text=True)
+                self.assertEqual(missing.returncode,1);self.assertIn('Incomplete upload: missing tools/release_integrity.py',missing.stdout)
+                p.write_text('present\n');complete=subprocess.run(['bash','-c',guard],cwd=self.root,capture_output=True,text=True)
+                self.assertEqual(complete.returncode,0,complete.stdout+complete.stderr)
 
 if __name__ == '__main__':
     unittest.main()

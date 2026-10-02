@@ -1,10 +1,10 @@
-# Aerion Flight Android — 18.3.61-android.1
+# Aerion Flight Android — 18.3.62-android.1
 
 An installable Android development app containing the Aerion Flight joystick screen. The interface is bundled with the APK and opens without internet, including on its first launch. It has no Python editor, camera stream or external JavaScript runtime.
 
 ## Install and connect
 
-1. Install `dist/ZEBJUS_Aerion_V18_3_61_Android.apk` on an Android 8.0 or later phone. This development APK uses the same development certificate as the previous APK, so it can update that installation.
+1. Install `dist/ZEBJUS_Aerion_V18_3_62_Android.apk` on an Android 8.0 or later phone. This development APK uses the same development certificate as the previous APK, so it can update that installation.
 2. On **Android 10+**, open **Aerion Flight → Connect drone**. Enter the kit's complete Device ID from the case if it is a new pairing, then tap **Connect kit Wi-Fi**.
 3. Allow **Nearby devices** on Android 13+; Android 10–12 needs the platform's Location permission for this Wi-Fi API. Choose the correct unique `ZEBJUS-FC-...` SSID in Android's connection dialog. The app supplies AP password **`12345678`**.
 4. On connection, the app verifies the kit identity and shows its flight screen inside the same app. This explicit connection reserves a MOBILE session without RC frames or ARM. A laptop on the same AP becomes view-only. Tap **Take control**, then **ARM** manually when the controller is ready. **STOP** lowers throttle, disarms and releases control.
@@ -12,21 +12,21 @@ An installable Android development app containing the Aerion Flight joystick scr
 
 മലയാളം: App തുറക്കുക → **Connect drone → Connect kit Wi-Fi** → Android dialog-ൽ ശരിയായ kit തിരഞ്ഞെടുക്കുക → app-ൽ തന്നെ flight screen. AP password **12345678**. Connection/permission dialog മാത്രം; flight control-നായി മറ്റൊരു browser തുറക്കുന്നില്ല. **Take control**, **ARM** സ്വയം നടക്കില്ല.
 
-The V18.3.61 controller firmware migrates an older random AP password to `12345678` on reboot after update. Its unique SSID and permanent Device ID are unchanged. Using the previous firmware will still require its old AP password; install the matching profile from this package.
+The V18.3.62 controller firmware migrates an older random AP password to `12345678` on reboot after update. Its unique SSID and permanent Device ID are unchanged. Using the previous firmware will still require its old AP password; install the matching profile from this package.
 
-### Opening the app from a manually joined AP
+### AP/STA and no browser redirect
 
-On an Android phone, the controller's AP root/captive page displays **Open Aerion Flight app**, using a package-specific Android intent link. Tapping it opens this APK and passes the Device ID and local IP. Some captive Wi-Fi windows block external app links; in that case, open the app from its icon. The link is read-only and cannot replace an existing different paired Device ID or start flight outputs.
+V18.3.62 firmware AP is API only. Joining Wi-Fi does not serve a browser page or app-intent link. Open Aerion Flight and connect kit Wi-Fi in the app; Android may show its permission/connection dialog.
 
-**Connecting Wi-Fi in system Settings cannot reliably launch an app automatically.** Android restricts background activity launches and browsers require a user gesture for app intent links. The supported way to avoid a separate flight browser window is to connect kit Wi-Fi from inside the installed app. A system permission or Wi-Fi approval dialog can still appear. No background notification service or automatic launch bypass is included.
+Top AP/STA actually changes the disarmed kit network mode. STA releases the AP-specific request and uses router Wi-Fi; phone and kit must join the same router. AP requests the correct kit SSID. Gear -> Wi-Fi selects saved profiles or saves new Wi-Fi entirely inside the app. Expected Device ID is retained; type a current local IP in Connect if saved/discovered addresses fail.
 
-Kit Wi-Fi/hardware configuration links are hidden in the Android flight screen so it does not launch an external browser. The top AP/STA button and gear provide Wi-Fi, controller limits, PID, calibration, backup/restore and diagnostics inside the app. Kit configuration changes require ownership and disarmed motors.
+On app opening a MOBILE configuration reservation sends no RC. Take control starts transmission manually. STOP ends it. One telemetry failure no longer clears identity while RC ACKs continue; the independent 300 ms watchdog is unchanged. Configuration-only release does not inject a safety RC into PPM.
 
 The left stick controls throttle and yaw. The right stick controls pitch and roll. Their side assignments stay fixed; **Floating joysticks** can be switched off in Settings. Throttle rises/falls gradually and holds on normal stick release; pitch, roll and yaw center. The header displays connection, control/armed state and ANGLE/RATE. Guarded Rate/Angle changes can run while armed when the matching firmware reports the capability. Automatic take-off/landing is not implemented.
 
 ## Compatible kit
 
-This app uses the Aerion/ZEBJUS local Wi-Fi API from the V18.3.61 controller project. The controller must already expose:
+This app uses the Aerion/ZEBJUS local Wi-Fi API from the V18.3.62 controller project. The controller must already expose:
 
 - `GET /api/status?clientId=...`, including device identity, `flightReady`, `armed`, `flightMode` and `lockMine`.
 - `GET /api/telemetry`.
@@ -67,7 +67,7 @@ Or specify paths directly:
 python3 tools/build_apk.py --build-tools /path/to/sdk/build-tools/36.0.0 --android-jar /path/to/sdk/platforms/android-36/android.jar
 ```
 
-If only a Java runtime is available, add `--ecj /path/to/ecj-3.39.0.jar` from Eclipse/Maven Central. The build script compiles resources, stamps the manifest version/SDK fields, compiles Java, runs D8, aligns, signs and verifies the APK. Output is under `dist/`.
+If the javac executable is absent but the JDK compiler module exists, the script uses java com.sun.tools.javac.Main. Otherwise add `--ecj /path/to/ecj-3.39.0.jar` from Eclipse/Maven Central. The build script compiles resources, stamps the manifest version/SDK fields, compiles Java, runs D8, aligns, signs and verifies the APK. Output is under `dist/`.
 
 ## Development signing
 

@@ -116,9 +116,11 @@ public final class MainActivity extends Activity {
         if(Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT,()->{pauseControl();finish();});
         web.loadUrl(HOME);immersive();
     }
+    private boolean preferRouterWifi=false;
     private void chooseWifi(Network network){
         if(selectedKitWifi!=null && !selectedKitWifi.equals(network))return;
         if(destroyed || network.equals(wifi))return;
+        if(selectedKitWifi==null && wifi!=null)return;
         emergency(gate.fence(false));wifi=network;emit("networkLost");if(gate.isForeground())emit("resume");
     }
     private void immersive(){getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);}
@@ -146,7 +148,18 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);pauseControl();setIntent(intent);readLaunch(intent);if(resumed && web.hasWindowFocus())gate.resume();deliverLaunch();}
     private void wifiMessage(String method,String message){runOnUiThread(()->{if(!destroyed && web!=null)web.evaluateJavascript("window.AerionAndroid&&window.AerionAndroid."+method+"&&window.AerionAndroid."+method+"("+JSONObject.quote(message)+")",null);});}
+    private void useRouterWifi(){
+        pauseControl();preferRouterWifi=true;
+        if(kitRequest!=null)try{connectivity.unregisterNetworkCallback(kitRequest);}catch(RuntimeException ignored){}
+        kitRequest=null;selectedKitWifi=null;wifi=null;
+        Network preferred=connectivity.getActiveNetwork();NetworkCapabilities cap=preferred==null?null:connectivity.getNetworkCapabilities(preferred);
+        if(cap!=null&&cap.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))wifi=preferred;
+        if(wifi==null)for(Network n:connectivity.getAllNetworks()){NetworkCapabilities c=connectivity.getNetworkCapabilities(n);if(c!=null&&c.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)&&c.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)){wifi=n;break;}}
+        if(resumed&&web.hasWindowFocus())gate.resume();emit("routerReady");
+        if(wifi==null)wifiMessage("wifiError","Join the kit's saved router Wi-Fi in Phone Wi-Fi settings, then return here.");
+    }
     private void joinKitWifi(String id){
+        preferRouterWifi=false;
         if(!resumed || destroyed)return;
         try{LaunchPolicy.apSsid(id);}catch(Exception e){wifiMessage("wifiError",e.getMessage());return;}
         if(Build.VERSION.SDK_INT<29){wifiMessage("wifiError","In-app Wi-Fi connection needs Android 10+. Use Phone Wi-Fi settings, then return here.");return;}
@@ -208,7 +221,7 @@ public final class MainActivity extends Activity {
         try{safety.execute(()->{
             try{
                 String form="clientId="+enc(lease.clientId)+"&expectedDeviceId="+enc(lease.deviceId);
-                try{http((Network)lease.network,new URL(lease.origin+"/api/command"),"POST",form+"&type=rc_frame&channels="+lease.safeChannels(),600,null);}catch(Exception ignored){}
+                if(lease.hasRc())try{http((Network)lease.network,new URL(lease.origin+"/api/command"),"POST",form+"&type=rc_frame&channels="+lease.safeChannels(),600,null);}catch(Exception ignored){}
                 try{http((Network)lease.network,new URL(lease.origin+"/api/control/release"),"POST",form,600,null);}catch(Exception ignored){}
             }catch(Exception ignored){}
         });}catch(RuntimeException ignored){}
@@ -294,6 +307,7 @@ public final class MainActivity extends Activity {
             runOnUiThread(()->{pauseControl();exportText=body;Intent save=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mime).putExtra(Intent.EXTRA_TITLE,name);startActivityForResult(save,SAVE_EXPORT);});
         }
         @JavascriptInterface public void openWifi(String key){if(token.equals(key))runOnUiThread(()->{pauseControl();startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));});}
+        @JavascriptInterface public void useRouterWifi(String key){if(token.equals(key))runOnUiThread(()->MainActivity.this.useRouterWifi());}
         @JavascriptInterface public void joinWifi(String key,String deviceId){if(token.equals(key))runOnUiThread(()->joinKitWifi(deviceId));}
     }
 }

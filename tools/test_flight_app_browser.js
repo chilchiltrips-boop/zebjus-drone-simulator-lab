@@ -21,7 +21,7 @@ async function lastFrame(predicate){const start=Date.now();while(Date.now()-star
   const u=new URL(route.request().url());calls.push(u.href);
   if(u.hostname==='localhost')return route.continue();
   if(!['192.168.4.1','10.0.0.20','zebjus-drone-1.local'].includes(u.hostname)||!reachable)return route.abort();
-  if(u.pathname==='/'||u.pathname==='/fly')return route.fulfill({contentType:'text/html',body:fs.readFileSync(path.join(root,'tools/ap_fly_source.html'),'utf8')});
+  if(u.pathname==='/'||u.pathname==='/fly')return route.fulfill({status:204,body:''});
   if(mode.startsWith('STA')&&u.hostname==='192.168.4.1')return route.abort();
   const d=Object.fromEntries(new URLSearchParams(route.request().postData()||''));let response={ok:true},code=200;
   if(d.expectedDeviceId&&d.expectedDeviceId!==id){code=409;response={ok:false,message:'Device ID mismatch'}}
@@ -78,9 +78,7 @@ async function lastFrame(predicate){const start=Date.now();while(Date.now()-star
  for(const selector of ['#left','#right','#heroAction','#connect']){const r=await page.locator(selector).boundingBox();assert(r.x>=0&&r.x+r.width<=390.5&&r.y>=0&&r.y+r.height<=844.5,selector+' overflows viewport')}
  assert.equal(await page.locator('#arm').isDisabled(),true,'rotation must stop control');assert.equal(errors.length,0,errors.join('\n'));assert(!calls.some(u=>/vendor|pyodide|python-worker|app\.js/.test(u)),'flight screen must not load Python or the engineering app');
  await context.close();
- // Embedded AP page is self-contained and connects locally with no installed app.
- mode='AP SETUP';ip='192.168.4.1';const ap=await browser.newContext({viewport:{width:844,height:390},serviceWorkers:'block'});await ap.route('**/*',routing);const apPage=await ap.newPage();await apPage.goto('http://192.168.4.1/');await wait(apPage,()=>document.getElementById('connectionLabel').textContent==='zebjus_drone_1');assert(await apPage.locator('#hero').isVisible());assert.equal(await apPage.locator('#arm').isDisabled(),true);await ap.close();
  // Independently cached Flight App survives a server shutdown and browser offline.
  const offline=await browser.newContext({viewport:{width:1000,height:560}}),offlinePage=await offline.newPage();await offline.route('**/*',route=>new URL(route.request().url()).hostname==='localhost'?route.continue():route.abort());await offlinePage.goto(url);await offlinePage.evaluate(async()=>{await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true}))});server.kill();await pause(200);await offline.setOffline(true);await offlinePage.reload();assert.equal(await offlinePage.locator('#heroTitle').textContent(),'Connect your drone');assert(await offlinePage.locator('#arm').isDisabled());await offline.close();
- console.log('PASS: standalone + embedded flight UI; real multitouch; fixed sides; gradual throttle; keyboard; STOP; refresh; transport/lock loss; physical-ID rejection; late-grant fencing; stale-session rejection; AP/STA; landscape/portrait; offline cache; zero Python runtime');
+ console.log('PASS: installed/offline flight UI; real multitouch; fixed sides; gradual throttle; keyboard; STOP; refresh; transport/lock loss; physical-ID rejection; late-grant fencing; stale-session rejection; AP/STA; landscape/portrait; offline cache; zero Python runtime');
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{if(browser)await browser.close();if(server)server.kill()});

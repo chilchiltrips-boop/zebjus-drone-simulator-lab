@@ -16,7 +16,7 @@ def main():
     files=project_files(ROOT)
     for p in files:
         if p.stat().st_size>25*1024*1024:raise SystemExit('GitHub web single-file limit exceeded: '+str(p.relative_to(ROOT)))
-    final_paths={'release-integrity.json','tools/release_integrity.py','tools/project_files.py','tools/test_upload_integrity.py','tools/test_firmware_setup.py','VERSION.txt','FILE_COUNT.txt','firmware-catalog.json','firmware-latest.json','firmware-updater.js','tools/build_firmware.py','tools/cleanup_repo.py','tools/validate_project.py','tools/make_offline_manifest.py','tools/validate_offline_bundle.py','tools/embed_ap_pages.py','tools/ap_portal_source.html','tools/ap_fly_source.html','tools/ap_io_source.html','tools/test_flight_math.cpp','control-sticks.js','kit-console.js','flight-diagnostics.js','flight/index.html'}
+    final_paths={'release-integrity.json','tools/release_integrity.py','tools/project_files.py','tools/test_upload_integrity.py','tools/test_firmware_setup.py','VERSION.txt','FILE_COUNT.txt','firmware-catalog.json','firmware-latest.json','firmware-updater.js','tools/build_firmware.py','tools/cleanup_repo.py','tools/validate_project.py','tools/make_offline_manifest.py','tools/validate_offline_bundle.py','tools/embed_ap_pages.py','tools/flight_app_source.html','tools/test_flight_math.cpp','control-sticks.js','kit-console.js','flight-diagnostics.js','flight/index.html'}
     def final(p):
         rel=p.relative_to(ROOT);return rel.parts[0] in {'.github','FlightCore_Firmware','android-app'} or rel.as_posix() in final_paths
     reserved=[p for p in files if final(p)]
@@ -39,11 +39,11 @@ def main():
     (destination/'UPLOAD_MANIFEST.json').write_text(json.dumps(manifest,indent=2)+'\n')
     with (destination/'BATCH_INVENTORY.csv').open('w',newline='') as f:
         w=csv.DictWriter(f,fieldnames=['batch','files','bytes']);w.writeheader();w.writerows(rows)
-    (destination/'READ_FIRST.md').write_text(f'''# ZEBJUS Aerion V{version} R3 — {len(groups)} upload batches
+    (destination/'READ_FIRST.md').write_text(f'''# ZEBJUS Aerion V{version} — {len(groups)} upload batches
 
 ഈ ZIP extract ചെയ്യുക. ZIP GitHub-ലേക്ക് upload ചെയ്യരുത്.
 
-1. GitHub branch selector-ൽ **upload-v{version.replace('.', '-')}-r3** എന്ന പുതിയ branch `main`-ൽ നിന്ന് create ചെയ്യുക. Live Pages source `main` ആയി നിലനിർത്തുക. ആ പുതിയ branch-ന്റെ repository root → Add file → Upload files.
+1. GitHub branch selector-ൽ **upload-v{version.replace('.', '-')}** എന്ന പുതിയ branch `main`-ൽ നിന്ന് create ചെയ്യുക. Live Pages source `main` ആയി നിലനിർത്തുക. ആ പുതിയ branch-ന്റെ repository root → Add file → Upload files.
 2. `UPLOAD_01`-ന്റെ **ഉള്ളിലെ files/folders** drag ചെയ്യുക. `UPLOAD_01` folder തന്നെ upload ചെയ്യരുത്.
 3. അതേ upload branch-ൽ batches ക്രമത്തിൽ commit ചെയ്യുക. എല്ലാം repository root-ലേക്കാണ്. ഇടവേള എടുത്താലും live main-ൽ files mix ആവില്ല.
 4. `vendor`-ന്റെ അകത്ത് upload ചെയ്യരുത്; `vendor/vendor` path ഉണ്ടാകരുത്. Existing paths replace ചെയ്യുക.
@@ -56,7 +56,7 @@ Wrapper `READ_FIRST.md`, inventory, manifest, assembly helper എന്നിവ
 Local use: `python3 assemble_project.py` (Windows: `python assemble_project.py`). Hash verified project `ZEBJUS_Local`-ൽ ലഭിക്കും. അതിലെ offline launcher ഉപയോഗിക്കുക.
 Wrapper files accidentally GitHub root-ൽ എത്തിയിട്ടുണ്ടെങ്കിൽ CI cleanup അവ നീക്കും. `release-integrity.json` project-ന്റെ internal completion check ആണ്; അത് upload ചെയ്യണം.
 APK: `android-app/dist/`. A1/A2 APP + FACTORY binaries: `FlightCore_Firmware/`.
-AP password: **12345678**. Guide: `SUPPORT/V18_3_61_UPDATE_AND_TEST.md`.
+AP password: **12345678**. Guide: `SUPPORT/V18_3_62_UPDATE_AND_TEST.md`.
 Real-phone, USB/OTA, sensor voltage and loaded 250 Hz measurements are pending.
 ''')
     (destination/'assemble_project.py').write_text('''#!/usr/bin/env python3

@@ -16,9 +16,9 @@ async function layout(page,width,height){
  const boxes=await page.locator('.topbar-main > *').evaluateAll(nodes=>nodes.filter(n=>getComputedStyle(n).display!=='none').map(n=>{const r=n.getBoundingClientRect();return {name:n.id||n.className,x:r.x,y:r.y,right:r.right,bottom:r.bottom}}));
  for(const b of boxes){assert(b.x>=0&&b.right<=width+1,`${b.name} exceeds ${width}px`)}
  for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){const a=boxes[i],b=boxes[j];assert(!(Math.min(a.right,b.right)-Math.max(a.x,b.x)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.y,b.y)>1),`${a.name} overlaps ${b.name}`)}
- await page.evaluate(()=>scrollTo(0,120));await pause(60);
+ await page.evaluate(()=>scrollTo({top:120,behavior:'instant'}));await pause(60);
  const pos=await page.evaluate(()=>({headerTop:document.querySelector('.topbar').getBoundingClientRect().top,header:document.querySelector('.topbar').getBoundingClientRect().bottom,tabs:document.querySelector('.tabs').getBoundingClientRect().top}));
- assert(pos.headerTop>=-1,'header remains visible on mobile scroll');assert(pos.tabs>=pos.header-1,'navigation cannot overlap the header');await page.evaluate(()=>scrollTo(0,0));await pause(100);
+ assert(pos.headerTop>=-1,'header remains visible on mobile scroll');assert(pos.tabs>=pos.header-1,'navigation cannot overlap the header');await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await pause(100);
  await page.screenshot({path:path.join(out,`aerion_${width}x${height}.png`)});
 }
 (async()=>{

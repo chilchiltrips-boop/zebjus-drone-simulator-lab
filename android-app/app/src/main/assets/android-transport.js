@@ -15,6 +15,7 @@
  navigator.sendBeacon=(address,body)=>{window.fetch(String(address),{method:'POST',body}).catch(()=>{});return true};
  android.saveFile=(name,body,mime)=>native.saveFile(token,name,body,mime);
  android.openWifi=()=>native.openWifi(token);
+ android.useRouterWifi=()=>native.useRouterWifi(token);android.routerReady=()=>android.connectedRouter?.();
  android.joinWifi=()=>native.joinWifi(token,document.getElementById('expectedId').value.trim());
  const wifiUi=(message,busy=false)=>{document.getElementById('pairMessage').textContent=message;document.getElementById('androidWifi').disabled=busy;document.getElementById('checkConnection').disabled=busy;};
  android.wifiProgress=message=>wifiUi(message,true);
