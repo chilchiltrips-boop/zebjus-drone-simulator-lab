@@ -3,6 +3,7 @@ name: Build Aerion Android APK
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
       - 'android-app/app/**'
       - 'android-app/tools/build_apk.py'
@@ -43,6 +44,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Verify completed release upload
+        run: |
+          python3 -B ../tools/cleanup_repo.py
+          python3 -B ../tools/release_integrity.py --check
       - name: Install Android SDK platform and build tools
         run: |
           set -euo pipefail
@@ -67,7 +72,7 @@ jobs:
           name: Aerion-Android-APK
           if-no-files-found: error
           path: |
-            android-app/dist/*.apk
+            android-app/dist/ZEBJUS_Aerion_V18_3_61_Android.apk
             android-app/dist/BUILD_REPORT.json
             android-app/dist/APK_SIGNATURE.txt
             android-app/dist/APK_MANIFEST.txt
