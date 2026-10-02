@@ -1,6 +1,6 @@
 {
   "version": "18.3.61",
-  "totalBytes": 114291583,
+  "totalBytes": 114296017,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -39,8 +39,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 317588,
-      "sha256": "3f7c9e1785b0068d9d5698e32c8cc41569615901d0041517f258a457f2417819"
+      "bytes": 318368,
+      "sha256": "c4c044e5a6ff0cd2b5208ddd405fed0cc5e23a7a3b5040b2f89e55dcd979112b"
     },
     {
       "path": "battery_strap.glb",
@@ -159,8 +159,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 76393,
-      "sha256": "8302c378b0774e577a0642f659fbabd2765ef4fe8a1654d52ab3612bfb3d4c7c"
+      "bytes": 76384,
+      "sha256": "8c545f32c9d73825cd3de3f899d04acdef39aa1bcfdac37d7e19a78dab487ee2"
     },
     {
       "path": "kit-console.js",
@@ -179,8 +179,8 @@
     },
     {
       "path": "manifest.webmanifest",
-      "bytes": 611,
-      "sha256": "7b0660c6ba06376972129573156d2575987395ea8eedd8af340beaf91f123b23"
+      "bytes": 579,
+      "sha256": "9417793528727e86cdbd97c05376fd10e2349195c5a4ce6307bbc63c3c134094"
     },
     {
       "path": "monaco-worker.js",
@@ -329,8 +329,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 71141,
-      "sha256": "232039bac7e965348ad7a1c98a2b70a30379f7c87e0fb13c0eec8df2cc4dc6aa"
+      "bytes": 72283,
+      "sha256": "ba44154a3a0a02ccf8de695deaa198d9ad6fbf11489b90c20d533c3c157a48c8"
     },
     {
       "path": "server.js",
@@ -339,8 +339,8 @@
     },
     {
       "path": "styles.css",
-      "bytes": 169953,
-      "sha256": "6a8f16756f3a6d9ef552144cfe04c9e4bcfdf58bcee060ea22c9a3e7db3454e7"
+      "bytes": 172506,
+      "sha256": "cde51736357d2ce96dda9743fdf87b90bfd9008136ff86ce7c63da4b251187ea"
     },
     {
       "path": "three.module.min.js",

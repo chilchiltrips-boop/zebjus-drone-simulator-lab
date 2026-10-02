@@ -1117,3 +1117,22 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 /* Keep observed mobile sticks legible while input remains disabled. */
 .mobile-view-only .aerion-stick-zone.disabled .aerion-stick-base{opacity:.85}
 .mobile-view-only #webJoyDisarmBtn,.mobile-view-only #webJoyCenterBtn{opacity:.45;cursor:default}
+
+/* Aerion: stable header rows for identity, controls and runtime notices. */
+.topbar{display:block!important;position:sticky!important;top:0;height:auto!important;min-height:0!important;padding:10px 18px 8px!important}
+.topbar-main{display:grid;grid-template-columns:auto auto minmax(220px,1fr) auto auto;gap:16px;align-items:center;min-width:0}
+.topbar .brand{flex-shrink:0}.topbar .brand b{font-size:18px!important;white-space:nowrap}.topbar .brand span{display:block;font-size:10px!important;white-space:nowrap}
+.topbar .brand .logo{flex:0 0 36px;width:36px;height:36px}
+.topbar .top-network-control{order:0;margin:0;padding:6px 8px;white-space:nowrap}
+.topbar .network-toggle{min-height:25px!important}
+.top-network-notice{top:calc(var(--topbar-height,96px) + 8px)}
+.topbar .top-kit-status{display:flex;min-width:0;max-width:none;margin:0;padding:7px 10px;box-sizing:border-box}
+.topbar .top-kit-status>span{min-width:0}.topbar .top-kit-status em{display:block;white-space:normal;overflow-wrap:anywhere;line-height:1.45;font-size:9px}
+.topbar .zebjus-top-shop{min-width:0}.topbar-edit{flex-wrap:nowrap;gap:6px}.topbar-edit .btn{padding:8px 10px;white-space:nowrap}
+.topbar-status{display:flex;align-items:center;gap:10px;min-width:0;padding-top:7px;margin-top:8px;border-top:1px solid #26374680}
+.topbar-status .status{border:0;background:none;padding:0;font-size:10px;line-height:1.4}.topbar-status #assetStatus{flex:1;min-width:0;overflow-wrap:anywhere}
+.topbar-status .adaptive-layout-badge{font-size:8px;min-height:0;border:0;background:none;padding:0;color:#7993a5}
+.tabs{top:var(--topbar-height,96px)!important}
+@media(max-width:1120px){.topbar-main{grid-template-columns:auto auto minmax(150px,1fr) auto;gap:12px}.topbar .zebjus-top-shop{display:none}.topbar-edit .btn{padding:7px 8px}}
+@media(max-width:760px){.topbar-main{grid-template-columns:minmax(0,1fr) auto;gap:8px}.topbar .top-kit-status{grid-column:1;grid-row:2}.topbar-edit{grid-column:2;grid-row:2}.topbar .brand b{font-size:15px!important}.topbar .brand span{font-size:9px!important}.topbar .top-kit-status em{font-size:8px}.topbar .top-network-control{justify-self:end}.topbar-status{gap:8px}.topbar-status .adaptive-layout-badge{font-size:7px}.topbar-edit .btn{font-size:9px;min-height:34px}}
+@media(max-width:440px){.topbar{padding:8px 9px!important}.topbar-main{grid-template-columns:minmax(0,1fr) auto}.topbar .top-kit-status{grid-column:1/-1;grid-row:2}.topbar-edit{grid-column:1/-1;grid-row:3;justify-content:flex-end}.topbar-status .adaptive-layout-badge{display:none}}
