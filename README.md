@@ -1,4 +1,8 @@
-# ZEBJUS F450 Drone Engineering Lab V18.3.61
+# ZEBJUS Aerion V18.3.61
+
+## GitHub upload and R3 audit
+
+Use a separate upload branch for all batches, then merge a complete, checked release into `main` once. See [current upload instructions](GITHUB_UPLOAD_README.md) and [audit findings](SUPPORT/GITHUB_AUDIT_R3.md). `release-integrity.json` verifies every project file before builds. The current ZIP includes compiled A1/A2 APP/FACTORY images and the Android APK.
 
 ## Aerion Flight App
 
