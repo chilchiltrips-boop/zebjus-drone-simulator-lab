@@ -14,6 +14,9 @@
     "test:mobile-view": "node tools/test_mobile_view_browser.js",
     "test:flight-math": "g++ -std=c++17 tools/test_flight_math.cpp -o /tmp/aerion-flight-math && /tmp/aerion-flight-math",
     "test:setup": "python3 -B tools/test_firmware_setup.py",
-    "test:ui": "node tools/test_aerion_controls_browser.js"
+    "test:ui": "node tools/test_aerion_controls_browser.js",
+    "test:upload": "python3 -B tools/test_upload_integrity.py",
+    "release:seal": "python3 -B tools/cleanup_repo.py && python3 -B tools/make_offline_manifest.py && python3 -B tools/release_integrity.py --write",
+    "release:check": "python3 -B tools/release_integrity.py --check"
   }
 }
