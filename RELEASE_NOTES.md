@@ -1,5 +1,15 @@
 # V18.3.61
 
+## R2 — Aerion interface and build reliability
+
+- Main WebApp is named **ZEBJUS Aerion**. The header has separate identity/control and notification rows, with navigation positioned using the actual header height. Desktop, tablet and phone widths are covered.
+- Web Joystick and Tripod preserve the thumb's vertical drag position. Fractional throttle changes accumulate before publishing integer channels, so small movements also work at fast display refresh rates. Release holds throttle and recenters the rate stick. Leaving a controller page cancels held-pointer input.
+- Native target options are only changed when their content changes. Simulator/Real kit selection stays usable during redraws. A laptop observing a mobile-owned kit can select its display target without publishing flight frames or interrupting the phone.
+- Arduino core/index setup has four attempts with 10/20/40-second backoff. CI caches the pinned 3.3.12 core; failed installs preserve completed downloads for the next run. Dependency directories stay outside the repository inventory. Compile errors are reported after one attempt.
+- A distinct web cache revision makes browsers load the corrected interface. Verified offline saving accepts web revisions of the same firmware release.
+- Firmware/APK bytes, hardware pin mappings and AP password are unchanged. This is a WebApp/build-tools correction; no hardware reflash is required for these WebApp fixes.
+
+
 - Mobile session reservation makes connected laptop clients view-only. WebApp Joystick/Tripod mirrors received mobile RC. Explicit connection reserves the phone; Take control and ARM remain separate actions. Reload/resume stay read-only.
 - APK and full WebApp include in-app AP/STA, saved/new Wi-Fi, joystick feel, controller limits, PID/calibration and device/profile-bound backup/restore. Armed/bench configuration is blocked in firmware and UI. Settings observation does not interrupt an armed flight.
 - ZEBJUS/Aerion opening animation; APK header shows identity, ownership and actual firmware mode/ARM. All WebApp gimbals use shared floating centers and gradual throttle.
