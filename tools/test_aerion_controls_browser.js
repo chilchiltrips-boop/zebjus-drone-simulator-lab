@@ -57,6 +57,7 @@ async function layout(page,width,height){
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:points});
  points[0].y-=35;points[1].x+=40;await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:points});await pause(450);
  const touchChannels=await page.evaluate(()=>[...zebjusSchool.state.joy]);assert(touchChannels[2]>1000&&touchChannels[0]>1500,'two-finger throttle and roll both respond');
+ await page.screenshot({path:path.join(out,'aerion_joystick_active.png')});
  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});const touchReleased=await page.evaluate(()=>zebjusSchool.state.joy[2]);await pause(100);assert.equal(await page.evaluate(()=>zebjusSchool.state.joy[2]),touchReleased);assert.equal(await page.evaluate(()=>zebjusSchool.state.joy[0]),1500);await cdp.detach();
  for(const [w,h] of [[1024,768],[760,700],[390,844]])await layout(page,w,h);
  assert.deepEqual(errors,[]);console.log('PASS: native target changes / other controls usable / no option rewrites / small throttle movements / held knob / release hold / keyboard SAFE / Tripod knob / page-exit cancellation / two-finger throttle and roll / header alignment at 1374, 1024, 760 and 390 px');

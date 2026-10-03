@@ -59,7 +59,7 @@ const wait=(page,f,arg)=>page.waitForFunction(f,arg,{timeout:30000});
  const n=writes;await phone.locator('[data-kc="savePid"]').evaluate(e=>e.click());assert.equal(writes,n,'armed UI cannot mutate PID');
  await phone.locator('[data-close="kitDialog"]').click();await phone.click('#kill');await pause(220);assert(!armed);assert.equal(owner,'');
  // Reconnect is observation only, then explicitly reserve mobile ownership.
- await phone.reload();await pause(600);assert.equal(role,'MOBILE');assert(!armed);await phone.click('#connect');await phone.click('#checkConnection');await wait(phone,()=>document.getElementById('controlHint').textContent==='MOBILE SESSION');
+ await phone.reload();await pause(600);assert.equal(role,'','reload cannot reacquire ownership');assert(!armed);await phone.click('#connect');await phone.click('#checkConnection');await wait(phone,()=>document.getElementById('controlHint').textContent==='MOBILE SESSION');
  await phone.click('#kitSettings');await phone.click('[data-kc-tab="0"]');await phone.click('[data-kc="saved"]');await wait(phone,()=>document.querySelector('[data-kc="savedSsid"]').options.length===2);assert.equal(await phone.locator('[data-kc="savedSsid"]').inputValue(),'School');
  await phone.click('[data-kc-tab="1"]');await phone.fill('[data-setting="maxTilt"]','35');await phone.click('[data-kc="saveSettings"]');await pause(250);assert.equal(config.maxTilt,35);
  await phone.screenshot({path:path.join(output,'controls_settings.png')});await phone.click('[data-kc="handover"]');await pause(100);assert.equal(pref,'AUTO');

@@ -78,8 +78,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build/core-tests
-          javac -d build/core-tests app/src/main/java/in/zebjus/aerion/LeaseGate.java app/src/main/java/in/zebjus/aerion/LocalPolicy.java app/src/main/java/in/zebjus/aerion/LaunchPolicy.java tests/LeaseGateTest.java
+          javac -d build/core-tests app/src/main/java/in/zebjus/aerion/LeaseGate.java app/src/main/java/in/zebjus/aerion/LocalPolicy.java app/src/main/java/in/zebjus/aerion/LaunchPolicy.java app/src/main/java/in/zebjus/aerion/NativeRcStream.java tests/LeaseGateTest.java tests/NativeRcStreamTest.java
           java -cp build/core-tests in.zebjus.aerion.LeaseGateTest
+          java -cp build/core-tests in.zebjus.aerion.NativeRcStreamTest
       - name: Build and verify development APK
         run: |
           set -euo pipefail
@@ -90,7 +91,7 @@ jobs:
           name: Aerion-Android-APK
           if-no-files-found: error
           path: |
-            android-app/dist/ZEBJUS_Aerion_V18_3_62_Android.apk
+            android-app/dist/ZEBJUS_Aerion_V18_3_63_Android.apk
             android-app/dist/BUILD_REPORT.json
             android-app/dist/APK_SIGNATURE.txt
             android-app/dist/APK_MANIFEST.txt

@@ -1,26 +1,28 @@
 {
-  "version": "18.3.62-android.1",
-  "apk_sha256": "048f00ca704f124fb1d5ac0fa62bc2d1f4fe56a8b54ea82f5762de8660fba233",
+  "version": "18.3.63-android.1",
+  "apk_sha256": "40d86c8dd9a2074da851cf1cd4aff1a35947e6dd4e25618ed7d8d8d6694fa1dc",
   "checks": {
     "compiled_DEX_resources_manifest": "passed",
     "APK_v2_v3_signature_and_zip_alignment": "passed",
     "bundled_asset_exact_equality": "passed",
-    "native_Java_policy_and_config_reservation": "passed",
-    "native_bridge_browser_lifecycle_reconnect": "passed",
-    "mobile_owner_laptop_live_mirror": "passed",
-    "armed_configuration_guard": "passed",
-    "settings_backup_identity_restore_CSV": "passed",
-    "branding_and_shared_floating_sticks": "passed",
-    "API_only_AP_and_no_captive_assets": "passed",
-    "actual_AP_STA_and_same_ID_router_reconnect": "passed with simulated native/API",
-    "telemetry_failure_while_throttling_retains_identity_and_owner": "passed with synthetic HTTP failure",
-    "external_mobile_PPM_TX_display_without_local_RC": "passed with simulated kit telemetry",
-    "configuration_release_preserves_PPM": "passed",
-    "top_ownership_control_and_responsive_header": "passed"
+    "native_lease_cancel_lifecycle_policy": "passed",
+    "native_UDP_loopback_50Hz_and_short_gaps": "passed",
+    "native_token_device_replay_ACK_rejection": "passed",
+    "native_idle_reservation_start_and_stale_input_fence": "passed",
+    "actual_bundled_UI_lifecycle_reload_and_wifi_callback_race": "passed with simulated native/controller API",
+    "440ms_loss_retains_throttle_ARM_owner": "passed with simulated native/controller API",
+    "hard_loss_safe_fresh_session_STOP_and_wrong_ID": "passed with simulated native/controller API",
+    "APK_AP_STA_same_ID_reconnect": "passed with simulated native/controller API",
+    "laptop_mobile_PPM_mirror_and_no_RC_theft": "passed with simulated controller API",
+    "armed_settings_backup_identity_and_CSV": "passed with simulated controller API",
+    "bright_shared_sticks_multitouch_responsive_header": "passed in Chromium and visually inspected",
+    "firmware_300_1000ms_policy_rollover_protocol": "passed native C++ test",
+    "A1_A2_firmware_build_and_binary_integrity": "passed"
   },
   "test_boundary": {
     "browser_native_bridge": "simulated",
     "browser_controller_API": "simulated",
+    "native_UDP": "actual Java DatagramSocket loopback",
     "Android_phone_or_emulator_tested": false,
     "physical_drone_tested": false,
     "Gradle_build_executed": false
@@ -31,16 +33,17 @@
     "Java_runtime": "17",
     "Java_source_target": "8",
     "compiler": "JDK javac via java com.sun.tools.javac.Main",
-    "packaging": "aapt2, D8, zipalign, apksigner"
+    "packaging": "aapt2, D8, zipalign, apksigner",
+    "Arduino_CLI": "1.5.1",
+    "Arduino_ESP32_core": "3.3.12"
   },
   "signing": "same included development key; not private production signing",
   "physical_pending": [
-    "screen lock",
-    "incoming call",
+    "AP/STA radio timing",
+    "screen lock and incoming calls",
     "Wi-Fi loss/resume",
-    "SAF export/restore",
-    "AP/STA on phone",
-    "kit flight behavior"
-  ],
-  "source_archive_constraint": "minimum count of <=100-file batches; each individual file <25 MiB"
+    "ESC/motor/IMU orientation",
+    "loaded 250 Hz loop timing",
+    "propeller-off/tethered validation"
+  ]
 }

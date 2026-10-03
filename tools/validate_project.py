@@ -198,7 +198,7 @@ if 'ZEBJUS_FLIGHTCORE_A2_APP.bin' not in workflow: fail('workflow does not requi
 if 'concurrency:' not in workflow or 'cancel-in-progress: true' not in workflow: fail('workflow lacks firmware-build concurrency protection')
 if 'Publish attempt ${attempt}/4' not in workflow or 'git fetch origin main' not in workflow or 'git reset --hard origin/main' not in workflow: fail('workflow lacks non-fast-forward publish retry protection')
 if 'test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin' not in workflow or 'test -s FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin' not in workflow: fail('workflow does not require both A1 and A2 APP binaries')
-if 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h' not in workflow: fail('workflow does not rebuild when firmware companion header changes')
+if 'FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h' not in workflow and 'FlightCore_Firmware/*.h' not in workflow: fail('workflow does not rebuild when firmware companion header changes')
 if "version: '1.5.1'" not in workflow: fail('workflow does not pin stable Arduino CLI 1.5.1')
 if 'actions/checkout@v5' not in workflow: fail('workflow checkout action is not on Node-24-compatible v5')
 if 'FW_BUILD_DATE=__DATE__' not in ino or 'FW_BUILD_TIME=__TIME__' not in ino or 'firmwareBuiltAt' not in ino: fail('firmware compile date/time is not exposed by status/info APIs')
@@ -222,7 +222,7 @@ if 'interval=selectedConnected()?30000:15000' not in school: fail('background mu
 if 'matches.length===1' not in school or 'duplicate-kit-name' not in school: fail('duplicate Kit Names are not surfaced/guarded in the multi-kit selector')
 if 'flightCoreIntegrated' not in ino or 'RATE_ANGLE_FLIGHT_CORE' not in ino or 'WIFI_SENSOR_BRIDGE' not in ino: fail('board-aware bridge/flight-core firmware roles are not explicit')
 if 'enum FlightModeKind' not in types_header or 'enum RcSourceKind' not in types_header: fail('flight-control custom enums must live in the companion header for Arduino prototype safety')
-for token in ['runFlightLoop()','FLIGHT_LOOP_US=4000','MOTOR_PINS[4]={D1,D2,D3,D0}','chooseRcSource()','RC_PPM','RC_WEB_STA','RC_WEB_AP','parseRcCsv','noPortal()','WEB_RC_STALE_MS=300']:
+for token in ['runFlightLoop()','FLIGHT_LOOP_US=4000','MOTOR_PINS[4]={D1,D2,D3,D0}','chooseRcSource()','RC_PPM','RC_WEB_STA','RC_WEB_AP','parseRcCsv','noPortal()','WEB_RC_STALE_MS=RcLinkPolicy::LOST_AFTER_MS']:
     if token not in ino: fail(f'Rate/Angle multi-source flight integration missing: {token}')
 if 'rc[5]>=1500?FLIGHT_RATE:FLIGHT_ANGLE' not in ino: fail('CH6 Angle/Rate mode mapping missing')
 if 'rc[4]<1500' not in ino or 'rc[2]<=1050' not in ino: fail('CH5 arm / low-throttle arming gates missing')
@@ -379,7 +379,7 @@ for token in ['esp_timer_start_periodic(flightTimer,4000)','xTaskCreate(flightCo
     if token not in features: fail('V18.3.61 feature missing: '+token)
 for token in ['rc_source_set','flight_stop','MOBILE','configurationBusy','Matched RC handover','FlightMath::canHandover','rateFilterPrimed','if(saturated)']:
     if token not in ino: fail('V18.3.61 flight/ownership guard missing: '+token)
-for rel in ['control-sticks.js','kit-console.js','flight-diagnostics.js','tools/test_flight_math.cpp','tools/test_mobile_view_browser.js','SUPPORT/V18_3_62_UPDATE_AND_TEST.md']:
+for rel in ['control-sticks.js','kit-console.js','flight-diagnostics.js','tools/test_flight_math.cpp','tools/test_mobile_view_browser.js','SUPPORT/V18_3_63_UPDATE_AND_TEST.md','FlightCore_Firmware/RcLinkPolicy.h','FlightCore_Firmware/RcUdpProtocol.h','FlightCore_Firmware/FlightRcTransport.h','android-app/app/src/main/java/in/zebjus/aerion/NativeRcStream.java','tools/test_rc_link.cpp','tools/test_control_recovery_browser.js']:
     if not (ROOT/rel).is_file(): fail('V18.3.61 release file missing: '+rel)
 if 'runFlightLoop();' in ino[ino.rfind('void loop(){'):]:fail('Flight task regressed into networking main loop')
 

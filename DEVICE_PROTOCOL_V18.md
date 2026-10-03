@@ -1,6 +1,6 @@
-# ZEBJUS F450 V18.3 Local Device Protocol
+# ZEBJUS F450 V18.3.63 Local Device Protocol
 
-All endpoints are local HTTP on the ESP32 (port 80).
+HTTP endpoints are local on the ESP32 (port 80). AP serves API only, with no browser/captive pages. V18.3.63 adds session-scoped Android RC on UDP port 4210. Older version sections describe historical capabilities where superseded.
 
 ## Identity/status
 `GET /api/status?clientId=<browser-session>`
@@ -13,11 +13,21 @@ Important fields: `kit`, `name`, `deviceId`, `hostname`, `ssid`, `ip`, `rssi`, `
 Returns roll/pitch/yaw, gyro and battery placeholder fields until the real FC telemetry source is connected.
 
 ## Control lock
-- `POST /api/control/acquire` (`clientId`)
+- `POST /api/control/acquire` (`clientId`, `expectedDeviceId`, `clientRole=WEB|MOBILE`)
 - `POST /api/control/ping` (`clientId`)
 - `POST /api/control/release` (`clientId`)
 
-Lock expires after 10 seconds without heartbeat.
+Lock expires after 10 seconds without a valid owner command, accepted RC or heartbeat. Settings heartbeats are separate from RC freshness.
+
+## V18.3.63 native flight transport
+
+A MOBILE grant on a flight-capable profile advertises `rcUdpPort=4210`, private `rcUdpToken` (16 hex digits), `rcUdpHz=50`, `rcTimeoutMs=1000` and `rcCenterMs=300`. A1 provides no UDP grant. Tokens are never in public status/telemetry. A legacy client can send an initial safe HTTP RC frame to invalidate the token and continue over HTTP.
+
+All multi-byte fields are little endian. RC is exactly 48 bytes: magic `ZRC1` (0–3), version 1 (4), type 1 (5), reserved zero (6–7), device MAC uint64 (8–15), token uint64 (16–23), sequence uint32 (24–27), and ten uint16 channels (28–47), each 1000–2000. Only live tokens, exact device and newer sequence are accepted. Accepted packets renew RC/owner timestamps.
+
+ACK is exactly 28 bytes: magic `ZRA1`, version 1, status zero, flags (bit 0 armed, bit 1 flight-ready), reserved zero, matching device/token and acknowledged sequence. Android rejects mismatched, replayed, unsent and over-250-ms-old ACKs. HTTP RC ACKs also expose `armed`, `flightReady`, `deviceId`, `lastDisarmReason`. Safe HTTP RC invalidates the UDP token before updating channels, fencing delayed UDP.
+
+During a controller gap, roll/pitch/yaw centre at 300 ms while throttle/ARM/source remain only until the 1000 ms freshness boundary. Existing source/guarded handover and output-supervisor logic remain in the separate 250 Hz flight task. Android independently fences input older than 300 ms and genuine ACK loss at a negotiated 900 ms maximum; legacy ACK deadline remains 300 ms. Foreground recovery uses a fresh lease at minimum throttle/DISARMED; ARM is manual.
 
 ## Commands
 `POST /api/command`
@@ -151,11 +161,11 @@ The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `
 - AP setup `/` has Wi-Fi, kit status and controller navigation; `/fly` works directly on the local FlightCore. Browser camera/MediaPipe processing is separate from flight stabilization.
 
 
-## V18.3.43 unified RC arbitration
+## V18.3.63 unified RC arbitration
 
-- `WEB_STA` / `WEB_AP` frames are authoritative while fresh (`<300 ms`) and require the control lock.
+- `WEB_STA` / `WEB_AP` frames are authoritative while fresh (`<1000 ms`) and require the control lock. Directional channels centre after 300 ms without RC.
 - Physical `PPM` is automatic fallback when no fresh Web/AP/Python frame exists.
-- A source transition while armed forces DISARM before the new source can arm.
+- A source transition while armed disarms unless existing guarded handover checks accept a fresh matched standby source.
 - `/api/telemetry` exposes active `rcSource`, `rcAgeMs` and all ten `rc` channels so the browser can mirror PPM/AP/Python control into Tripod Simulator.
 - Tripod real mirror and Python real target use the same guarded `rc_frame` endpoint.
 

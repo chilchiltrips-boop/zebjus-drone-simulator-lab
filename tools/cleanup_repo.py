@@ -16,6 +16,7 @@ FW = ROOT / 'FlightCore_Firmware'
 LEGACY_FILES = [
     'tools/ap_portal_source.html', 'tools/ap_io_source.html', 'tools/ap_fly_source.html', 'FlightCore_Firmware/AP_ASSETS.h',
     'android-app/dist/ZEBJUS_Aerion_V18_3_61_Android.apk',
+    'android-app/dist/ZEBJUS_Aerion_V18_3_62_Android.apk',
     'drone3d.js',
     'wiring2d.js',
     'learning-lab.js',
@@ -58,6 +59,10 @@ def main():
     removed = 0
     for rel in LEGACY_FILES:
         removed += int(remove(ROOT / rel, args.dry_run))
+    # APK v2/v3 signatures are inside the APK. Optional v4 sidecars from old
+    # local builds are unnecessary for installing this development release.
+    for p in (ROOT / 'android-app/dist').glob('ZEBJUS_Aerion_*.apk.idsig'):
+        removed += int(remove(p, args.dry_run))
     if FW.exists():
         for pattern in LEGACY_FW_PATTERNS:
             for p in FW.glob(pattern):

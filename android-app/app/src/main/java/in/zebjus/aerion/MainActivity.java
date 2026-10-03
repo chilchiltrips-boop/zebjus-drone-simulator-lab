@@ -33,6 +33,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -55,7 +57,10 @@ public final class MainActivity extends Activity {
     private static final String HOME="https://"+ASSET_HOST+"/assets/flight/index.html";
     private final String token=UUID.randomUUID().toString();
     private final LeaseGate gate=new LeaseGate();
+    private final NativeRcStream rcStream=new NativeRcStream(gate,MainActivity::now);
     private final ExecutorService workers=new ThreadPoolExecutor(4,4,20,TimeUnit.SECONDS,new LinkedBlockingQueue<>(24));
+    // RC must not queue behind telemetry, Wi-Fi scans or settings requests.
+    private final ThreadPoolExecutor flightWorker=new ThreadPoolExecutor(1,1,20,TimeUnit.SECONDS,new LinkedBlockingQueue<>(2));
     private final ExecutorService safety=Executors.newSingleThreadExecutor();
     private final ScheduledExecutorService watchdog=Executors.newSingleThreadScheduledExecutor();
     private final ConcurrentHashMap<String,Job> jobs=new ConcurrentHashMap<>();
@@ -112,7 +117,8 @@ public final class MainActivity extends Activity {
             NetworkCapabilities capabilities=connectivity.getNetworkCapabilities(network);
             if(capabilities!=null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)){wifi=network;break;}
         }
-        watchdog.scheduleAtFixedRate(()->{LeaseGate.Lease old=gate.watchdog(now());if(old!=null){emergency(old);emit("stopped");}},75,75,TimeUnit.MILLISECONDS);
+        watchdog.scheduleAtFixedRate(()->{LeaseGate.Lease old=gate.watchdog(now());if(old!=null){emergency(old);wifiMessage("stopped",old.clientId);}},75,75,TimeUnit.MILLISECONDS);
+        watchdog.scheduleAtFixedRate(rcStream::tick,0,20,TimeUnit.MILLISECONDS);
         if(Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT,()->{pauseControl();finish();});
         web.loadUrl(HOME);immersive();
     }
@@ -134,7 +140,7 @@ public final class MainActivity extends Activity {
         pauseControl();destroyed=true;
         try{connectivity.unregisterNetworkCallback(wifiCallback);}catch(RuntimeException ignored){}
         if(kitRequest!=null)try{connectivity.unregisterNetworkCallback(kitRequest);}catch(RuntimeException ignored){}
-        for(Job job:jobs.values())job.cancel();workers.shutdownNow();watchdog.shutdownNow();safety.shutdown();
+        for(Job job:jobs.values())job.cancel();workers.shutdownNow();flightWorker.shutdownNow();watchdog.shutdownNow();safety.shutdown();
         if(web!=null){web.removeJavascriptInterface("NativeAerion");web.destroy();web=null;}super.onDestroy();
     }
     private void readLaunch(Intent intent){
@@ -218,6 +224,7 @@ public final class MainActivity extends Activity {
     private static String enc(String value)throws Exception{return URLEncoder.encode(value,"UTF-8");}
     private void emergency(LeaseGate.Lease lease){
         if(lease==null)return;
+        rcStream.stop(lease);
         try{safety.execute(()->{
             try{
                 String form="clientId="+enc(lease.clientId)+"&expectedDeviceId="+enc(lease.deviceId);
@@ -228,6 +235,19 @@ public final class MainActivity extends Activity {
     }
     private void releaseGrant(LeaseGate.Grant grant){
         try{safety.execute(()->{try{http((Network)grant.network,new URL(grant.origin+"/api/control/release"),"POST","clientId="+enc(grant.clientId)+"&expectedDeviceId="+enc(grant.deviceId),600,null);}catch(Exception ignored){}});}catch(RuntimeException ignored){}
+    }
+    private void configureRcStream(LeaseGate.Grant grant,String body){
+        DatagramSocket socket=null;
+        try{
+            JSONObject info=new JSONObject(body);int port=info.optInt("rcUdpPort",0);String nonce=info.optString("rcUdpToken","");
+            if(port!=4210||!nonce.matches("[0-9a-fA-F]{16}"))return;
+            if(!grant.deviceId.matches("ZFC-[0-9a-fA-F]{12}"))return;
+            LeaseGate.Lease lease=gate.authorize(grant.origin,grant.deviceId,grant.clientId);
+            socket=new DatagramSocket();((Network)grant.network).bindSocket(socket);
+            URL url=new URL(grant.origin);
+            InetSocketAddress target=new InetSocketAddress(((Network)grant.network).getAllByName(url.getHost())[0],port);
+            rcStream.configure(lease,socket,target,Long.parseUnsignedLong(grant.deviceId.substring(4),16),Long.parseUnsignedLong(nonce,16));
+        }catch(Exception ignored){if(socket!=null)socket.close();/* Legacy HTTP fallback retains watchdog checks. */}
     }
     private static final class Result{final int code;final String body;Result(int code,String body){this.code=code;this.body=body;}}
     private Result http(Network network,URL url,String method,String body,int timeout,Job job)throws Exception{
@@ -273,15 +293,15 @@ public final class MainActivity extends Activity {
             grant=g;lease=l;safeFrame=safe;readCommand=readonly;
         }
         boolean allowed(){return !cancelled && (method.equals("GET") || readCommand || safeFrame || url.getPath().equals("/api/control/release") || grant!=null && gate.isPending(grant) || lease!=null && gate.isCurrent(lease));}
-        void cancel(){cancelled=true;if(grant!=null)gate.cancel(grant);if(connection!=null)connection.disconnect();}
+        void cancel(){cancelled=true;if(grant!=null)emergency(gate.cancel(grant));flightWorker.remove(this);((ThreadPoolExecutor)workers).remove(this);if(connection!=null)connection.disconnect();}
         @Override public void run(){
             try{
                 if(!allowed())throw new IllegalStateException("Control stopped.");
                 Result result=http(network,url,method,body,timeout,this);
                 boolean ok=result.code>=200 && result.code<300 && new JSONObject(result.body).optBoolean("ok",true);
-                if(grant!=null){if(ok && !cancelled && gate.accept(grant,now())){}else{gate.cancel(grant);if(ok)releaseGrant(grant);if(ok)throw new IllegalStateException("Control request cancelled. Take control again.");}}
+                if(grant!=null){if(ok && !cancelled && gate.accept(grant,now(),new JSONObject(result.body).optLong("rcTimeoutMs",0))){configureRcStream(grant,result.body);}else{gate.cancel(grant);if(ok)releaseGrant(grant);if(ok)throw new IllegalStateException("Control request cancelled. Take control again.");}}
                 if(ok && lease!=null){if("rc_frame".equals(fields.get("type")))gate.rcAck(lease,now(),LocalPolicy.channels(fields));else gate.ack(lease,now());}
-                if(ok && url.getPath().equals("/api/control/release"))gate.release(LocalPolicy.origin(url),fields.get("expectedDeviceId"),fields.get("clientId"));
+                if(ok && url.getPath().equals("/api/control/release"))rcStream.stop(gate.release(LocalPolicy.origin(url),fields.get("expectedDeviceId"),fields.get("clientId")));
                 if(!cancelled)reply(id,result.code,result.body);
             }catch(Exception e){
                 if(grant!=null){gate.cancel(grant);releaseGrant(grant);}
@@ -298,10 +318,20 @@ public final class MainActivity extends Activity {
         @JavascriptInterface public void request(String key,String id,String address,String method,String form,int requestedTimeout){
             if(!token.equals(key) || destroyed || id==null || !id.matches("[A-Za-z0-9-]{1,96}"))return;
             Job job=null;
-            try{URL url=LocalPolicy.api(address,method);if(url.getPath().equals("/api/control/acquire"))form=form.replaceAll("(?:^|&)clientRole=[^&]*","")+"&clientRole=MOBILE";job=new Job(id,url,method,form,Math.max(150,Math.min("rc_frame".equals(LocalPolicy.form(form).get("type"))?1500:8000,requestedTimeout)),wifi);if(jobs.putIfAbsent(id,job)!=null)throw new IllegalArgumentException("Duplicate request.");workers.execute(job);}
+            try{URL url=LocalPolicy.api(address,method);if(url.getPath().equals("/api/control/acquire"))form=form.replaceAll("(?:^|&)clientRole=[^&]*","")+"&clientRole=MOBILE";boolean rc="rc_frame".equals(LocalPolicy.form(form).get("type"));job=new Job(id,url,method,form,Math.max(150,Math.min(rc?1500:8000,requestedTimeout)),wifi);
+                if(rc&&job.lease!=null&&rcStream.offer(job.lease,LocalPolicy.channels(job.fields))){
+                    JSONObject result=new JSONObject().put("ok",true).put("rcQueued",true).put("rcAckAgeMs",gate.ackAge(job.lease,now())).put("deviceId",job.lease.deviceId);
+                    if(job.lease.hasControllerAck())result.put("armed",job.lease.controllerArmed()).put("flightReady",job.lease.controllerReady());
+                    reply(id,200,result.toString());return;
+                }
+                if(jobs.putIfAbsent(id,job)!=null)throw new IllegalArgumentException("Duplicate request.");(rc?flightWorker:workers).execute(job);}
             catch(Exception e){if(job!=null){job.cancel();jobs.remove(id,job);}failure(id,e.getMessage()==null?"Join your kit Wi-Fi and retry.":e.getMessage());}
         }
         @JavascriptInterface public void cancel(String key,String id){if(token.equals(key)){Job job=jobs.get(id);if(job!=null)job.cancel();}}
+        @JavascriptInterface public void pauseStream(String key,String base,String device,String client){
+            if(!token.equals(key)||destroyed)return;
+            try{LeaseGate.Lease lease=gate.authorize(base,device,client);rcStream.pause(lease);}catch(Exception ignored){}
+        }
         @JavascriptInterface public void saveFile(String key,String name,String body,String mime){
             if(!token.equals(key)||destroyed||body==null||body.length()>1500000||name==null||!name.matches("[A-Za-z0-9_.-]{1,100}")||!("application/json".equals(mime)||"text/csv".equals(mime)))return;
             runOnUiThread(()->{pauseControl();exportText=body;Intent save=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mime).putExtra(Intent.EXTRA_TITLE,name);startActivityForResult(save,SAVE_EXPORT);});

@@ -1,10 +1,10 @@
-# Aerion Flight Android — 18.3.62-android.1
+# Aerion Flight Android — 18.3.63-android.1
 
 An installable Android development app containing the Aerion Flight joystick screen. The interface is bundled with the APK and opens without internet, including on its first launch. It has no Python editor, camera stream or external JavaScript runtime.
 
 ## Install and connect
 
-1. Install `dist/ZEBJUS_Aerion_V18_3_62_Android.apk` on an Android 8.0 or later phone. This development APK uses the same development certificate as the previous APK, so it can update that installation.
+1. Install `dist/ZEBJUS_Aerion_V18_3_63_Android.apk` on an Android 8.0 or later phone. This development APK uses the same development certificate as the previous APK, so it can update that installation.
 2. On **Android 10+**, open **Aerion Flight → Connect drone**. Enter the kit's complete Device ID from the case if it is a new pairing, then tap **Connect kit Wi-Fi**.
 3. Allow **Nearby devices** on Android 13+; Android 10–12 needs the platform's Location permission for this Wi-Fi API. Choose the correct unique `ZEBJUS-FC-...` SSID in Android's connection dialog. The app supplies AP password **`12345678`**.
 4. On connection, the app verifies the kit identity and shows its flight screen inside the same app. This explicit connection reserves a MOBILE session without RC frames or ARM. A laptop on the same AP becomes view-only. Tap **Take control**, then **ARM** manually when the controller is ready. **STOP** lowers throttle, disarms and releases control.
@@ -12,21 +12,21 @@ An installable Android development app containing the Aerion Flight joystick scr
 
 മലയാളം: App തുറക്കുക → **Connect drone → Connect kit Wi-Fi** → Android dialog-ൽ ശരിയായ kit തിരഞ്ഞെടുക്കുക → app-ൽ തന്നെ flight screen. AP password **12345678**. Connection/permission dialog മാത്രം; flight control-നായി മറ്റൊരു browser തുറക്കുന്നില്ല. **Take control**, **ARM** സ്വയം നടക്കില്ല.
 
-The V18.3.62 controller firmware migrates an older random AP password to `12345678` on reboot after update. Its unique SSID and permanent Device ID are unchanged. Using the previous firmware will still require its old AP password; install the matching profile from this package.
+The V18.3.63 controller firmware migrates an older random AP password to `12345678` on reboot after update. Its unique SSID and permanent Device ID are unchanged. Using the previous firmware will still require its old AP password; install the matching profile from this package.
 
 ### AP/STA and no browser redirect
 
-V18.3.62 firmware AP is API only. Joining Wi-Fi does not serve a browser page or app-intent link. Open Aerion Flight and connect kit Wi-Fi in the app; Android may show its permission/connection dialog.
+V18.3.63 firmware AP is API only. Joining Wi-Fi does not serve a browser page or app-intent link. Open Aerion Flight and connect kit Wi-Fi in the app; Android may show its permission/connection dialog.
 
 Top AP/STA actually changes the disarmed kit network mode. STA releases the AP-specific request and uses router Wi-Fi; phone and kit must join the same router. AP requests the correct kit SSID. Gear -> Wi-Fi selects saved profiles or saves new Wi-Fi entirely inside the app. Expected Device ID is retained; type a current local IP in Connect if saved/discovered addresses fail.
 
-On app opening a MOBILE configuration reservation sends no RC. Take control starts transmission manually. STOP ends it. One telemetry failure no longer clears identity while RC ACKs continue; the independent 300 ms watchdog is unchanged. Configuration-only release does not inject a safety RC into PPM.
+On initial app opening a MOBILE configuration reservation sends no RC. Take control starts transmission manually; STOP ends it. Native UDP publishes at 50 Hz independently of HTTP. Brief packet loss retries latest input while retaining throttle/ARM within the negotiated deadline; telemetry failure alone does not clear identity. Configuration-only release does not inject RC into PPM.
 
 The left stick controls throttle and yaw. The right stick controls pitch and roll. Their side assignments stay fixed; **Floating joysticks** can be switched off in Settings. Throttle rises/falls gradually and holds on normal stick release; pitch, roll and yaw center. The header displays connection, control/armed state and ANGLE/RATE. Guarded Rate/Angle changes can run while armed when the matching firmware reports the capability. Automatic take-off/landing is not implemented.
 
 ## Compatible kit
 
-This app uses the Aerion/ZEBJUS local Wi-Fi API from the V18.3.62 controller project. The controller must already expose:
+This app uses the Aerion/ZEBJUS local Wi-Fi API from the V18.3.63 controller project. The controller must already expose:
 
 - `GET /api/status?clientId=...`, including device identity, `flightReady`, `armed`, `flightMode` and `lockMine`.
 - `GET /api/telemetry`.
@@ -77,7 +77,9 @@ The included `signing/aerion-development.p12` is a **public development key**. I
 
 Only the local, bundled interface receives the nonce-protected Android bridge. The WebView serves assets at an HTTPS asset origin with file/content access and browser network fetches disabled. Native HTTP is limited to the expected local-kit API paths and private-network hosts; it is bound to the phone's Wi-Fi network, including Wi-Fi without internet. Redirects are rejected. External page navigation is blocked in this Android flight app.
 
-Control grants are scoped to kit address, Device ID, a fresh control client ID and Wi-Fi network. App pause, loss of focus, document reload and Wi-Fi changes revoke the native grant. A separate native watchdog revokes it if successful RC acknowledgements stop for more than 300 ms and attempts a captured safe frame and release. These attempts cannot be guaranteed after radio loss or process termination; the controller's own stale-RC failsafe remains necessary. Returning to the app reads telemetry but requires manual control and ARM again.
+Grants are scoped to kit address, Device ID, fresh client ID and Wi-Fi network. A private 64-bit token and increasing sequence protect 48-byte UDP frames. Only correctly scoped, fresh 28-byte controller ACKs refresh the watchdog. Latest UI input repeats at 50 Hz for at most 300 ms without fresh input. Genuine ACK loss fences after the negotiated deadline (900 ms maximum; legacy 300 ms). Pings cannot refresh an active RC watchdog.
+
+Pause/focus loss/reload/network changes revoke the native grant. Safe UDP bursts and HTTP cleanup are attempted; delivery is not guaranteed after radio/process loss. Firmware centres directional RC at 300 ms and expires Web RC at 1 second. Foreground retry of previously enabled controls acquires a fresh same-device grant and restores sticks at throttle 0, DISARMED; ARM is manual. STOP/background/reload cancel recovery. Returning from background stays read-only. See [update/test guide](../SUPPORT/V18_3_63_UPDATE_AND_TEST.md).
 
 ## Re-run focused tests
 
@@ -85,8 +87,9 @@ Native policy tests, using a JDK:
 
 ```sh
 mkdir -p build/core-tests
-javac -d build/core-tests app/src/main/java/in/zebjus/aerion/LeaseGate.java app/src/main/java/in/zebjus/aerion/LocalPolicy.java app/src/main/java/in/zebjus/aerion/LaunchPolicy.java tests/LeaseGateTest.java
+javac -d build/core-tests app/src/main/java/in/zebjus/aerion/LeaseGate.java app/src/main/java/in/zebjus/aerion/LocalPolicy.java app/src/main/java/in/zebjus/aerion/LaunchPolicy.java app/src/main/java/in/zebjus/aerion/NativeRcStream.java tests/LeaseGateTest.java tests/NativeRcStreamTest.java
 java -cp build/core-tests in.zebjus.aerion.LeaseGateTest
+java -cp build/core-tests in.zebjus.aerion.NativeRcStreamTest
 ```
 
 Browser adapter tests require Node and Playwright. Set `ZEBJUS_CHROMIUM` to a Chrome/Chromium executable if Playwright's browser is not installed:

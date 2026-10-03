@@ -11,7 +11,7 @@ const FAILURE_LIMIT=5;
 const HEALTH_INTERVAL_MS=2000, OFFLINE_AFTER_MS=10000, RECONNECT_INTERVAL_MS=2500, STREAM_OK_MS=900, STREAM_DELAY_MS=2200, SENSOR_STALE_MS=2200;
 
 const client=window.ZebjusDroneKit?new window.ZebjusDroneKit.LocalKitClient():null;
-const st={devices:[],selectedDeviceId:'',query:'',preferredDeviceId:'',preferredDeviceName:'',autoAcquire:false,demoMode:false,joy:[...DEFAULT_CH],joySeq:0,lastJoySent:0,joyBusy:false,booted:false,lastDiscoverAt:0,lastHealthAt:0,lastTelemetryAt:0,lastTelemetryGoodAt:0,lastLockBeat:0,failures:0,reconnectBusy:false,healthBusy:false,telemetryBusy:false,lastReconnectAt:0,lastError:'',txOn:false,remoteTxOn:false,remoteTxSource:"NONE",activeJoyTarget:'sim',joyKeys:new Set(),joyPointerActive:0,lastJoyInputAt:Date.now(),watchdogMs:1500,watchdogWarnArmed:true,watchdogLatched:false,lastCommandSentAt:0,lastCommandAckAt:0,lastCommandErrorAt:0,receiverLastAt:0,receiverChannels:null,receiverHealth:'NOT_FOUND',sensorHealth:{imu:'NOT_FOUND',barometer:'NOT_FOUND',lidar:'NOT_FOUND',receiver:'NOT_FOUND'},manualDisconnect:false,rcMirrorSource:'NONE',pythonRcActive:false,txFrames:0,rateFrames:0,rateAt:0,txRateHz:0,rcRates:null};
+const st={devices:[],selectedDeviceId:'',query:'',preferredDeviceId:'',preferredDeviceName:'',autoAcquire:false,demoMode:false,joy:[...DEFAULT_CH],joySeq:0,lastJoySent:0,joyBusy:false,booted:false,lastDiscoverAt:0,lastHealthAt:0,lastTelemetryAt:0,lastTelemetryGoodAt:0,lastLockBeat:0,lastLockGoodAt:0,lockBusy:false,failures:0,reconnectBusy:false,healthBusy:false,telemetryBusy:false,lastReconnectAt:0,lastError:'',txOn:false,remoteTxOn:false,remoteTxSource:"NONE",activeJoyTarget:'sim',joyKeys:new Set(),joyPointerActive:0,lastJoyInputAt:Date.now(),watchdogMs:1500,watchdogWarnArmed:true,watchdogLatched:false,lastCommandSentAt:0,lastCommandAckAt:0,lastCommandErrorAt:0,receiverLastAt:0,receiverChannels:null,receiverHealth:'NOT_FOUND',sensorHealth:{imu:'NOT_FOUND',barometer:'NOT_FOUND',lidar:'NOT_FOUND',receiver:'NOT_FOUND'},manualDisconnect:false,rcMirrorSource:'NONE',pythonRcActive:false,txFrames:0,rateFrames:0,rateAt:0,txRateHz:0,rcRates:null};
 
 function api(){return window.zebjusLabAPI||null}
 function ready(){return !!client}
@@ -184,7 +184,7 @@ async function requestModules(force=false){
 }
 function reconcileSelection(){if(st.selectedDeviceId&&!selected())st.selectedDeviceId='';if(st.manualDisconnect){st.selectedDeviceId='';savePrefs();return}if(!st.selectedDeviceId){let d=null;if(st.preferredDeviceId)d=st.devices.find(x=>window.ZebjusDroneKit.sameDeviceIdentity(x.deviceId,st.preferredDeviceId))||null;if(!d&&!st.preferredDeviceId&&st.preferredDeviceName){const matches=st.devices.filter(x=>x.online&&window.ZebjusDroneKit.normalizeKitName(x.deviceName)===window.ZebjusDroneKit.normalizeKitName(st.preferredDeviceName));if(matches.length===1)d=matches[0]}if(!d&&!st.preferredDeviceId&&st.devices.filter(x=>x.online).length===1)d=st.devices.find(x=>x.online)||null;if(d)st.selectedDeviceId=d.deviceId}savePrefs()}
 async function selectDevice(id,{take=true}={}){st.manualDisconnect=false;const d=st.devices.find(x=>x.deviceId===id);if(!d)return;try{window.zebjusStopPythonForSafety?.('Kit selection changed');if(ownsLock())await releaseLock(false);if(client?.deviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(client.deviceId,d.deviceId))client.disconnect({forgetIdentity:true});const s=await client.connect(d.deviceName,d.ip,d.deviceId);upsertStatus(s,client.base);st.selectedDeviceId=s.deviceId;st.preferredDeviceId=s.deviceId;st.preferredDeviceName=s.name;st.query=s.name;savePrefs();if(take)await acquireLock(true);statusUi()}catch(e){simpleError(e.message)}}
-async function acquireLock(auto=false){const d=selected();if(!d?.online||!client?.connected)return false;if(d.lockMine)return true;if(auto&&d.locked)return false;try{const r=await client.acquire();const s=await client.refresh();upsertStatus(s,client.base);if(r.ok)log('Control acquired for '+(s.name||d.deviceName));clearError();statusUi();return !!r.ok}catch(e){log(e.message||'Kit is in use. View-only mode active.');try{upsertStatus(await client.refresh(),client.base)}catch{}statusUi();return false}}
+async function acquireLock(auto=false){const d=selected();if(!d?.online||!client?.connected)return false;if(d.lockMine)return true;if(auto&&d.locked)return false;try{const r=await client.acquire();const s=await client.refresh();upsertStatus(s,client.base);if(r.ok)st.lastLockGoodAt=Date.now();if(r.ok)log('Control acquired for '+(s.name||d.deviceName));clearError();statusUi();return !!r.ok}catch(e){log(e.message||'Kit is in use. View-only mode active.');try{upsertStatus(await client.refresh(),client.base)}catch{}statusUi();return false}}
 async function releaseLock(clearSelection=false){window.zebjusStopPythonForSafety?.('Control released');if(!st.pythonRcActive&&st.txOn&&$('#webJoyTarget')?.value==='device'){setTxSafe();st.txOn=false;await queueSafeJoystickFrame(true);api()?.setSimRunning?.(false);renderJoy()}try{if(client?.connected&&ownsLock())await client.release()}catch{}if(selected())selected().lockMine=false;if(clearSelection)st.selectedDeviceId='';statusUi()}
 async function renameDevice(){const d=selected(),name=$('#deviceRenameInput')?.value.trim();if(!d||!name)return log('Select a kit and enter a name.');if(!canControl())return log('VIEW ONLY • Take Control first.');try{const s=await client.rename(name);upsertStatus(s,client.base);st.query=s.name;st.preferredDeviceName=s.name;savePrefs();log('Kit renamed: '+s.name);statusUi()}catch(e){simpleError(e.message)}}
 async function i2cScan(){
@@ -313,7 +313,15 @@ async function telemetryTick(now){
  }catch(_){updateHealthUi()}
  finally{st.telemetryBusy=false}
 }
-async function lockTick(now){if(!ownsLock()||now-st.lastLockBeat<2500)return;st.lastLockBeat=now;try{await client.heartbeat()}catch(_){window.zebjusStopPythonForSafety?.('Control heartbeat lost');if(selected())selected().lockMine=false;healthRefresh(true)}}
+async function lockTick(now){
+ if(!ownsLock()||st.lockBusy||now-st.lastLockBeat<2500)return;
+ // RC commands themselves renew the lease; telemetry/settings never delay RC.
+ if((st.txOn||st.pythonRcActive)&&now-st.lastCommandAckAt<1000)return;
+ st.lastLockBeat=now;st.lockBusy=true;
+ try{await client.heartbeat();st.lastLockGoodAt=Date.now()}
+ catch(e){if([403,409,423].includes(e.status)||Date.now()-Math.max(st.lastLockGoodAt,st.lastCommandAckAt)>5000){window.zebjusStopPythonForSafety?.('Control lease lost');if(selected())selected().lockMine=false;healthRefresh(true)}else st.lastLockBeat=now-2000}
+ finally{st.lockBusy=false}
+}
 
 const webStickHandles={};
 function setJoyKnob(which,x,y){if(webStickHandles[which]?.state.pointer!=null)return;const k=$(which==='left'?'#webLeftKnob':'#webRightKnob');if(k){k.style.left=`${50+x*31}%`;k.style.top=`${50+y*31}%`}}

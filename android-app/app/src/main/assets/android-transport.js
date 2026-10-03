@@ -13,6 +13,7 @@
   try{native.request(token,id,String(address),method,options.body?String(options.body):'',timeout)}catch(e){pending.delete(id);clearTimeout(timer);remove();reject(e)}
  });
  navigator.sendBeacon=(address,body)=>{window.fetch(String(address),{method:'POST',body}).catch(()=>{});return true};
+ android.pauseStream=(base,id,client)=>native.pauseStream?.(token,base,id,client);
  android.saveFile=(name,body,mime)=>native.saveFile(token,name,body,mime);
  android.openWifi=()=>native.openWifi(token);
  android.useRouterWifi=()=>native.useRouterWifi(token);android.routerReady=()=>android.connectedRouter?.();

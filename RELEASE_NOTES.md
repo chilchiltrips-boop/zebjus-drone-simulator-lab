@@ -1,13 +1,12 @@
-# ZEBJUS Aerion V18.3.62
+# ZEBJUS Aerion V18.3.63
 
-- AP now serves the kit API only. Captive DNS, embedded browser pages and redirects are removed; OS probe endpoints receive an empty 204 response.
-- Installed Android app: actual AP/STA toggle, saved/new Wi-Fi configuration and same-Device-ID reconnect on router Wi-Fi. No external kit browser page opens.
-- Isolated telemetry failures no longer clear the APK identity/session while successful flight RC acknowledgements continue. RC timeout remains 300 ms.
-- Configuration-only session release does not inject Web RC into a physical PPM receiver, including native pause/network cleanup.
-- Mobile ownership or fresh PPM automatically turns the laptop transmitter display ON and mirrors received sticks. The laptop does not transmit RC merely because that display is ON.
-- WebApp Take Control ON/OFF is at the top beside AP/STA. Automatic AP discovery connects as an observer; RC/ARM/Python never restart on reconnect.
-- Precise throttle accumulation, bounded integer frames, target selection and multi-touch controls verified; top bar uses fixed responsive areas.
-- CI retains release integrity checking and checks missing final-batch helpers before dependency setup. The upload group includes all helpers and its completion manifest.
-- Current compiled A1/A2 APP/FACTORY binaries and a signed Android APK are included, with matching source/version/hash metadata.
+- Android RC uses a native 50 Hz latest-input UDP publisher and a separate firmware networking task. HTTP telemetry/settings and WebView reply delivery no longer pace that stream.
+- MOBILE grants supply a private per-session UDP token and negotiated deadline. Device ID, token, sequence, lease and fresh-input checks reject old/wrong-session frames and ACKs. Safe HTTP cleanup invalidates the token.
+- Brief radio gaps retain throttle/ARM/source. Roll/pitch/yaw centre after 300 ms without controller RC; Web RC expires at 1 second. Android fences stale stick input after 300 ms and missing genuine ACKs after at most 900 ms. Legacy firmware retains HTTP and its 300 ms deadline.
+- Foreground recovery of explicitly enabled APK/standalone flight controls uses a fresh session, minimum throttle and DISARMED. ARM is manual. STOP, background, reload, wrong kit and intentional Wi-Fi-mode changes cancel recovery. Controller disarm keeps connected sticks available at safe values.
+- Mobile configuration reservations retain the negotiated deadline when Take control starts. Active RC no longer sends redundant pings; stale telemetry cannot override newer ACKs. Resizing centres directional input while retaining throttle/ownership.
+- Shared WebApp/Tripod/Flight App sticks have brighter blue bases, cyan rings, white knobs and movement highlights. View-only sticks remain readable.
+- Matching compiled A1/A2 APP/FACTORY binaries, signed APK, offline hashes and release metadata are included. Obsolete APKs and optional signature sidecars are removed.
+- Native loopback UDP, replay/scope, cancellation, browser loss/recovery and controller gap-policy tests are included in focused checks/CI.
 
-See SUPPORT/V18_3_62_UPDATE_AND_TEST.md for setup and the physical test boundary.
+Install the new APK **and** matching controller firmware. AP remains API only. See [update and physical tests](SUPPORT/V18_3_63_UPDATE_AND_TEST.md). Automated/simulated tests do not establish real radio reliability or flight stability; no phone, physical kit or flight was tested here.

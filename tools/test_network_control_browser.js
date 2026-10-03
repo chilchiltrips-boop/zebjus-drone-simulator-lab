@@ -4,7 +4,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const root=path.resolve(__dirname,'..'),port=18793,origin=`http://localhost:${port}`,ID='ZFC-001122334455';
 let server,browser,mode='AP / DIRECT',owner='',role='',source='NONE',rc=[1500,1500,1000,1500,1000,1000,1000,1000,1500,1000];
 const calls=[],errors=[];
-const wait=(p,f)=>p.waitForFunction(f,null,{timeout:25000});
+const wait=async(p,f)=>{try{return await p.waitForFunction(f,null,{timeout:25000})}catch(e){console.error('UI:',await p.evaluate(()=>({hint:document.getElementById('controlHint')?.textContent,network:document.getElementById('networkLabel')?.textContent,notice:document.getElementById('notice')?.textContent})));console.error('Recent calls:',calls.filter(c=>c.actor==='phone').slice(-12));throw e}};
 const status=cid=>({ok:true,kit:'ZEBJUS_FLIGHTCORE',deviceId:ID,name:'zebjus_drone_1',ip:mode.startsWith('AP')?'192.168.4.1':'10.0.0.20',mode,boardId:'ZFC-A2',firmware:'18.3.62',flightReady:true,flightCoreIntegrated:true,webRc:true,armed:false,benchMode:0,locked:!!owner,lockMine:owner===cid,controlRole:role,mobileReserved:role==='MOBILE',viewOnly:!!owner&&owner!==cid,flightMode:'ANGLE',rcSource:source,receiverHealth:source==='PPM'?'OK':'NOT_FOUND',capabilities:{angle:true,rate:true,altitude:false}});
 async function api(address,form='',actor='phone'){
  const u=new URL(address),d=Object.fromEntries(new URLSearchParams(form)),cid=d.clientId||u.searchParams.get('clientId');calls.push({actor,path:u.pathname,...d});let code=200,body={ok:true};

@@ -1,10 +1,10 @@
-# Offline WebApp — V18.3.62
+# Offline WebApp — V18.3.63
 
 ## Joystick-only Aerion Flight App
 
 On Windows open `Start_Flight_App.bat`; on Mac open `Start_Flight_App.command`. Or run `python3 start_offline.py --flight`, or `node server.js` and open **http://localhost:8787/flight/**. This flight page has no editor or Python runtime. The launcher's Python/Node server only serves static files.
 
-The V18.3.62 controller serves only the API at 192.168.4.1, with no browser/captive page. Use the locally served/cached Flight App or installed Android APK after joining kit Wi-Fi. See SUPPORT/V18_3_62_UPDATE_AND_TEST.md.
+The V18.3.63 controller serves only the API at 192.168.4.1, with no browser/captive page. Use the locally served/cached Flight App or installed Android APK after joining kit Wi-Fi. See SUPPORT/V18_3_63_UPDATE_AND_TEST.md.
 
 ## Laptop, including the first run without internet
 
@@ -36,7 +36,7 @@ New third-party Python packages are not automatically available offline. Native 
 
 ## AP, phones and camera access
 
-AP serves API endpoints only. Install matching V18.3.62 firmware and the new APK. Laptop uses the local/cached full WebApp; camera requires localhost/HTTPS and permission. A phone browser Python/vision session needs the full WebApp saved from a suitable HTTPS origin, retained in the same browser/profile. Local kit access remains subject to browser network permission. APK has no Python/camera interface.
+AP serves API endpoints only. Install matching V18.3.63 firmware and the new APK. Laptop uses the local/cached full WebApp; camera requires localhost/HTTPS and permission. A phone browser Python/vision session needs the full WebApp saved from a suitable HTTPS origin, retained in the same browser/profile. Local kit access remains subject to browser network permission. APK has no Python/camera interface.
 
 After replacing WebApp files, repeat Save for offline use. The full extracted bundle supports first-run offline use with the local launcher.
 
