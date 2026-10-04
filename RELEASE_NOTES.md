@@ -1,5 +1,12 @@
 # ZEBJUS Aerion V18.3.65
 
+## Web update 3 — 5 October 2026 (India)
+
+- Anonymous background and manual kit scans no longer overwrite the connected browser's verified control ownership. Client-specific status and telemetry still revoke ownership when it actually changes.
+- After a stopped session, Airframe **Back** remains usable and **Restart setup** returns to Board. Each new setup requires a fresh propeller-removal confirmation and a new session nonce; outputs remain inhibited until the explicit setup gates pass.
+- Setup cleanup waits for cancellation/release before restart and never acquires control just to end an expired session. Late begin replies remain scoped to their original nonce.
+- Added an actual Lab/browser/controller-API regression for discovery, Airframe navigation, ownership loss and restart, alongside the full existing calibration/ESC/receiver wizard suite. Updated script URLs and offline cache for the fix. Android's separate Controls/Safety/Wi-Fi UI and firmware version remain unchanged.
+
 ## Web update 2 / Android update 2 — 4 October 2026
 
 Python Lab is the fifth navigation page. Compact Wix embedding adapts the

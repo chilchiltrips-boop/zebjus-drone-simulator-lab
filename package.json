@@ -26,6 +26,7 @@
     "test:floating": "node tools/test_floating_sticks_browser.js",
     "test:training-core": "node tools/test_flight_training_core.js",
     "test:learning-browser": "node tools/test_learning_lab_browser.js",
-    "test:wix": "node tools/test_wix_embed_browser.js"
+    "test:wix": "node tools/test_wix_embed_browser.js",
+    "test:setup-session": "node tools/test_setup_session_browser.js"
   }
 }

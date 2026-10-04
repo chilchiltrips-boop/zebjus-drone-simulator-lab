@@ -14,8 +14,8 @@
     },
     {
       "path": ".github/workflows/verify-learning-lab.yml",
-      "bytes": 5802,
-      "sha256": "6d863b9b6dc07ace414afdc3da894024026bd9fbffcb33ef132f56ec1d17a9a5"
+      "bytes": 5876,
+      "sha256": "89fa24d7abb8c0303ba978b2d8d06ab58ee75ed96cfe7d86e8465701c968bbe3"
     },
     {
       "path": ".gitignore",
@@ -35,7 +35,7 @@
     {
       "path": "FILE_COUNT.txt",
       "bytes": 4,
-      "sha256": "957a8989684d19877e5ea6549c0bbaafd63be1e5dab227c4d7b991332b9b1ddb"
+      "sha256": "d657346f4b1b586fc2219de041804d0a28946ab90d1f9175ee0769e2a19abf10"
     },
     {
       "path": "FILE_REPLACEMENT_POLICY.md",
@@ -154,13 +154,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 5787,
-      "sha256": "3509a696cc64cbe891286ad09e506b2de3a24871526cb19684825193f2d3d873"
+      "bytes": 6093,
+      "sha256": "fac261e57804f7f49426a7d029315ef711b4c644f82346f6c9cede21007b5d73"
     },
     {
       "path": "RELEASE_NOTES.md",
-      "bytes": 4837,
-      "sha256": "843eebc0a6067c24735d1187e070c7230a9bfe5d7fa99bbd8dd8167200f03542"
+      "bytes": 5834,
+      "sha256": "1f905a11de4fa91542b308f1efac7dde1ee6fdaf04fe6042ce03050c0f11ce1d"
     },
     {
       "path": "RELEASE_NOTES_V18_3_23.md",
@@ -336,6 +336,11 @@
       "path": "SUPPORT/LED_AND_SENSOR_IO_V18_3_49.md",
       "bytes": 1981,
       "sha256": "c93eb569f3c279afddff160963ee123b138103cdbcf1deb8a4b50e670f945a29"
+    },
+    {
+      "path": "SUPPORT/SETUP_SESSION_VERIFICATION.json",
+      "bytes": 2097,
+      "sha256": "c558f7da3b90c324aa7ff2728c03f322df1063cf0d0564f8b219f4ce59fcf9d1"
     },
     {
       "path": "SUPPORT/SOFTWARE_VERIFICATION_V18_3_61.json",
@@ -659,8 +664,8 @@
     },
     {
       "path": "fc-setup.js",
-      "bytes": 34905,
-      "sha256": "cf58b9ff558a19c059bcdbc2220de01f6bb854bda7fe989bd41139c74895ef23"
+      "bytes": 35752,
+      "sha256": "86976ee5879ca7f60ad06238cd3c50415ab537f52f7100f8c8a5f74ebeba3f69"
     },
     {
       "path": "fc_board_reference.png",
@@ -749,8 +754,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 79247,
-      "sha256": "b9e1a53453fadf24832bc8b110a26ea0b4f0bbb8624802f91ab2a344d8a35e24"
+      "bytes": 79256,
+      "sha256": "3d3bf763b8aeeb8c5508f8cc7ddea328974738d4b84a150f91c88a27b0f36985"
     },
     {
       "path": "kit-console.js",
@@ -800,7 +805,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 41870,
-      "sha256": "9a66c2a33b653e414025789c44036b3307bbcc64d1a7225502814984cf575a4d"
+      "sha256": "51eada2d6cc81c1689f61b8c3ca08dfb5f39af14abc3496d3712d8080e7ff55a"
     },
     {
       "path": "offline-support.js",
@@ -809,8 +814,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 2080,
-      "sha256": "cbee8d24079030afad85803a9b4fa90da3e3df1ef99c41f5f54ad37a99da0861"
+      "bytes": 2150,
+      "sha256": "63a5bb0ea6bcb1f88d3dd9d02682e83fc4ca42b4f4b82754d838b7cb1f037aec"
     },
     {
       "path": "prop_1045_ccw.glb",
@@ -1034,8 +1039,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 74944,
-      "sha256": "1b04554ff7a1f713ac82942e1558428be4ad578c71dbffbafe67926dac236300"
+      "bytes": 75302,
+      "sha256": "34c37346d4fb1e20365d8b7d1afb1d9480f8d726d21a74991c8c9d222005781f"
     },
     {
       "path": "server.js",
@@ -1045,7 +1050,7 @@
     {
       "path": "service-worker.js",
       "bytes": 6565,
-      "sha256": "9e65ff8bca18b83b6982f209649f23d66f43aa4904d4b44585a46916b442b293"
+      "sha256": "fa9253a632fae0e8c8fcebb9d7f10751dd9fe352aba4fdf85be0dab9582dbdbe"
     },
     {
       "path": "start_offline.py",
@@ -1306,6 +1311,11 @@
       "path": "tools/test_reconnect_runtime.js",
       "bytes": 5083,
       "sha256": "1b0fc93c1a8e59b8e1ebc8be8e03dd438e197226ffe6b79eed1e22bcbfb13517"
+    },
+    {
+      "path": "tools/test_setup_session_browser.js",
+      "bytes": 8281,
+      "sha256": "ef465399703711607568333cf9265dbf6a58a4fb4f09a6da89c2010e682ecf8e"
     },
     {
       "path": "tools/test_upload_integrity.py",

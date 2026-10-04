@@ -31,6 +31,8 @@ jobs:
         run: |
           npm run check
           npm run release:check
+          npm run test:setup-browser
+          npm run test:setup-session
           npm run test:learning-browser
           npm run test:wix
           node android-app/tests/browser_transport_test.js

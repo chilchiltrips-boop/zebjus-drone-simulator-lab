@@ -1,12 +1,17 @@
 # ZEBJUS Aerion V18.3.65
 
-Web update 2 places **Python Lab fifth**: Assembly → Wiring → Setup Wizard →
+Web update 3 keeps **Python Lab fifth**: Assembly → Wiring → Setup Wizard →
 Hardware I/O → Python Lab. Embed the lab in Wix using `?embed=wix`; the compact
 layout follows the iframe viewport and provides **Open full lab** for camera,
 USB or local-kit features blocked by parent permissions. See [Wix setup and
 permissions](WIX_EMBED.txt) and the ready-to-paste [HTML embed](WIX_EMBED.html).
 APK **18.3.65-android.2** is rebuilt with the same development certificate.
 Firmware remains **18.3.65**.
+
+Kit discovery preserves the connected browser's verified control ownership.
+If setup stops, **Back** still reaches Board and **Restart setup** opens a fresh
+setup with a new propeller-removal confirmation. Genuine ownership, connection
+or page loss still ends the setup and blocks further output commands.
 
 Aerion combines drone assembly, Python Lab, simulation and local-kit control. The Android Flight App is a separate flight interface with floating sticks and no Python editor.
 
