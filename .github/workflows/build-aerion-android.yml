@@ -20,6 +20,7 @@ on:
       - 'tools/embed_ap_pages.py'
       - 'tools/flight_app_source.html'
       - 'control-sticks.js'
+      - 'fc-setup.js'
       - 'kit-console.js'
   pull_request:
     paths:
@@ -29,6 +30,7 @@ on:
       - 'tools/embed_ap_pages.py'
       - 'tools/flight_app_source.html'
       - 'control-sticks.js'
+      - 'fc-setup.js'
       - 'kit-console.js'
 
 permissions:
@@ -91,7 +93,7 @@ jobs:
           name: Aerion-Android-APK
           if-no-files-found: error
           path: |
-            android-app/dist/ZEBJUS_Aerion_V18_3_63_Android.apk
+            android-app/dist/ZEBJUS_Aerion_V18_3_64_Android.apk
             android-app/dist/BUILD_REPORT.json
             android-app/dist/APK_SIGNATURE.txt
             android-app/dist/APK_MANIFEST.txt

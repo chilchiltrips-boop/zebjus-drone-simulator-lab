@@ -1,6 +1,6 @@
-# ZEBJUS F450 V18.3.63 Local Device Protocol
+# ZEBJUS F450 V18.3.64 Local Device Protocol
 
-HTTP endpoints are local on the ESP32 (port 80). AP serves API only, with no browser/captive pages. V18.3.63 adds session-scoped Android RC on UDP port 4210. Older version sections describe historical capabilities where superseded.
+HTTP endpoints are local on the ESP32 (port 80). AP serves API only, with no browser/captive pages. V18.3.64 adds session-scoped Android RC on UDP port 4210. Older version sections describe historical capabilities where superseded.
 
 ## Identity/status
 `GET /api/status?clientId=<browser-session>`
@@ -19,7 +19,7 @@ Returns roll/pitch/yaw, gyro and battery placeholder fields until the real FC te
 
 Lock expires after 10 seconds without a valid owner command, accepted RC or heartbeat. Settings heartbeats are separate from RC freshness.
 
-## V18.3.63 native flight transport
+## V18.3.64 native flight transport
 
 A MOBILE grant on a flight-capable profile advertises `rcUdpPort=4210`, private `rcUdpToken` (16 hex digits), `rcUdpHz=50`, `rcTimeoutMs=1000` and `rcCenterMs=300`. A1 provides no UDP grant. Tokens are never in public status/telemetry. A legacy client can send an initial safe HTTP RC frame to invalidate the token and continue over HTTP.
 
@@ -161,7 +161,7 @@ The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `
 - AP setup `/` has Wi-Fi, kit status and controller navigation; `/fly` works directly on the local FlightCore. Browser camera/MediaPipe processing is separate from flight stabilization.
 
 
-## V18.3.63 unified RC arbitration
+## V18.3.64 unified RC arbitration
 
 - `WEB_STA` / `WEB_AP` frames are authoritative while fresh (`<1000 ms`) and require the control lock. Directional channels centre after 300 ms without RC.
 - Physical `PPM` is automatic fallback when no fresh Web/AP/Python frame exists.
@@ -172,3 +172,18 @@ The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `
 ## V18.3.48 receiver and output status
 
 `ppm_config` accepts `pin=16` (A2 D6 default) or `pin=18` (A2 D10), along with `edge`, `armMode`, and all four `reverse0..reverse3` flags. It is disarmed-only and rejects a pin occupied by servo/GPS/GPIO. `expansion.ppmPin` and `receiverPin` report the active pin; D10 is then excluded from auxiliary allocation. PPM frame Hz counts full, valid CH1–CH6 frames only. `outputWatchdogTripped` and `outputWatchdogTrips` expose the software ESC minimum-output supervisor; a safe low-throttle RC frame clears a trip. UBX `gps_read.measuredHz` counts all complete epochs received per poll. Battery is `null` with `batteryValid:false` until a compatible sensor is wired and implemented.
+
+## V18.3.64 guided flight setup
+
+Read-only `setup_status` returns boardId / deviceId / firmware / supported, active session (owner only), flightReady / armed, airframe / input, job (0 idle, 1 running, 2 complete, 3 failed), processed sample attempts / total, benchMode / mask / pulse / escStage, ppmFresh, raw PPM channels and normalised channels. `receiver_setup_get` returns calibrated / map / minimum / centre / maximum / reverse / armMode.
+
+All mutations require exact Device ID, current control ownership and a unique 12–60 character alphanumeric / hyphen `session`. Begin with `setup_begin`, `confirm=PROPS_REMOVED`. `setup_ping` renews the 5 s setup lease. `setup_end` cancels the nonce, stops output and calibration, disarms, and invalidates RC. Delayed cancelled begins are rejected; ending an old session cannot stop another active session.
+
+- `airframe_set`: airframe=QUAD_X or QUAD_H.
+- `setup_calibrate`: kind=gyro (2000 attempts) or level (120 attempts), asynchronous status progress; missing / moving / non-level samples fail.
+- `setup_esc`: stage=HIGH (2000 µs, max 12 s) then LOW (1000 µs, 3 s), confirm=PROPS_REMOVED. PWM ESC only.
+- `setup_motor`: mask=1..15, pulse=1000..1300, durationMs=100..2000, confirm=PROPS_REMOVED. Wizard uses 800 ms. No RPM feedback.
+- `input_set`: source=WEB or PPM, persistent.
+- `receiver_setup_set`: map0..5 (distinct CH1..10), min0..5 / centre0..5 / max0..5, reverse0..3 and armMode=YAW_RIGHT / YAW_LEFT / CH5_SWITCH. Complete atomic validation and NVS write; endpoints 750..2250, span >=400; directional centre margins >=150.
+
+Setup inhibits flight RC and ARM. Lease / owner loss and the output supervisor stop bench outputs even before flight readiness. Completing setup requires neutral directional sticks, throttle minimum, ARM low and a new manual ARM. Calibration and receiver setup use a separate NVS namespace; FlightSettings schema 1 stays compatible.

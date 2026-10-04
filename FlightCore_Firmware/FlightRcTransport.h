@@ -22,7 +22,7 @@ void rcUdpTask(void*){
    RcUdpProtocol::Frame frame;if(size!=(int)sizeof(bytes)||!RcUdpProtocol::decode(bytes,read,frame)||frame.device!=key)continue;
    uint32_t now=millis();bool accepted=false,actualArmed=false,ready=false;
    portENTER_CRITICAL(&stateMux);
-   if(rcUdpToken&&frame.token==rcUdpToken&&(int32_t)(controlExpiresAt-now)>0&&benchMode==BENCH_NONE&&!configurationBusy&&!firmwareUploadActive&&(!rcUdpSequenceSeen||RcUdpProtocol::newer(frame.sequence,rcUdpLastSequence))){
+   if(rcUdpToken&&frame.token==rcUdpToken&&(int32_t)(controlExpiresAt-now)>0&&benchMode==BENCH_NONE&&!fcSetupActive&&!configurationBusy&&!firmwareUploadActive&&(!rcUdpSequenceSeen||RcUdpProtocol::newer(frame.sequence,rcUdpLastSequence))){
     for(int i=0;i<10;i++)webRcCh[i]=frame.channels[i];
     webRcLastMs=now;webRcFrames++;controlExpiresAt=now+LOCK_TIMEOUT_MS;
     rcUdpLastSequence=frame.sequence;rcUdpSequenceSeen=true;accepted=true;actualArmed=armed;ready=flightReady;

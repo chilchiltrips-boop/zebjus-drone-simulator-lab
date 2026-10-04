@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.63 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
+  ZEBJUS FlightCore V18.3.64 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -53,13 +53,14 @@
 #include "FlightControlMath.h"
 #include "RcLinkPolicy.h"
 #include "RcUdpProtocol.h"
+#include "FlightSetupPolicy.h"
 #include "ZEBJUS_FLIGHTCORE_TYPES.h"
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
 #include "src/DroneGPS.h" // Bundled u-blox 7/NEO-7 driver; no external library install.
 #endif
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.63";
+static const char* FW_VERSION="18.3.64";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -137,6 +138,12 @@ unsigned long wifiLostAt=0,restartAt=0;
 // ---------------- Control lock ----------------
 String controlOwner="",controlRole="";
 volatile bool mobileReserved=false,configurationBusy=false,forceDisarmRequested=false;
+volatile bool fcSetupActive=false,setupAfterNeutral=false,setupCalibrationCancel=false;
+volatile uint32_t fcSetupExpires=0,setupSamples=0,setupTotal=0;
+volatile uint8_t setupJob=0,setupCalibrationKind=0;
+uint8_t setupAirframe=0,setupInput=0;bool ppmArmLeft=false;
+FlightSetupPolicy::ReceiverSetup receiverSetup;
+void serviceFcSetup();void saveFcSetup();
 volatile uint8_t rcPreference=0; // 0 AUTO, 1 WEB, 2 PPM
 SemaphoreHandle_t busMutex=nullptr;TaskHandle_t flightTaskHandle=nullptr;esp_timer_handle_t flightTimer=nullptr;
 portMUX_TYPE stateMux=portMUX_INITIALIZER_UNLOCKED;
@@ -150,7 +157,7 @@ char lastDisarmReason[80]="BOOT",lastEvent[80]="BOOT";uint32_t eventAt=0,disarmA
 float batteryVoltage=0;bool batteryValid=false,batteryLow=false,batteryCritical=false;uint32_t batterySampleMs=0,batteryPollAt=0;
 bool barometerAddressPresent=false;
 struct BusGuard{bool held;BusGuard():held(!busMutex||xSemaphoreTakeRecursive(busMutex,pdMS_TO_TICKS(2))==pdTRUE){}~BusGuard(){if(held&&busMutex)xSemaphoreGiveRecursive(busMutex);}};
-struct ConfigGuard{bool held=false;ConfigGuard(){portENTER_CRITICAL(&stateMux);if(!armed&&benchModeForGuard()==0){configurationBusy=true;held=true;}portEXIT_CRITICAL(&stateMux);}~ConfigGuard(){if(held)configurationBusy=false;}static int benchModeForGuard();};
+struct ConfigGuard{bool held=false;ConfigGuard(){portENTER_CRITICAL(&stateMux);if(!armed&&!configurationBusy&&benchModeForGuard()==0){configurationBusy=true;held=true;}portEXIT_CRITICAL(&stateMux);}~ConfigGuard(){if(held)configurationBusy=false;}static int benchModeForGuard();};
 volatile unsigned long controlExpiresAt=0;
 
 // Explicit forward declarations keep this sketch independent of Arduino's auto-prototype ordering.
@@ -209,7 +216,7 @@ float prevAngleErrRoll=0,prevAngleErrPitch=0,iAngleRoll=0,iAnglePitch=0;
 unsigned long lastFlightSampleMs=0,lastSourceChangeMs=0;
 FlightPidSettings flightPid;
 volatile BenchModeKind benchMode=BENCH_NONE;
-uint8_t benchMotor=0,benchSequenceMotor=0,benchEscStage=0;
+uint8_t benchMotor=0,benchSequenceMotor=0,benchEscStage=0,benchMask=0;
 uint16_t benchPulse=1000;
 unsigned long benchUntilMs=0,benchStageUntilMs=0;
 int ConfigGuard::benchModeForGuard(){return (int)benchMode;}
@@ -410,7 +417,7 @@ void ensureUniqueKitName(){
 // Control lock
 // ============================================================
 void invalidateRcUdp();
-void expireLock(){if(controlOwner.length()&&(long)(millis()-controlExpiresAt)>=0){if(activeRcSource==RC_WEB_AP||activeRcSource==RC_WEB_STA)forceDisarmRequested=true;armLowSeen=false;webRcLastMs=0;invalidateRcUdp();Serial.println("Control lock expired");controlOwner="";controlRole="";mobileReserved=false;rcPreference=0;controlExpiresAt=0;}}
+void expireLock(){if(controlOwner.length()&&(long)(millis()-controlExpiresAt)>=0){if(activeRcSource==RC_WEB_AP||activeRcSource==RC_WEB_STA)forceDisarmRequested=true;armLowSeen=false;webRcLastMs=0;invalidateRcUdp();Serial.println("Control lock expired");controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();}}
 bool lockMine(const String& id){expireLock();return id.length()&&controlOwner==id;}
 bool lockActive(){expireLock();return controlOwner.length();}
 bool controlAuthorized(){String id=server.arg("clientId");if(lockMine(id)){controlExpiresAt=millis()+LOCK_TIMEOUT_MS;return true;}return false;}
@@ -435,7 +442,7 @@ void IRAM_ATTR ppmIsr(){
 bool receiverFresh(){if(!ENABLE_PPM_RECEIVER||!ppmLastFrameUs)return false;return (uint32_t)(micros()-ppmLastFrameUs)<PPM_STALE_US;}
 uint32_t receiverAgeMs(){if(!ppmLastFrameUs)return 0xFFFFFFFFUL;return (uint32_t)(micros()-ppmLastFrameUs)/1000UL;}
 String receiverHealth(){if(!ENABLE_PPM_RECEIVER||!ppmFrames)return "NOT_FOUND";return receiverFresh()?"OK":"STALE";}
-void copyReceiver(uint16_t out[10]){noInterrupts();for(int i=0;i<10;i++)out[i]=ppmCh[i];interrupts();for(int i=0;i<4;i++)if(ppmReverse[i])out[i]=3000-out[i];}
+void copyReceiver(uint16_t out[10]){uint16_t raw[10];noInterrupts();for(int i=0;i<10;i++)raw[i]=ppmCh[i];interrupts();for(int i=0;i<10;i++)out[i]=raw[i];for(int i=0;i<6;i++)out[i]=FlightSetupPolicy::normalise(raw[receiverSetup.calibrated?receiverSetup.channel[i]:i],i,receiverSetup,i<4&&ppmReverse[i]);}
 // Interim authoritative arm guard: final flight-core state OR fresh physical receiver CH5.
 // The final Rate/Angle flight core must update `armed` directly.
 bool effectiveArmed(){
@@ -533,8 +540,8 @@ void pollGps(){
 #endif
  int budget=24;while(budget--&&Serial1.available()){char c=(char)Serial1.read();if(c=='\n'){if(gpsLine.length()>5&&gpsLine.startsWith("$")){gpsLastSentence=gpsLine;gpsLastMs=millis();gpsSentences++;}gpsLine="";}else if(c!='\r'){if(gpsLine.length()<96)gpsLine+=c;else gpsLine="";}}
 }
-String expansionJson(){String j="{\"motors\":[";for(int i=0;i<4;i++){if(i)j+=",";j+="{\"motor\":"+String(i+1)+",\"connector\":\"D"+String(motorSlots[i])+"\",\"gpio\":"+String(motorPinForIndex(i))+"}";}j+="],\"ppmPin\":"+String(ppmReceiverPin)+",\"ppmEdge\":\""+String(ppmEdgeFalling?"FALLING":"RISING")+"\",\"ppmReverse\":[";for(int i=0;i<4;i++){if(i)j+=",";j+=ppmReverse[i]?"true":"false";}j+="],\"ppmArmMode\":\""+String(ppmYawStickArm?"YAW_STICK":"CH5_SWITCH")+"\",\"idleDisarmSeconds\":15,\"servoPin\":"+String(servoPin)+",\"servoReady\":"+String(servoAttached?"true":"false")+",\"gpsRxPin\":"+String(gpsRxPin)+",\"gpsTxPin\":"+String(gpsTxPin)+",\"gpsProtocol\":\""+String(gpsUbx10Hz?"UBX_10HZ":"NMEA_9600")+"\",\"gpsTargetHz\":"+String(gpsUbx10Hz?10:0)+",\"gpsMeasuredHz\":"+String(gpsMeasuredHz)+",\"gpsReady\":"+String(gpsReady?"true":"false")+",\"matrixAddress\":"+String(matrixAddress)+",\"gpioOutputs\":"+auxOutputsJson()+"}";return j;}
-void writeEscMicroseconds(int i,int us){int pin=motorPinForIndex(i);if(pin>=0)ledcWrite(pin,escDutyFromUs(flightWatchdogTripped?1000:us));}
+String expansionJson(){String j="{\"motors\":[";for(int i=0;i<4;i++){if(i)j+=",";j+="{\"motor\":"+String(i+1)+",\"connector\":\"D"+String(motorSlots[i])+"\",\"gpio\":"+String(motorPinForIndex(i))+"}";}j+="],\"ppmPin\":"+String(ppmReceiverPin)+",\"ppmEdge\":\""+String(ppmEdgeFalling?"FALLING":"RISING")+"\",\"ppmReverse\":[";for(int i=0;i<4;i++){if(i)j+=",";j+=ppmReverse[i]?"true":"false";}j+="],\"ppmArmMode\":\""+String(ppmYawStickArm?(ppmArmLeft?"YAW_LEFT":"YAW_STICK"):"CH5_SWITCH")+"\",\"idleDisarmSeconds\":15,\"servoPin\":"+String(servoPin)+",\"servoReady\":"+String(servoAttached?"true":"false")+",\"gpsRxPin\":"+String(gpsRxPin)+",\"gpsTxPin\":"+String(gpsTxPin)+",\"gpsProtocol\":\""+String(gpsUbx10Hz?"UBX_10HZ":"NMEA_9600")+"\",\"gpsTargetHz\":"+String(gpsUbx10Hz?10:0)+",\"gpsMeasuredHz\":"+String(gpsMeasuredHz)+",\"gpsReady\":"+String(gpsReady?"true":"false")+",\"matrixAddress\":"+String(matrixAddress)+",\"gpioOutputs\":"+auxOutputsJson()+"}";return j;}
+void writeEscMicroseconds(int i,int us){bool blocked=flightWatchdogTripped||configurationBusy||(!armed&&benchMode==BENCH_NONE)||(fcSetupActive&&!FlightSetupPolicy::live(millis(),fcSetupExpires));if((benchMode==BENCH_MOTOR||benchMode==BENCH_ESC_MANUAL)&&!FlightSetupPolicy::live(millis(),benchUntilMs))blocked=true;int pin=motorPinForIndex(i);if(pin>=0)ledcWrite(pin,escDutyFromUs(blocked?1000:us));}
 void writeMotorOutputs(float m1,float m2,float m3,float m4){motorInput[0]=m1;motorInput[1]=m2;motorInput[2]=m3;motorInput[3]=m4;if(!FLIGHT_CONTROL_ENABLED)return;for(int i=0;i<4;i++)writeEscMicroseconds(i,(int)motorInput[i]);}
 void writeFlightDutyOutputs(float d1,float d2,float d3,float d4){
   const float duty[4]={d1,d2,d3,d4};
@@ -552,7 +559,7 @@ void flightOutputSupervisor(void*){
       if((armed||benchMode!=BENCH_NONE)&&flightHeartbeatUs&&
          (uint32_t)(micros()-flightHeartbeatUs)>ARMED_LOOP_GAP_LIMIT_US&&
          !flightWatchdogTripped){flightWatchdogTripped=true;flightWatchdogTrips++;}
-      if(flightWatchdogTripped)for(int i=0;i<4;i++){
+      if(flightWatchdogTripped||configurationBusy||(!armed&&benchMode==BENCH_NONE)||(fcSetupActive&&!FlightSetupPolicy::live(millis(),fcSetupExpires))||((benchMode==BENCH_MOTOR||benchMode==BENCH_ESC_MANUAL)&&!FlightSetupPolicy::live(millis(),benchUntilMs)))for(int i=0;i<4;i++){
         int pin=motorPinForIndex(i);if(pin>=0)ledcWrite(pin,escDutyFromUs(1000));
       }
     }
@@ -597,10 +604,10 @@ void readPidArgs(FlightPidSettings& n){
   n.angleRoll={argFloat("angleRollP",n.angleRoll.p),argFloat("angleRollI",n.angleRoll.i),argFloat("angleRollD",n.angleRoll.d)};n.anglePitch={argFloat("anglePitchP",n.anglePitch.p),argFloat("anglePitchI",n.anglePitch.i),argFloat("anglePitchD",n.anglePitch.d)};
 }
 bool propsRemovedConfirmed(){String c=server.arg("confirm");c.toUpperCase();return c=="PROPS_REMOVED";}
-void benchStop(){benchMode=BENCH_NONE;benchMotor=0;benchSequenceMotor=0;benchEscStage=0;benchUntilMs=benchStageUntilMs=0;motorsSafe();}
+void benchStop(){benchMode=BENCH_NONE;benchMask=0;benchPulse=1000;benchMotor=0;benchSequenceMotor=0;benchEscStage=0;benchUntilMs=benchStageUntilMs=0;motorsSafe();}
 void directMotorPulse(int index,int pulse){if(!FLIGHT_CONTROL_ENABLED)return;for(int i=0;i<4;i++){int v=(i==index)?pulse:1000;motorInput[i]=v;writeEscMicroseconds(i,v);}}
 void allMotorPulse(int pulse){if(!FLIGHT_CONTROL_ENABLED)return;for(int i=0;i<4;i++){motorInput[i]=pulse;writeEscMicroseconds(i,pulse);}}
-void serviceBenchMode(){if(benchMode==BENCH_NONE)return;if(flightWatchdogTripped){benchStop();return;}unsigned long now=millis();if(benchMode==BENCH_MOTOR){if((long)(now-benchUntilMs)>=0){benchStop();return;}directMotorPulse((int)benchMotor-1,benchPulse);return;}if(benchMode==BENCH_MOTOR_SEQUENCE){if((long)(now-benchStageUntilMs)>=0){benchSequenceMotor++;if(benchSequenceMotor>4){benchStop();return;}benchStageUntilMs=now+700;}directMotorPulse((int)benchSequenceMotor-1,1200);return;}if(benchMode==BENCH_ESC_CAL){if(benchEscStage==0){allMotorPulse(2000);if((long)(now-benchStageUntilMs)>=0){benchEscStage=1;benchStageUntilMs=now+3000;}}else if(benchEscStage==1){allMotorPulse(1000);if((long)(now-benchStageUntilMs)>=0){benchStop();}}}}
+void serviceBenchMode(){if(benchMode==BENCH_NONE)return;if(flightWatchdogTripped){benchStop();return;}unsigned long now=millis();if(benchMode==BENCH_MOTOR){if((long)(now-benchUntilMs)>=0){benchStop();return;}if(benchMask){for(int i=0;i<4;i++){int pulse=(benchMask&(1<<i))?benchPulse:1000;motorInput[i]=pulse;writeEscMicroseconds(i,pulse);}}else directMotorPulse((int)benchMotor-1,benchPulse);return;}if(benchMode==BENCH_MOTOR_SEQUENCE){if((long)(now-benchStageUntilMs)>=0){benchSequenceMotor++;if(benchSequenceMotor>4){benchStop();return;}benchStageUntilMs=now+700;}directMotorPulse((int)benchSequenceMotor-1,1200);return;}if(benchMode==BENCH_ESC_MANUAL){if((long)(now-benchUntilMs)>=0){benchStop();return;}allMotorPulse(benchPulse);return;}if(benchMode==BENCH_ESC_CAL){if(benchEscStage==0){allMotorPulse(2000);if((long)(now-benchStageUntilMs)>=0){benchEscStage=1;benchStageUntilMs=now+3000;}}else if(benchEscStage==1){allMotorPulse(1000);if((long)(now-benchStageUntilMs)>=0){benchStop();}}}}
 bool configureMpu6050Flight(){if(detectedImu!=IMU_MPU6050||!detectedImuAddress)return false;return i2cWriteReg(detectedImuAddress,0x6B,0x00)&&i2cWriteReg(detectedImuAddress,0x1A,0x05)&&i2cWriteReg(detectedImuAddress,0x1C,0x10)&&i2cWriteReg(detectedImuAddress,0x1B,0x08)&&i2cWriteReg(detectedImuAddress,0x19,0x03);}
 bool readMpuFlight(float& rr,float& rp,float& ry,float& ax,float& ay,float& az){uint8_t b[14];if(!i2cReadBlock(detectedImuAddress,0x3B,b,sizeof(b)))return false;auto be16=[&](int i)->int16_t{return (int16_t)(((uint16_t)b[i]<<8)|b[i+1]);};int16_t rax=be16(0),ray=be16(2),raz=be16(4),rgx=be16(8),rgy=be16(10),rgz=be16(12);ax=((float)rax/4096.0f+accelOffsetX)*accelScaleX;ay=((float)ray/4096.0f+accelOffsetY)*accelScaleY;az=((float)raz/4096.0f+accelOffsetZ)*accelScaleZ;rr=(float)rgx/65.5f;rp=(float)rgy/65.5f;ry=(float)rgz/65.5f;FlightMath::orient(ax,ay,az,flightSettings.orientation);FlightMath::orient(rr,rp,ry,flightSettings.orientation);lastImu.kind=IMU_MPU6050;lastImu.address=detectedImuAddress;lastImu.whoAmI=detectedImuAddress;lastImu.rawAx=rax;lastImu.rawAy=ray;lastImu.rawAz=raz;lastImu.rawGx=rgx;lastImu.rawGy=rgy;lastImu.rawGz=rgz;lastImu.ax=ax;lastImu.ay=ay;lastImu.az=az;lastImu.gx=rr;lastImu.gy=rp;lastImu.gz=ry;lastImu.sampledAt=millis();lastImuValid=true;return true;}
 void disarmFlight(const char* reason){
@@ -609,13 +616,14 @@ void disarmFlight(const char* reason){
 }
 void resetArmGesture(){yawGesture=0;yawGestureStartedMs=0;yawGestureLatched=false;}
 void armFlight(const uint16_t rc[10]){
-  portENTER_CRITICAL(&stateMux);if(configurationBusy||forceDisarmRequested||firmwareUploadActive){portEXIT_CRITICAL(&stateMux);return;}armed=true;portEXIT_CRITICAL(&stateMux);resetFlightPid();idleLastMovementMs=millis();snprintf(lastEvent,sizeof(lastEvent),"ARM");eventAt=millis();
+  portENTER_CRITICAL(&stateMux);if(fcSetupActive||setupAfterNeutral||configurationBusy||forceDisarmRequested||firmwareUploadActive){portEXIT_CRITICAL(&stateMux);return;}armed=true;portEXIT_CRITICAL(&stateMux);resetFlightPid();idleLastMovementMs=millis();snprintf(lastEvent,sizeof(lastEvent),"ARM");eventAt=millis();
   for(int i=0;i<4;i++)idleRcLast[i]=rc[i];
   Serial.println(String("ARMED • ")+flightModeName(flightMode)+" • "+rcSourceName(activeRcSource));
 }
 void serviceArming(const uint16_t rc[10]){
   const uint32_t now=millis();
-  if(configurationBusy||firmwareUploadActive||restartAt){disarmFlight("configuration / restart");return;}
+  if(fcSetupActive||configurationBusy||firmwareUploadActive||restartAt){disarmFlight("configuration / restart");return;}
+  if(setupAfterNeutral){disarmFlight("Setup requires neutral sticks / ARM low");armLowSeen=false;resetArmGesture();if(FlightSetupPolicy::safeAfterSetup(rc))setupAfterNeutral=false;return;}
   if(!armed&&flightSettings.batteryKind&&(!batteryValid||(uint32_t)(now-batterySampleMs)>1000))return;
   if(!armed&&(batteryCritical||fabsf(kalmanRoll)>45||fabsf(kalmanPitch)>45||accZ<.2f||imuFaultCount))return;
   if(activeRcSource==RC_PPM&&ppmYawStickArm){
@@ -624,8 +632,8 @@ void serviceArming(const uint16_t rc[10]){
       ?(rc[3]>=1900?1:rc[3]<=1100?-1:0):0;
     if(direction!=yawGesture){yawGesture=direction;yawGestureStartedMs=direction?now:0;yawGestureLatched=false;}
     if(direction&&!yawGestureLatched&&(uint32_t)(now-yawGestureStartedMs)>=ARM_GESTURE_HOLD_MS){
-      if(direction<0&&armed)disarmFlight("PPM yaw left");
-      if(direction>0&&!armed)armFlight(rc);
+      if(direction==(ppmArmLeft?1:-1)&&armed)disarmFlight("PPM yaw disarm");
+      if(direction==(ppmArmLeft?-1:1)&&!armed)armFlight(rc);
       yawGestureLatched=true; // Return yaw to centre before another gesture.
     }
   }else{
@@ -653,7 +661,7 @@ void setupFlightCore(){
   // Match the proven MPU6050 FC configuration: DLPF=0x05, ±8g, ±500 dps.
   if(!configureMpu6050Flight()){flightReady=false;Serial.println("FlightCore: MPU6050 configuration failed");return;}
   Serial.println("FlightCore: keep the frame LEVEL and STILL • calibrating gyro (2000 samples)");
-  gyroBiasRoll=gyroBiasPitch=gyroBiasYaw=0;float gyroSqR=0,gyroSqP=0,gyroSqY=0;int good=0;for(int i=0;i<2000;i++){float rr,rp,ry,ax,ay,az;if(readMpuFlight(rr,rp,ry,ax,ay,az)){gyroBiasRoll+=rr;gyroBiasPitch+=rp;gyroBiasYaw+=ry;gyroSqR+=rr*rr;gyroSqP+=rp*rp;gyroSqY+=ry*ry;good++;}delay(1);}
+  gyroBiasRoll=gyroBiasPitch=gyroBiasYaw=0;float gyroSqR=0,gyroSqP=0,gyroSqY=0;int good=0;for(int i=0;i<2000;i++){if(setupCalibrationKind==1&&setupJob==1){if(setupCalibrationCancel||!fcSetupActive){flightReady=false;return;}setupSamples=i+1;}float rr,rp,ry,ax,ay,az;if(readMpuFlight(rr,rp,ry,ax,ay,az)){gyroBiasRoll+=rr;gyroBiasPitch+=rp;gyroBiasYaw+=ry;gyroSqR+=rr*rr;gyroSqP+=rp*rp;gyroSqY+=ry*ry;good++;}delay(1);}
   if(good<1800){flightReady=false;motorsSafe();Serial.println("FlightCore: gyro calibration failed • sensor reads unstable");return;}
   gyroBiasRoll/=good;gyroBiasPitch/=good;gyroBiasYaw/=good;float noiseR=sqrtf(fmaxf(0.0f,gyroSqR/good-gyroBiasRoll*gyroBiasRoll)),noiseP=sqrtf(fmaxf(0.0f,gyroSqP/good-gyroBiasPitch*gyroBiasPitch)),noiseY=sqrtf(fmaxf(0.0f,gyroSqY/good-gyroBiasYaw*gyroBiasYaw));if(noiseR>1.5f||noiseP>1.5f||noiseY>1.5f){flightReady=false;motorsSafe();Serial.println("FlightCore: gyro calibration motion detected • keep frame still and reboot");return;}float rr,rp,ry;if(readMpuFlight(rr,rp,ry,accX,accY,accZ)){accAngleRoll=atan2f(accY,sqrtf(accX*accX+accZ*accZ))*57.2957795f+levelTrimRoll;accAnglePitch=-atan2f(accX,sqrtf(accY*accY+accZ*accZ))*57.2957795f+levelTrimPitch;kalmanRoll=accAngleRoll;kalmanPitch=accAnglePitch;}
   armLowSeen=false;resetArmGesture();flightMode=FLIGHT_ANGLE;lastFlightMode=flightMode;activeRcSource=lastRcSource=RC_NONE;flightLoopTimerUs=micros();flightReady=true;
@@ -823,7 +831,7 @@ void expansionWriteCommand(const String& type){
   if(!motorSlotsValid(next)){sendMessage(400,"Each D0-D3 motor connector must appear exactly once");return;}for(int i=0;i<4;i++)motorSlots[i]=next[i];saveExpansionSettings();sendJson(200,"{\"ok\":true,\"command\":\"motor_map_set\",\"rebooting\":true,\"expansion\":"+expansionJson()+"}");restartAt=millis()+800;return;
  }
  if(type=="ppm_config"){
-  if(!server.hasArg("edge")){sendMessage(400,"PPM edge is required: RISING or FALLING");return;}String edge=server.arg("edge");edge.toUpperCase();if(edge!="RISING"&&edge!="FALLING"){sendMessage(400,"PPM edge must be RISING or FALLING");return;}bool reverse[4];for(int i=0;i<4;i++){String k="reverse"+String(i);if(!server.hasArg(k)){sendMessage(400,"Specify reverse0..reverse3 for roll/pitch/throttle/yaw");return;}reverse[i]=server.arg(k)=="1"||server.arg(k)=="true";}String mode=server.hasArg("armMode")?server.arg("armMode"):String(ppmYawStickArm?"YAW_STICK":"CH5_SWITCH");mode.toUpperCase();if(mode!="YAW_STICK"&&mode!="CH5_SWITCH"){sendMessage(400,"PPM armMode must be YAW_STICK or CH5_SWITCH");return;}int pin=server.hasArg("pin")?server.arg("pin").toInt():ppmReceiverPin;if(!ppmPinAllowed(pin)){sendMessage(400,"PPM pin must be A2 D6/GPIO16 or D10/GPIO18");return;}if(pin!=ppmReceiverPin&&(pin==servoPin||pin==gpsRxPin||pin==gpsTxPin||auxOutputActive(pin))){sendMessage(409,"Selected PPM pin is assigned to servo, GPS or GPIO. Release it first.");return;}if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0)detachInterrupt(digitalPinToInterrupt(ppmReceiverPin));noInterrupts();ppmLastFrameUs=0;ppmLastEdgeUs=0;ppmIndex=0;ppmInvalidFrame=false;interrupts();ppmReceiverPin=pin;ppmEdgeFalling=edge=="FALLING";for(int i=0;i<4;i++)ppmReverse[i]=reverse[i];ppmYawStickArm=mode=="YAW_STICK";armLowSeen=false;resetArmGesture();saveExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}sendJson(200,"{\"ok\":true,\"command\":\"ppm_config\",\"expansion\":"+expansionJson()+"}");return;
+  if(!server.hasArg("edge")){sendMessage(400,"PPM edge is required: RISING or FALLING");return;}String edge=server.arg("edge");edge.toUpperCase();if(edge!="RISING"&&edge!="FALLING"){sendMessage(400,"PPM edge must be RISING or FALLING");return;}bool reverse[4];for(int i=0;i<4;i++){String k="reverse"+String(i);if(!server.hasArg(k)){sendMessage(400,"Specify reverse0..reverse3 for roll/pitch/throttle/yaw");return;}reverse[i]=server.arg(k)=="1"||server.arg(k)=="true";}String mode=server.hasArg("armMode")?server.arg("armMode"):String(ppmYawStickArm?(ppmArmLeft?"YAW_LEFT":"YAW_STICK"):"CH5_SWITCH");mode.toUpperCase();if(mode!="YAW_STICK"&&mode!="YAW_LEFT"&&mode!="CH5_SWITCH"){sendMessage(400,"PPM armMode must be YAW_STICK or CH5_SWITCH");return;}int pin=server.hasArg("pin")?server.arg("pin").toInt():ppmReceiverPin;if(!ppmPinAllowed(pin)){sendMessage(400,"PPM pin must be A2 D6/GPIO16 or D10/GPIO18");return;}if(pin!=ppmReceiverPin&&(pin==servoPin||pin==gpsRxPin||pin==gpsTxPin||auxOutputActive(pin))){sendMessage(409,"Selected PPM pin is assigned to servo, GPS or GPIO. Release it first.");return;}if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0)detachInterrupt(digitalPinToInterrupt(ppmReceiverPin));noInterrupts();ppmLastFrameUs=0;ppmLastEdgeUs=0;ppmIndex=0;ppmInvalidFrame=false;interrupts();ppmReceiverPin=pin;ppmEdgeFalling=edge=="FALLING";for(int i=0;i<4;i++)ppmReverse[i]=reverse[i];ppmYawStickArm=mode!="CH5_SWITCH";ppmArmLeft=mode=="YAW_LEFT";saveFcSetup();armLowSeen=false;resetArmGesture();saveExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}sendJson(200,"{\"ok\":true,\"command\":\"ppm_config\",\"expansion\":"+expansionJson()+"}");return;
  }
  if(type=="servo_config"){
   int pin=server.arg("pin").toInt();if(pin!=-1&&(!auxPinAllowed(pin)||pin==gpsRxPin||pin==gpsTxPin||auxOutputActive(pin))){sendMessage(400,"Servo needs an unreserved D7-D10 pin or -1 to disable");return;}int old=servoPin;if(servoAttached){ledcWrite(old,servoDutyFromUs(1500));ledcDetach(old);servoAttached=false;}servoPin=pin;servoPulseUs=1500;
@@ -877,6 +885,7 @@ void expansionWriteCommand(const String& type){
 
 #include "FlightFeatures.h"
 #include "FlightRcTransport.h"
+#include "FlightSetup.h"
 
 // ============================================================
 // Status / telemetry / commands
@@ -905,6 +914,7 @@ void acquireApi(){
  String id=server.arg("clientId");id.trim();if(!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){sendMessage(409,"Verify the exact Device ID before taking control");return;}if(id.length()<4){sendMessage(400,"Invalid session ID");return;}
  if(wifiTestState==WT_RUNNING||wifiTestState==WT_SUCCESS||restartAt){sendMessage(423,"Kit is changing Wi-Fi");return;}expireLock();String role=server.arg("clientRole");role=role=="MOBILE"?"MOBILE":"WEB";
  // A foreground mobile connection can reserve a disarmed, idle AP kit. Never steal armed / bench outputs.
+ if(fcSetupActive&&controlOwner!=id){sendMessage(423,"FC setup owns this kit");return;}
  if(controlOwner.length()&&controlOwner!=id&&!(role=="MOBILE"&&controlRole!="MOBILE"&&!effectiveArmed()&&benchMode==BENCH_NONE)){sendMessage(423,controlRole=="MOBILE"?"Mobile app owns this kit. Laptop is VIEW ONLY.":"Another session controls this kit. VIEW ONLY.");return;}
  if(controlOwner!=id){invalidateRcUdp();webRcLastMs=0;forceDisarmRequested=false;}
  controlOwner=id;controlRole=role;mobileReserved=role=="MOBILE";controlExpiresAt=millis()+LOCK_TIMEOUT_MS;
@@ -912,7 +922,7 @@ void acquireApi(){
  sendJson(200,"{\"ok\":true,\"lockMine\":true,\"controlRole\":\""+role+"\",\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+",\"rcTimeoutMs\":"+String(WEB_RC_STALE_MS)+",\"rcCenterMs\":"+String(RcLinkPolicy::CENTER_AFTER_MS)+rcUdpGrantJson()+"}");
 }
 void lockPingApi(){if(!requireControl())return;controlExpiresAt=millis()+LOCK_TIMEOUT_MS;sendJson(200,"{\"ok\":true}");}
-void releaseApi(){String id=server.arg("clientId");if(server.hasArg("expectedDeviceId")&&!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){sendMessage(409,"Device ID mismatch: release belongs to another kit");return;}if(lockMine(id)){invalidateRcUdp();if(activeRcSource==RC_WEB_AP||activeRcSource==RC_WEB_STA)forceDisarmRequested=true;armLowSeen=false;webRcLastMs=0;controlOwner="";controlRole="";mobileReserved=false;rcPreference=0;controlExpiresAt=0;}sendJson(200,"{\"ok\":true}");}
+void releaseApi(){String id=server.arg("clientId");if(server.hasArg("expectedDeviceId")&&!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){sendMessage(409,"Device ID mismatch: release belongs to another kit");return;}if(lockMine(id)){invalidateRcUdp();if(activeRcSource==RC_WEB_AP||activeRcSource==RC_WEB_STA)forceDisarmRequested=true;armLowSeen=false;webRcLastMs=0;controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();}sendJson(200,"{\"ok\":true}");}
 int parseRcCsv(const String& csv,uint16_t out[10]){int n=0,start=0;while(n<10&&start<(int)csv.length()){int comma=csv.indexOf(',',start);String part=comma<0?csv.substring(start):csv.substring(start,comma);part.trim();if(!part.length()||part.length()>4)return -1;for(size_t k=0;k<part.length();k++)if(!isdigit((unsigned char)part[k]))return -1;long v=part.toInt();if(v<1000||v>2000)return -1;out[n++]=(uint16_t)v;if(comma<0)break;start=comma+1;if(start>=(int)csv.length())return -1;}if(n==10&&csv.indexOf(',',start)>=0)return -1;return n;}
 void commandApi(){
   String type=server.arg("type");
@@ -926,6 +936,8 @@ void commandApi(){
       if(!flightSettings.handover||fabsf(kalmanRoll)>45||fabsf(kalmanPitch)>45||!FlightMath::canHandover(old,incoming,fresh)){sendMessage(409,"Handover rejected: match sticks/throttle, ARM channel and fresh standby first");return;}}
     rcPreference=next;sendMessage(200,"RC preference accepted; flight task validates the transition");return;
   }
+  if(fcSetupCommand(type))return;
+  if(fcSetupActive&&type!="motor_stop"&&type!="pinmap_get"&&type!="receiver_read"&&type!="ppm_read"&&type!="bench_status"&&type!="flight_settings_get"&&type!="snapshot_get"&&type!="flight_settings_set"&&type!="ping"){sendMessage(423,"Finish FC setup before other hardware commands");return;}
   if(extendedFlightCommand(type))return;
   if(type=="ping"){sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"ping\",\"message\":\"PONG from "+jsonEscape(kitName)+" / "+deviceId+"\"}");return;}
   // Read-only commands intentionally work in View Only mode. They never alter motors, PID, calibration or RC state.
@@ -989,7 +1001,7 @@ void commandApi(){
     if(!FLIGHT_CONTROL_ENABLED||!escPwmReady){sendMessage(403,"ESC outputs unavailable on this board profile.");return;}if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"ESC calibration blocked while armed or another bench test is running.");return;}if(!propsRemovedConfirmed()){sendMessage(412,"ESC calibration requires confirm=PROPS_REMOVED.");return;}benchMode=BENCH_ESC_CAL;benchEscStage=0;benchStageUntilMs=millis()+3000;allMotorPulse(2000);sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"esc_calibrate\",\"message\":\"ESC calibration started: 3 s high, then 3 s low\"}");return;
   }
   if(type=="rc_frame"){
-    if(!ALLOW_WEB_RC||!FLIGHT_CONTROL_ENABLED){sendMessage(403,"Real web/AP RC is not enabled on this board profile.");return;}if(benchMode!=BENCH_NONE){sendMessage(423,"RC blocked during bench motor/ESC operation.");return;}
+    if(!ALLOW_WEB_RC||!FLIGHT_CONTROL_ENABLED){sendMessage(403,"Real web/AP RC is not enabled on this board profile.");return;}if(fcSetupActive||benchMode!=BENCH_NONE){sendMessage(423,"RC blocked during FC setup / bench operation.");return;}
     uint16_t next[10]={1500,1500,1000,1500,1000,1000,1000,1000,1500,1000};int count=parseRcCsv(server.arg("channels"),next);if(count<6){sendMessage(400,"rc_frame requires at least CH1..CH6");return;}
     bool safe=next[0]==1500&&next[1]==1500&&next[2]==1000&&next[3]==1500&&next[4]==1000;
     portENTER_CRITICAL(&stateMux);if(rcUdpToken&&!safe){portEXIT_CRITICAL(&stateMux);sendMessage(423,"Native UDP stream owns RC; stop it before HTTP control");return;}if(safe){rcUdpToken=0;rcUdpSequenceSeen=false;}for(int i=0;i<10;i++)webRcCh[i]=next[i];webRcLastMs=millis();webRcFrames++;portEXIT_CRITICAL(&stateMux);RcSourceKind chosen=chooseRcSource();sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"rc_frame\",\"activeSource\":\""+String(rcSourceName(chosen))+"\",\"deviceId\":\""+deviceId+"\",\"armed\":"+String(armed?"true":"false")+",\"flightReady\":"+String(flightReady?"true":"false")+",\"lastDisarmReason\":\""+jsonEscape(lastDisarmReason)+"\",\"message\":\"RC frame accepted\"}");return;
@@ -1150,10 +1162,10 @@ void setupRoutes(){
 }
 void startNormalServer(){
   setupMode=false;WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();startRcUdp();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.63 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.64 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
-  invalidateRcUdp();setupMode=true;if(!preferredApMode())setPreferredApMode(true);controlOwner="";controlRole="";mobileReserved=false;rcPreference=0;controlExpiresAt=0;if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());server.begin();startRcUdp();wifiTestState=WT_IDLE;
+  invalidateRcUdp();setupMode=true;if(!preferredApMode())setPreferredApMode(true);controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());server.begin();startRcUdp();wifiTestState=WT_IDLE;
   Serial.println("==============================");Serial.println("ZEBJUS FlightCore SETUP MODE");Serial.println("AP Status: "+String(ok?"STARTED":"FAILED"));Serial.println("SSID     : "+apName);Serial.println("Password : "+apPassword);Serial.println("Write the AP SSID and password on the kit case before closing it.");Serial.println("Setup    : http://192.168.4.1");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);
 }
 
@@ -1172,8 +1184,8 @@ void networkHealth(){
 void setup(){
   if(USER_LED_PIN>=0){pinMode(USER_LED_PIN,OUTPUT);digitalWrite(USER_LED_PIN,HIGH);}
   Serial.begin(115200);delay(300);WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);loadExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}
-  busMutex=xSemaphoreCreateRecursiveMutex();deviceId=getDeviceId();loadFlightSettings();loadKitName();updateApName();loadApPassword();loadSavedWiFi();loadPidSettings();loadCalibrationSettings();probeImuAtBoot();setupFlightCore();flightHeartbeatUs=micros();if(FLIGHT_CONTROL_ENABLED&&xTaskCreate(flightOutputSupervisor,"fc-output-guard",3072,nullptr,21,nullptr)!=pdPASS){flightReady=false;motorsSafe();Serial.println("Output supervisor unavailable: arming disabled");}setupExpansionPeripherals();setupRoutes();startFlightTask();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.63 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  busMutex=xSemaphoreCreateRecursiveMutex();deviceId=getDeviceId();loadFlightSettings();loadFcSetup();loadKitName();updateApName();loadApPassword();loadSavedWiFi();loadPidSettings();loadCalibrationSettings();probeImuAtBoot();setupFlightCore();flightHeartbeatUs=micros();if(FLIGHT_CONTROL_ENABLED&&xTaskCreate(flightOutputSupervisor,"fc-output-guard",3072,nullptr,21,nullptr)!=pdPASS){flightReady=false;motorsSafe();Serial.println("Output supervisor unavailable: arming disabled");}setupExpansionPeripherals();setupRoutes();startFlightTask();
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.64 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
   bool forceApOnce=consumeForceSetupFlag();if(forceApOnce||preferredApMode()){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }

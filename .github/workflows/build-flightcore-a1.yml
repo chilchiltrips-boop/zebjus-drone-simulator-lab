@@ -11,6 +11,7 @@ on:
       - 'tools/embed_ap_pages.py'
       - 'tools/flight_app_source.html'
       - 'control-sticks.js'
+      - 'fc-setup.js'
       - 'kit-console.js'
       - 'FlightCore_Firmware/src/**'
       - 'FlightCore_Firmware/catalog.json'
@@ -72,6 +73,7 @@ jobs:
           python3 -B tools/test_upload_integrity.py
           npm run test:flight-math
           npm run test:rc-link
+          npm run test:fc-setup
   build-flightcore:
     needs: verify-upload
     if: github.actor != 'github-actions[bot]' && github.event_name != 'pull_request'
@@ -122,6 +124,7 @@ jobs:
           g++ -std=c++17 tools/test_flight_math.cpp -o /tmp/aerion-flight-math
           /tmp/aerion-flight-math
           npm run test:rc-link
+          npm run test:fc-setup
       - name: Compile all supported FlightCore boards
         run: python3 -B tools/build_firmware.py --board all --skip-core-install
       - name: Clean obsolete release leftovers and refresh inventory
@@ -185,7 +188,7 @@ jobs:
             echo "Publish attempt ${attempt}/4"
             git fetch origin main
 
-            if ! git diff --quiet "${GITHUB_SHA}" origin/main --               FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino               'FlightCore_Firmware/*.h' tools/embed_ap_pages.py tools/ap_portal_source.html tools/flight_app_source.html tools/ap_io_source.html control-sticks.js kit-console.js               FlightCore_Firmware/src               FlightCore_Firmware/catalog.json               VERSION.txt release-integrity.json tools/release_integrity.py tools/project_files.py tools/test_upload_integrity.py tools/build_firmware.py tools/cleanup_repo.py tools/make_offline_manifest.py tools/validate_offline_bundle.py               .github/workflows/build-flightcore-a1.yml; then
+            if ! git diff --quiet "${GITHUB_SHA}" origin/main --               FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino               'FlightCore_Firmware/*.h' tools/embed_ap_pages.py tools/ap_portal_source.html tools/flight_app_source.html tools/ap_io_source.html control-sticks.js fc-setup.js kit-console.js               FlightCore_Firmware/src               FlightCore_Firmware/catalog.json               VERSION.txt release-integrity.json tools/release_integrity.py tools/project_files.py tools/test_upload_integrity.py tools/build_firmware.py tools/cleanup_repo.py tools/make_offline_manifest.py tools/validate_offline_bundle.py               .github/workflows/build-flightcore-a1.yml; then
               echo "A newer firmware source/build workflow is already on main."
               echo "This run will not publish stale binaries; the newer workflow run owns publication."
               exit 0

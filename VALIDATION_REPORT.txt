@@ -1,15 +1,14 @@
-ZEBJUS Aerion V18.3.63 validation — 2026-10-03
+ZEBJUS Aerion V18.3.64 validation
 
-PASS: A1 ESP32-C3 and A2 XIAO ESP32-C6 APP/FACTORY compiled with Arduino CLI 1.5.1 / Espressif core 3.3.12. Chip/version/header, OTA slot fit, factory/application equality and hashes verified.
-PASS: Android DEX/resources/manifest compiled with JDK 17 and Android SDK 36. v2/v3 signing, ZIP alignment and exact bundled asset equality verified.
-PASS: native LeaseGate policy — foreground fences, pending/accepted grant cancellation, wrong-session cleanup, reservations, ACK watchdog and local API/app-link policy.
-PASS: actual Java UDP loopback — 50 Hz latest-input publication, 160 ms UI-input gap, 210 ms ACK gap, scoped/replayed/unsent ACK rejection, stale-input fencing, safe stop, idle reservation start and missing ACK expiration.
-PASS: actual C++ RC policy/protocol — 300 ms centring, retained throttle/ARM, 1000 ms expiry, rollover, packet bounds and sequence ordering. Flight math/filter/hand-over/six-face tests pass.
-PASS: real Chromium, simulated native/controller — 440 ms loss retains throttle/ARM/session, hard loss restores fresh disarmed controls, STOP cancels recovery, wrong ID rejected, back-to-back resume/Wi-Fi-ready reservation, lifecycle/reload read-only.
-PASS: flight browser — touch, throttle, keyboard, STOP, refresh, ownership/identity, late grant, AP/STA, offline flight page and no Python runtime.
-PASS: WebApp UI — native targets, small movements/hold, keyboard, multitouch and responsive header at 1374/1024/760/390 px. Bright active Flight App/WebApp sticks visually inspected.
-PASS: network/mobile mirror — API-only AP, same-ID AP/STA reconnect, mobile/PPM view-only sticks, ownership release preserves PPM, armed settings guards, saved Wi-Fi, backup/restore identity and CSV columns.
-PASS: runtime reconnect/joystick/firmware updater/camera/Python output checks. Four dependency setup tests and eight upload-integrity tests.
-PASS: project/offline validators and release integrity (re-run after final package edits).
+PASS: exact shared / installed / APK assets; official APK manifest / DEX / v2-v3 signature / alignment.
+PASS: A1/A2 firmware on pinned Arduino CLI 1.5.1 and Arduino-ESP32 3.3.12; APP / FACTORY headers, chip profiles, dual OTA slots and catalog hashes.
+PASS: real extracted FC arming / bench / setup / PWM functions; neutral re-arm, yaw-left dwell, WEB CH5, motor mask / duration, ESC expiry and owner loss, stale PWM after STOP.
+PASS: actual setup wizard browser flow, calibration failure / retry, ESC HIGH to LOW, motor starting idle readback and all-motor rotation, PPM endpoint readback, arm modes, loss / restore, delayed begin STOP.
+PASS: floating blank / edge touch neutral, relative movement, release centre, crosshair / arrow alignment and cold settings grant without RC.
+PASS: existing control, flight, recovery, mobile view, network, responsive UI, expansion, flight math, RC-link / UDP protocol, setup and native Java lease / actual UDP loopback tests.
 
-BOUNDARY: no Android phone/emulator, real controller/receiver, USB/OTA flash or flight tested. Browser radio/API mocks and native loopback do not establish physical radio reliability or flight stability. No altitude hold/automatic landing implemented. Radio loss beyond the grace interval can still disarm and cause a fall. Follow SUPPORT/V18_3_63_UPDATE_AND_TEST.md for propeller-off/physical verification.
+APK SHA256: 35a409501428f856139c8be2f68adab0870086694af7f9e3c323c53474c83d84
+ZFC-A1: APP 1197072 bytes; FACTORY 4194304 bytes
+ZFC-A2: APP 1281840 bytes; FACTORY 4194304 bytes
+
+No physical Android phone, RF link, ESC / motor / IMU calibration or drone flight qualification was performed. Browser tests use simulated controller APIs. Motor starting points and ESC success tones require pilot confirmation.

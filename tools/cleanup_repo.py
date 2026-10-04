@@ -17,6 +17,7 @@ LEGACY_FILES = [
     'tools/ap_portal_source.html', 'tools/ap_io_source.html', 'tools/ap_fly_source.html', 'FlightCore_Firmware/AP_ASSETS.h',
     'android-app/dist/ZEBJUS_Aerion_V18_3_61_Android.apk',
     'android-app/dist/ZEBJUS_Aerion_V18_3_62_Android.apk',
+    'android-app/dist/ZEBJUS_Aerion_V18_3_63_Android.apk',
     'drone3d.js',
     'wiring2d.js',
     'learning-lab.js',

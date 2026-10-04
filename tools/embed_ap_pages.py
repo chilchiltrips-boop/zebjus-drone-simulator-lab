@@ -4,7 +4,7 @@ import sys,re
 root=Path(__file__).resolve().parents[1]
 source=root/'tools/flight_app_source.html'
 text=source.read_text()
-shared='<script>\n'+(root/'control-sticks.js').read_text()+'\n'+(root/'kit-console.js').read_text()+'\n</script>'
+shared='<script>\n'+(root/'control-sticks.js').read_text()+'\n'+(root/'fc-setup.js').read_text()+'\n'+(root/'kit-console.js').read_text()+'\n</script>'
 text=re.sub(r'<!-- AERION_SHARED_BEGIN -->.*?<!-- AERION_SHARED_END -->',lambda _: '<!-- AERION_SHARED_BEGIN -->\n'+shared+'\n<!-- AERION_SHARED_END -->',text,flags=re.S)
 if '--check' in sys.argv and text!=source.read_text():raise SystemExit('Regenerate shared Flight App scripts')
 if '--check' not in sys.argv:source.write_text(text)

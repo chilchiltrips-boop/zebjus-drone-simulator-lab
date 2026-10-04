@@ -379,7 +379,7 @@ for token in ['esp_timer_start_periodic(flightTimer,4000)','xTaskCreate(flightCo
     if token not in features: fail('V18.3.61 feature missing: '+token)
 for token in ['rc_source_set','flight_stop','MOBILE','configurationBusy','Matched RC handover','FlightMath::canHandover','rateFilterPrimed','if(saturated)']:
     if token not in ino: fail('V18.3.61 flight/ownership guard missing: '+token)
-for rel in ['control-sticks.js','kit-console.js','flight-diagnostics.js','tools/test_flight_math.cpp','tools/test_mobile_view_browser.js','SUPPORT/V18_3_63_UPDATE_AND_TEST.md','FlightCore_Firmware/RcLinkPolicy.h','FlightCore_Firmware/RcUdpProtocol.h','FlightCore_Firmware/FlightRcTransport.h','android-app/app/src/main/java/in/zebjus/aerion/NativeRcStream.java','tools/test_rc_link.cpp','tools/test_control_recovery_browser.js']:
+for rel in ['control-sticks.js','fc-setup.js','FlightCore_Firmware/FlightSetup.h','FlightCore_Firmware/FlightSetupPolicy.h','kit-console.js','flight-diagnostics.js','tools/test_flight_math.cpp','tools/test_mobile_view_browser.js','SUPPORT/V18_3_64_UPDATE_AND_TEST.md','FlightCore_Firmware/RcLinkPolicy.h','FlightCore_Firmware/RcUdpProtocol.h','FlightCore_Firmware/FlightRcTransport.h','android-app/app/src/main/java/in/zebjus/aerion/NativeRcStream.java','tools/test_rc_link.cpp','tools/test_control_recovery_browser.js']:
     if not (ROOT/rel).is_file(): fail('V18.3.61 release file missing: '+rel)
 if 'runFlightLoop();' in ino[ino.rfind('void loop(){'):]:fail('Flight task regressed into networking main loop')
 

@@ -6,7 +6,7 @@
 enum ImuKind : uint8_t { IMU_NONE=0, IMU_LSM6DS3=1, IMU_MPU6050=2 };
 enum FlightModeKind : uint8_t { FLIGHT_ANGLE=0, FLIGHT_RATE=1 };
 enum RcSourceKind : uint8_t { RC_NONE=0, RC_PPM=1, RC_WEB_STA=2, RC_WEB_AP=3 };
-enum BenchModeKind : uint8_t { BENCH_NONE=0, BENCH_MOTOR=1, BENCH_MOTOR_SEQUENCE=2, BENCH_ESC_CAL=3 };
+enum BenchModeKind : uint8_t { BENCH_NONE=0, BENCH_MOTOR=1, BENCH_MOTOR_SEQUENCE=2, BENCH_ESC_CAL=3,BENCH_ESC_MANUAL=4 };
 
 struct PidAxis{ float p=0,i=0,d=0; };
 struct FlightPidSettings{

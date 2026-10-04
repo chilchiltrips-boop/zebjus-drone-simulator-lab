@@ -21,7 +21,7 @@ void serviceBattery(){
 }
 void flightTimerTick(void*){if(flightTaskHandle)xTaskNotifyGive(flightTaskHandle);}
 void flightControlTask(void*){
- for(;;){ulTaskNotifyTake(pdTRUE,portMAX_DELAY);serviceBenchMode();runFlightLoop();flightHeartbeatUs=micros();}
+ for(;;){ulTaskNotifyTake(pdTRUE,portMAX_DELAY);serviceFcSetup();serviceBenchMode();runFlightLoop();flightHeartbeatUs=micros();}
 }
 void startFlightTask(){
  if(!FLIGHT_CONTROL_ENABLED)return;flightLoopTimerUs=micros();flightHeartbeatUs=micros();
