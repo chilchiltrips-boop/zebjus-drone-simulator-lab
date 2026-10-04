@@ -24,7 +24,8 @@
     "test:fc-setup": "g++ -std=c++17 tools/test_fc_setup.cpp -o /tmp/aerion-fc-setup && /tmp/aerion-fc-setup && python3 tools/test_fc_setup_runtime.py",
     "test:setup-browser": "node tools/test_fc_setup_browser.js",
     "test:floating": "node tools/test_floating_sticks_browser.js",
-    "test:training-core": "node tools/test_flight_training_core.js",
+    "test:training-core": "node tools/test_flight_training_core.js && node tools/test_training_input.js",
+    "test:training-browser": "node tools/test_training_browser.js",
     "test:learning-browser": "node tools/test_learning_lab_browser.js",
     "test:wix": "node tools/test_wix_embed_browser.js",
     "test:setup-session": "node tools/test_setup_session_browser.js"

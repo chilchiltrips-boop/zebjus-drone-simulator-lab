@@ -1,6 +1,6 @@
 {
   "version": "18.3.65",
-  "totalBytes": 114377259,
+  "totalBytes": 114413769,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -139,13 +139,28 @@
     },
     {
       "path": "flight-training-core.js",
-      "bytes": 10110,
-      "sha256": "507b4f76f351ff6ed4359065723f51ea50379b2bb361a977f8034c640b03db3b"
+      "bytes": 10341,
+      "sha256": "a61a78ce2ac5d92029c832c704e1b6468a23f388c36a8c4d38abf4425b42dc3b"
+    },
+    {
+      "path": "flight-training-input.js",
+      "bytes": 1914,
+      "sha256": "db1cef021f7c302584b3e90670e7b03745f27e141b2793869b3e5b775e6a7c02"
+    },
+    {
+      "path": "flight-training-scene.js",
+      "bytes": 29619,
+      "sha256": "4c561df04e88c7ab56ea0c2a931c5db8b8e7b31e31579f68dab3b049faba0a88"
+    },
+    {
+      "path": "flight-training.css",
+      "bytes": 7723,
+      "sha256": "62d4c60b62796dfb092248969f474be5e52bfe871a92d6d667e6899dc839db4b"
     },
     {
       "path": "flight-training.js",
-      "bytes": 27158,
-      "sha256": "8ff7aed36fbcf809165ad19a97e565288e6c0856feea6364413d2dbe82964009"
+      "bytes": 24036,
+      "sha256": "baac704bd60bcbd1638323a17ae0fb06fb0a20e242b534a166d54b49032881e1"
     },
     {
       "path": "frame_screw_m25.glb",
@@ -179,8 +194,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 79256,
-      "sha256": "3d3bf763b8aeeb8c5508f8cc7ddea328974738d4b84a150f91c88a27b0f36985"
+      "bytes": 79401,
+      "sha256": "e1b5641b35f658ca64b1fcd8a57a9c2c41f2ef68f397e64ed794a1640701b5ea"
     },
     {
       "path": "kit-console.js",

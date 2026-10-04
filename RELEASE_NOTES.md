@@ -1,5 +1,14 @@
 # ZEBJUS Aerion V18.3.65
 
+## Web update 4 — Flight Training
+
+- Corrected aircraft-relative forward/backward and lateral motion at all headings, nose/roll animation and grounded movement. Fixed-step 120 Hz simulation is independent of the 30/60 FPS graphics setting.
+- Added smooth keyboard, slider and circular dual-touch controls. Throttle changes gradually and holds on release; touching a joystick centre does not jump to 50%. Movement axes ease back to neutral.
+- Replaced the basic grid/cross model with a detailed carbon-frame quadcopter, battery, camera, motors, landing skids, curved propellers and throttle-driven rotor blur. Ground shadow, altitude projection and flight-phase cues clarify take-off, hover, descent and touchdown.
+- Added textured grassland, rolling hills, daylight sky/clouds, trees, rocks, access road, cars, hangar, wind turbines, racing arch, landing mats, route markings and lesson objects. Company advertisements use ZEBJUS branding on 3D objects and ground pads. Shared/instanced geometry and resource cleanup keep the scene compact and reusable offline.
+- Chase, FPV, Orbit and Overview views plus Find drone, heading and a north-up course map show where the aircraft is. Both transparent joystick controls remain usable in 320px/390px Wix views; drag the arena to orbit.
+- Added browser coverage for actual keyboard/touch movement, take-off/hover/soft landing, all camera modes, course geometry, repeated scene rebuilds, Wix sizes and canvas fallback. Existing guarded app/PPM input, setup recovery, Python page order and firmware behavior are preserved.
+
 ## Web update 3 — 5 October 2026 (India)
 
 - Anonymous background and manual kit scans no longer overwrite the connected browser's verified control ownership. Client-specific status and telemetry still revoke ownership when it actually changes.

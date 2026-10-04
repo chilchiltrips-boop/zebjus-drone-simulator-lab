@@ -14,8 +14,8 @@
     },
     {
       "path": ".github/workflows/verify-learning-lab.yml",
-      "bytes": 5876,
-      "sha256": "89fa24d7abb8c0303ba978b2d8d06ab58ee75ed96cfe7d86e8465701c968bbe3"
+      "bytes": 6084,
+      "sha256": "b2ac4e36cb461bd4df87ba0810c079fff91f70c4b597cbbb98d25e54ded4094a"
     },
     {
       "path": ".gitignore",
@@ -35,7 +35,7 @@
     {
       "path": "FILE_COUNT.txt",
       "bytes": 4,
-      "sha256": "d657346f4b1b586fc2219de041804d0a28946ab90d1f9175ee0769e2a19abf10"
+      "sha256": "d09aa8346d420f76dfd2a63d40d19e352d11668352401d5ce43e1e70c333f681"
     },
     {
       "path": "FILE_REPLACEMENT_POLICY.md",
@@ -154,13 +154,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 6093,
-      "sha256": "fac261e57804f7f49426a7d029315ef711b4c644f82346f6c9cede21007b5d73"
+      "bytes": 6503,
+      "sha256": "c79f8d598f128c8154760c583fa303d751f9a6296875e2f002bc514679838c8a"
     },
     {
       "path": "RELEASE_NOTES.md",
-      "bytes": 5834,
-      "sha256": "1f905a11de4fa91542b308f1efac7dde1ee6fdaf04fe6042ce03050c0f11ce1d"
+      "bytes": 7401,
+      "sha256": "452e0ce2d0daa88141812c1cd99f649139e89185682fa264e54d59b580be7384"
     },
     {
       "path": "RELEASE_NOTES_V18_3_23.md",
@@ -714,13 +714,28 @@
     },
     {
       "path": "flight-training-core.js",
-      "bytes": 10110,
-      "sha256": "507b4f76f351ff6ed4359065723f51ea50379b2bb361a977f8034c640b03db3b"
+      "bytes": 10341,
+      "sha256": "a61a78ce2ac5d92029c832c704e1b6468a23f388c36a8c4d38abf4425b42dc3b"
+    },
+    {
+      "path": "flight-training-input.js",
+      "bytes": 1914,
+      "sha256": "db1cef021f7c302584b3e90670e7b03745f27e141b2793869b3e5b775e6a7c02"
+    },
+    {
+      "path": "flight-training-scene.js",
+      "bytes": 29619,
+      "sha256": "4c561df04e88c7ab56ea0c2a931c5db8b8e7b31e31579f68dab3b049faba0a88"
+    },
+    {
+      "path": "flight-training.css",
+      "bytes": 7723,
+      "sha256": "62d4c60b62796dfb092248969f474be5e52bfe871a92d6d667e6899dc839db4b"
     },
     {
       "path": "flight-training.js",
-      "bytes": 27158,
-      "sha256": "8ff7aed36fbcf809165ad19a97e565288e6c0856feea6364413d2dbe82964009"
+      "bytes": 24036,
+      "sha256": "baac704bd60bcbd1638323a17ae0fb06fb0a20e242b534a166d54b49032881e1"
     },
     {
       "path": "frame_screw_m25.glb",
@@ -754,8 +769,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 79256,
-      "sha256": "3d3bf763b8aeeb8c5508f8cc7ddea328974738d4b84a150f91c88a27b0f36985"
+      "bytes": 79401,
+      "sha256": "e1b5641b35f658ca64b1fcd8a57a9c2c41f2ef68f397e64ed794a1640701b5ea"
     },
     {
       "path": "kit-console.js",
@@ -804,8 +819,8 @@
     },
     {
       "path": "offline-manifest.json",
-      "bytes": 41870,
-      "sha256": "8bb02662cb083ed0a841c255dab4b40e50015c4cbcf2e2dd65a08b78214dcbf5"
+      "bytes": 42343,
+      "sha256": "bf060ebaa22fd5a4c1ca5880048003c65ce5d994ffef463e8a168c29d16c5089"
     },
     {
       "path": "offline-support.js",
@@ -814,8 +829,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 2150,
-      "sha256": "63a5bb0ea6bcb1f88d3dd9d02682e83fc4ca42b4f4b82754d838b7cb1f037aec"
+      "bytes": 2255,
+      "sha256": "8563ddcc7544b9087cac3d1dff97394db9f6ffbefa7411ce2b1c0c126d93e5fb"
     },
     {
       "path": "prop_1045_ccw.glb",
@@ -1049,8 +1064,8 @@
     },
     {
       "path": "service-worker.js",
-      "bytes": 6565,
-      "sha256": "fa9253a632fae0e8c8fcebb9d7f10751dd9fe352aba4fdf85be0dab9582dbdbe"
+      "bytes": 6698,
+      "sha256": "1c20b70332d26ddd469089fde20b0b4e45705a2a8ff966123a2b6c6cd51008a7"
     },
     {
       "path": "start_offline.py",
@@ -1259,8 +1274,8 @@
     },
     {
       "path": "tools/test_flight_training_core.js",
-      "bytes": 3039,
-      "sha256": "c6a235cde6c4e88ca0467f1026c21812ba0811ec1ac0cec5f5f9c66786e2b7db"
+      "bytes": 4400,
+      "sha256": "264a3e36b269c69ead6f018b7ffe403b04c17b3c2a50b40bad451d6464960f33"
     },
     {
       "path": "tools/test_floating_sticks_browser.js",
@@ -1274,8 +1289,8 @@
     },
     {
       "path": "tools/test_learning_lab_browser.js",
-      "bytes": 8815,
-      "sha256": "9fb565921af62f62cfc5b2ab77bdfd2dc05ffe1d0545fbbd2945efd8950df8b4"
+      "bytes": 8920,
+      "sha256": "eeeca6084c24a2f667fba7efb82374ab85c25f0b7d97c80a9e21b73eb178e1fd"
     },
     {
       "path": "tools/test_mobile_view_browser.js",
@@ -1318,6 +1333,16 @@
       "sha256": "ef465399703711607568333cf9265dbf6a58a4fb4f09a6da89c2010e682ecf8e"
     },
     {
+      "path": "tools/test_training_browser.js",
+      "bytes": 9311,
+      "sha256": "895d070d06468d79f3bd5eeb20dd487d6927f7d56e0ac89c2bc2378de2e7d43f"
+    },
+    {
+      "path": "tools/test_training_input.js",
+      "bytes": 3185,
+      "sha256": "6fae7021f49edf8b138d98d9255f550b634115d28ccec5676a3f8f8be342d8bf"
+    },
+    {
       "path": "tools/test_upload_integrity.py",
       "bytes": 4335,
       "sha256": "8366766f2ad20ec9026e7469ae1cb73bc39df82fc4d766d54a3a277acbe049ce"
@@ -1334,8 +1359,8 @@
     },
     {
       "path": "tools/validate_project.py",
-      "bytes": 35416,
-      "sha256": "f4cb49f33027ea0c08fdb6378aab9e5a4f9b84236c171e14b3ffaccdce8c77b1"
+      "bytes": 35464,
+      "sha256": "5d06cfb28b706780ac67510895c146da708747a0b6f9e7900db31364fa57e6d6"
     },
     {
       "path": "tripod_reference.png",

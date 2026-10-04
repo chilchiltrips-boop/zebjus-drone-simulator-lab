@@ -78,7 +78,7 @@ for b in cat.get('boards',[]):
 # can treat .js as CommonJS and miss module-only grammar failures in this package.
 node=subprocess.run(['bash','-lc','command -v node'],capture_output=True,text=True)
 if node.returncode==0:
-    module_files={'app.js','glb-loader.js','three.module.min.js'}
+    module_files={'app.js','glb-loader.js','three.module.min.js','flight-training.js','flight-training-scene.js'}
     for p in sorted(ROOT.glob('*.js')):
         if p.name in module_files:
             r=subprocess.run(['node','--input-type=module','--check'],input=p.read_text(errors='replace'),capture_output=True,text=True)

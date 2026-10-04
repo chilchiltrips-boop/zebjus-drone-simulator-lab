@@ -28,12 +28,15 @@ jobs:
         env:
           ZEBJUS_LEARNING_SCREENSHOTS: ${{ runner.temp }}/learning-lab-screenshots
           ZEBJUS_WIX_SCREENSHOTS: ${{ runner.temp }}/wix-embed-screenshots
+          ZEBJUS_TRAINING_SCREENSHOTS: ${{ runner.temp }}/training-screenshots
         run: |
           npm run check
           npm run release:check
           npm run test:setup-browser
           npm run test:setup-session
           npm run test:learning-browser
+          npm run test:training-core
+          npm run test:training-browser
           npm run test:wix
           node android-app/tests/browser_transport_test.js
       - name: Retain learning workspace screenshots
@@ -45,6 +48,7 @@ jobs:
           path: |
             ${{ runner.temp }}/learning-lab-screenshots
             ${{ runner.temp }}/wix-embed-screenshots
+            ${{ runner.temp }}/training-screenshots
   verify-build:
     needs: learning-browser
     # Main has dedicated Android and firmware build workflows.

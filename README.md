@@ -1,6 +1,6 @@
 # ZEBJUS Aerion V18.3.65
 
-Web update 3 keeps **Python Lab fifth**: Assembly → Wiring → Setup Wizard →
+Web update 4 keeps **Python Lab fifth**: Assembly → Wiring → Setup Wizard →
 Hardware I/O → Python Lab. Embed the lab in Wix using `?embed=wix`; the compact
 layout follows the iframe viewport and provides **Open full lab** for camera,
 USB or local-kit features blocked by parent permissions. See [Wix setup and
@@ -19,7 +19,7 @@ Aerion combines drone assembly, Python Lab, simulation and local-kit control. Th
 
 Open the web lab's **Setup Wizard** page after Assembly Lab and 2D Wiring. Hardware I/O provides individual calibration, PID and connector tools. Firmware & Connect combines kit discovery and Upgrade / Upgrade & Erase. The Telemetry cockpit shows live instruments and leaves unsupported sensor readings unavailable. The compact APK gear contains Controls, Safety and Wi-Fi; full FC setup lives in the web lab.
 
-The lightweight **Flight Training** page has ten progressively unlocked 3D lessons, from take-off to obstacle avoidance, gust correction, LED communication and parcel rescue. Use local controls or the guarded app/PPM training bridge with propellers removed. Training inhibits real motor outputs and lease loss requires neutral sticks and manual re-arm. Read the [update and test steps](SUPPORT/V18_3_65_UPDATE_AND_TEST.md). A1 remains bridge-only; physical motor response and flight still require hardware verification.
+**Flight Training** has ten progressively unlocked lessons in a grass airfield with a detailed quadcopter, rolling terrain, racing arches, route markers, wind turbines, buildings and ZEBJUS advertisements. Smoothed keyboard/rate joystick throttle holds on release. Forward/backward and lateral movement follow the aircraft’s heading; its tilt and rotors match the flight. Chase, FPV, Orbit and Overview views, **Find drone**, a north-up course map and a ground projection keep position clear. Balanced 30 FPS, High 60 FPS and a lightweight canvas fallback support compact Wix views. Use local controls or the guarded app/PPM training bridge with propellers removed. Training inhibits real motor outputs and lease loss requires neutral sticks and manual re-arm. Read the [update and test steps](SUPPORT/V18_3_65_UPDATE_AND_TEST.md). A1 remains bridge-only; physical motor response and flight still require hardware verification.
 
 ## Start and connect
 
