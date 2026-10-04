@@ -1,7 +1,7 @@
 {
   "product": "ZEBJUS Aerion Flight",
-  "version": "18.3.64-android.1",
-  "versionCode": 1836401,
+  "version": "18.3.65-android.1",
+  "versionCode": 1836501,
   "package": "in.zebjus.aerion",
   "minSdk": 26,
   "targetSdk": 36,

@@ -1,5 +1,5 @@
 {
-  "version": "18.3.64-android.1",
+  "version": "18.3.65-android.1",
   "apk_sha256": "35a409501428f856139c8be2f68adab0870086694af7f9e3c323c53474c83d84",
   "checks": {
     "APK_DEX_manifest_signature_alignment_and_exact_assets": "passed official local build tools",

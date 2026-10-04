@@ -1,16 +1,21 @@
 {
   "schema": 1,
-  "version": "18.3.64",
+  "version": "18.3.65",
   "files": [
     {
       "path": ".github/workflows/build-aerion-android.yml",
       "bytes": 3921,
-      "sha256": "e2485cb5eba76e8252565f799282cc5e480872492067a3994e1ebf8ce06aa23c"
+      "sha256": "9a9295e136f0397a863e4bd4b29b05aafa1a6d01d53540aa83af50fdc755f352"
     },
     {
       "path": ".github/workflows/build-flightcore-a1.yml",
       "bytes": 11603,
       "sha256": "a8ddd44069bea95129828419605a5a3631262a765234bbacbf18d73320cfa72f"
+    },
+    {
+      "path": ".github/workflows/verify-learning-lab.yml",
+      "bytes": 4017,
+      "sha256": "726d1dd46cc88ec2b053d7beba4e6791003f0b696e732d6d331fc485e415b3ae"
     },
     {
       "path": ".gitignore",
@@ -20,7 +25,7 @@
     {
       "path": "00_READ_ME_FIRST.txt",
       "bytes": 757,
-      "sha256": "ba699f4ed3b8e566d337724621b1666898da56687b8409345cbf1aa449ce8b68"
+      "sha256": "db79930bf1ca141be172c210d1a2c6e6426b56266ee684aa516b55cce5be19d7"
     },
     {
       "path": "DEVICE_PROTOCOL_V18.md",
@@ -30,7 +35,7 @@
     {
       "path": "FILE_COUNT.txt",
       "bytes": 4,
-      "sha256": "864154b81b91ae782cd8fc7f265912aafa6c36078168f96951d452cab5d99dc7"
+      "sha256": "de4b966c1e4d66e3ced42c19ca8e9bf9ad6906911d2d9b25edc081185d05c4ca"
     },
     {
       "path": "FILE_REPLACEMENT_POLICY.md",
@@ -44,23 +49,28 @@
     },
     {
       "path": "FlightCore_Firmware/FlightFeatures.h",
-      "bytes": 12258,
-      "sha256": "42f689eec607c1cf51a8ff6b1d1f260ace34b4b65b2b8408d58106550114ba9f"
+      "bytes": 12400,
+      "sha256": "f04b2018d198fcc1bfb4a78721e3f0dcde47c77fe696da7343ad45338249ebdb"
     },
     {
       "path": "FlightCore_Firmware/FlightRcTransport.h",
-      "bytes": 2211,
-      "sha256": "002f8b69a72ba77ac38499e945395cfff602fc79d06ffdaf6958a61ffafb7188"
+      "bytes": 2265,
+      "sha256": "c79ae334ccea2a96b9c4cb7acb2c15dd99437d7bb4aa997ebcd1ce2701ebd270"
     },
     {
       "path": "FlightCore_Firmware/FlightSetup.h",
-      "bytes": 11233,
-      "sha256": "c071d222e9061857d1858156b703b9351c05031310d175bd0650cedf9c753be7"
+      "bytes": 11249,
+      "sha256": "4f6e1e705a1b73607b1ddcd28d6821662bcfb675e7b8975357d95942ce385a4d"
     },
     {
       "path": "FlightCore_Firmware/FlightSetupPolicy.h",
       "bytes": 1410,
       "sha256": "a7c81010d89d1c1bd8f092dd9e52daa4e9bb09b09517337f803fd7ba2c9c0074"
+    },
+    {
+      "path": "FlightCore_Firmware/FlightTraining.h",
+      "bytes": 3378,
+      "sha256": "54caacebd9020ad80c88575c683613d9d4b0c1929f404f46ff41191a5175733d"
     },
     {
       "path": "FlightCore_Firmware/RcLinkPolicy.h",
@@ -74,8 +84,8 @@
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino",
-      "bytes": 126204,
-      "sha256": "2832b9b1363c32390ee24e3b134cd01aea99f10d8f82c3df72e0ffd7303b8210"
+      "bytes": 127098,
+      "sha256": "0847a753470c45854d093220febb3d691414c9583792bc3dabcacfb87e69a8c1"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -105,17 +115,17 @@
     {
       "path": "FlightCore_Firmware/build-report.json",
       "bytes": 1323,
-      "sha256": "8c0ed07cd854c0954f85bbbe6c1160ca59a8271ed32da06f644d8e442b08aa09"
+      "sha256": "244b5e34e76e3c837561b7c4bf4ce1eeea639ebfc5a72f4cfb275771bb36ef67"
     },
     {
       "path": "FlightCore_Firmware/catalog.json",
       "bytes": 2793,
-      "sha256": "6b798c1f439cfba16a09526efc7d65238a3c3e7074eecf255a7f46780dbbc5bf"
+      "sha256": "4c53f8f0b890bda4001c52a888abb7d3c27f95db8806834d063b0315bff526e9"
     },
     {
       "path": "FlightCore_Firmware/latest.json",
       "bytes": 259,
-      "sha256": "59c745c2d16634b5001941303af27727984ea421d599a68861fc20442bc56efc"
+      "sha256": "544bd2cce360aa0f3892d9f2e9610a501d44c667494bfbf9c70982146930bf24"
     },
     {
       "path": "FlightCore_Firmware/src/DroneGPS.cpp",
@@ -144,8 +154,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 4836,
-      "sha256": "7586655964e88fbdb15292b61ab91f2cc5cc7250278acac6469d3b68eaa93d45"
+      "bytes": 5241,
+      "sha256": "85ffc70648159a417534b8220758332f005bdb77bd11fc3b263429d809c02ae2"
     },
     {
       "path": "RELEASE_NOTES.md",
@@ -373,6 +383,11 @@
       "sha256": "9b67ee8dcd44b155a0b7445f822403649c5518db2c0d845e16123183b1d6bd38"
     },
     {
+      "path": "SUPPORT/V18_3_65_UPDATE_AND_TEST.md",
+      "bytes": 5517,
+      "sha256": "bb85d5583882871edeeeff120c8511a5dc97ef4f4da82be07c9080b2e279dc63"
+    },
+    {
       "path": "SUPPORT/VERIFICATION_V18_3_59.json",
       "bytes": 2553,
       "sha256": "5f27f8b947856bd487c7c52954eaaa6bd8c816eaaf1dcc826eb915b647dfb077"
@@ -410,12 +425,12 @@
     {
       "path": "VALIDATION_REPORT.txt",
       "bytes": 1404,
-      "sha256": "cd83b5172bd5ad7e8cb894be17ec6ead8c08aea50af14f29afb7066a4281a284"
+      "sha256": "6acb54c60569472bf069f9ff5413b286349bef52cefc6385d13233379e0efccf"
     },
     {
       "path": "VERSION.txt",
       "bytes": 8,
-      "sha256": "97765bbba727bdb92c6fad98efea7a0615bf4c5e8fb3438e7579d9c5b5053cb6"
+      "sha256": "c79b3f44a372dc025e24c6905907a8d8addfd1f06f1884001cddaa02c1639d59"
     },
     {
       "path": "WIX_EMBED.txt",
@@ -445,12 +460,12 @@
     {
       "path": "android-app/VERIFICATION.json",
       "bytes": 1221,
-      "sha256": "b62fadbfd362ed99bc0e2eee1ac53d777c47d67a6c240535691524dde6046b00"
+      "sha256": "b61b5e917ff42fac027fb56f3ccfa25b01bb32c831eb0ab911b28e3d24cfa88e"
     },
     {
       "path": "android-app/app/build.gradle",
       "bytes": 715,
-      "sha256": "4f223ea187995101def9c4f55f208b1089428e3a9325f301fe227295cda44b3b"
+      "sha256": "3b7c4c819ca818e81ee172e5c06b33560eacfee0b5e965aa0165b09b63b7f060"
     },
     {
       "path": "android-app/app/src/main/AndroidManifest.xml",
@@ -464,8 +479,8 @@
     },
     {
       "path": "android-app/app/src/main/assets/flight/index.html",
-      "bytes": 102793,
-      "sha256": "9ed6b1ef14eabc1b0ede47631f9873bdd9edfcb8cf8e02e0b569ae5a684f5988"
+      "bytes": 65358,
+      "sha256": "17b1f37a166fc83a65a8dbbed6e055694b0bdfdd3390c84bfcecd56308222faf"
     },
     {
       "path": "android-app/app/src/main/java/in/zebjus/aerion/LaunchPolicy.java",
@@ -510,7 +525,7 @@
     {
       "path": "android-app/dist/APK_MANIFEST.txt",
       "bytes": 1666,
-      "sha256": "0484825aa6312973c705f00036e7b108736365283a3bb0f8b3655c2569fa6991"
+      "sha256": "d27f13f442e97ac83254d031cd5a43d17a7bebe58b981af574cd82b16ecd5511"
     },
     {
       "path": "android-app/dist/APK_SIGNATURE.txt",
@@ -520,7 +535,7 @@
     {
       "path": "android-app/dist/BUILD_REPORT.json",
       "bytes": 642,
-      "sha256": "6df8c95ace39792f9fbb790cb40b752912408fe47ce04aa0bdc6d9c728898107"
+      "sha256": "4d79485255833fbf793bd52b51c8aeacde8951ddd98100ed4650b3aa29d82a36"
     },
     {
       "path": "android-app/dist/ZEBJUS_Aerion_V18_3_64_Android.apk",
@@ -580,12 +595,12 @@
     {
       "path": "android-app/tools/build_apk.py",
       "bytes": 5483,
-      "sha256": "94afcc812b1938ec1e46f5aa38c4d71af2e20cf698ab341eaa2d98bf6f942dca"
+      "sha256": "f8c21140e6e9c5f7090759ddb0b2df66ffa2e8fab110f0c761207dcb9912bdd8"
     },
     {
       "path": "app.js",
-      "bytes": 318487,
-      "sha256": "5a2cf244262723d1ff5d498650573a58912121ac1325ab523d109b07bdcd058f"
+      "bytes": 318536,
+      "sha256": "7cd74dc26938069eed231c2703b6cc923de7c4e1cc52dd6bd3fca09cd2cd4384"
     },
     {
       "path": "battery_strap.glb",
@@ -629,8 +644,8 @@
     },
     {
       "path": "fc-setup.js",
-      "bytes": 23599,
-      "sha256": "4dfb8ca70aeb529a4a815918d368deb7a8cccce8d158ea353639537fe84540ed"
+      "bytes": 34808,
+      "sha256": "953b8c80cd0cfb0502955afb47d85197f09396868263019803f39cdaf5569995"
     },
     {
       "path": "fc_board_reference.png",
@@ -645,17 +660,17 @@
     {
       "path": "firmware-catalog.json",
       "bytes": 2793,
-      "sha256": "6b798c1f439cfba16a09526efc7d65238a3c3e7074eecf255a7f46780dbbc5bf"
+      "sha256": "4c53f8f0b890bda4001c52a888abb7d3c27f95db8806834d063b0315bff526e9"
     },
     {
       "path": "firmware-latest.json",
       "bytes": 268,
-      "sha256": "cf4453bf04aa1d2e732e3e65a78addae179f842e14f377c0d5d26a732455e59b"
+      "sha256": "593f2bdc142a4fee1f04371c88666c6643e52a726dd830f9a9f7cc3df3115c4d"
     },
     {
       "path": "firmware-updater.js",
-      "bytes": 28929,
-      "sha256": "e5d2982d735eaad6d7797fceefdce52ba1a7c6c2ccd0df9faaeed559069b6e33"
+      "bytes": 29640,
+      "sha256": "cd576881e3f3098d0c82bfa9ae239aa5c6b861bfc649849a14cc697b59c13b58"
     },
     {
       "path": "flight/app.webmanifest",
@@ -664,18 +679,28 @@
     },
     {
       "path": "flight/index.html",
-      "bytes": 102745,
-      "sha256": "61875cefcb9108f0b2ab2ee1b9b07441f9888b893a91dad7187f22a7edd05994"
+      "bytes": 65310,
+      "sha256": "72a67fc5909a2d7fec34b8b0e4a18f90924fb7b87fb9e1c9c06b6bf81ea11923"
     },
     {
       "path": "flight/service-worker.js",
       "bytes": 1172,
-      "sha256": "e5e2f8369934e23151a9cbbccb7b04f03af37a534a70e714354a517a346fb9a1"
+      "sha256": "ce4329e52bf78dff094e135f834c9d94b7f7d417c411df6c7ec4c178b255fb69"
     },
     {
       "path": "flight-diagnostics.js",
-      "bytes": 1210,
-      "sha256": "48481a36b6ee76634687dfdd5039a8367a516e89d298c51e4af54a2707e5c494"
+      "bytes": 1225,
+      "sha256": "12aa942866459ea6273bcf1809d1ab7256d52947cdbaa7bfd9b3935f88065f28"
+    },
+    {
+      "path": "flight-training-core.js",
+      "bytes": 10110,
+      "sha256": "507b4f76f351ff6ed4359065723f51ea50379b2bb361a977f8034c640b03db3b"
+    },
+    {
+      "path": "flight-training.js",
+      "bytes": 26860,
+      "sha256": "cc27dc917dc32e7b596cb432c21489fe9dd0fc559bb3f387fa1ef6339ac60447"
     },
     {
       "path": "frame_screw_m25.glb",
@@ -709,18 +734,28 @@
     },
     {
       "path": "index.html",
-      "bytes": 76755,
-      "sha256": "07cbf1331e3077305c217eaecf58f780123197f9b751fe41a7d7d188c5524c68"
+      "bytes": 79103,
+      "sha256": "40cc47584d6c6d16da2386400e83077cb1242bf3cd1daaa9668caafd35309c7f"
     },
     {
       "path": "kit-console.js",
-      "bytes": 23766,
-      "sha256": "89d4b9165bf8d5ce5b5198f0d09a885caa32407cb98cb780efaa212b946776d5"
+      "bytes": 23888,
+      "sha256": "f8ae668dc546baf90663cf68743f6f16caae0723a7afbb3c37fde5b9c230628d"
     },
     {
       "path": "kit-local.js",
       "bytes": 17662,
       "sha256": "368ceec1296ad8df894b30138751cfd1fd0e341c6db96f469ced71554c9289bf"
+    },
+    {
+      "path": "lab-workflow.css",
+      "bytes": 9880,
+      "sha256": "6025e1cd9a5d681bfded395a31ec87e4d8325f6ad0c1f454567d81086f38038c"
+    },
+    {
+      "path": "lab-workflow.js",
+      "bytes": 3231,
+      "sha256": "5ba0cc2d1bcc86ee9e5c72a84cf452df320760677caaee1fba7deb882ea86647"
     },
     {
       "path": "lipo_2200_3s.glb",
@@ -731,6 +766,11 @@
       "path": "manifest.webmanifest",
       "bytes": 579,
       "sha256": "9417793528727e86cdbd97c05376fd10e2349195c5a4ce6307bbc63c3c134094"
+    },
+    {
+      "path": "mobile-flight-console.js",
+      "bytes": 9140,
+      "sha256": "f80e3c8090bead819afe2c7cdc030ff9c4c402e847bfee9b25754ab2201e7520"
     },
     {
       "path": "monaco-worker.js",
@@ -744,8 +784,8 @@
     },
     {
       "path": "offline-manifest.json",
-      "bytes": 40499,
-      "sha256": "07954482c48257d437f1a4469078a2e299635c59e3b1343ba205b1ed0f60983c"
+      "bytes": 41426,
+      "sha256": "9d4acc338f98b77f82278fc08e98b456c1548a9358e57ca4a63487611e37a032"
     },
     {
       "path": "offline-support.js",
@@ -754,8 +794,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 1883,
-      "sha256": "84b2d53c5b995762503c127f9500a3d6e8492c0143b97d30c04fa355434a1878"
+      "bytes": 2024,
+      "sha256": "fc578d6bb9fab9397acc024f766a4f57457a41e89efce5b7edb684acb5a35ea5"
     },
     {
       "path": "prop_1045_ccw.glb",
@@ -979,8 +1019,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 74707,
-      "sha256": "73bbe43f9da6ccd0a8c145d3f0f1dc3ff711ee1a2bfc5acb63b541a4d0003ce5"
+      "bytes": 74776,
+      "sha256": "f02966fcac13ffeb2278a5508be97b44f4854cdbe274a010c5bdac1aefb61740"
     },
     {
       "path": "server.js",
@@ -990,7 +1030,7 @@
     {
       "path": "service-worker.js",
       "bytes": 6530,
-      "sha256": "52042968ce313613d1528389c78c2a16041765b18f2d7f97b60d8fafb0cc0a45"
+      "sha256": "b0afef5e73301224051d69f167704287bd3cdf58ec8a11a8b2c8ce8d6da3d882"
     },
     {
       "path": "start_offline.py",
@@ -1001,6 +1041,11 @@
       "path": "styles.css",
       "bytes": 173969,
       "sha256": "644f9db3f7a5bebf88ce0c0e492a5f98f2355b48bd2875264574f10def2a50bc"
+    },
+    {
+      "path": "telemetry-cockpit.js",
+      "bytes": 6958,
+      "sha256": "29ea73646b98b940a07eb1ea00d3044804f950c529bf0a607ae1e0bca95ac10d"
     },
     {
       "path": "three.module.min.js",
@@ -1099,13 +1144,13 @@
     },
     {
       "path": "tools/embed_ap_pages.py",
-      "bytes": 1315,
-      "sha256": "e5f897ea2ce020d0efbc7e461bebc7d5c0404d68bcb69758e80f75ffede273b6"
+      "bytes": 1287,
+      "sha256": "b29ca8a6a3b13cab80c6d4e7ac55397c9f07ac737f6d00796764a09f83260c4c"
     },
     {
       "path": "tools/flight_app_source.html",
-      "bytes": 102745,
-      "sha256": "61875cefcb9108f0b2ab2ee1b9b07441f9888b893a91dad7187f22a7edd05994"
+      "bytes": 65310,
+      "sha256": "72a67fc5909a2d7fec34b8b0e4a18f90924fb7b87fb9e1c9c06b6bf81ea11923"
     },
     {
       "path": "tools/make_offline_manifest.py",
@@ -1119,8 +1164,8 @@
     },
     {
       "path": "tools/project_files.py",
-      "bytes": 803,
-      "sha256": "a3a69a62b00d2332909daddb799f47bceedf8238cd4836f96a7a7c9fdcce590e"
+      "bytes": 813,
+      "sha256": "0b911cc56438918ccf4a8ae332cf88aaf9cfe581f917214f7abdbab255c82735"
     },
     {
       "path": "tools/release_integrity.py",
@@ -1164,13 +1209,13 @@
     },
     {
       "path": "tools/test_fc_setup_browser.js",
-      "bytes": 8400,
-      "sha256": "d0ab208b5fa96d9de11a87e79670645c8f3de0221851a04cd713a4f5e45aff00"
+      "bytes": 9272,
+      "sha256": "f9143fddd65a1c2c6f50ad8a9dbf07edd0d0dfa1d753003d1c48cb8230cef9d4"
     },
     {
       "path": "tools/test_fc_setup_runtime.py",
-      "bytes": 5010,
-      "sha256": "e74e0873ee66ee8999fa67fe5df314fef124d3c4a84472e90e54fb42da538a3f"
+      "bytes": 5757,
+      "sha256": "0eb5840fa23f4411f38dc8536ac40668acc7b9a868ad40b53a3a9e8d25a01c43"
     },
     {
       "path": "tools/test_firmware_setup.py",
@@ -1184,8 +1229,8 @@
     },
     {
       "path": "tools/test_flight_app_browser.js",
-      "bytes": 13280,
-      "sha256": "02032b593264c15777b9df6ebe0164b0fe141c715f4dfb1473e04452e6211b2e"
+      "bytes": 13338,
+      "sha256": "a4dffe95afaa7270b3b6a524952f80aa27029ec0a707b38931126dc64e5bd327"
     },
     {
       "path": "tools/test_flight_math.cpp",
@@ -1193,9 +1238,14 @@
       "sha256": "5777bf5ec3e6db1d07c4063329e7922c4eda5ff4d8dcc90d598d4cc68036c505"
     },
     {
+      "path": "tools/test_flight_training_core.js",
+      "bytes": 3039,
+      "sha256": "c6a235cde6c4e88ca0467f1026c21812ba0811ec1ac0cec5f5f9c66786e2b7db"
+    },
+    {
       "path": "tools/test_floating_sticks_browser.js",
-      "bytes": 6444,
-      "sha256": "f56caa44290066caaac5ca3f6756bf33b8c4536c775d0bc258908756458072f4"
+      "bytes": 6304,
+      "sha256": "6661d609fbb573a81d5b8b6d526450a23b9de9ea06ad029fa9751746691a6f50"
     },
     {
       "path": "tools/test_joystick_runtime.js",
@@ -1203,9 +1253,14 @@
       "sha256": "5b3e028d7870419542f6b812212bb56bd179d8e08eab1d024dd6da710687c810"
     },
     {
+      "path": "tools/test_learning_lab_browser.js",
+      "bytes": 6503,
+      "sha256": "5240ca3aa8511a06c5b6e1e5d17ac0648767ee9d943c4e3a38c1495a5e0b4448"
+    },
+    {
       "path": "tools/test_mobile_view_browser.js",
-      "bytes": 13830,
-      "sha256": "482922cac4781753de529627a405bfb9fcd1a8e7e959d293baafa49d982e3935"
+      "bytes": 12665,
+      "sha256": "c9b9f6896e7171e4b82d50d1fdd4daf7e49cfa6772c6f3827e661d7734abc1b7"
     },
     {
       "path": "tools/test_network_control_browser.js",
@@ -1229,8 +1284,8 @@
     },
     {
       "path": "tools/test_real_control_browser.js",
-      "bytes": 8247,
-      "sha256": "281b4605cfc57101569ac40f034c270e2b66cfa30b8f27ab6b2bce781ee46153"
+      "bytes": 8248,
+      "sha256": "830eb876291ac6d1f5b2aa438c6c3fe074f5e0c56b7e2f5466208e68b90be697"
     },
     {
       "path": "tools/test_reconnect_runtime.js",
@@ -1244,13 +1299,13 @@
     },
     {
       "path": "tools/validate_offline_bundle.py",
-      "bytes": 2446,
-      "sha256": "ea6bc01722c0cbc5ef1b5d169e1e0ea1e19bed559654548a625bb68d21457fd0"
+      "bytes": 2594,
+      "sha256": "0cadf0bb32c04f591fc37556e36a2cecc7b09947860daf75f948862b9ac50f53"
     },
     {
       "path": "tools/validate_project.py",
       "bytes": 35416,
-      "sha256": "db085cb6006ebb9eba4cc14a7da93137d72e88c5488c6aeea57b3a38829e8ce4"
+      "sha256": "f4cb49f33027ea0c08fdb6378aab9e5a4f9b84236c171e14b3ffaccdce8c77b1"
     },
     {
       "path": "tripod_reference.png",

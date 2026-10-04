@@ -1,6 +1,6 @@
 {
   "name": "zebjus-flightcore-drone-lab",
-  "version": "18.3.64",
+  "version": "18.3.65",
   "private": true,
   "description": "ZEBJUS Aerion \u2014 Build, Code, Fly with offline Python and drone simulation",
   "main": "server.js",
@@ -23,6 +23,8 @@
     "test:network": "node tools/test_network_control_browser.js",
     "test:fc-setup": "g++ -std=c++17 tools/test_fc_setup.cpp -o /tmp/aerion-fc-setup && /tmp/aerion-fc-setup && python3 tools/test_fc_setup_runtime.py",
     "test:setup-browser": "node tools/test_fc_setup_browser.js",
-    "test:floating": "node tools/test_floating_sticks_browser.js"
+    "test:floating": "node tools/test_floating_sticks_browser.js",
+    "test:training-core": "node tools/test_flight_training_core.js",
+    "test:learning-browser": "node tools/test_learning_lab_browser.js"
   }
 }

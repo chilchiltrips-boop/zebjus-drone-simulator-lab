@@ -1,4 +1,4 @@
-ZEBJUS Aerion V18.3.64 validation
+ZEBJUS Aerion V18.3.65 validation
 
 PASS: exact shared / installed / APK assets; official APK manifest / DEX / v2-v3 signature / alignment.
 PASS: A1/A2 firmware on pinned Arduino CLI 1.5.1 and Arduino-ESP32 3.3.12; APP / FACTORY headers, chip profiles, dual OTA slots and catalog hashes.

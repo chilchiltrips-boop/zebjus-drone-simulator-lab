@@ -32,7 +32,7 @@ async function wait(page,predicate,arg){await page.waitForFunction(predicate,arg
  });
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(url);await wait(page,()=>window.__zebjusAppLoaded&&window.zebjusSchool);
  // Use the real connection form, then reload from the saved physical identity.
- await page.click('.tab[data-tab="connect"]');await page.locator('#kitSearchInput').fill('zebjus_drone_1');await page.locator('#kitCachedIp').fill('192.168.4.1');await page.locator('#kitSearchBtn').evaluate(e=>e.click());
+ await page.click('.tab[data-tab="firmware"]');await page.locator('#kitSearchInput').fill('zebjus_drone_1');await page.locator('#kitCachedIp').fill('192.168.4.1');await page.locator('#kitSearchBtn').evaluate(e=>e.click());
  await wait(page,()=>window.zebjusSchool.isKitActive());await page.reload();await wait(page,()=>window.zebjusSchool?.isKitActive());
  assert.equal(await page.evaluate(()=>window.zebjusSchool.state.selectedDeviceId),ID);assert.equal(await page.evaluate(()=>window.zebjusSchool.state.txOn),false);assert.equal(await page.locator('#runPythonBtn').isDisabled(),false);
  // Software mode change / restart on the transport without resuming a program.

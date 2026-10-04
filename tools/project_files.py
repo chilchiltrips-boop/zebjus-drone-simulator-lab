@@ -12,7 +12,7 @@ def project_files(root):
         parts = path.relative_to(root).parts
         if any(part in TRANSIENT_DIRS for part in parts[:-1]):
             continue
-        if path.name == '.DS_Store' or path.name.startswith('._') or path.suffix == '.pyc':
+        if path.name in {'.DS_Store', '.git'} or path.name.startswith('._') or path.suffix == '.pyc':
             continue
         if parts[0] == 'android-app' and (parts[1:2] == ('build',) or parts[1:3] == ('app', 'build')):
             continue

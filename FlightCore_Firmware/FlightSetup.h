@@ -40,7 +40,7 @@ bool fcSetupCommand(const String& type){
  if(type=="setup_begin"){
   if(setupWasCancelled(session)||(setupSession==session&&!fcSetupActive)){sendMessage(409,"Setup session already cancelled; start a new session");return true;}
   if(fcSetupActive&&session!=setupSession){sendMessage(423,"Another setup session is active");return true;}
-  if(armed||benchMode!=BENCH_NONE||configurationBusy||firmwareUploadActive){sendMessage(423,"Disarm and stop outputs before setup");return true;}
+  if(trainingActive||armed||benchMode!=BENCH_NONE||configurationBusy||firmwareUploadActive){sendMessage(423,"Disarm and stop outputs before setup");return true;}
   if(server.arg("confirm")!="PROPS_REMOVED"){sendMessage(412,"Remove propellers before setup");return true;}
   if(setupSession.length()&&setupSession!=session)setupRememberCancelled(setupSession);setupSession=session;setupOwner=server.arg("clientId");setupCalibrationCancel=false;setupAfterNeutral=true;fcSetupExpires=millis()+5000;fcSetupActive=true;invalidateRcUdp();webRcLastMs=0;disarmFlight("FC setup");resetArmGesture();sendJson(200,fcSetupStatus());return true;
  }

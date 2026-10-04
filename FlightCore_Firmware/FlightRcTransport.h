@@ -25,7 +25,7 @@ void rcUdpTask(void*){
    if(rcUdpToken&&frame.token==rcUdpToken&&(int32_t)(controlExpiresAt-now)>0&&benchMode==BENCH_NONE&&!fcSetupActive&&!configurationBusy&&!firmwareUploadActive&&(!rcUdpSequenceSeen||RcUdpProtocol::newer(frame.sequence,rcUdpLastSequence))){
     for(int i=0;i<10;i++)webRcCh[i]=frame.channels[i];
     webRcLastMs=now;webRcFrames++;controlExpiresAt=now+LOCK_TIMEOUT_MS;
-    rcUdpLastSequence=frame.sequence;rcUdpSequenceSeen=true;accepted=true;actualArmed=armed;ready=flightReady;
+    rcUdpLastSequence=frame.sequence;rcUdpSequenceSeen=true;accepted=true;actualArmed=trainingActive?frame.channels[4]>1500:armed;ready=flightReady||trainingActive;
    }
    portEXIT_CRITICAL(&stateMux);
    if(accepted){uint8_t ack[RcUdpProtocol::ACK_BYTES];RcUdpProtocol::ack(ack,frame,actualArmed,ready);rcUdp.beginPacket(rcUdp.remoteIP(),rcUdp.remotePort());rcUdp.write(ack,sizeof(ack));rcUdp.endPacket();}

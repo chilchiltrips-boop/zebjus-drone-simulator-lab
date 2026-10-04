@@ -1,16 +1,18 @@
-# ZEBJUS Aerion V18.3.64
+# ZEBJUS Aerion V18.3.65
 
 Aerion combines drone assembly, Python Lab, simulation and local-kit control. The Android Flight App is a separate flight interface with floating sticks and no Python editor.
 
 ## Guided FC configuration
 
-Update the V18.3.64 APK/WebApp and matching firmware together, then open **Kit settings → FC Setup Wizard** with propellers removed. The A2 wizard covers Quad X/H, sensor progress, ESC status, motor starting / idle / rotation checks, PPM endpoints / mapping, yaw-left/right or switch ARM, receiver loss/restore and advanced PID. A1 remains bridge-only. See [update and test steps](SUPPORT/V18_3_64_UPDATE_AND_TEST.md). Motor starts and ESC tones require physical observation; setup completion is not a flight certification.
+Open the web lab's **Setup Wizard** page after Assembly Lab and 2D Wiring. Hardware I/O provides individual calibration, PID and connector tools. Firmware & Connect combines kit discovery and Upgrade / Upgrade & Erase. The Telemetry cockpit shows live instruments and leaves unsupported sensor readings unavailable. The compact APK gear contains Controls, Safety and Wi-Fi; full FC setup lives in the web lab.
+
+The lightweight **Flight Training** page has ten progressively unlocked 3D lessons, from take-off to obstacle avoidance, gust correction, LED communication and parcel rescue. Use local controls or the guarded app/PPM training bridge with propellers removed. Training inhibits real motor outputs and lease loss requires neutral sticks and manual re-arm. Read the [update and test steps](SUPPORT/V18_3_65_UPDATE_AND_TEST.md). A1 remains bridge-only; physical motor response and flight still require hardware verification.
 
 ## Start and connect
 
 Laptop: extract the complete project and open `Start_Offline.bat` (Windows), `Start_Offline.command` (Mac), or run `python3 start_offline.py`. Open **http://localhost:8787/**. Python 3 or Node.js must already be installed to launch the local server. Join the kit Wi-Fi; the open WebApp automatically discovers the AP API for observation.
 
-Android: install **android-app/dist/ZEBJUS_Aerion_V18_3_64_Android.apk**, open Aerion Flight → Connect drone → Connect kit Wi-Fi. Select the unique `ZEBJUS-FC-...` SSID for this Device ID. Password: **12345678**.
+Android: install **android-app/dist/ZEBJUS_Aerion_V18_3_65_Android.apk**, open Aerion Flight → Connect drone → Connect kit Wi-Fi. Select the unique `ZEBJUS-FC-...` SSID for this Device ID. Password: **12345678**.
 
 **AP is API only.** The controller no longer serves a browser Flight App, Wi-Fi setup or Hardware I/O page and has no captive redirect. `192.168.4.1` is the local API address. Open the APK or local/cached WebApp. Joining Wi-Fi alone does not launch desktop software or a closed phone app.
 
@@ -28,11 +30,11 @@ After hard loss, an explicitly enabled foreground APK/standalone Flight App can 
 
 ## Install and use the update
 
-**Install the new APK and flash matching V18.3.64 firmware.** Updating GitHub files alone does not update a phone or running kit. A1 is bridge-only. A2/Aerion F1 supports MPU6050 Rate/Angle; altitude hold/automatic landing are not implemented. Choose the matching controller profile before USB/OTA. APP and FACTORY images with stable names and verified hashes are in `FlightCore_Firmware/`.
+**Install the new APK and flash matching V18.3.65 firmware.** Updating GitHub files alone does not update a phone or running kit. A1 is bridge-only. A2/Aerion F1 supports MPU6050 Rate/Angle; altitude hold/automatic landing are not implemented. Choose the matching controller profile before USB/OTA. APP and FACTORY images with stable names and verified hashes are in `FlightCore_Firmware/`.
 
 Offline Python, OpenCV/NumPy, Matplotlib/pandas, editor and hand model/WASM remain bundled. Ordinary `while True:` and simple Drone calls work. Examples are hidden by default; settings enable them. Camera needs localhost/HTTPS and permission. Hardware I/O remains in the WebApp and Python companion.
 
-See [offline instructions](OFFLINE_START_HERE.md), [update/tests](SUPPORT/V18_3_64_UPDATE_AND_TEST.md) and [GitHub upload](GITHUB_UPLOAD_README.md).
+See [offline instructions](OFFLINE_START_HERE.md), [update/tests](SUPPORT/V18_3_65_UPDATE_AND_TEST.md) and [GitHub upload](GITHUB_UPLOAD_README.md).
 
 ```sh
 npm start
