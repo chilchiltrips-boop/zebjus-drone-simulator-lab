@@ -11,7 +11,7 @@ The V18.3.65 controller serves only the API at 192.168.4.1, with no browser/capt
 1. Extract the **whole ZIP**. Keep `vendor` beside `index.html`; do not copy only the top-level files.
 2. Windows: open `Start_Offline.bat`. Mac: open `Start_Offline.command`. Alternatively run `python3 start_offline.py` from Terminal, or run `start_offline.py` in PyCharm. Python 3 must already be installed. The launcher itself needs no pip packages. `npm start` also works with installed Node.js.
 3. Open **http://localhost:8787/**. Keep the launcher window running.
-4. Join the exact kit's AP Wi-Fi even if it says “No internet”. Kit Connect discovers `192.168.4.1`; verify its permanent Device ID and Take Control when using real hardware. Select Real kit in Python for LED/sensor/output code.
+4. Join the exact kit's AP Wi-Fi even if it says “No internet”. Firmware & Connect discovers `192.168.4.1`; verify its permanent Device ID and Take Control when using real hardware. Select Real kit in Python for LED/sensor/output code.
 5. Open Python Lab, type your code and press Run. Allow the laptop camera when requested.
 
 Python runs in the browser. No internet login, CDN fetch or per-run package installation is required for the included features. All runtimes and package wheels are in this ZIP. Browser OpenCV does not require desktop `pip install opencv-python`. `while True:`, simple `Drone` methods, `cv2.waitkey`/`cv2.waitKey`, Stop and Rerun retain their existing classroom behaviour.

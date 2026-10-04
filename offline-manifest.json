@@ -1,6 +1,6 @@
 {
   "version": "18.3.65",
-  "totalBytes": 114352665,
+  "totalBytes": 114353502,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -39,8 +39,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 318536,
-      "sha256": "7cd74dc26938069eed231c2703b6cc923de7c4e1cc52dd6bd3fca09cd2cd4384"
+      "bytes": 318557,
+      "sha256": "010028950a4f91e9f492b15383175d21a05787113c7726cf11c07e7fdc7e0ca7"
     },
     {
       "path": "battery_strap.glb",
@@ -120,7 +120,7 @@
     {
       "path": "flight/index.html",
       "bytes": 65310,
-      "sha256": "72a67fc5909a2d7fec34b8b0e4a18f90924fb7b87fb9e1c9c06b6bf81ea11923"
+      "sha256": "99d2add8c98681a4cc4c109c7efa3adf73d0ca01ada2595263b49980dc0e74af"
     },
     {
       "path": "flight/service-worker.js",
@@ -139,8 +139,8 @@
     },
     {
       "path": "flight-training.js",
-      "bytes": 26860,
-      "sha256": "cc27dc917dc32e7b596cb432c21489fe9dd0fc559bb3f387fa1ef6339ac60447"
+      "bytes": 27107,
+      "sha256": "148c09c7ebaa7d20cd7d01535ac58fb7a0dd2d4f9fe6504107a11ce1e95715a8"
     },
     {
       "path": "frame_screw_m25.glb",
@@ -159,8 +159,8 @@
     },
     {
       "path": "hardware-io.js",
-      "bytes": 11190,
-      "sha256": "9ded729b0233224eede1b0ecc96e17a422e6adaceec1a348afb801b9482ff033"
+      "bytes": 11197,
+      "sha256": "b004382ffca11e247a0c6a4fd156b2b8df79495416bde5f16df59e2981ea5fd0"
     },
     {
       "path": "icon-192.png",
@@ -174,8 +174,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 79103,
-      "sha256": "40cc47584d6c6d16da2386400e83077cb1242bf3cd1daaa9668caafd35309c7f"
+      "bytes": 79120,
+      "sha256": "d9086247d64858af3264cd2c0d938d7e812a19ad23e01a011d835130ed1990a5"
     },
     {
       "path": "kit-console.js",
@@ -189,8 +189,8 @@
     },
     {
       "path": "lab-workflow.css",
-      "bytes": 9880,
-      "sha256": "6025e1cd9a5d681bfded395a31ec87e4d8325f6ad0c1f454567d81086f38038c"
+      "bytes": 10404,
+      "sha256": "f88a581daae0b172ebf339fd862566d90d1a8f23fd740d2d3143d5aa5102aac0"
     },
     {
       "path": "lab-workflow.js",
@@ -359,8 +359,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 74776,
-      "sha256": "f02966fcac13ffeb2278a5508be97b44f4854cdbe274a010c5bdac1aefb61740"
+      "bytes": 74797,
+      "sha256": "f29b2f6257d6da01fa17a8eb4b0c27a34fb259599d3ffa225b73e7ec62040e75"
     },
     {
       "path": "server.js",

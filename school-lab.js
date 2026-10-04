@@ -23,9 +23,9 @@ function canControl(){return !!(selectedConnected()&&ownsLock())}
 function realRcCapable(){const d=selected();return d?.webRc===true||d?.benchRc===true}
 function realKitAvailability(){
  const d=selected();
- if(!d)return{ok:false,text:'Select your kit in Kit Connect. The real target stays available here.'};
+ if(!d)return{ok:false,text:'Select your kit in Firmware & Connect. The real target stays available here.'};
  if(!selectedConnected())return{ok:false,text:`${d.deviceName}: connect and verify this Device ID before control.`};
- if(!realRcCapable())return{ok:false,text:`${d.deviceName}: this firmware/board profile reports Web RC disabled. Check the A2 FlightCore firmware in Kit Connect.`};
+ if(!realRcCapable())return{ok:false,text:`${d.deviceName}: this firmware/board profile reports Web RC disabled. Check the A2 FlightCore firmware in Firmware & Connect.`};
  if(d.flightReady!==true)return{ok:false,text:`${d.deviceName}: FlightCore is not ready. Check MPU6050 and calibration before control.`};
  if(!ownsLock())return{ok:false,text:d.locked?`${d.deviceName}: another controller owns this kit. View only.`:`${d.deviceName}: Take Control to enable the real transmitter.`};
  return{ok:true,text:`${d.deviceName} • ${d.deviceId} • verified • control active.`};
@@ -84,7 +84,7 @@ function targetUi(){
  const target=$('#webJoyTarget')?.value||'sim',tb=$('#joyTargetBadge');if(tb){tb.textContent=mobile?'MOBILE · VIEW ONLY':target==='sim'?'SIMULATOR':linkState.ok?'REAL + SIM MIRROR':'REAL • WAITING';tb.className='target-mode-badge '+(target==='sim'?'sim':'real')}
  const tn=$('#joyTargetNote');if(tn)tn.textContent=mobile?'Received mobile commands are mirrored here. This laptop cannot transmit or ARM.':target==='device'&&!linkState.ok?linkState.text:!st.txOn?'Transmitter is OFF. Outputs are held safe.':target==='sim'?'Simulator transmitter active. No real kit commands are sent.':'The same joystick frame drives Tripod Simulator and the selected FlightCore.';
  setText('joyTargetSummary',target==='sim'?'SIMULATOR':linkState.ok?'REAL KIT + SIM':'REAL KIT • WAITING');setText('joyTargetHelp',linkState.text);
- const connectBtn=$('#joyConnectKitBtn');if(connectBtn){connectBtn.hidden=linkState.ok;connectBtn.textContent=!dev?'Open Kit Connect':!selectedConnected()?'Connect selected kit':!realRcCapable()||dev.flightReady!==true?'Inspect kit / firmware':dev.locked?'Kit in use • View only':'Take Control';connectBtn.disabled=!!(selectedConnected()&&dev.locked&&!dev.lockMine)}
+ const connectBtn=$('#joyConnectKitBtn');if(connectBtn){connectBtn.hidden=linkState.ok;connectBtn.textContent=!dev?'Open Firmware & Connect':!selectedConnected()?'Connect selected kit':!realRcCapable()||dev.flightReady!==true?'Inspect kit / firmware':dev.locked?'Kit in use • View only':'Take Control';connectBtn.disabled=!!(selectedConnected()&&dev.locked&&!dev.lockMine)}
  const link=$('#webTxLedLink'),linkText=$('#webTxLinkText');if(link){const on=target==='sim'||selectedConnected();link.className='tx-led '+(on?'on':'warn')}if(linkText)linkText.textContent=target==='sim'?'SIM':(selected()?.online?'KIT+SIM':'OFFLINE');
 }
 function normalizeHealth(v,fallback='NOT_FOUND'){

@@ -9,7 +9,34 @@ concurrency:
   group: learning-lab-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  learning-browser:
+    name: Verify learning workspace in the browser
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Verify navigation, tools, live training bridge and responsive views
+        env:
+          ZEBJUS_LEARNING_SCREENSHOTS: ${{ runner.temp }}/learning-lab-screenshots
+        run: npm run test:learning-browser
+      - name: Retain learning workspace screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aerion-Learning-Lab-UI-V18.3.65
+          if-no-files-found: warn
+          path: ${{ runner.temp }}/learning-lab-screenshots
   verify-build:
+    needs: learning-browser
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -68,7 +95,7 @@ jobs:
         run: |
           mkdir -p "$ZEBJUS_LEARNING_SCREENSHOTS"
           aerion_browser_failures=0
-          for aerion_test in setup-browser floating learning-browser flight real-browser mobile-view recovery network ui; do
+          for aerion_test in setup-browser floating flight real-browser mobile-view recovery network ui; do
             echo "::group::Browser flow: $aerion_test"
             if ! npm run "test:$aerion_test"; then
               aerion_browser_failures=$((aerion_browser_failures + 1))
