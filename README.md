@@ -44,4 +44,4 @@ npm run release:check
 
 After intentional changes, regenerate shared app copies, rebuild changed firmware/APK, and run `npm run release:seal`. Upload all batches to one staging branch and merge the completed, checked release once. Keep the final-batch integrity scripts and manifest.
 
-Builds and automated checks are local. No real phone/emulator, physical kit, USB/OTA flash or loaded 250 Hz measurement was performed.
+Builds and automated checks run in GitHub Actions and host test environments. No real phone/emulator, physical kit, USB/OTA flash or loaded 250 Hz measurement was performed.

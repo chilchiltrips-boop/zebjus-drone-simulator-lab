@@ -39,6 +39,10 @@ jobs:
           rm -f android-app/dist/ZEBJUS_Aerion_V18_3_64_Android.apk
       - name: Seal complete release inventory
         run: npm run release:seal
+      - name: Install browser verification dependencies
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
       - name: Run source, physics, control, setup and packaging checks
         run: |
           npm run check
@@ -56,10 +60,6 @@ jobs:
           javac -d /tmp/aerion-java android-app/app/src/main/java/in/zebjus/aerion/{LeaseGate,LocalPolicy,LaunchPolicy,NativeRcStream}.java android-app/tests/{LeaseGateTest,NativeRcStreamTest}.java
           java -cp /tmp/aerion-java in.zebjus.aerion.LeaseGateTest
           java -cp /tmp/aerion-java in.zebjus.aerion.NativeRcStreamTest
-      - name: Install browser verification dependencies
-        run: |
-          npm install --no-save --package-lock=false playwright
-          npx playwright install --with-deps chromium
       - name: Run complete browser flows
         env:
           ZEBJUS_LEARNING_SCREENSHOTS: ${{ runner.temp }}/learning-lab-screenshots

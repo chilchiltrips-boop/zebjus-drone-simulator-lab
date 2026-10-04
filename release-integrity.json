@@ -15,7 +15,7 @@
     {
       "path": ".github/workflows/verify-learning-lab.yml",
       "bytes": 4388,
-      "sha256": "879fea9ab061e32f82718eef956f049dc7c460a276e5ab1add64be3931e2a370"
+      "sha256": "4ba7d0066e868dbbc8c1a5523920712d744352fe2ef8b4a8a7745e12fc5de7f9"
     },
     {
       "path": ".gitignore",
@@ -154,8 +154,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 5241,
-      "sha256": "85ffc70648159a417534b8220758332f005bdb77bd11fc3b263429d809c02ae2"
+      "bytes": 5280,
+      "sha256": "a38dd360bd97db93853232a2be813632c6efd96193490d3357920e73f266d294"
     },
     {
       "path": "RELEASE_NOTES.md",
@@ -449,8 +449,8 @@
     },
     {
       "path": "android-app/README.md",
-      "bytes": 10318,
-      "sha256": "13da74ba5e019e71f5b351d51216ef22672aac2e40f31a2f8dce089b9c83190a"
+      "bytes": 10348,
+      "sha256": "818dfd9edbaace7f4e9a8672d410386309654a0095015e10706adfd1072c09bc"
     },
     {
       "path": "android-app/THIRD_PARTY_NOTICES.md",

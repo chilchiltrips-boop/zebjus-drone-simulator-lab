@@ -39,7 +39,7 @@ The APK does not flash firmware or add these APIs to an older controller. The Te
 
 The APK was compiled to DEX with the official Android SDK 36 tools, aligned, and verified with APK Signature Scheme v2/v3. Bundled UI/transport bytes were compared with source. Native Java tests cover session ownership, lifecycle fencing, late/cancelled grants, old replies, the ACK watchdog and local-address policy. The actual bundled interface and transport adapter were exercised in Chromium with a simulated native bridge and controller API.
 
-**No Android phone, Android emulator or physical drone was used for these checks.** Native Wi-Fi and WebView behavior still need an on-device test. Reports are in `dist/BUILD_REPORT.json` and `VERIFICATION.json`. The delivered APK is non-debuggable but development-signed; it is a test build, not a published Play Store release.
+**No Android phone, Android emulator or physical drone was used for these checks.** Native Wi-Fi and WebView behavior still need an on-device test. Reports are in `dist/BUILD_REPORT.json`, `dist/APK_MANIFEST.txt` and `dist/APK_SIGNATURE.txt`. The delivered APK is non-debuggable but development-signed; it is a test build, not a published Play Store release.
 
 ## Android Studio / Gradle build
 
