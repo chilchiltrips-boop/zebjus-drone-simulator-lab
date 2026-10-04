@@ -14,8 +14,8 @@
     },
     {
       "path": ".github/workflows/verify-learning-lab.yml",
-      "bytes": 5336,
-      "sha256": "d451cdc8685658ded4f2fd54004dd55e181a431ddb23574c677601460049dc57"
+      "bytes": 5561,
+      "sha256": "7e54d9b8c31ac367f311763c922c5f9974a89501712857dbc0206f71420dd567"
     },
     {
       "path": ".gitignore",
@@ -749,8 +749,8 @@
     },
     {
       "path": "lab-workflow.css",
-      "bytes": 10404,
-      "sha256": "f88a581daae0b172ebf339fd862566d90d1a8f23fd740d2d3143d5aa5102aac0"
+      "bytes": 10475,
+      "sha256": "ed5865e9f880532907dbae0e217697733c5ede2a3908d3f2e6ab3844e3b95591"
     },
     {
       "path": "lab-workflow.js",
@@ -785,7 +785,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 41427,
-      "sha256": "98959428c9724c46e97fe0196f1fe4704968811438087c35c28de765b066f119"
+      "sha256": "91fb7edc6574297945a1e3b47824f9d3883761b63a575ca47ce457393b94cb10"
     },
     {
       "path": "offline-support.js",
@@ -1044,8 +1044,8 @@
     },
     {
       "path": "telemetry-cockpit.js",
-      "bytes": 7564,
-      "sha256": "9df6c08f45bf2b7da328acc6547f8f341d467d9c76798f75d6a5dd7f950ad59e"
+      "bytes": 8039,
+      "sha256": "efaaae407e29b141b10028dc1d43e50c515c66eb3d65669bf93fa88a718e6437"
     },
     {
       "path": "three.module.min.js",
@@ -1254,8 +1254,8 @@
     },
     {
       "path": "tools/test_learning_lab_browser.js",
-      "bytes": 8071,
-      "sha256": "87d7b0eb621d677e3e09b7a28e86fcb4f9dbdfde63059a16fe538c456e3a2865"
+      "bytes": 8815,
+      "sha256": "df423b78cf85268f83b5d6550362bca872fa7c1f6ea58b91c10038ea79c8dafb"
     },
     {
       "path": "tools/test_mobile_view_browser.js",

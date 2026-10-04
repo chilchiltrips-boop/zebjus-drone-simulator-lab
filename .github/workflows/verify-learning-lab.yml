@@ -2,7 +2,7 @@ name: Verify and build Learning Lab V18.3.65
 on:
   workflow_dispatch:
   push:
-    branches: ['release/v18.3.65']
+    branches: ['release/v18.3.65', 'release/v18.3.65-ui']
 permissions:
   contents: write
 concurrency:
@@ -27,7 +27,10 @@ jobs:
       - name: Verify navigation, tools, live training bridge and responsive views
         env:
           ZEBJUS_LEARNING_SCREENSHOTS: ${{ runner.temp }}/learning-lab-screenshots
-        run: npm run test:learning-browser
+        run: |
+          npm run check
+          npm run release:check
+          npm run test:learning-browser
       - name: Retain learning workspace screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -37,6 +40,8 @@ jobs:
           path: ${{ runner.temp }}/learning-lab-screenshots
   verify-build:
     needs: learning-browser
+    # The UI branch reuses the already verified firmware and Android packages.
+    if: github.ref != 'refs/heads/release/v18.3.65-ui'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
