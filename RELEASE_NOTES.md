@@ -1,5 +1,15 @@
 # ZEBJUS Aerion V18.3.65
 
+## Web update 2 / Android update 2 — 4 October 2026
+
+Python Lab is the fifth navigation page. Compact Wix embedding adapts the
+header, tabs, 3D benches and Python editor to the iframe viewport. A direct
+Open full lab link preserves the selected page for features restricted by
+parent permissions. WIX_EMBED.html and WIX_EMBED.txt provide the HTTPS
+embed code and Wix sizing/permission instructions. Active brand links use
+www.zebjus.in. APK 18.3.65-android.2 uses versionCode 1836502 and the same
+development certificate; controller firmware remains 18.3.65.
+
 - Added a dedicated **Setup Wizard** after Assembly Lab and 2D Wiring: verified board selection, Quad X/H, mounting/limits, live gyro/level progress, ESC, measured motor idle, rotation, App/PPM receiver calibration, arm/failsafe and PID readback, followed by a saved completion record.
 - Hardware I/O now starts with 15 tool buttons. Each opens its own controls; the former Calibration/PID pages and advanced kit settings are available here. Individual guided tools share the setup lease and STOP guards.
 - Firmware & Connect combines kit discovery/connection and flashing. Upgrade supports USB or Wi-Fi OTA; Upgrade & Erase requires USB and the matching complete factory image.

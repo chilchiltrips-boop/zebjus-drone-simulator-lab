@@ -1,4 +1,10 @@
-# Aerion Flight Android — 18.3.65-android.1
+# Aerion Flight Android — 18.3.65-android.2
+
+Rebuilt with versionCode 1836502 and the same development certificate. This
+update accompanies the web lab's fifth-position Python Lab and compact Wix
+embed layout. The Android interface retains Controls, Safety and Wi-Fi;
+advanced setup and Python continue in the web lab. Controller firmware stays
+at 18.3.65.
 
 An installable Android development app containing the Aerion Flight joystick screen. The interface is bundled with the APK and opens without internet, including on its first launch. It has no Python editor, camera stream or external JavaScript runtime.
 

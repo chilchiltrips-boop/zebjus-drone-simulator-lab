@@ -1,5 +1,7 @@
 (function(){
 'use strict';
+function confirmInLab(message){return window.AerionDialogs?.confirm(message)??Promise.resolve(confirm(message))}
+
 window.__zebjusSchoolParsed=true;
 window.__zebjusSchoolReady=false;
 
@@ -123,7 +125,7 @@ async function toggleNetworkMode(){
   if(!String(d.mode||'').toUpperCase().includes('AP')){await switchToAp();return}
   const saved=await client.savedWifi(),profiles=saved.profiles||[],profile=profiles.find(n=>n.preferred)||profiles.find(n=>n.current)||(profiles.length===1?profiles[0]:null);
   if(!profile){networkNotice('Choose a saved Wi-Fi network in Settings, or save a new Wi-Fi profile in Settings.');api()?.setActiveTab?.('settings');return}
-  if(!confirm(`Switch this kit to saved Wi-Fi “${profile.ssid}”? The AP connection will close.`))return;
+  if(!await confirmInLab(`Switch this kit to saved Wi-Fi “${profile.ssid}”? The AP connection will close.`))return;
   await client.useWifi(profile.ssid);networkNotice(`Kit restarting in STA mode. Connect this computer to ${profile.ssid}, then reconnect the kit.`);disconnectKit(false);
  }catch(e){networkNotice('Wi-Fi mode switch failed: '+e.message)}finally{networkSwitchBusy=false;networkToggleUi()}
 }
@@ -445,7 +447,7 @@ async function saveWifi(){if(!canControl())return setText('wifiMessage','Take Co
 async function refreshSavedWifi(){const sel=$('#savedWifiSelect');if(!sel)return;if(!client?.connected){sel.innerHTML='<option value="">Connect kit first</option>';return}try{const r=await client.savedWifi();sel.innerHTML='';(r.profiles||[]).forEach(n=>{const o=document.createElement('option');o.value=n.ssid;const f=[n.current?'current':'',n.preferred?'preferred':''].filter(Boolean).join(', ');o.textContent=n.ssid+(f?` — ${f}`:'')+(n.passwordSaved?' 🔒':'');sel.appendChild(o)});if(!sel.options.length)sel.innerHTML='<option value="">No saved networks</option>'}catch(e){sel.innerHTML='<option value="">Could not read saved networks</option>';setText('wifiMessage','Saved Wi-Fi read failed: '+e.message)}}
 async function useSavedWifi(){if(!canControl())return setText('wifiMessage','Take Control first.');const ssid=$('#savedWifiSelect')?.value||'';if(!ssid)return setText('wifiMessage','Select a saved network first.');try{const r=await client.useWifi(ssid);setText('wifiMessage',r.message||`Switching to ${ssid}.`);disconnectKit(false)}catch(e){setText('wifiMessage','Could not switch Wi-Fi: '+e.message)}}
 async function forgetSavedWifi(){if(!canControl())return setText('wifiMessage','Take Control first.');const ssid=$('#savedWifiSelect')?.value||'';if(!ssid)return setText('wifiMessage','Select a saved network first.');try{const r=await client.forgetWifi(ssid);setText('wifiMessage',r.message||`Forgot ${ssid}.`);await refreshSavedWifi()}catch(e){setText('wifiMessage','Could not forget Wi-Fi: '+e.message)}}
-async function resetWifi(){if(!canControl())return setText('wifiMessage','Take Control first.');if(!confirm('Forget all saved Wi-Fi networks on this kit?'))return;try{const r=await client.resetWifi();setText('wifiMessage',r.message||'Saved Wi-Fi cleared; kit restarting in setup mode.');disconnectKit(false)}catch(e){setText('wifiMessage','Wi-Fi reset failed: '+e.message)}}
+async function resetWifi(){if(!canControl())return setText('wifiMessage','Take Control first.');if(!await confirmInLab('Forget all saved Wi-Fi networks on this kit?'))return;try{const r=await client.resetWifi();setText('wifiMessage',r.message||'Saved Wi-Fi cleared; kit restarting in setup mode.');disconnectKit(false)}catch(e){setText('wifiMessage','Wi-Fi reset failed: '+e.message)}}
 async function showApCredentials(){
  const d=selected();if(!selectedConnected()||!canControl())return setText('apCredentials','Connect a verified kit and Take Control first.');
  try{const r=await client.command({type:'ap_credentials'});if(!window.ZebjusDroneKit.sameDeviceIdentity(r.deviceId,d.deviceId))throw Error('Device ID mismatch. Reconnect the correct kit.');setText('apCredentials',`${r.deviceId} • ${r.apSsid} • AP password: ${r.apPassword}. Record these details on this kit's case.`)}catch(e){setText('apCredentials','Could not read AP details: '+e.message)}
@@ -455,7 +457,7 @@ async function switchToAp(){
  if(!canControl())return networkNotice('Take Control first.');
  if(d.armed||Number(d.benchMode)!==0)return networkNotice('Disarm and stop bench outputs before switching network mode.');
  if(String(d.mode||'').includes('AP'))return networkNotice('Kit AP is already active. Open http://192.168.4.1/ for control or /setup for Wi-Fi settings.');
- if(!confirm(`Switch ${d.deviceName||d.name||'the selected kit'} to AP mode? This Wi-Fi connection will close.`))return;
+ if(!await confirmInLab(`Switch ${d.deviceName||d.name||'the selected kit'} to AP mode? This Wi-Fi connection will close.`))return;
  try{const r=await client.command({type:'network_mode_set',mode:'AP'});if(!window.ZebjusDroneKit.sameDeviceIdentity(r.deviceId,d.deviceId))throw Error('Device ID mismatch. Reconnect the correct kit.');networkNotice(`Kit restarting in AP mode. Join ${r.apSsid} (password: ${r.apPassword}), then open http://192.168.4.1/ for the Flight App. Saved Wi-Fi mode is under /setup.`);disconnectKit(false)}catch(e){networkNotice('AP switch failed: '+e.message)}
 }
 function initUi(){

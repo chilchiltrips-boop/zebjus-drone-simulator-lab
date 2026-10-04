@@ -1,1 +1,52 @@
-ZEBJUS F450 V18.3.48 Local Easy Access
+ZEBJUS Aerion V18.3.65 — Web update 2 / Wix embedding
+
+PYTHON LAB IS PAGE 5:
+Assembly Lab → 2D Wiring → Setup Wizard → Hardware I/O → Python Lab →
+Tripod Simulator → Joystick → Flight Training → Firmware & Connect →
+Telemetry → Settings.
+
+WIX SETUP — SIMPLE URL OPTION
+1. Wix Editor → Add Elements → Embed Code → Embed a site.
+2. Paste this HTTPS URL:
+   https://chilchiltrips-boop.github.io/zebjus-drone-simulator-lab/?embed=wix
+3. Stretch the Wix element to the section width. Set its height to about
+   780–850 px on desktop and 740–850 px in the mobile editor. The app scrolls
+   inside the element. Wix does not automatically resize the outer element.
+4. Publish the Wix page and check both its desktop and mobile views.
+
+WIX SETUP — HTML OPTION
+Paste the entire contents of WIX_EMBED.html into Wix's Embed HTML element.
+Its iframe uses width/height 100%, HTTPS, and explicit feature permissions.
+Set the outer Wix element's width and height as above. To start directly in
+Python Lab, append &tab=python to the iframe URL.
+
+Embedding is detected automatically. ?embed=wix also enables compact mode
+when opening the URL directly; ?embed=0 restores the full layout. The compact
+header keeps kit status, AP/STA and Take control. All 11 pages remain available. Python file create/delete uses in-app dialogs
+so Wix cannot block it as a cross-origin browser popup. Calibration, motor
+test, Wi-Fi switch and firmware confirmations use the same guarded dialogs.
+
+CAMERA / USB / REAL KIT
+The surrounding Wix iframe must also permit camera/fullscreen/USB/serial and
+local-network access. An inner iframe cannot override a denied parent policy.
+If using Wix Velo, configure the HTML component's allow property for the
+features that the Wix editor supports; every enclosing iframe must allow them.
+Camera is requested only by the student's explicit camera action.
+
+For real kits, use the same Wi-Fi and grant the browser's local-network prompt
+where supported. Browser support, mixed-content rules and Wix permissions can
+still block local HTTP kit requests, camera or USB flashing. Use the embedded
+Open full lab button in that case; if local HTTP is still blocked, run the
+included localhost lab or use the Android app. Simulation and normal Python
+do not need a connected kit. There is no automatic ARM or ownership transfer.
+
+This update rebuilds APK 18.3.65-android.2 (versionCode 1836502). It keeps the
+same development certificate so it can update the earlier development APK.
+The Android app retains its simple flight controls, Safety and Wi-Fi panels;
+the web lab provides the full editor/setup workflow. Firmware remains 18.3.65.
+
+Official references:
+https://support.wix.com/en/article/wix-editor-embedding-a-site-or-a-widget
+https://dev.wix.com/docs/velo/velo-only-apis/$w/html-component/allow
+https://developer.chrome.com/blog/local-network-access
+https://wicg.github.io/local-network-access/

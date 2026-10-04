@@ -2,7 +2,7 @@ name: Verify and build Learning Lab V18.3.65
 on:
   workflow_dispatch:
   push:
-    branches: ['release/v18.3.65', 'release/v18.3.65-ui']
+    branches: ['main', 'release/v18.3.65', 'release/v18.3.65-ui', 'release/v18.3.65-wix']
 permissions:
   contents: write
 concurrency:
@@ -27,21 +27,26 @@ jobs:
       - name: Verify navigation, tools, live training bridge and responsive views
         env:
           ZEBJUS_LEARNING_SCREENSHOTS: ${{ runner.temp }}/learning-lab-screenshots
+          ZEBJUS_WIX_SCREENSHOTS: ${{ runner.temp }}/wix-embed-screenshots
         run: |
           npm run check
           npm run release:check
           npm run test:learning-browser
+          npm run test:wix
+          node android-app/tests/browser_transport_test.js
       - name: Retain learning workspace screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Aerion-Learning-Lab-UI-V18.3.65
           if-no-files-found: warn
-          path: ${{ runner.temp }}/learning-lab-screenshots
+          path: |
+            ${{ runner.temp }}/learning-lab-screenshots
+            ${{ runner.temp }}/wix-embed-screenshots
   verify-build:
     needs: learning-browser
-    # The UI branch reuses the already verified firmware and Android packages.
-    if: github.ref != 'refs/heads/release/v18.3.65-ui'
+    # Main has dedicated Android and firmware build workflows.
+    if: github.ref == 'refs/heads/release/v18.3.65'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
