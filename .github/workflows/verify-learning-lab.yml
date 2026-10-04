@@ -63,16 +63,19 @@ jobs:
       - name: Run complete browser flows
         env:
           ZEBJUS_LEARNING_SCREENSHOTS: ${{ runner.temp }}/learning-lab-screenshots
+          ZEBJUS_SETUP_SCREENSHOT: ${{ runner.temp }}/learning-lab-screenshots/setup_receiver.png
+          ZEBJUS_TEST_OUTPUT: ${{ runner.temp }}/learning-lab-screenshots
         run: |
-          npm run test:setup-browser
-          npm run test:floating
-          npm run test:learning-browser
-          npm run test:flight
-          npm run test:real-browser
-          npm run test:mobile-view
-          npm run test:recovery
-          npm run test:network
-          npm run test:ui
+          mkdir -p "$ZEBJUS_LEARNING_SCREENSHOTS"
+          aerion_browser_failures=0
+          for aerion_test in setup-browser floating learning-browser flight real-browser mobile-view recovery network ui; do
+            echo "::group::Browser flow: $aerion_test"
+            if ! npm run "test:$aerion_test"; then
+              aerion_browser_failures=$((aerion_browser_failures + 1))
+            fi
+            echo '::endgroup::'
+          done
+          test "$aerion_browser_failures" -eq 0
       - name: Publish verified generated packages to the release branch
         run: |
           set -euo pipefail

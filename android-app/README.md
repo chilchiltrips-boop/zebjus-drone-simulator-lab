@@ -1,10 +1,10 @@
-# Aerion Flight Android — 18.3.64-android.1
+# Aerion Flight Android — 18.3.65-android.1
 
 An installable Android development app containing the Aerion Flight joystick screen. The interface is bundled with the APK and opens without internet, including on its first launch. It has no Python editor, camera stream or external JavaScript runtime.
 
 ## Install and connect
 
-1. Install `dist/ZEBJUS_Aerion_V18_3_64_Android.apk` on an Android 8.0 or later phone. This development APK uses the same development certificate as the previous APK, so it can update that installation.
+1. Install `dist/ZEBJUS_Aerion_V18_3_65_Android.apk` on an Android 8.0 or later phone. This development APK uses the same development certificate as the previous APK, so it can update that installation.
 2. On **Android 10+**, open **Aerion Flight → Connect drone**. Enter the kit's complete Device ID from the case if it is a new pairing, then tap **Connect kit Wi-Fi**.
 3. Allow **Nearby devices** on Android 13+; Android 10–12 needs the platform's Location permission for this Wi-Fi API. Choose the correct unique `ZEBJUS-FC-...` SSID in Android's connection dialog. The app supplies AP password **`12345678`**.
 4. On connection, the app verifies the kit identity and shows its flight screen inside the same app. This explicit connection reserves a MOBILE session without RC frames or ARM. A laptop on the same AP becomes view-only. Tap **Take control**, then **ARM** manually when the controller is ready. **STOP** lowers throttle, disarms and releases control.
@@ -12,21 +12,21 @@ An installable Android development app containing the Aerion Flight joystick scr
 
 മലയാളം: App തുറക്കുക → **Connect drone → Connect kit Wi-Fi** → Android dialog-ൽ ശരിയായ kit തിരഞ്ഞെടുക്കുക → app-ൽ തന്നെ flight screen. AP password **12345678**. Connection/permission dialog മാത്രം; flight control-നായി മറ്റൊരു browser തുറക്കുന്നില്ല. **Take control**, **ARM** സ്വയം നടക്കില്ല.
 
-The V18.3.64 controller firmware migrates an older random AP password to `12345678` on reboot after update. Its unique SSID and permanent Device ID are unchanged. Using the previous firmware will still require its old AP password; install the matching profile from this package.
+The V18.3.65 controller firmware migrates an older random AP password to `12345678` on reboot after update. Its unique SSID and permanent Device ID are unchanged. Using the previous firmware will still require its old AP password; install the matching profile from this package.
 
 ### AP/STA and no browser redirect
 
-V18.3.64 firmware AP is API only. Joining Wi-Fi does not serve a browser page or app-intent link. Open Aerion Flight and connect kit Wi-Fi in the app; Android may show its permission/connection dialog.
+V18.3.65 firmware AP is API only. Joining Wi-Fi does not serve a browser page or app-intent link. Open Aerion Flight and connect kit Wi-Fi in the app; Android may show its permission/connection dialog.
 
 Top AP/STA actually changes the disarmed kit network mode. STA releases the AP-specific request and uses router Wi-Fi; phone and kit must join the same router. AP requests the correct kit SSID. Gear -> Wi-Fi selects saved profiles or saves new Wi-Fi entirely inside the app. Expected Device ID is retained; type a current local IP in Connect if saved/discovered addresses fail.
 
 On initial app opening a MOBILE configuration reservation sends no RC. Take control starts transmission manually; STOP ends it. Native UDP publishes at 50 Hz independently of HTTP. Brief packet loss retries latest input while retaining throttle/ARM within the negotiated deadline; telemetry failure alone does not clear identity. Configuration-only release does not inject RC into PPM.
 
-The left stick controls throttle and yaw. The right stick controls pitch and roll. Their side assignments stay fixed; **Floating joysticks** can be switched off in Settings. Throttle rises/falls gradually and holds on normal stick release; pitch, roll and yaw center. The header displays connection, control/armed state and ANGLE/RATE. Guarded Rate/Angle changes can run while armed when the matching firmware reports the capability. Automatic take-off/landing is not implemented.
+The left stick controls throttle and yaw. The right stick controls pitch and roll. Their side assignments stay fixed; **Floating centre** can be switched off in the small gear beside Take control. Throttle rises/falls gradually and holds on normal stick release; pitch, roll and yaw center. The header displays connection, control/armed state and ANGLE/RATE. Guarded Rate/Angle changes can run while armed when the matching firmware reports the capability. Automatic take-off/landing is not implemented.
 
 ## Compatible kit
 
-This app uses the Aerion/ZEBJUS local Wi-Fi API from the V18.3.64 controller project. The controller must already expose:
+This app uses the Aerion/ZEBJUS local Wi-Fi API from the V18.3.65 controller project. The controller must already expose:
 
 - `GET /api/status?clientId=...`, including device identity, `flightReady`, `armed`, `flightMode` and `lockMine`.
 - `GET /api/telemetry`.
@@ -69,6 +69,12 @@ python3 tools/build_apk.py --build-tools /path/to/sdk/build-tools/36.0.0 --andro
 
 If the javac executable is absent but the JDK compiler module exists, the script uses java com.sun.tools.javac.Main. Otherwise add `--ecj /path/to/ecj-3.39.0.jar` from Eclipse/Maven Central. The build script compiles resources, stamps the manifest version/SDK fields, compiles Java, runs D8, aligns, signs and verifies the APK. Output is under `dist/`.
 
+## Compact flight settings
+
+The small gear beside **Take control** opens **Controls**, **Safety** and **Wi-Fi**. Controls changes only local stick feel. Safety shows live link/attitude/failsafe information and provides quick gyro/level calibration while disarmed. Full FC setup, ESC/motor tests, PID and PPM calibration live in the desktop web lab, not in the APK.
+
+For the ten student flight lessons, enable output-inhibited training in the web lab first. The matching kit and app then display **TRAINING**; app ARM controls only the virtual drone. Ending training invalidates the native grant and requires a fresh manual ARM for real flight.
+
 ## Development signing
 
 The included `signing/aerion-development.p12` is a **public development key**. Its alias, store password and key password are `aerion-development`. It permits future development builds to update this test app without changing its signing certificate. It is not a private production key. Generate and keep a separate private keystore for a production release, and update the signing configuration before publishing. Production-key builds cannot replace an already installed development-key build under the same package without uninstalling it.
@@ -79,7 +85,7 @@ Only the local, bundled interface receives the nonce-protected Android bridge. T
 
 Grants are scoped to kit address, Device ID, fresh client ID and Wi-Fi network. A private 64-bit token and increasing sequence protect 48-byte UDP frames. Only correctly scoped, fresh 28-byte controller ACKs refresh the watchdog. Latest UI input repeats at 50 Hz for at most 300 ms without fresh input. Genuine ACK loss fences after the negotiated deadline (900 ms maximum; legacy 300 ms). Pings cannot refresh an active RC watchdog.
 
-Pause/focus loss/reload/network changes revoke the native grant. Safe UDP bursts and HTTP cleanup are attempted; delivery is not guaranteed after radio/process loss. Firmware centres directional RC at 300 ms and expires Web RC at 1 second. Foreground retry of previously enabled controls acquires a fresh same-device grant and restores sticks at throttle 0, DISARMED; ARM is manual. STOP/background/reload cancel recovery. Returning from background stays read-only. See [update/test guide](../SUPPORT/V18_3_64_UPDATE_AND_TEST.md).
+Pause/focus loss/reload/network changes revoke the native grant. Safe UDP bursts and HTTP cleanup are attempted; delivery is not guaranteed after radio/process loss. Firmware centres directional RC at 300 ms and expires Web RC at 1 second. Foreground retry of previously enabled controls acquires a fresh same-device grant and restores sticks at throttle 0, DISARMED; ARM is manual. STOP/background/reload cancel recovery. Returning from background stays read-only. See [update/test guide](../SUPPORT/V18_3_65_UPDATE_AND_TEST.md).
 
 ## Re-run focused tests
 

@@ -1,4 +1,15 @@
-# ZEBJUS Aerion V18.3.64
+# ZEBJUS Aerion V18.3.65
+
+- Added a dedicated **Setup Wizard** after Assembly Lab and 2D Wiring: verified board selection, Quad X/H, mounting/limits, live gyro/level progress, ESC, measured motor idle, rotation, App/PPM receiver calibration, arm/failsafe and PID readback, followed by a saved completion record.
+- Hardware I/O now starts with 15 tool buttons. Each opens its own controls; the former Calibration/PID pages and advanced kit settings are available here. Individual guided tools share the setup lease and STOP guards.
+- Firmware & Connect combines kit discovery/connection and flashing. Upgrade supports USB or Wi-Fi OTA; Upgrade & Erase requires USB and the matching complete factory image.
+- Replaced telemetry tiles with attitude, integrated-yaw, altitude and vertical-speed instruments plus live system health. Missing/stale sensor readings stay unavailable.
+- Added ten lightweight 3D student flight lessons covering take-off/landing, heading, circuits, gates, obstacles, wind, LED communication, payload delivery and rescue. Simple geometry, capped 30 FPS and a software renderer support modest computers.
+- App and PPM training use a separate five-second output-inhibition lease. Real motor output, bench tests and physical arming are blocked. Loss/page exit ends the session and requires neutral inputs and a fresh manual ARM before real flight.
+- Simplified Android to Controls, Safety and Wi-Fi: stick feel, disarmed gyro/level calibration, failsafe information and essential pairing. Advanced setup/tuning stays in the web lab. APK version is 18.3.65-android.1 (1836501).
+- Software verification includes actual RC-driven simulated take-off/hover/landing, mission/collision/gust checks, firmware output/lease guards, native RC transport and browser workflows. Physical drone, ESC/radio and Android device qualification remain unperformed.
+
+## Previous release: V18.3.64
 
 - Floating sticks now place their neutral centre exactly at the first touch, including blank space and edges. Pitch / roll / yaw use subsequent movement relative to that touch. Throttle holds on release. Fixed-centre mode remains available.
 - Removed duplicate web crosshairs and centred the shared crosshair behind the knob. Installed / Android direction arrows and yaw marks share the stick centre and radius. Bright travel indicators remain visible.

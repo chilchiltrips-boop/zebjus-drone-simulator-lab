@@ -20,6 +20,7 @@ on:
       - 'tools/embed_ap_pages.py'
       - 'tools/flight_app_source.html'
       - 'control-sticks.js'
+      - 'mobile-flight-console.js'
       - 'fc-setup.js'
       - 'kit-console.js'
   pull_request:
@@ -30,6 +31,7 @@ on:
       - 'tools/embed_ap_pages.py'
       - 'tools/flight_app_source.html'
       - 'control-sticks.js'
+      - 'mobile-flight-console.js'
       - 'fc-setup.js'
       - 'kit-console.js'
 

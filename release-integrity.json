@@ -4,8 +4,8 @@
   "files": [
     {
       "path": ".github/workflows/build-aerion-android.yml",
-      "bytes": 3921,
-      "sha256": "9a9295e136f0397a863e4bd4b29b05aafa1a6d01d53540aa83af50fdc755f352"
+      "bytes": 3991,
+      "sha256": "319a94976d1a02cba0fcd7b798d209610a072a39ebcc5e2f42b064eab6969e38"
     },
     {
       "path": ".github/workflows/build-flightcore-a1.yml",
@@ -14,8 +14,8 @@
     },
     {
       "path": ".github/workflows/verify-learning-lab.yml",
-      "bytes": 4017,
-      "sha256": "726d1dd46cc88ec2b053d7beba4e6791003f0b696e732d6d331fc485e415b3ae"
+      "bytes": 4388,
+      "sha256": "879fea9ab061e32f82718eef956f049dc7c460a276e5ab1add64be3931e2a370"
     },
     {
       "path": ".gitignore",
@@ -145,12 +145,12 @@
     {
       "path": "GITHUB_UPLOAD_README.md",
       "bytes": 3008,
-      "sha256": "d5fe1435708a094add48521d3cbd75cb9bfa5213b196fbf72043e78aa94fb667"
+      "sha256": "1983459033e4c460116772005ea75fbabbbbd9d1181543857cb9df946fc9545a"
     },
     {
       "path": "OFFLINE_START_HERE.md",
       "bytes": 5501,
-      "sha256": "e22993e53833d43844bbc14a21e350cde5a587e04f083453f4a47a66654d6624"
+      "sha256": "20981da5fe42d268f46a59d1a04e971b82c93ff5f5f707f6cc8f87a41559bae1"
     },
     {
       "path": "README.md",
@@ -159,8 +159,8 @@
     },
     {
       "path": "RELEASE_NOTES.md",
-      "bytes": 2406,
-      "sha256": "c0a31d95c1fd7af8945c8e1dd2a292456e499c684b76d7feab8024f626099ddd"
+      "bytes": 4275,
+      "sha256": "b8a4b16add6ea2ad67b44029bbe054914ea7e0e5e436f38e57884a116761e7f7"
     },
     {
       "path": "RELEASE_NOTES_V18_3_23.md",
@@ -449,8 +449,8 @@
     },
     {
       "path": "android-app/README.md",
-      "bytes": 9650,
-      "sha256": "f9f162ac0f40626d11adf03ea62415c168dc7fbd63461373241596f7510b11fb"
+      "bytes": 10318,
+      "sha256": "13da74ba5e019e71f5b351d51216ef22672aac2e40f31a2f8dce089b9c83190a"
     },
     {
       "path": "android-app/THIRD_PARTY_NOTICES.md",
@@ -644,8 +644,8 @@
     },
     {
       "path": "fc-setup.js",
-      "bytes": 34808,
-      "sha256": "953b8c80cd0cfb0502955afb47d85197f09396868263019803f39cdaf5569995"
+      "bytes": 34905,
+      "sha256": "cf58b9ff558a19c059bcdbc2220de01f6bb854bda7fe989bd41139c74895ef23"
     },
     {
       "path": "fc_board_reference.png",
@@ -785,7 +785,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 41426,
-      "sha256": "9d4acc338f98b77f82278fc08e98b456c1548a9358e57ca4a63487611e37a032"
+      "sha256": "3df804259ede8595fb260fa0c57f576b30765703ec81600559818bc9b986cda1"
     },
     {
       "path": "offline-support.js",
