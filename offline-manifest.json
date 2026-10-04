@@ -1,6 +1,6 @@
 {
   "version": "18.3.65",
-  "totalBytes": 114353502,
+  "totalBytes": 114354183,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -39,8 +39,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 318557,
-      "sha256": "010028950a4f91e9f492b15383175d21a05787113c7726cf11c07e7fdc7e0ca7"
+      "bytes": 318587,
+      "sha256": "e882fcb61785ef890928f4c267f4a1bc3a0d9009f01bf1a212e258bf26d6d702"
     },
     {
       "path": "battery_strap.glb",
@@ -139,8 +139,8 @@
     },
     {
       "path": "flight-training.js",
-      "bytes": 27107,
-      "sha256": "148c09c7ebaa7d20cd7d01535ac58fb7a0dd2d4f9fe6504107a11ce1e95715a8"
+      "bytes": 27158,
+      "sha256": "8ff7aed36fbcf809165ad19a97e565288e6c0856feea6364413d2dbe82964009"
     },
     {
       "path": "frame_screw_m25.glb",
@@ -174,8 +174,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 79120,
-      "sha256": "d9086247d64858af3264cd2c0d938d7e812a19ad23e01a011d835130ed1990a5"
+      "bytes": 79114,
+      "sha256": "03ea9efc409ec1db2f6c725df3035eb80af24bc2dcbf754fe16007a9f42af4b8"
     },
     {
       "path": "kit-console.js",
@@ -374,8 +374,8 @@
     },
     {
       "path": "telemetry-cockpit.js",
-      "bytes": 6958,
-      "sha256": "29ea73646b98b940a07eb1ea00d3044804f950c529bf0a607ae1e0bca95ac10d"
+      "bytes": 7564,
+      "sha256": "9df6c08f45bf2b7da328acc6547f8f341d467d9c76798f75d6a5dd7f950ad59e"
     },
     {
       "path": "three.module.min.js",

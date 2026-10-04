@@ -599,8 +599,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 318557,
-      "sha256": "010028950a4f91e9f492b15383175d21a05787113c7726cf11c07e7fdc7e0ca7"
+      "bytes": 318587,
+      "sha256": "e882fcb61785ef890928f4c267f4a1bc3a0d9009f01bf1a212e258bf26d6d702"
     },
     {
       "path": "battery_strap.glb",
@@ -699,8 +699,8 @@
     },
     {
       "path": "flight-training.js",
-      "bytes": 27107,
-      "sha256": "148c09c7ebaa7d20cd7d01535ac58fb7a0dd2d4f9fe6504107a11ce1e95715a8"
+      "bytes": 27158,
+      "sha256": "8ff7aed36fbcf809165ad19a97e565288e6c0856feea6364413d2dbe82964009"
     },
     {
       "path": "frame_screw_m25.glb",
@@ -734,8 +734,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 79120,
-      "sha256": "d9086247d64858af3264cd2c0d938d7e812a19ad23e01a011d835130ed1990a5"
+      "bytes": 79114,
+      "sha256": "03ea9efc409ec1db2f6c725df3035eb80af24bc2dcbf754fe16007a9f42af4b8"
     },
     {
       "path": "kit-console.js",
@@ -785,7 +785,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 41427,
-      "sha256": "b059f27e36486635b216bca6b9b624b6ab420d5c687c168a0bee45d2077ac735"
+      "sha256": "70189e7ab695afd38ec1a7a75bc2222f6960ae41bc3f41c98c1ae950b7aae7a0"
     },
     {
       "path": "offline-support.js",
@@ -1044,8 +1044,8 @@
     },
     {
       "path": "telemetry-cockpit.js",
-      "bytes": 6958,
-      "sha256": "29ea73646b98b940a07eb1ea00d3044804f950c529bf0a607ae1e0bca95ac10d"
+      "bytes": 7564,
+      "sha256": "9df6c08f45bf2b7da328acc6547f8f341d467d9c76798f75d6a5dd7f950ad59e"
     },
     {
       "path": "three.module.min.js",
@@ -1254,8 +1254,8 @@
     },
     {
       "path": "tools/test_learning_lab_browser.js",
-      "bytes": 7123,
-      "sha256": "d27806ead807006dd02f61c97cbed6d1df54a167c9a042b4ddf9d7201e89d142"
+      "bytes": 8071,
+      "sha256": "87d7b0eb621d677e3e09b7a28e86fcb4f9dbdfde63059a16fe538c456e3a2865"
     },
     {
       "path": "tools/test_mobile_view_browser.js",
