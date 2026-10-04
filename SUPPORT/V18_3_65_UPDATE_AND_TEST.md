@@ -50,4 +50,6 @@ The small gear beside Take control opens Controls, Safety and Wi-Fi. It contains
 
 ## Verification
 
+Software verification passed in [full build/test run 37190966009](https://github.com/chilchiltrips-boop/zebjus-drone-simulator-lab/actions/runs/37190966009) and [final web-only run 37191716120](https://github.com/chilchiltrips-boop/zebjus-drone-simulator-lab/actions/runs/37191716120). The final web polish leaves compiled firmware and Android inputs unchanged. Downloaded artifacts match the committed packages byte for byte. Exact source commits, package hashes and physical-test limits are recorded in `SOFTWARE_VERIFICATION_V18_3_65.json`.
+
 Run `npm run test:training-core`, `npm run test:fc-setup`, `npm run test:setup-browser`, `npm run test:learning-browser` and existing control/browser regressions. The release verification workflow compiles both pinned ESP32 board profiles and the matching development-signed APK, seals hashes/inventory, runs native and browser tests, and retains screenshots. Physical ESC operation, radio RF-loss behaviour, phones, motors and free flight still require bench/device verification with propellers removed.

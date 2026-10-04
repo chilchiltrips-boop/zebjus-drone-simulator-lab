@@ -35,7 +35,7 @@
     {
       "path": "FILE_COUNT.txt",
       "bytes": 4,
-      "sha256": "de4b966c1e4d66e3ced42c19ca8e9bf9ad6906911d2d9b25edc081185d05c4ca"
+      "sha256": "9cc6ce83098a2d1c852b990cedc63220f77a3e4cac7e605949da8fde0e4a3191"
     },
     {
       "path": "FILE_REPLACEMENT_POLICY.md",
@@ -343,6 +343,11 @@
       "sha256": "fec03177d424b6c543341587ed71d5b75f95b76b45491020c87ab70c9dd3e731"
     },
     {
+      "path": "SUPPORT/SOFTWARE_VERIFICATION_V18_3_65.json",
+      "bytes": 3978,
+      "sha256": "57137e691c1ab5c22242148f0fc71ec505a5094328e3a4a9142c6ddddff845e4"
+    },
+    {
       "path": "SUPPORT/UPLOAD_BATCHES.md",
       "bytes": 3008,
       "sha256": "36d13e89f41eb058312a2df55daca025a3b102eb935aff224abf52d5f6526da8"
@@ -384,8 +389,8 @@
     },
     {
       "path": "SUPPORT/V18_3_65_UPDATE_AND_TEST.md",
-      "bytes": 5517,
-      "sha256": "bb85d5583882871edeeeff120c8511a5dc97ef4f4da82be07c9080b2e279dc63"
+      "bytes": 6062,
+      "sha256": "cb8b595cc3f7c41d4c54a0432e75410f9b715e67bad5a962e80fd585e7de6f26"
     },
     {
       "path": "SUPPORT/VERIFICATION_V18_3_59.json",
