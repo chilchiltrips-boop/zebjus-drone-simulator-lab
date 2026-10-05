@@ -33,7 +33,7 @@ def main():
     build.mkdir(parents=True);dist.mkdir(exist_ok=True)
     gen=build/'generated';gen.mkdir();classes=build/'classes';classes.mkdir();dex=build/'dex';dex.mkdir()
     tree=ET.parse(ROOT/'app/src/main/AndroidManifest.xml');manifest=tree.getroot()
-    manifest.set('package','in.zebjus.aerion');manifest.set('{'+ANDROID+'}versionCode','1836502');manifest.set('{'+ANDROID+'}versionName','18.3.65-android.2')
+    manifest.set('package','in.zebjus.aerion');manifest.set('{'+ANDROID+'}versionCode','1836601');manifest.set('{'+ANDROID+'}versionName','18.3.66-android.1')
     sdk_node=ET.Element('uses-sdk',{'{'+ANDROID+'}minSdkVersion':'26','{'+ANDROID+'}targetSdkVersion':'36'});manifest.insert(0,sdk_node)
     tree.write(build/'AndroidManifest.xml',encoding='utf-8',xml_declaration=True)
     run([tools/'aapt2','compile','--dir',ROOT/'app/src/main/res','-o',build/'resources.zip'])
@@ -51,7 +51,7 @@ def main():
     run([tools/'zipalign','-f','-p','4',build/'unsigned.apk',build/'aligned.apk'])
     key=ROOT/'signing/aerion-development.p12'
     if not key.is_file():run(['keytool','-genkeypair','-noprompt','-storetype','PKCS12','-keystore',key,'-storepass','aerion-development','-keypass','aerion-development','-alias','aerion-development','-keyalg','RSA','-keysize','3072','-validity','3650','-dname','CN=Aerion Development, OU=Development, O=ZEBJUS, C=IN'])
-    apk=dist/'ZEBJUS_Aerion_V18_3_65_Android.apk'
+    apk=dist/'ZEBJUS_Aerion_V18_3_66_Android.apk'
     run([tools/'apksigner','sign','--ks',key,'--ks-pass','pass:aerion-development','--ks-key-alias','aerion-development','--min-sdk-version','26','--v4-signing-enabled','false','--out',apk,build/'aligned.apk'])
     verify=subprocess.run([str(tools/'apksigner'),'verify','--verbose','--print-certs',str(apk)],check=True,capture_output=True,text=True).stdout
     (dist/'APK_SIGNATURE.txt').write_text(verify)
@@ -63,7 +63,7 @@ def main():
         assert z.read('assets/flight/index.html')==(ROOT/'app/src/main/assets/flight/index.html').read_bytes()
         assert z.read('assets/android-transport.js')==(ROOT/'app/src/main/assets/android-transport.js').read_bytes()
     assert "package: name='in.zebjus.aerion'" in badging and "minSdkVersion:'26'" in badging and "targetSdkVersion:'36'" in badging
-    report={'product':'ZEBJUS Aerion Flight','version':'18.3.65-android.2','versionCode':1836502,'package':'in.zebjus.aerion','minSdk':26,'targetSdk':36,'signing':'development key, included for development updates; not a private production key','apkBytes':apk.stat().st_size,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'verification':['APK ZIP integrity','DEX compiled','manifest/package/minSDK/targetSDK','v2/v3 APK signature','4-byte ZIP alignment','bundled UI/transport exact byte equality'],'androidDeviceTested':False,'physicalDroneTested':False}
+    report={'product':'ZEBJUS Aerion Flight','version':'18.3.66-android.1','versionCode':1836601,'package':'in.zebjus.aerion','minSdk':26,'targetSdk':36,'signing':'development key, included for development updates; not a private production key','apkBytes':apk.stat().st_size,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'verification':['APK ZIP integrity','DEX compiled','manifest/package/minSDK/targetSDK','v2/v3 APK signature','4-byte ZIP alignment','bundled UI/transport exact byte equality'],'androidDeviceTested':False,'physicalDroneTested':False}
     (dist/'BUILD_REPORT.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report,indent=2))
 

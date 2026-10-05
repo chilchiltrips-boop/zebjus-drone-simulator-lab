@@ -1,14 +1,18 @@
-ZEBJUS Aerion V18.3.65 validation
+ZEBJUS Aerion V18.3.66 validation
 
-PASS: exact shared / installed / APK assets; official APK manifest / DEX / v2-v3 signature / alignment.
-PASS: A1/A2 firmware on pinned Arduino CLI 1.5.1 and Arduino-ESP32 3.3.12; APP / FACTORY headers, chip profiles, dual OTA slots and catalog hashes.
-PASS: real extracted FC arming / bench / setup / PWM functions; neutral re-arm, yaw-left dwell, WEB CH5, motor mask / duration, ESC expiry and owner loss, stale PWM after STOP.
-PASS: actual setup wizard browser flow, calibration failure / retry, ESC HIGH to LOW, motor starting idle readback and all-motor rotation, PPM endpoint readback, arm modes, loss / restore, delayed begin STOP.
-PASS: floating blank / edge touch neutral, relative movement, release centre, crosshair / arrow alignment and cold settings grant without RC.
-PASS: existing control, flight, recovery, mobile view, network, responsive UI, expansion, flight math, RC-link / UDP protocol, setup and native Java lease / actual UDP loopback tests.
+PASS: rebuilt APK manifest / Java DEX / v2-v3 signature / ZIP alignment; exact bundled flight UI and Android transport. Same update certificate.
+PASS: compiled A1/A2 with Arduino CLI 1.3.1 and Arduino-ESP32 3.3.12; APP/FACTORY headers, chip profiles, dual OTA slots, size and matching catalog hashes.
+PASS: actual controller arming / bench / setup / PWM and training command functions; props/identity/MOBILE grant, exclusive targets, private nonces, late cancellation, lease/owner expiry, output inhibition and neutral/manual re-arm.
+PASS: actual Android bundled UI plus actual web Lab sharing a mock kit; app home mode selection, observer without control takeover, app ARM starts Flight Training, exclusive Tripod/Flight RC, Real simulation OFF, private app lease, pending selection STOP and native lifecycle cleanup.
+PASS: native Java grant/lifecycle policy and actual UDP loopback; scoped ACK/replay, independent 50 Hz publication, input/ACK timeout and safe stop bursts.
+PASS: complete setup browser/session regression; ESC checklist / HIGH timeout / HIGH to LOW, bounded output sliders / delayed ACK Stop, motor direction/readback, PPM, scan ownership preservation, Airframe Back/Next and reachable Restart.
+PASS: sixteen mission core and browser tests; smoothed keys/joysticks, forward/backward movement and tilt, cameras/find drone, real RC virtual takeoff/hover/soft landing, ring height/direction/distance, collision alert/stuck/back-off/recovery, HOME/FINISH and new mission actions.
+PASS: all eleven web pages at five widths and nested Wix frames, fifth-position Python Lab, local Python execution/file operations, permission fallback, 320/390 px training and software rendering.
+PASS: flight app offline cache/multitouch/STOP/reconnect/identity/AP-STA and portrait/landscape; mobile view-only mirror, safe settings and Wi-Fi; controller math, RC protocol, setup/download/upload integrity and camera/output lifecycles.
 
-APK SHA256: 35a409501428f856139c8be2f68adab0870086694af7f9e3c323c53474c83d84
-ZFC-A1: APP 1197072 bytes; FACTORY 4194304 bytes
-ZFC-A2: APP 1281840 bytes; FACTORY 4194304 bytes
+APK: 18.3.66-android.1, code 1836601, 62060 bytes
+APK SHA256: d41398259f2edaf3ad8ee0af1d6198752811e9aac7b5f8cface610906ead086c
+ZFC-A1: APP 1200928 bytes; FACTORY 4194304 bytes
+ZFC-A2: APP 1287248 bytes; FACTORY 4194304 bytes
 
-No physical Android phone, RF link, ESC / motor / IMU calibration or drone flight qualification was performed. Browser tests use simulated controller APIs. Motor starting points and ESC success tones require pilot confirmation.
+No physical Android phone, RF link, ESC/motor calibration or drone flight qualification was performed. Browser tests use simulated kit APIs. ESC tones and starting pulses require pilot observation.

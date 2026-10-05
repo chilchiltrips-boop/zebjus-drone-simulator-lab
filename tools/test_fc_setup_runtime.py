@@ -16,11 +16,12 @@ prefix=r'''
 #include <cmath>
 #include <cassert>
 #include <iostream>
+#include <string>
 #include "FlightSetupPolicy.h"
 enum {RC_NONE,RC_PPM,RC_WEB_STA,RC_WEB_AP};
 enum {BENCH_NONE,BENCH_MOTOR,BENCH_MOTOR_SEQUENCE,BENCH_ESC_CAL,BENCH_ESC_MANUAL};
 uint32_t clockMs=10;uint32_t millis(){return clockMs;}
-bool trainingActive=false;uint32_t trainingExpires=5000;bool armed=false,configurationBusy=false,firmwareUploadActive=false,forceDisarmRequested=false,flightWatchdogTripped=false;
+bool trainingActive=false,trainingAppOwned=false;std::string trainingOwner,controlOwner;uint8_t trainingTarget=0;uint32_t trainingRunId=0,trainingExpires=5000;bool armed=false,configurationBusy=false,firmwareUploadActive=false,forceDisarmRequested=false,flightWatchdogTripped=false;
 bool fcSetupActive=false,setupAfterNeutral=false,setupCalibrationCancel=false,armLowSeen=false,ppmYawStickArm=true,ppmArmLeft=false;
 uint32_t fcSetupExpires=5000,controlExpiresAt=5000,restartAt=0,batterySampleMs=0,yawGestureStartedMs=0,idleLastMovementMs=0;
 bool batteryValid=false,batteryCritical=false,yawGestureLatched=false;
@@ -46,6 +47,7 @@ int main(){
 
  uint16_t rc[10]={1500,1500,1000,1500,1000,1000,1000,1000,1500,1000};
  trainingActive=true;trainingExpires=clockMs;armed=true;webRcLastMs=clockMs;serviceTraining();assert(!trainingActive&&!armed&&setupAfterNeutral&&webRcLastMs==0);setupAfterNeutral=false;
+ trainingActive=trainingAppOwned=true;trainingTarget=2;trainingOwner="phone";controlOwner="other";trainingExpires=clockMs+5000;serviceTraining();assert(!trainingActive&&trainingTarget==0&&setupAfterNeutral);trainingAppOwned=false;setupAfterNeutral=false;
  fcSetupActive=true;rc[3]=2000;serviceArming(rc);clockMs+=1200;serviceArming(rc);assert(!armed);
  fcSetupActive=false;setupAfterNeutral=true;serviceArming(rc);assert(setupAfterNeutral&&!armed);
  rc[3]=1500;serviceArming(rc);assert(!setupAfterNeutral&&!armed);

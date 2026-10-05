@@ -1,36 +1,36 @@
 {
-  "version": "18.3.65",
-  "totalBytes": 114413769,
+  "version": "18.3.66",
+  "totalBytes": 114462360,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
-      "bytes": 1200064,
-      "sha256": "4147e24cac48f0d71dca23e10409cdbc1e6477d36e9e22e6fac8fb55ade29bd0"
+      "bytes": 1200928,
+      "sha256": "374aa9c3949848db4601df62c920d61cf6f7f45c4bf274aaf39a906cc6c29aaa"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "8244558542fb9ae2d74a86c0f4cdec359c4123f682bf747d2aa15575e3629b4d"
+      "sha256": "fd4996fea4349e52c7e91274dc4ee3045f8cd7bd53d3bf8c0c9f445e85e73b7d"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin",
-      "bytes": 1285760,
-      "sha256": "ab718ba45dd3052d2b992189388c7196942f3880057ecdf08eda5bc3042441b6"
+      "bytes": 1287248,
+      "sha256": "c95b95891205a0b96bc8dcf758a52b369e511546f2a50e8d0da84749bb589dcf"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "0906c759a3312e6834f575d09edf0368b9d12b9f046f0f283c6911ccddefa498"
+      "sha256": "701a0fac22ac910e9f0c498537ca393da40d44aca7c82bc296c293d0d32b184c"
     },
     {
       "path": "FlightCore_Firmware/catalog.json",
       "bytes": 2793,
-      "sha256": "c25156b44f90c6a9af96a8a7333054f442b22fd2e20612752201172c05031dc2"
+      "sha256": "bc3c910373a78b629dae1bd1eb3dbf34df89a0b4331d5ed173f5cc0619fc5525"
     },
     {
       "path": "FlightCore_Firmware/latest.json",
       "bytes": 259,
-      "sha256": "b5b2c2b72377e4ee6558b03b9277f0c7f2b1530b3aa95373a9a5f2d21ed0fa54"
+      "sha256": "a5f7fb1997f6708b329a775fe73be2709d90dc7f18221e41baf357b5750276bc"
     },
     {
       "path": "WIX_EMBED.html",
@@ -45,7 +45,7 @@
     {
       "path": "app.js",
       "bytes": 318873,
-      "sha256": "a93745a57c45fa9ee31ba9c49a777eaf3b8622e40d4eb8791be9c2fc2e0c1367"
+      "sha256": "300b7c4b11055818f9ad084b558634b68e9c4b24d9b56a3919632aa079fc3eae"
     },
     {
       "path": "battery_strap.glb",
@@ -89,8 +89,8 @@
     },
     {
       "path": "fc-setup.js",
-      "bytes": 35752,
-      "sha256": "86976ee5879ca7f60ad06238cd3c50415ab537f52f7100f8c8a5f74ebeba3f69"
+      "bytes": 47827,
+      "sha256": "7eee725a510d0bcfb00548ba0c5eb2a6f688c3e13dc05256cc66034aaef99f9b"
     },
     {
       "path": "fc_board_reference.png",
@@ -105,17 +105,17 @@
     {
       "path": "firmware-catalog.json",
       "bytes": 2793,
-      "sha256": "c25156b44f90c6a9af96a8a7333054f442b22fd2e20612752201172c05031dc2"
+      "sha256": "bc3c910373a78b629dae1bd1eb3dbf34df89a0b4331d5ed173f5cc0619fc5525"
     },
     {
       "path": "firmware-latest.json",
       "bytes": 268,
-      "sha256": "d3ab03a08977c0b323129a21992904e02b0440c935279bdb14e06b34bc373c9a"
+      "sha256": "40de05159f269a45db46ac6ac50ba6ffa6270b5f18844f2159f5a6014a7b086e"
     },
     {
       "path": "firmware-updater.js",
       "bytes": 29787,
-      "sha256": "0f368ef58ec1dc67636cb5455ffb013b3833cf1f2fbd6730585b707c76dee6de"
+      "sha256": "5dbb522daf1b1be6010059dff8b764f6e929ea9b9347bb71b8393f311bf8552f"
     },
     {
       "path": "flight/app.webmanifest",
@@ -124,13 +124,13 @@
     },
     {
       "path": "flight/index.html",
-      "bytes": 65310,
-      "sha256": "99d2add8c98681a4cc4c109c7efa3adf73d0ca01ada2595263b49980dc0e74af"
+      "bytes": 73507,
+      "sha256": "5ead6c97a71ad4427c93e7c7574d41d761cdc4510ed3c8f543c5e9c59270dd69"
     },
     {
       "path": "flight/service-worker.js",
-      "bytes": 1172,
-      "sha256": "ce4329e52bf78dff094e135f834c9d94b7f7d417c411df6c7ec4c178b255fb69"
+      "bytes": 1175,
+      "sha256": "4a83d3869fbe9d9bb19f99f2d72291d418fc3bcf7e7b6103eff5f2b7ee067e83"
     },
     {
       "path": "flight-diagnostics.js",
@@ -139,8 +139,8 @@
     },
     {
       "path": "flight-training-core.js",
-      "bytes": 10341,
-      "sha256": "a61a78ce2ac5d92029c832c704e1b6468a23f388c36a8c4d38abf4425b42dc3b"
+      "bytes": 21266,
+      "sha256": "ec32df92b991a9990fe065e367979375bf90e9724012b4a39232b25a3c362198"
     },
     {
       "path": "flight-training-input.js",
@@ -149,18 +149,18 @@
     },
     {
       "path": "flight-training-scene.js",
-      "bytes": 29619,
-      "sha256": "4c561df04e88c7ab56ea0c2a931c5db8b8e7b31e31579f68dab3b049faba0a88"
+      "bytes": 33891,
+      "sha256": "8efcaeec2cd0f8d8691516383b0fa8a0308c997c2207d8e40d91d75372be30de"
     },
     {
       "path": "flight-training.css",
-      "bytes": 7723,
-      "sha256": "62d4c60b62796dfb092248969f474be5e52bfe871a92d6d667e6899dc839db4b"
+      "bytes": 10806,
+      "sha256": "418acbe0c270dd87b88c333dffa9bf8861734672db17dff42f1b3ee868152c6f"
     },
     {
       "path": "flight-training.js",
-      "bytes": 24036,
-      "sha256": "baac704bd60bcbd1638323a17ae0fb06fb0a20e242b534a166d54b49032881e1"
+      "bytes": 30166,
+      "sha256": "cc962c61a8b7309c161c0abd3541b63c09dd0e5ac18722be9800b984e9179b3b"
     },
     {
       "path": "frame_screw_m25.glb",
@@ -195,7 +195,7 @@
     {
       "path": "index.html",
       "bytes": 79401,
-      "sha256": "e1b5641b35f658ca64b1fcd8a57a9c2c41f2ef68f397e64ed794a1640701b5ea"
+      "sha256": "f9bd8f6817d58b6e840cf7addcde5749fcde70bedf05ea956bf4fd2c75624c12"
     },
     {
       "path": "kit-console.js",
@@ -379,8 +379,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 75302,
-      "sha256": "34c37346d4fb1e20365d8b7d1afb1d9480f8d726d21a74991c8c9d222005781f"
+      "bytes": 76856,
+      "sha256": "96216d2d2d0a349c8ac14c931219be886c44e9829bc0657616152ace16908708"
     },
     {
       "path": "server.js",
@@ -1215,7 +1215,7 @@
     {
       "path": "wix-embed.js",
       "bytes": 4314,
-      "sha256": "4545fcaaa2983873b327cb84c773250ddd98789bc65ab6b4492058dbade603a7"
+      "sha256": "4f2c7c30b05331c3a2a27fee55f93f65ee7fd69ea3a1009e8ecd3324ff238a2c"
     },
     {
       "path": "zebjus_flight_controller.glb",

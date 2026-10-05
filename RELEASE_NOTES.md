@@ -1,4 +1,10 @@
-# ZEBJUS Aerion V18.3.65
+# ZEBJUS Aerion V18.3.66
+
+The Android home now chooses one destination: Real flight (simulation OFF), Tripod simulator, or Flight Training. The app holds the simulator output-block lease; a connected web lab observes app ARM and joysticks without acquiring configuration ownership. Switching modes drains RC, resets throttle and refreshes the native grant. Lease/ownership/lifecycle loss stops simulation and requires fresh selection and manual ARM. Install APK 18.3.66-android.1 (1836601) and matching A2 firmware.
+
+Setup adds an ESC safety checklist with bounded HIGH → Stop/LOW calibration and per-motor output sliders, CW/CCW diagrams, bounded Start/Stop and observed-start recording. Flight Training includes sixteen missions, ring direction/distance/height guidance, HOME/FINISH markers, physical ring contact alerts, blocking and recovery, photos, beacon placement and multi-pad landings. Keyboard throttle and flight/camera animations are smoothed.
+
+## Previous V18.3.65 changes
 
 ## Web update 4 — Flight Training
 
