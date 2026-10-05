@@ -79,7 +79,7 @@ jobs:
           set -euo pipefail
           aerion_sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
           "$aerion_sdk/cmdline-tools/latest/bin/sdkmanager" --install 'platforms;android-36' 'build-tools;36.0.0'
-          python3 android-app/tools/build_apk.py --build-tools "$aerion_sdk/build-tools/36.0.0" --android-jar "$aerion_sdk/platforms/android-36/android.jar"
+          python3 android-app/tools/build_apk.py --verify-only --build-tools "$aerion_sdk/build-tools/36.0.0" --android-jar "$aerion_sdk/platforms/android-36/android.jar"
           rm -f android-app/dist/ZEBJUS_Aerion_V18_3_64_Android.apk
       - name: Seal complete release inventory
         run: npm run release:seal

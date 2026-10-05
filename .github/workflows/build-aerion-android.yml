@@ -85,11 +85,11 @@ jobs:
           javac -d build/core-tests app/src/main/java/in/zebjus/aerion/LeaseGate.java app/src/main/java/in/zebjus/aerion/LocalPolicy.java app/src/main/java/in/zebjus/aerion/LaunchPolicy.java app/src/main/java/in/zebjus/aerion/NativeRcStream.java tests/LeaseGateTest.java tests/NativeRcStreamTest.java
           java -cp build/core-tests in.zebjus.aerion.LeaseGateTest
           java -cp build/core-tests in.zebjus.aerion.NativeRcStreamTest
-      - name: Build and verify development APK
+      - name: Recompile and verify delivered development APK
         run: |
           set -euo pipefail
           aerion_sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
-          python3 tools/build_apk.py --build-tools "$aerion_sdk/build-tools/36.0.0" --android-jar "$aerion_sdk/platforms/android-36/android.jar"
+          python3 tools/build_apk.py --verify-only --build-tools "$aerion_sdk/build-tools/36.0.0" --android-jar "$aerion_sdk/platforms/android-36/android.jar"
       - uses: actions/upload-artifact@v4
         with:
           name: Aerion-Android-APK

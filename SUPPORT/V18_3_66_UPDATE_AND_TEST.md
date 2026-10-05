@@ -49,12 +49,15 @@ Output calibration highlights M1 front-left CW, M2 front-right CCW, M3 rear-righ
 
 ### App / PPM training input
 
-1. Connect the A2 kit from Firmware & Connect, disarm it and remove all propellers.
-2. Open Flight Training. Select Android app or PPM receiver, confirm propellers removed, then Enable training input.
-3. Wait for **TRAINING ACTIVE · REAL OUTPUTS BLOCKED**. The computer maintains a separate short inhibition lease; the app can own RC while the computer observes it.
-4. Connect the V18.3.66 app to the same kit and Take control, or switch on PPM. Start the lesson, then use app ARM or the configured PPM switch/yaw gesture.
-5. Stale RC pauses the virtual lesson. To resume, restore fresh frames, lower throttle, centre sticks, set app ARM low and press Resume.
-6. End hardware training before real flight. The FC invalidates the native RC grant, disarms and requires neutral sticks plus a fresh manual ARM. Training is not persisted across reboot.
+Android app (18.3.66-android.2) uses the matching V18.3.66 A2 firmware:
+
+1. Connect phone and computer to the same kit AP or router Wi-Fi; open Flight Training on the web lab. The web lab reconnects the saved/sole discovered Device ID as an observer. Multiple kits require choosing the correct kit once. Allow the browser's Local Network Access permission when requested.
+2. In the app, select Mode → Flight Training, confirm every propeller is removed and apply. Controls switch ON with throttle at minimum and ARM low. No web Enable training input button or web control lock is needed.
+3. ARM in the app at minimum throttle, then use its sticks. If the page opens after app ARM, centre sticks and lower throttle to join the virtual lesson. Physical motor outputs remain blocked by the app's private training lease.
+4. Telemetry interruption pauses and disarms the virtual model while retaining its lesson/session. Restore the link, centre sticks, lower throttle, DISARM then ARM in the app to resume. Held ARM alone cannot resume after link loss. If the controller reports training ended, choose the destination again in the app.
+5. Selecting Tripod stops Flight Training; selecting Real switches simulation OFF and leaves controls OFF. Real flight still requires Take control and a new manual ARM. STOP/background/Wi-Fi loss clears app training and requires fresh selection.
+
+For PPM, connect the A2 kit in the web lab, select PPM receiver, confirm propellers removed and Enable training input. The browser owns and renews that output-inhibited lease. Start the lesson, then use the configured PPM arm switch or yaw gesture. Restore fresh neutral frames and Resume after stale RC. Leaving its page ends the browser-owned training lease.
 
 Physical motor output is inhibited in the output writer, output supervisor, arming service and bench service. Setup and bench/configuration writes are blocked while training is active. Lease loss never resumes real flight with a held virtual ARM command. A1 remains a sensor bridge and cannot provide the guarded training transport.
 

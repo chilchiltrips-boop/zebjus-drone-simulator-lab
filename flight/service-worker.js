@@ -1,4 +1,4 @@
-const CACHE='zebjus-aerion-flight-v18-3-66-r1';
+const CACHE='zebjus-aerion-flight-v18-3-66-r2';
 const CORE=['./index.html','./app.webmanifest','../icon-192.png','../icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('zebjus-aerion-flight-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

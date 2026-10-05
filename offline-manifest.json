@@ -1,6 +1,6 @@
 {
   "version": "18.3.66",
-  "totalBytes": 114462264,
+  "totalBytes": 114463255,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -124,13 +124,13 @@
     },
     {
       "path": "flight/index.html",
-      "bytes": 73507,
-      "sha256": "5ead6c97a71ad4427c93e7c7574d41d761cdc4510ed3c8f543c5e9c59270dd69"
+      "bytes": 73701,
+      "sha256": "e9aecb28995a5c41cdf85b45659073784d2256feaa193faacead0434a505d104"
     },
     {
       "path": "flight/service-worker.js",
       "bytes": 1175,
-      "sha256": "4a83d3869fbe9d9bb19f99f2d72291d418fc3bcf7e7b6103eff5f2b7ee067e83"
+      "sha256": "ed2cf641813f08875b59b86ffd8e929da43f41f1bc1d44cdf12b2b6aa05cc258"
     },
     {
       "path": "flight-diagnostics.js",
@@ -159,8 +159,8 @@
     },
     {
       "path": "flight-training.js",
-      "bytes": 30166,
-      "sha256": "cc962c61a8b7309c161c0abd3541b63c09dd0e5ac18722be9800b984e9179b3b"
+      "bytes": 30929,
+      "sha256": "047d2029065a8cebca7a19b06dbe6b343eb904fcbb9d99cdf4aaa0e97bc085d4"
     },
     {
       "path": "frame_screw_m25.glb",
@@ -194,8 +194,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 79401,
-      "sha256": "f9bd8f6817d58b6e840cf7addcde5749fcde70bedf05ea956bf4fd2c75624c12"
+      "bytes": 79408,
+      "sha256": "87eb77f3c8a09f9b92e10680155f440b160c823e7721891df39c3a16ad75b66f"
     },
     {
       "path": "kit-console.js",
@@ -204,8 +204,8 @@
     },
     {
       "path": "kit-local.js",
-      "bytes": 17662,
-      "sha256": "368ceec1296ad8df894b30138751cfd1fd0e341c6db96f469ced71554c9289bf"
+      "bytes": 17674,
+      "sha256": "326604a27881a3f349d50009255f6e962b916e6d3056dc0e257530ee8fec5a76"
     },
     {
       "path": "lab-workflow.css",
@@ -229,8 +229,8 @@
     },
     {
       "path": "mobile-flight-console.js",
-      "bytes": 9140,
-      "sha256": "f80e3c8090bead819afe2c7cdc030ff9c4c402e847bfee9b25754ab2201e7520"
+      "bytes": 9155,
+      "sha256": "a55901abb23099217488709130169d03c3f92b97384397544da31952125980a2"
     },
     {
       "path": "monaco-worker.js",

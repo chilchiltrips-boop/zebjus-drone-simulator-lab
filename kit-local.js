@@ -190,5 +190,5 @@ class LocalKitClient{
   async reboot(){return requestBase(this.base,'/api/reboot',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:2200})}
 }
 
-global.ZebjusDroneKit={normalizeKitName,hostFromName,baseFromName,loadKnown,rememberKit,clearKnownAddress,isDeviceId,sameDeviceIdentity,isCompatibleKit,connect,discoverName,scanDefaultKits,LocalKitClient};
+global.ZebjusDroneKit={normalizeKitName,hostFromName,baseFromName,loadKnown,rememberKit,clearKnownAddress,isDeviceId,sameDeviceIdentity,isCompatibleKit,connect,discoverName,scanDefaultKits,LocalKitClient,requestBase};
 })(window);

@@ -1,6 +1,6 @@
-# Aerion Flight Android — 18.3.66-android.1
+# Aerion Flight Android — 18.3.66-android.2
 
-Rebuilt with versionCode 1836601 and the same development certificate. This
+Rebuilt with versionCode 1836602 and the same development certificate. This
 update accompanies the web lab's fifth-position Python Lab and compact Wix
 embed layout. The Android interface retains Controls, Safety and Wi-Fi;
 advanced setup and Python continue in the web lab. Matching controller firmware 18.3.66 adds exclusive app simulator destinations.
@@ -11,13 +11,13 @@ An installable Android development app containing the Aerion Flight joystick scr
 
 1. Install `dist/ZEBJUS_Aerion_V18_3_66_Android.apk` on an Android 8.0 or later phone. This development APK uses the same development certificate as the previous APK, so it can update that installation.
 2. On **Android 10+**, open **Aerion Flight → Connect drone**. Enter the kit's complete Device ID from the case if it is a new pairing, then tap **Connect kit Wi-Fi**.
-3. Allow **Nearby devices** on Android 13+; Android 10–12 needs the platform's Location permission for this Wi-Fi API. Choose the correct unique `ZEBJUS-FC-...` SSID in Android's connection dialog. The app supplies AP password **`12345678`**.
+3. Allow **Nearby devices** on Android 13+; Android 10–12 needs the platform's Location permission for this Wi-Fi API. Choose the correct unique `ZEBJUS-FC-...` SSID in Android's connection dialog. The app supplies AP password the password shown on the kit label.
 4. On connection, the app verifies the kit identity and shows its flight screen inside the same app. This explicit connection reserves a MOBILE session without RC frames or ARM. A laptop on the same AP becomes view-only. Tap **Take control**, then **ARM** manually when the controller is ready. **STOP** lowers throttle, disarms and releases control.
 5. For **STA mode or Android 8–9**, use the separate **Phone Wi-Fi settings** button, join the appropriate network and return to the app. In AP mode, the address is `192.168.4.1`; in STA mode, enter the kit's local IP and tap **Check connection**.
 
-മലയാളം: App തുറക്കുക → **Connect drone → Connect kit Wi-Fi** → Android dialog-ൽ ശരിയായ kit തിരഞ്ഞെടുക്കുക → app-ൽ തന്നെ flight screen. AP password **12345678**. Connection/permission dialog മാത്രം; flight control-നായി മറ്റൊരു browser തുറക്കുന്നില്ല. **Take control**, **ARM** സ്വയം നടക്കില്ല.
+മലയാളം: App തുറക്കുക → **Connect drone → Connect kit Wi-Fi** → Android dialog-ൽ ശരിയായ kit തിരഞ്ഞെടുക്കുക → app-ൽ തന്നെ flight screen. AP password on the kit label. Connection/permission dialog മാത്രം; flight control-നായി മറ്റൊരു browser തുറക്കുന്നില്ല. **Take control**, **ARM** സ്വയം നടക്കില്ല.
 
-The V18.3.66 controller firmware migrates an older random AP password to `12345678` on reboot after update. Its unique SSID and permanent Device ID are unchanged. Using the previous firmware will still require its old AP password; install the matching profile from this package.
+The V18.3.66 controller firmware migrates an older random AP password to the documented kit password on reboot after update. Its unique SSID and permanent Device ID are unchanged. Using the previous firmware will still require its old AP password; install the matching profile from this package.
 
 ### AP/STA and no browser redirect
 
@@ -60,7 +60,7 @@ The wrapper's distribution checksum is pinned. There are no third-party runtime 
 
 ## CLI build used for this APK
 
-With JDK 17, Python 3, official Android SDK tools and `ANDROID_SDK_ROOT` set:
+With JDK 17, Python 3, official Android SDK tools and `ANDROID_SDK_ROOT` set, supply `AERION_DEVELOPMENT_STORE_PASSWORD` for the existing development certificate in your local build environment. Gradle signing uses the same environment variable:
 
 ```sh
 python3 tools/build_apk.py
@@ -72,17 +72,17 @@ Or specify paths directly:
 python3 tools/build_apk.py --build-tools /path/to/sdk/build-tools/36.0.0 --android-jar /path/to/sdk/platforms/android-36/android.jar
 ```
 
-If the javac executable is absent but the JDK compiler module exists, the script uses java com.sun.tools.javac.Main. Otherwise add `--ecj /path/to/ecj-3.39.0.jar` from Eclipse/Maven Central. The build script compiles resources, stamps the manifest version/SDK fields, compiles Java, runs D8, aligns, signs and verifies the APK. Output is under `dist/`.
+If the javac executable is absent but the JDK compiler module exists, the script uses java com.sun.tools.javac.Main. Otherwise add `--ecj /path/to/ecj-3.39.0.jar` from Eclipse/Maven Central. GitHub checks use `--verify-only` to recompile the resources, DEX and assets and compare every unsigned entry with the delivered signed APK; no signing credential is required for those checks. The build script compiles resources, stamps the manifest version/SDK fields, compiles Java, runs D8, aligns, signs and verifies the APK. Output is under `dist/`.
 
 ## Compact flight settings
 
 The small gear beside **Take control** opens **Controls**, **Safety** and **Wi-Fi**. Controls changes only local stick feel. Safety shows live link/attitude/failsafe information and provides quick gyro/level calibration while disarmed. Full FC setup, ESC/motor tests, PID and PPM calibration live in the desktop web lab, not in the APK.
 
-For the ten student flight lessons, enable output-inhibited training in the web lab first. The matching kit and app then display **TRAINING**; app ARM controls only the virtual drone. Ending training invalidates the native grant and requires a fresh manual ARM for real flight.
+For the sixteen flight lessons, select Mode → Flight Training in the app and confirm propellers removed. Controls turn ON safely; ARM remains manual. Open the web Training page on the same kit network; it follows app ARM/sticks automatically without a web Enable button. Lower throttle and centre sticks if joining after ARM. Telemetry loss preserves lesson progress; neutral DISARM then ARM in the app resumes it. Ending training invalidates the native grant and requires Take control plus fresh manual ARM for real flight.
 
 ## Development signing
 
-The included `signing/aerion-development.p12` is a **public development key**. Its alias, store password and key password are `aerion-development`. It permits future development builds to update this test app without changing its signing certificate. It is not a private production key. Generate and keep a separate private keystore for a production release, and update the signing configuration before publishing. Production-key builds cannot replace an already installed development-key build under the same package without uninstalling it.
+The APK uses the project's existing public development signing certificate, so it can update previous development installations. Use a separate private signing certificate for a production release; production builds cannot replace an existing development installation without uninstalling it. The signing configuration is maintained in the Android project.
 
 ## Transport and lifecycle
 
