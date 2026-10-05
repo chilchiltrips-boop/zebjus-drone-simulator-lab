@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.66 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
+  ZEBJUS FlightCore V18.3.67 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -60,7 +60,7 @@
 #endif
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.66";
+static const char* FW_VERSION="18.3.67";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -431,8 +431,8 @@ bool requireControl(){if(server.hasArg("expectedDeviceId")&&!server.arg("expecte
 void IRAM_ATTR ppmIsr(){
   uint32_t now=micros(),dt=now-ppmLastEdgeUs;ppmLastEdgeUs=now;
   if(dt>PPM_SYNC_US){
-    // Publish a complete frame only. CH5/CH6 may never inherit a previous frame.
-    if(!ppmInvalidFrame&&ppmIndex>=6){
+    // Four stick axes are required. Missing optional channels never inherit a previous frame.
+    if(!ppmInvalidFrame&&ppmIndex>=4){
       for(int i=0;i<10;i++)ppmCh[i]=i<ppmIndex?ppmPending[i]:((i==8)?1500:1000);
       ppmLastFrameUs=now;ppmFrames++;
     }
@@ -444,10 +444,11 @@ void IRAM_ATTR ppmIsr(){
 bool receiverFresh(){if(!ENABLE_PPM_RECEIVER||!ppmLastFrameUs)return false;return (uint32_t)(micros()-ppmLastFrameUs)<PPM_STALE_US;}
 uint32_t receiverAgeMs(){if(!ppmLastFrameUs)return 0xFFFFFFFFUL;return (uint32_t)(micros()-ppmLastFrameUs)/1000UL;}
 String receiverHealth(){if(!ENABLE_PPM_RECEIVER||!ppmFrames)return "NOT_FOUND";return receiverFresh()?"OK":"STALE";}
-void copyReceiver(uint16_t out[10]){uint16_t raw[10];noInterrupts();for(int i=0;i<10;i++)raw[i]=ppmCh[i];interrupts();for(int i=0;i<10;i++)out[i]=raw[i];for(int i=0;i<6;i++)out[i]=FlightSetupPolicy::normalise(raw[receiverSetup.calibrated?receiverSetup.channel[i]:i],i,receiverSetup,i<4&&ppmReverse[i]);}
+void copyReceiver(uint16_t out[10]){uint16_t raw[10];noInterrupts();for(int i=0;i<10;i++)raw[i]=ppmCh[i];interrupts();for(int i=0;i<10;i++)out[i]=raw[i];for(int i=0;i<8;i++){int channel=receiverSetup.calibrated?receiverSetup.channel[i]:i;out[i]=channel==255?1000:FlightSetupPolicy::normalise(raw[channel],i,receiverSetup,i<4&&ppmReverse[i]);}}
 // Interim authoritative arm guard: final flight-core state OR fresh physical receiver CH5.
 // The final Rate/Angle flight core must update `armed` directly.
 bool effectiveArmed(){
+  if(trainingActive)return false;
   if(FLIGHT_CONTROL_ENABLED)return armed;
   if(armed)return true;
   if(receiverFresh()){uint16_t rc[10];copyReceiver(rc);return rc[4]>1500;}
@@ -513,9 +514,10 @@ String auxOutputsJson(){String j="[";bool first=true;
   const int pins[4]={D7,D8,D9,D10};for(int i=0;i<4;i++)if(auxOutputMask&(1u<<i)){if(!first)j+=",";first=false;j+=String(pins[i]);}
 #endif
   return j+"]";}
-void saveExpansionSettings(){prefs.begin("zjio",false);for(int i=0;i<4;i++){String k="m"+String(i);prefs.putUChar(k.c_str(),motorSlots[i]);}prefs.putInt("ppmpin",ppmReceiverPin);prefs.putBool("edge",ppmEdgeFalling);prefs.putBool("yawarm",ppmYawStickArm);for(int i=0;i<4;i++){String k="r"+String(i);prefs.putBool(k.c_str(),ppmReverse[i]);}prefs.putInt("servo",servoPin);prefs.putInt("gps",gpsRxPin);prefs.putInt("gpstx",gpsTxPin);prefs.putBool("gpsubx",gpsUbx10Hz);prefs.putUChar("matrix",matrixAddress);prefs.end();}
-void loadExpansionSettings(){prefs.begin("zjio",true);uint8_t next[4];for(int i=0;i<4;i++){String k="m"+String(i);next[i]=prefs.getUChar(k.c_str(),motorSlots[i]);}if(motorSlotsValid(next))for(int i=0;i<4;i++)motorSlots[i]=next[i];int ppm=prefs.getInt("ppmpin",DEFAULT_PPM_RECEIVER_PIN);if(ppmPinAllowed(ppm))ppmReceiverPin=ppm;ppmEdgeFalling=prefs.getBool("edge",false);ppmYawStickArm=prefs.getBool("yawarm",true);for(int i=0;i<4;i++){String k="r"+String(i);ppmReverse[i]=prefs.getBool(k.c_str(),false);}int sv=prefs.getInt("servo",-1),gp=prefs.getInt("gps",-1),gt=prefs.getInt("gpstx",-1);if(auxPinAllowed(sv))servoPin=sv;if(auxPinAllowed(gp)&&gp!=servoPin)gpsRxPin=gp;gpsUbx10Hz=prefs.getBool("gpsubx",false);if(gpsUbx10Hz&&gpsRxPin>=0&&auxPinAllowed(gt)&&gt!=gpsRxPin&&gt!=servoPin)gpsTxPin=gt;else if(gpsUbx10Hz){gpsRxPin=-1;gpsUbx10Hz=false;}uint8_t adr=prefs.getUChar("matrix",0x70);if(adr>=0x70&&adr<=0x77)matrixAddress=adr;prefs.end();}
-void setupExpansionPeripherals(){
+#include "FlightMatrix.h"
+void saveExpansionSettings(){prefs.begin("zjio",false);for(int i=0;i<4;i++){String k="m"+String(i);prefs.putUChar(k.c_str(),motorSlots[i]);}prefs.putInt("ppmpin",ppmReceiverPin);prefs.putBool("edge",ppmEdgeFalling);prefs.putBool("yawarm",ppmYawStickArm);for(int i=0;i<4;i++){String k="r"+String(i);prefs.putBool(k.c_str(),ppmReverse[i]);}prefs.putInt("servo",servoPin);prefs.putInt("gps",gpsRxPin);prefs.putInt("gpstx",gpsTxPin);prefs.putBool("gpsubx",gpsUbx10Hz);prefs.putUChar("matrix",matrixAddress);prefs.putBool("matspi",matrixSpi);prefs.putInt("matdin",matrixDin);prefs.putInt("matclk",matrixClk);prefs.putInt("matcs",matrixCs);prefs.end();}
+void loadExpansionSettings(){prefs.begin("zjio",true);uint8_t next[4];for(int i=0;i<4;i++){String k="m"+String(i);next[i]=prefs.getUChar(k.c_str(),motorSlots[i]);}if(motorSlotsValid(next))for(int i=0;i<4;i++)motorSlots[i]=next[i];int ppm=prefs.getInt("ppmpin",DEFAULT_PPM_RECEIVER_PIN);if(ppmPinAllowed(ppm))ppmReceiverPin=ppm;ppmEdgeFalling=prefs.getBool("edge",false);ppmYawStickArm=prefs.getBool("yawarm",true);for(int i=0;i<4;i++){String k="r"+String(i);ppmReverse[i]=prefs.getBool(k.c_str(),false);}int sv=prefs.getInt("servo",-1),gp=prefs.getInt("gps",-1),gt=prefs.getInt("gpstx",-1);if(auxPinAllowed(sv))servoPin=sv;if(auxPinAllowed(gp)&&gp!=servoPin)gpsRxPin=gp;gpsUbx10Hz=prefs.getBool("gpsubx",false);if(gpsUbx10Hz&&gpsRxPin>=0&&auxPinAllowed(gt)&&gt!=gpsRxPin&&gt!=servoPin)gpsTxPin=gt;else if(gpsUbx10Hz){gpsRxPin=-1;gpsUbx10Hz=false;}uint8_t adr=prefs.getUChar("matrix",0x70);if(adr>=0x70&&adr<=0x77)matrixAddress=adr;int md=prefs.getInt("matdin",-1),mc=prefs.getInt("matclk",-1),ms=prefs.getInt("matcs",-1);if(prefs.getBool("matspi",false)&&matrixPinsValid(md,mc,ms)){matrixSpi=true;matrixDin=md;matrixClk=mc;matrixCs=ms;}prefs.end();}
+void setupExpansionPeripherals(){matrixSpiBegin();
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
  if(servoPin>=0){servoAttached=ledcAttachChannel(servoPin,50,12,4);if(servoAttached&&(!escPwmReady||ledcReadFreq(motorPinForIndex(0))==250))ledcWrite(servoPin,servoDutyFromUs(1500));else{if(servoAttached)ledcDetach(servoPin);servoAttached=false;servoPin=-1;}}
  if(gpsRxPin>=0){
@@ -542,7 +544,7 @@ void pollGps(){
 #endif
  int budget=24;while(budget--&&Serial1.available()){char c=(char)Serial1.read();if(c=='\n'){if(gpsLine.length()>5&&gpsLine.startsWith("$")){gpsLastSentence=gpsLine;gpsLastMs=millis();gpsSentences++;}gpsLine="";}else if(c!='\r'){if(gpsLine.length()<96)gpsLine+=c;else gpsLine="";}}
 }
-String expansionJson(){String j="{\"motors\":[";for(int i=0;i<4;i++){if(i)j+=",";j+="{\"motor\":"+String(i+1)+",\"connector\":\"D"+String(motorSlots[i])+"\",\"gpio\":"+String(motorPinForIndex(i))+"}";}j+="],\"ppmPin\":"+String(ppmReceiverPin)+",\"ppmEdge\":\""+String(ppmEdgeFalling?"FALLING":"RISING")+"\",\"ppmReverse\":[";for(int i=0;i<4;i++){if(i)j+=",";j+=ppmReverse[i]?"true":"false";}j+="],\"ppmArmMode\":\""+String(ppmYawStickArm?(ppmArmLeft?"YAW_LEFT":"YAW_STICK"):"CH5_SWITCH")+"\",\"idleDisarmSeconds\":15,\"servoPin\":"+String(servoPin)+",\"servoReady\":"+String(servoAttached?"true":"false")+",\"gpsRxPin\":"+String(gpsRxPin)+",\"gpsTxPin\":"+String(gpsTxPin)+",\"gpsProtocol\":\""+String(gpsUbx10Hz?"UBX_10HZ":"NMEA_9600")+"\",\"gpsTargetHz\":"+String(gpsUbx10Hz?10:0)+",\"gpsMeasuredHz\":"+String(gpsMeasuredHz)+",\"gpsReady\":"+String(gpsReady?"true":"false")+",\"matrixAddress\":"+String(matrixAddress)+",\"gpioOutputs\":"+auxOutputsJson()+"}";return j;}
+String expansionJson(){String j="{\"motors\":[";for(int i=0;i<4;i++){if(i)j+=",";j+="{\"motor\":"+String(i+1)+",\"connector\":\"D"+String(motorSlots[i])+"\",\"gpio\":"+String(motorPinForIndex(i))+"}";}j+="],\"ppmPin\":"+String(ppmReceiverPin)+",\"ppmEdge\":\""+String(ppmEdgeFalling?"FALLING":"RISING")+"\",\"ppmReverse\":[";for(int i=0;i<4;i++){if(i)j+=",";j+=ppmReverse[i]?"true":"false";}j+="],\"ppmArmMode\":\""+String(ppmYawStickArm?(ppmArmLeft?"YAW_LEFT":"YAW_STICK"):"CH5_SWITCH")+"\",\"idleDisarmSeconds\":15,\"servoPin\":"+String(servoPin)+",\"servoReady\":"+String(servoAttached?"true":"false")+",\"gpsRxPin\":"+String(gpsRxPin)+",\"gpsTxPin\":"+String(gpsTxPin)+",\"gpsProtocol\":\""+String(gpsUbx10Hz?"UBX_10HZ":"NMEA_9600")+"\",\"gpsTargetHz\":"+String(gpsUbx10Hz?10:0)+",\"gpsMeasuredHz\":"+String(gpsMeasuredHz)+",\"gpsReady\":"+String(gpsReady?"true":"false")+",\"matrixAddress\":"+String(matrixAddress)+",\"matrixDriver\":\""+String(matrixSpi?"MAX7219":"HT16K33")+"\",\"matrixDinPin\":"+String(matrixDin)+",\"matrixClkPin\":"+String(matrixClk)+",\"matrixCsPin\":"+String(matrixCs)+",\"gpioOutputs\":"+auxOutputsJson()+"}";return j;}
 void writeEscMicroseconds(int i,int us){bool blocked=trainingActive||flightWatchdogTripped||configurationBusy||(!armed&&benchMode==BENCH_NONE)||(fcSetupActive&&!FlightSetupPolicy::live(millis(),fcSetupExpires));if((benchMode==BENCH_MOTOR||benchMode==BENCH_ESC_MANUAL)&&!FlightSetupPolicy::live(millis(),benchUntilMs))blocked=true;int pin=motorPinForIndex(i);if(pin>=0)ledcWrite(pin,escDutyFromUs(blocked?1000:us));}
 void writeMotorOutputs(float m1,float m2,float m3,float m4){motorInput[0]=m1;motorInput[1]=m2;motorInput[2]=m3;motorInput[3]=m4;if(!FLIGHT_CONTROL_ENABLED)return;for(int i=0;i<4;i++)writeEscMicroseconds(i,(int)motorInput[i]);}
 void writeFlightDutyOutputs(float d1,float d2,float d3,float d4){
@@ -819,7 +821,7 @@ void expansionReadCommand(const String& type){
   String j="{\"ok\":true,\"command\":\"gps_read\",\"protocol\":\""+String(gpsUbx10Hz?"UBX_10HZ":"NMEA_9600")+"\",\"ready\":"+String(gpsReady?"true":"false")+",\"sentence\":\""+jsonEscape(gpsLastSentence)+"\",\"sentences\":"+String(gpsSentences)+",\"measuredHz\":0,\"ageMs\":"+String(gpsLastMs?millis()-gpsLastMs:0)+"}";sendJson(200,j);return;
  }
  if(type=="matrix_read"){sendJson(200,"{\"ok\":true,\"command\":\"matrix_read\",\"address\":"+String(matrixAddress)+",\"rows\":"+matrixRowsJson()+"}");return;}
- if(type=="gpio_read"){int pin=server.arg("pin").toInt();if(!auxPinAllowed(pin)||pin==servoPin||pin==gpsRxPin||pin==gpsTxPin){sendMessage(400,"Choose an unreserved A2 D7-D10 GPIO");return;}if(effectiveArmed()){sendMessage(423,"GPIO bench read blocked while armed");return;}String mode=server.arg("mode");if(mode.length()==0)mode="pullup";if(mode!="pullup"&&mode!="pulldown"&&mode!="floating"){sendMessage(400,"Input mode must be pullup, pulldown or floating");return;}if(!auxOutputActive(pin))pinMode(pin,mode=="pullup"?INPUT_PULLUP:mode=="pulldown"?INPUT_PULLDOWN:INPUT);sendJson(200,"{\"ok\":true,\"command\":\"gpio_read\",\"pin\":"+String(pin)+",\"value\":"+String(digitalRead(pin)) +",\"mode\":\""+mode+"\"}");return;}
+ if(type=="gpio_read"){int pin=server.arg("pin").toInt();if(!auxPinAllowed(pin)||pin==servoPin||pin==gpsRxPin||pin==gpsTxPin||matrixUsesPin(pin)){sendMessage(400,"Choose an unreserved A2 D7-D10 GPIO");return;}if(effectiveArmed()){sendMessage(423,"GPIO bench read blocked while armed");return;}String mode=server.arg("mode");if(mode.length()==0)mode="pullup";if(mode!="pullup"&&mode!="pulldown"&&mode!="floating"){sendMessage(400,"Input mode must be pullup, pulldown or floating");return;}if(!auxOutputActive(pin))pinMode(pin,mode=="pullup"?INPUT_PULLUP:mode=="pulldown"?INPUT_PULLDOWN:INPUT);sendJson(200,"{\"ok\":true,\"command\":\"gpio_read\",\"pin\":"+String(pin)+",\"value\":"+String(digitalRead(pin)) +",\"mode\":\""+mode+"\"}");return;}
  if(type=="i2c_read"){
   if(!expansionBusAvailable())return;int address=server.arg("address").toInt(),reg=server.arg("reg").toInt(),length=server.arg("length").toInt();if(address<8||address>0x77||reg<0||reg>255||length<1||length>16){sendMessage(400,"I2C read needs address 8-119, register 0-255, length 1-16");return;}
   expansionBusBegin();Wire.beginTransmission((uint8_t)address);Wire.write((uint8_t)reg);int error=Wire.endTransmission(false);int got=error==0?Wire.requestFrom(address,length,true):0;String values="[";for(int i=0;i<got;i++){if(i)values+=",";values+=String(Wire.read());}values+="]";expansionBusEnd();if(error||got!=length){sendMessage(502,"I2C device did not return the requested bytes; check address/register/wiring");return;}
@@ -827,16 +829,16 @@ void expansionReadCommand(const String& type){
  }
 }
 void expansionWriteCommand(const String& type){
- if(type=="ppm_config"){if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"PPM changes blocked while armed or bench outputs run");return;}}else if(type!="i2c_write"&&type!="matrix_write"&&type!="matrix_config"&&!expansionPinConfigAllowed())return;
+ if(type=="ppm_config"){if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"PPM changes blocked while armed or bench outputs run");return;}}else if(type!="i2c_write"&&type!="matrix_write"&&!expansionPinConfigAllowed())return;
  if(type=="motor_map_set"){
   uint8_t next[4];for(int i=0;i<4;i++){String key="m"+String(i+1)+"slot";if(!server.hasArg(key)){sendMessage(400,"Specify all four motor slots 0-3");return;}int v=server.arg(key).toInt();if(v<0||v>3){sendMessage(400,"Motor slot must be D0-D3");return;}next[i]=(uint8_t)v;}
   if(!motorSlotsValid(next)){sendMessage(400,"Each D0-D3 motor connector must appear exactly once");return;}for(int i=0;i<4;i++)motorSlots[i]=next[i];saveExpansionSettings();sendJson(200,"{\"ok\":true,\"command\":\"motor_map_set\",\"rebooting\":true,\"expansion\":"+expansionJson()+"}");restartAt=millis()+800;return;
  }
  if(type=="ppm_config"){
-  if(!server.hasArg("edge")){sendMessage(400,"PPM edge is required: RISING or FALLING");return;}String edge=server.arg("edge");edge.toUpperCase();if(edge!="RISING"&&edge!="FALLING"){sendMessage(400,"PPM edge must be RISING or FALLING");return;}bool reverse[4];for(int i=0;i<4;i++){String k="reverse"+String(i);if(!server.hasArg(k)){sendMessage(400,"Specify reverse0..reverse3 for roll/pitch/throttle/yaw");return;}reverse[i]=server.arg(k)=="1"||server.arg(k)=="true";}String mode=server.hasArg("armMode")?server.arg("armMode"):String(ppmYawStickArm?(ppmArmLeft?"YAW_LEFT":"YAW_STICK"):"CH5_SWITCH");mode.toUpperCase();if(mode!="YAW_STICK"&&mode!="YAW_LEFT"&&mode!="CH5_SWITCH"){sendMessage(400,"PPM armMode must be YAW_STICK or CH5_SWITCH");return;}int pin=server.hasArg("pin")?server.arg("pin").toInt():ppmReceiverPin;if(!ppmPinAllowed(pin)){sendMessage(400,"PPM pin must be A2 D6/GPIO16 or D10/GPIO18");return;}if(pin!=ppmReceiverPin&&(pin==servoPin||pin==gpsRxPin||pin==gpsTxPin||auxOutputActive(pin))){sendMessage(409,"Selected PPM pin is assigned to servo, GPS or GPIO. Release it first.");return;}if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0)detachInterrupt(digitalPinToInterrupt(ppmReceiverPin));noInterrupts();ppmLastFrameUs=0;ppmLastEdgeUs=0;ppmIndex=0;ppmInvalidFrame=false;interrupts();ppmReceiverPin=pin;ppmEdgeFalling=edge=="FALLING";for(int i=0;i<4;i++)ppmReverse[i]=reverse[i];ppmYawStickArm=mode!="CH5_SWITCH";ppmArmLeft=mode=="YAW_LEFT";saveFcSetup();armLowSeen=false;resetArmGesture();saveExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}sendJson(200,"{\"ok\":true,\"command\":\"ppm_config\",\"expansion\":"+expansionJson()+"}");return;
+  if(!server.hasArg("edge")){sendMessage(400,"PPM edge is required: RISING or FALLING");return;}String edge=server.arg("edge");edge.toUpperCase();if(edge!="RISING"&&edge!="FALLING"){sendMessage(400,"PPM edge must be RISING or FALLING");return;}bool reverse[4];for(int i=0;i<4;i++){String k="reverse"+String(i);if(!server.hasArg(k)){sendMessage(400,"Specify reverse0..reverse3 for roll/pitch/throttle/yaw");return;}reverse[i]=server.arg(k)=="1"||server.arg(k)=="true";}String mode=server.hasArg("armMode")?server.arg("armMode"):String(ppmYawStickArm?(ppmArmLeft?"YAW_LEFT":"YAW_STICK"):"CH5_SWITCH");mode.toUpperCase();if(mode!="YAW_STICK"&&mode!="YAW_LEFT"&&mode!="CH5_SWITCH"){sendMessage(400,"PPM armMode must be YAW_STICK or CH5_SWITCH");return;}int pin=server.hasArg("pin")?server.arg("pin").toInt():ppmReceiverPin;if(!ppmPinAllowed(pin)){sendMessage(400,"PPM pin must be A2 D6/GPIO16 or D10/GPIO18");return;}if(pin!=ppmReceiverPin&&(pin==servoPin||pin==gpsRxPin||pin==gpsTxPin||matrixUsesPin(pin)||auxOutputActive(pin))){sendMessage(409,"Selected PPM pin is assigned to servo, GPS or GPIO. Release it first.");return;}if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0)detachInterrupt(digitalPinToInterrupt(ppmReceiverPin));noInterrupts();ppmLastFrameUs=0;ppmLastEdgeUs=0;ppmIndex=0;ppmInvalidFrame=false;interrupts();ppmReceiverPin=pin;ppmEdgeFalling=edge=="FALLING";for(int i=0;i<4;i++)ppmReverse[i]=reverse[i];ppmYawStickArm=mode!="CH5_SWITCH";ppmArmLeft=mode=="YAW_LEFT";saveFcSetup();armLowSeen=false;resetArmGesture();saveExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}sendJson(200,"{\"ok\":true,\"command\":\"ppm_config\",\"expansion\":"+expansionJson()+"}");return;
  }
  if(type=="servo_config"){
-  int pin=server.arg("pin").toInt();if(pin!=-1&&(!auxPinAllowed(pin)||pin==gpsRxPin||pin==gpsTxPin||auxOutputActive(pin))){sendMessage(400,"Servo needs an unreserved D7-D10 pin or -1 to disable");return;}int old=servoPin;if(servoAttached){ledcWrite(old,servoDutyFromUs(1500));ledcDetach(old);servoAttached=false;}servoPin=pin;servoPulseUs=1500;
+  int pin=server.arg("pin").toInt();if(pin!=-1&&(!auxPinAllowed(pin)||pin==gpsRxPin||pin==gpsTxPin||matrixUsesPin(pin)||auxOutputActive(pin))){sendMessage(400,"Servo needs an unreserved D7-D10 pin or -1 to disable");return;}int old=servoPin;if(servoAttached){ledcWrite(old,servoDutyFromUs(1500));ledcDetach(old);servoAttached=false;}servoPin=pin;servoPulseUs=1500;
   if(pin>=0){servoAttached=ledcAttachChannel(pin,50,12,4);if(!servoAttached||(escPwmReady&&ledcReadFreq(motorPinForIndex(0))!=250)){if(servoAttached)ledcDetach(pin);servoPin=old;if(old>=0){servoAttached=ledcAttachChannel(old,50,12,4);if(servoAttached)ledcWrite(old,servoDutyFromUs(1500));}sendMessage(503,"Servo PWM channel unavailable or ESC timer affected; mapping unchanged");return;}ledcWrite(pin,servoDutyFromUs(1500));}
   saveExpansionSettings();sendJson(200,"{\"ok\":true,\"command\":\"servo_config\",\"expansion\":"+expansionJson()+"}");return;
  }
@@ -845,8 +847,8 @@ void expansionWriteCommand(const String& type){
   int pin=server.arg("pin").toInt();String protocol=server.hasArg("protocol")?server.arg("protocol"):"NMEA_9600";protocol.toUpperCase();
   if(protocol!="NMEA_9600"&&protocol!="UBX_10HZ"){sendMessage(400,"GPS protocol must be NMEA_9600 or UBX_10HZ");return;}
   const bool ubx=pin>=0&&protocol=="UBX_10HZ";int tx=ubx?(server.hasArg("txPin")?server.arg("txPin").toInt():-1):-1;
-  if(pin!=-1&&(!auxPinAllowed(pin)||pin==servoPin||auxOutputActive(pin))){sendMessage(400,"GPS RX needs a free A2 D7-D10 pin");return;}
-  if(ubx&&(!auxPinAllowed(tx)||tx==pin||tx==servoPin||auxOutputActive(tx))){sendMessage(400,"UBX 10 Hz needs a second free A2 D7-D10 TX pin for GPS RX");return;}
+  if(pin!=-1&&(!auxPinAllowed(pin)||pin==servoPin||matrixUsesPin(pin)||auxOutputActive(pin))){sendMessage(400,"GPS RX needs a free A2 D7-D10 pin");return;}
+  if(ubx&&(!auxPinAllowed(tx)||tx==pin||tx==servoPin||matrixUsesPin(tx)||auxOutputActive(tx))){sendMessage(400,"UBX 10 Hz needs a second free A2 D7-D10 TX pin for GPS RX");return;}
   Serial1.end();
 #if defined(CONFIG_IDF_TARGET_ESP32C6)
   if(gpsDriver){delete gpsDriver;gpsDriver=nullptr;}
@@ -867,15 +869,17 @@ void expansionWriteCommand(const String& type){
   sendJson(200,"{\"ok\":true,\"command\":\"led_set\",\"mode\":\""+mode+"\",\"intervalMs\":"+String(userLedIntervalMs)+"}");return;
  }
  if(type=="gpio_write"){
-  int pin=server.arg("pin").toInt(),value=server.arg("value").toInt();if(!auxPinAllowed(pin)||pin==servoPin||pin==gpsRxPin||pin==gpsTxPin||value<0||value>1){sendMessage(400,"GPIO write needs an unreserved A2 D7-D10 pin and value 0/1");return;}auxOutputMask|=(1u<<auxPinIndex(pin));pinMode(pin,OUTPUT);digitalWrite(pin,value?HIGH:LOW);sendJson(200,"{\"ok\":true,\"command\":\"gpio_write\",\"pin\":"+String(pin)+",\"value\":"+String(value)+"}");return;
+  int pin=server.arg("pin").toInt(),value=server.arg("value").toInt();if(!auxPinAllowed(pin)||pin==servoPin||pin==gpsRxPin||pin==gpsTxPin||matrixUsesPin(pin)||value<0||value>1){sendMessage(400,"GPIO write needs an unreserved A2 D7-D10 pin and value 0/1");return;}auxOutputMask|=(1u<<auxPinIndex(pin));pinMode(pin,OUTPUT);digitalWrite(pin,value?HIGH:LOW);sendJson(200,"{\"ok\":true,\"command\":\"gpio_write\",\"pin\":"+String(pin)+",\"value\":"+String(value)+"}");return;
  }
  if(type=="gpio_release"){
   int pin=server.arg("pin").toInt();if(!auxPinAllowed(pin)||!auxOutputActive(pin)){sendMessage(400,"GPIO release needs an active D7-D10 output");return;}
   digitalWrite(pin,LOW);pinMode(pin,INPUT);auxOutputMask&=~(1u<<auxPinIndex(pin));sendJson(200,"{\"ok\":true,\"command\":\"gpio_release\",\"expansion\":"+expansionJson()+"}");return;
  }
  if(type=="matrix_config"||type=="matrix_write"||type=="i2c_write"){
+  if(type=="matrix_config"&&server.arg("driver")=="MAX7219"){if(!expansionPinConfigAllowed())return;int din=server.arg("dinPin").toInt(),clk=server.arg("clkPin").toInt(),cs=server.arg("csPin").toInt();if(!server.hasArg("dinPin")||!server.hasArg("clkPin")||!server.hasArg("csPin")||!matrixPinsValid(din,clk,cs)){sendMessage(400,"MAX7219 needs three distinct free A2 D7-D10 pins: dinPin, clkPin, csPin");return;}matrixSpiRelease();matrixSpi=true;matrixDin=din;matrixClk=clk;matrixCs=cs;matrixSpiBegin();saveExpansionSettings();sendJson(200,"{\"ok\":true,\"command\":\"matrix_config\",\"expansion\":"+expansionJson()+"}");return;}
+  if(type=="matrix_write"&&matrixSpi){if(!expansionPinConfigAllowed())return;uint8_t rows[8];if(parseEightRows(server.arg("rows"),rows)!=8){sendMessage(400,"Matrix needs eight bytes (0-255)");return;}for(int i=0;i<8;i++){matrixRows[i]=rows[i];matrixSpiSend(i+1,rows[i]);}sendJson(200,"{\"ok\":true,\"command\":\"matrix_write\",\"rows\":"+matrixRowsJson()+"}");return;}
   if(!expansionBusAvailable())return;
-  if(type=="matrix_config"){int addr=server.arg("address").toInt();if(addr<0x70||addr>0x77){sendMessage(400,"HT16K33 address must be 0x70-0x77 (112-119)");return;}matrixAddress=addr;saveExpansionSettings();sendJson(200,"{\"ok\":true,\"command\":\"matrix_config\",\"expansion\":"+expansionJson()+"}");return;}
+  if(type=="matrix_config"){int addr=server.arg("address").toInt();if(addr<0x70||addr>0x77){sendMessage(400,"HT16K33 address must be 0x70-0x77 (112-119)");return;}if(server.hasArg("driver")&&server.arg("driver")!="HT16K33"){sendMessage(400,"Choose HT16K33 or MAX7219");return;}matrixSpiRelease();matrixAddress=addr;saveExpansionSettings();sendJson(200,"{\"ok\":true,\"command\":\"matrix_config\",\"expansion\":"+expansionJson()+"}");return;}
   if(type=="matrix_write"){
    uint8_t rows[8];if(parseEightRows(server.arg("rows"),rows)!=8){sendMessage(400,"HT16K33 rows needs exactly eight decimal bytes (0-255)");return;}expansionBusBegin();Wire.beginTransmission(matrixAddress);Wire.write(0x21);int error=Wire.endTransmission();if(!error){Wire.beginTransmission(matrixAddress);Wire.write(0x81);error=Wire.endTransmission();}if(!error){Wire.beginTransmission(matrixAddress);Wire.write(0xE8);error=Wire.endTransmission();}if(!error){Wire.beginTransmission(matrixAddress);Wire.write(0x00);for(int i=0;i<8;i++){Wire.write(rows[i]);Wire.write(0);}error=Wire.endTransmission();}expansionBusEnd();if(error){sendMessage(502,"HT16K33 matrix not responding; check 0x70-0x77 and 3.3 V logic");return;}for(int i=0;i<8;i++)matrixRows[i]=rows[i];sendJson(200,"{\"ok\":true,\"command\":\"matrix_write\",\"rows\":"+matrixRowsJson()+"}");return;
   }
@@ -903,8 +907,8 @@ String statusJson(const String& clientId=""){
 }
 void statusApi(){sendJson(200,statusJson(server.arg("clientId")));}
 void telemetryApi(){
-  uint16_t rc[10];RcSourceKind src=FLIGHT_CONTROL_ENABLED?chooseRcSource():RC_PPM;copyActiveRc(rc,src);String rx=receiverHealth();uint32_t age=receiverAgeMs();
-  if(!FLIGHT_CONTROL_ENABLED&&!effectiveArmed()){Wire.begin(I2C_SDA_PIN,I2C_SCL_PIN,100000);delay(1);ImuSample sample;if(readAnyImu(sample)){lastImu=sample;lastImuValid=true;}Wire.end();if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);}
+  uint16_t rc[10];RcSourceKind src=(FLIGHT_CONTROL_ENABLED||trainingActive)?chooseRcSource():RC_PPM;copyActiveRc(rc,src);String rx=receiverHealth();uint32_t age=receiverAgeMs();
+  if(!FLIGHT_CONTROL_ENABLED&&!trainingActive&&!effectiveArmed()){Wire.begin(I2C_SDA_PIN,I2C_SCL_PIN,100000);delay(1);ImuSample sample;if(readAnyImu(sample)){lastImu=sample;lastImuValid=true;}Wire.end();if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);}
   bool imuFresh=lastImuValid&&(uint32_t)(millis()-lastImu.sampledAt)<2500UL;String imuHealth=lastImuValid?(imuFresh?"OK":"STALE"):"NOT_FOUND";
   String j="{\"ok\":true,\"kit\":\"ZEBJUS_FLIGHTCORE\",\"name\":\""+jsonEscape(kitName)+"\",\"ip\":\""+(setupMode?WiFi.softAPIP().toString():WiFi.localIP().toString())+"\",\"mode\":\""+String(setupMode?"AP / DIRECT":"STA / LOCAL")+"\",\"locked\":"+String(lockActive()?"true":"false")+",\"lockMine\":"+String(lockMine(server.arg("clientId"))?"true":"false")+",\"type\":\"telemetry\",\"source\":\""+String(FLIGHT_CONTROL_ENABLED?"flight_core":"bridge")+"\",\"flightCoreIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"flightReady\":"+String(flightReady?"true":"false")+",\"flightMode\":\""+String(flightModeName(flightMode))+"\",\"rcSource\":\""+String(rcSourceName(src))+"\",\"roll\":"+String(FLIGHT_CONTROL_ENABLED?kalmanRoll:0.0f,3)+",\"pitch\":"+String(FLIGHT_CONTROL_ENABLED?kalmanPitch:0.0f,3)+",\"yaw\":"+String(FLIGHT_CONTROL_ENABLED?flightYaw:0.0f,3)+",\"gyroX\":"+String(FLIGHT_CONTROL_ENABLED?rateRoll:(lastImuValid?lastImu.gx:0.0f),4)+",\"gyroY\":"+String(FLIGHT_CONTROL_ENABLED?ratePitch:(lastImuValid?lastImu.gy:0.0f),4)+",\"gyroZ\":"+String(FLIGHT_CONTROL_ENABLED?rateYaw:(lastImuValid?lastImu.gz:0.0f),4)+",\"accX\":"+String(lastImuValid?lastImu.ax:0.0f,6)+",\"accY\":"+String(lastImuValid?lastImu.ay:0.0f,6)+",\"accZ\":"+String(lastImuValid?lastImu.az:0.0f,6)+",\"imuModel\":\""+String(imuName(detectedImu))+"\",\"sampleMs\":"+String(lastImuValid?lastImu.sampledAt:0)+",\"battery\":"+(batteryValid?String(batteryVoltage,3):String("null"))+",\"batteryValid\":"+String(batteryValid?"true":"false")+",\"armed\":"+String(effectiveArmed()?"true":"false");
   j+=",\"rc\":[";for(int i=0;i<10;i++){if(i)j+=",";j+=String(rc[i]);}j+="]";
@@ -921,8 +925,9 @@ void acquireApi(){
  if(controlOwner.length()&&controlOwner!=id&&!(role=="MOBILE"&&controlRole!="MOBILE"&&!effectiveArmed()&&benchMode==BENCH_NONE)){sendMessage(423,controlRole=="MOBILE"?"Mobile app owns this kit. Laptop is VIEW ONLY.":"Another session controls this kit. VIEW ONLY.");return;}
  if(controlOwner!=id){invalidateRcUdp();webRcLastMs=0;forceDisarmRequested=false;}
  controlOwner=id;controlRole=role;mobileReserved=role=="MOBILE";controlExpiresAt=millis()+LOCK_TIMEOUT_MS;
- if(role=="MOBILE"&&rcUdpTaskHandle){portENTER_CRITICAL(&stateMux);if(!rcUdpToken){rcUdpToken=((uint64_t)esp_random()<<32)|esp_random();if(!rcUdpToken)rcUdpToken=1;rcUdpSequenceSeen=false;}portEXIT_CRITICAL(&stateMux);}
- sendJson(200,"{\"ok\":true,\"lockMine\":true,\"controlRole\":\""+role+"\",\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+",\"rcTimeoutMs\":"+String(WEB_RC_STALE_MS)+",\"rcCenterMs\":"+String(RcLinkPolicy::CENTER_AFTER_MS)+rcUdpGrantJson()+"}");
+ if(trainingActive&&server.arg("rcTransport")=="HTTP")invalidateRcUdp();
+ if(role=="MOBILE"&&rcUdpTaskHandle&&!(trainingActive&&server.arg("rcTransport")=="HTTP")){portENTER_CRITICAL(&stateMux);if(!rcUdpToken){rcUdpToken=((uint64_t)esp_random()<<32)|esp_random();if(!rcUdpToken)rcUdpToken=1;rcUdpSequenceSeen=false;}portEXIT_CRITICAL(&stateMux);}
+ sendJson(200,"{\"ok\":true,\"lockMine\":true,\"controlRole\":\""+role+"\",\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+",\"rcTimeoutMs\":"+String(WEB_RC_STALE_MS)+",\"rcCenterMs\":"+String(RcLinkPolicy::CENTER_AFTER_MS)+",\"simulationOutputsBlocked\":"+String(trainingActive?"true":"false")+",\"simulationRcTransport\":\""+String(trainingActive?"HTTP":"UDP")+"\""+rcUdpGrantJson()+"}");
 }
 void lockPingApi(){if(!requireControl())return;controlExpiresAt=millis()+LOCK_TIMEOUT_MS;sendJson(200,"{\"ok\":true}");}
 void releaseApi(){String id=server.arg("clientId");if(server.hasArg("expectedDeviceId")&&!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){sendMessage(409,"Device ID mismatch: release belongs to another kit");return;}if(lockMine(id)){invalidateRcUdp();if(activeRcSource==RC_WEB_AP||activeRcSource==RC_WEB_STA)forceDisarmRequested=true;armLowSeen=false;webRcLastMs=0;controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();serviceTraining();}sendJson(200,"{\"ok\":true}");}
@@ -1006,10 +1011,11 @@ void commandApi(){
     if(!FLIGHT_CONTROL_ENABLED||!escPwmReady){sendMessage(403,"ESC outputs unavailable on this board profile.");return;}if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"ESC calibration blocked while armed or another bench test is running.");return;}if(!propsRemovedConfirmed()){sendMessage(412,"ESC calibration requires confirm=PROPS_REMOVED.");return;}benchMode=BENCH_ESC_CAL;benchEscStage=0;benchStageUntilMs=millis()+3000;allMotorPulse(2000);sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"esc_calibrate\",\"message\":\"ESC calibration started: 3 s high, then 3 s low\"}");return;
   }
   if(type=="rc_frame"){
-    if(!ALLOW_WEB_RC||!FLIGHT_CONTROL_ENABLED){sendMessage(403,"Real web/AP RC is not enabled on this board profile.");return;}if(fcSetupActive||benchMode!=BENCH_NONE){sendMessage(423,"RC blocked during FC setup / bench operation.");return;}
+    if(server.hasArg("simulationRunId")&&(!trainingActive||server.arg("simulationRunId")!=String(trainingRunId))){sendMessage(409,"RC frame belongs to an expired simulator run");return;}
+    if(!ALLOW_WEB_RC||(!FLIGHT_CONTROL_ENABLED&&!trainingActive)){sendMessage(403,"Real web/AP RC is not enabled on this board profile.");return;}if(fcSetupActive||benchMode!=BENCH_NONE){sendMessage(423,"RC blocked during FC setup / bench operation.");return;}
     uint16_t next[10]={1500,1500,1000,1500,1000,1000,1000,1000,1500,1000};int count=parseRcCsv(server.arg("channels"),next);if(count<6){sendMessage(400,"rc_frame requires at least CH1..CH6");return;}
     bool safe=next[0]==1500&&next[1]==1500&&next[2]==1000&&next[3]==1500&&next[4]==1000;
-    portENTER_CRITICAL(&stateMux);if(rcUdpToken&&!safe){portEXIT_CRITICAL(&stateMux);sendMessage(423,"Native UDP stream owns RC; stop it before HTTP control");return;}if(safe){rcUdpToken=0;rcUdpSequenceSeen=false;}for(int i=0;i<10;i++)webRcCh[i]=next[i];webRcLastMs=millis();webRcFrames++;portEXIT_CRITICAL(&stateMux);RcSourceKind chosen=chooseRcSource();sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"rc_frame\",\"activeSource\":\""+String(rcSourceName(chosen))+"\",\"deviceId\":\""+deviceId+"\",\"armed\":"+String((trainingActive?next[4]>1500:armed)?"true":"false")+",\"flightReady\":"+String((flightReady||trainingActive)?"true":"false")+",\"lastDisarmReason\":\""+jsonEscape(lastDisarmReason)+"\",\"message\":\"RC frame accepted\"}");return;
+    portENTER_CRITICAL(&stateMux);if(rcUdpToken&&!safe){portEXIT_CRITICAL(&stateMux);sendMessage(423,"Native UDP stream owns RC; stop it before HTTP control");return;}if(safe){rcUdpToken=0;rcUdpSequenceSeen=false;}for(int i=0;i<10;i++)webRcCh[i]=next[i];webRcLastMs=millis();webRcFrames++;if(trainingActive&&trainingAppOwned&&trainingInput==1)trainingExpires=webRcLastMs+5000;portEXIT_CRITICAL(&stateMux);RcSourceKind chosen=chooseRcSource();sendJson(200,"{\"ok\":true,\"type\":\"ack\",\"command\":\"rc_frame\",\"activeSource\":\""+String(rcSourceName(chosen))+"\",\"deviceId\":\""+deviceId+"\",\"armed\":"+String(armed?"true":"false")+",\"virtualArmed\":"+String(trainingActive&&next[4]>1500?"true":"false")+",\"outputsBlocked\":"+String(trainingActive?"true":"false")+",\"trainingRunId\":"+String(trainingRunId)+",\"flightReady\":"+String(flightReady?"true":"false")+",\"lastDisarmReason\":\""+jsonEscape(lastDisarmReason)+"\",\"message\":\"RC frame accepted\"}");return;
   }
   sendMessage(400,"Unknown command: "+type);
 }
@@ -1167,7 +1173,7 @@ void setupRoutes(){
 }
 void startNormalServer(){
   setupMode=false;WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();startRcUdp();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.66 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.67 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
   invalidateRcUdp();setupMode=true;if(!preferredApMode())setPreferredApMode(true);controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();serviceTraining();if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());server.begin();startRcUdp();wifiTestState=WT_IDLE;
@@ -1190,12 +1196,12 @@ void setup(){
   if(USER_LED_PIN>=0){pinMode(USER_LED_PIN,OUTPUT);digitalWrite(USER_LED_PIN,HIGH);}
   Serial.begin(115200);delay(300);WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);loadExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}
   busMutex=xSemaphoreCreateRecursiveMutex();deviceId=getDeviceId();loadFlightSettings();loadFcSetup();loadKitName();updateApName();loadApPassword();loadSavedWiFi();loadPidSettings();loadCalibrationSettings();probeImuAtBoot();setupFlightCore();flightHeartbeatUs=micros();if(FLIGHT_CONTROL_ENABLED&&xTaskCreate(flightOutputSupervisor,"fc-output-guard",3072,nullptr,21,nullptr)!=pdPASS){flightReady=false;motorsSafe();Serial.println("Output supervisor unavailable: arming disabled");}setupExpansionPeripherals();setupRoutes();startFlightTask();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.66 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.67 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
   bool forceApOnce=consumeForceSetupFlag();if(forceApOnce||preferredApMode()){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }
 void loop(){
-  serviceUserLed();pollGps();server.handleClient();updateControlRates();serviceBattery();expireLock();processWifiTest();checkRecoveryButton();networkHealth();
+  serviceUserLed();pollGps();server.handleClient();updateControlRates();serviceBattery();expireLock();if(!FLIGHT_CONTROL_ENABLED)serviceTraining();processWifiTest();checkRecoveryButton();networkHealth();
   if(restartAt&&(long)(millis()-restartAt)>=0){motorsSafe();ESP.restart();}
   delay(1);
 }

@@ -362,7 +362,7 @@ if 'id="tab-io"' not in html or f'hardware-io.js?v={version}' not in html: fail(
 # V18.3.48 safety, camera lifecycle, and calibration contract.
 for rel in ['python_companion/browser_cvzone.py','tools/test_camera_lifecycle.js','tools/test_browser_cvzone.py','SUPPORT/FLIGHTCORE_STAGE_GUIDE_V18_3_48.md','SUPPORT/FLIGHT_VALIDATION_V18_3_48.md']:
     if not (ROOT/rel).is_file(): fail(f'V18.3.48 project file missing: {rel}')
-for token in ['ppmPending','ppmIndex>=6','ppmInvalidFrame','ppmPinAllowed','ppmReceiverPin','flightOutputSupervisor','flightWatchdogTripped','outputWatchdogTrips','takeMessageCounters().completeEpochs','batteryValid']:
+for token in ['ppmPending','ppmIndex>=4','ppmInvalidFrame','ppmPinAllowed','ppmReceiverPin','flightOutputSupervisor','flightWatchdogTripped','outputWatchdogTrips','takeMessageCounters().completeEpochs','batteryValid']:
     if token not in ino: fail(f'V18.3.48 firmware receiver/output contract missing: {token}')
 for token in ['ioPpmPin','calSixFaces','calSixApply','cvzone-hands']:
     if token not in html: fail(f'V18.3.48 UI missing: {token}')

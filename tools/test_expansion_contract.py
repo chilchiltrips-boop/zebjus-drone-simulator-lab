@@ -73,13 +73,15 @@ int main(){
  for(uint32_t pulse: {1500u,1500u,1000u,1500u,1000u,1000u})edge(pulse);
  edge(4000);assert(ppmFrames==1&&ppmCh[4]==1000&&ppmCh[5]==1000);
  auto publishedAt=ppmLastFrameUs;
- for(uint32_t pulse: {1500u,1500u,1000u,1500u})edge(pulse);
+ for(uint32_t pulse: {1500u,1500u,1000u})edge(pulse);
  edge(4000);assert(ppmFrames==1&&ppmLastFrameUs==publishedAt);
  for(uint32_t pulse: {1500u,1500u,1000u,1500u,2000u,2000u})edge(pulse);
  edge(4000);assert(ppmFrames==2&&ppmCh[4]==2000&&ppmCh[5]==2000&&ppmCh[6]==1000&&ppmCh[8]==1500);
+ for(uint32_t pulse: {1450u,1550u,1000u,1500u})edge(pulse);
+ edge(4000);assert(ppmFrames==3&&ppmCh[0]==1450&&ppmCh[1]==1550&&ppmCh[4]==1000&&ppmCh[5]==1000);
  edge(1500);edge(2500);
  for(uint32_t pulse: {1500u,1500u,1000u,1500u,1000u,1000u})edge(pulse);
- edge(4000);assert(ppmFrames==2&&ppmCh[4]==2000);
+ edge(4000);assert(ppmFrames==3&&ppmCh[4]==1000);
 }
 '''
     ppm_cpp=ppm_cpp.replace('#include <assert.h>','#include <assert.h>\n#include <initializer_list>')

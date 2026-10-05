@@ -1,4 +1,6 @@
-# ZEBJUS Aerion V18.3.66
+> **18.3.67 update:** Install the matching APK and A1/A2 firmware. App home has **Tripod / Flight Training / Real Joystick** buttons. Simulation does not require a ready IMU or a propeller-removal checkbox; physical outputs stay DISARMED. Open the corresponding web simulator on the same kit Wi-Fi, then ARM the virtual drone in the app. See [update guide](SUPPORT/V18_3_67_UPDATE_AND_TEST.md).
+
+# ZEBJUS Aerion V18.3.67
 
 This release keeps **Python Lab fifth**: Assembly → Wiring → Setup Wizard →
 Hardware I/O → Python Lab. Embed the lab in Wix using `?embed=wix`; the compact
@@ -25,7 +27,7 @@ Open the web lab's **Setup Wizard** page after Assembly Lab and 2D Wiring. Hardw
 
 Laptop: extract the complete project and open `Start_Offline.bat` (Windows), `Start_Offline.command` (Mac), or run `python3 start_offline.py`. Open **http://localhost:8787/**. Python 3 or Node.js must already be installed to launch the local server. Join the kit Wi-Fi; the open WebApp automatically discovers the AP API for observation.
 
-Android: install **android-app/dist/ZEBJUS_Aerion_V18_3_66_Android.apk**, open Aerion Flight → Connect drone → Connect kit Wi-Fi. Select the unique `ZEBJUS-FC-...` SSID for this Device ID. Password: **12345678**.
+Android: install **android-app/dist/ZEBJUS_Aerion_V18_3_67_Android.apk**, open Aerion Flight → Connect drone → Connect kit Wi-Fi. Select the unique `ZEBJUS-FC-...` SSID for this Device ID. Password: **12345678**.
 
 **AP is API only.** The controller no longer serves a browser Flight App, Wi-Fi setup or Hardware I/O page and has no captive redirect. `192.168.4.1` is the local API address. Open the APK or local/cached WebApp. Joining Wi-Fi alone does not launch desktop software or a closed phone app.
 
@@ -43,7 +45,7 @@ After hard loss, an explicitly enabled foreground APK/standalone Flight App can 
 
 ## Install and use the update
 
-**Install the new APK and flash matching V18.3.66 firmware.** Updating GitHub files alone does not update a phone or running kit. A1 is bridge-only. A2/Aerion F1 supports MPU6050 Rate/Angle; altitude hold/automatic landing are not implemented. Choose the matching controller profile before USB/OTA. APP and FACTORY images with stable names and verified hashes are in `FlightCore_Firmware/`.
+**Install the new APK and flash matching V18.3.67 firmware.** Updating GitHub files alone does not update a phone or running kit. A1 is bridge-only. A2/Aerion F1 supports MPU6050 Rate/Angle; altitude hold/automatic landing are not implemented. Choose the matching controller profile before USB/OTA. APP and FACTORY images with stable names and verified hashes are in `FlightCore_Firmware/`.
 
 Offline Python, OpenCV/NumPy, Matplotlib/pandas, editor and hand model/WASM remain bundled. Ordinary `while True:` and simple Drone calls work. Examples are hidden by default; settings enable them. Camera needs localhost/HTTPS and permission. Hardware I/O remains in the WebApp and Python companion.
 

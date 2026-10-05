@@ -48,6 +48,11 @@ public final class NativeRcStreamTest {
   controller.close();
   LeaseGate.Grant cfg=gate.beginGrant(grant.origin,grant.deviceId,"FLY-newtoken",new Object());check(gate.accept(cfg,2000,1000),"new grant");LeaseGate.Lease next=gate.authorize(cfg.origin,cfg.deviceId,cfg.clientId);gate.input(next,2000,channels);gate.ack(next,2250);check(gate.watchdog(2301)==next,"HTTP heartbeat cannot keep stale native input alive");
   LeaseGate.Grant idle=gate.beginGrant(grant.origin,grant.deviceId,"FLY-idlereservation",new Object());check(gate.accept(idle,3000,1000),"idle configuration grant");LeaseGate.Lease idleLease=gate.authorize(idle.origin,idle.deviceId,idle.clientId);check(gate.input(idleLease,4900,channels),"manual start after long settings reservation");check(gate.ackAge(idleLease,4900)==0,"first input starts bounded ACK window");gate.input(idleLease,5800,channels);check(gate.ackAge(idleLease,5800)==900,"later input cannot renew missing ACK");check(gate.watchdog(5801)==idleLease,"no genuine ACK must still expire");
-  System.out.println("PASS: actual native UDP frames, 50 Hz independent publication, 160 ms input / 210 ms ACK loss, scoped/replay ACK rejection, 300 ms stale-input fence, late-input rejection and safe stop burst");
+  LeaseGate.Grant httpGrant=gate.beginGrant(grant.origin,grant.deviceId,"FLY-httptraining",new Object());check(gate.accept(httpGrant,6000,1000),"simulator HTTP grant");LeaseGate.Lease httpLease=gate.authorize(httpGrant.origin,httpGrant.deviceId,httpGrant.clientId);
+  DatagramSocket oldController=new DatagramSocket(0,InetAddress.getLoopbackAddress());stream.configure(httpLease,new DatagramSocket(),new InetSocketAddress(InetAddress.getLoopbackAddress(),oldController.getLocalPort()),DEVICE,TOKEN);
+  stream.useHttp(httpLease);check(!stream.offer(httpLease,channels),"HTTP selection must discard the previous UDP profile");
+  for(long t=6200;t<=7200;t+=200){gate.rcAck(httpLease,t,channels);check(gate.watchdog(t+150)==null,"accepted HTTP RC keeps native grant live without UDP");}
+  check(gate.watchdog(8101)==httpLease,"unacknowledged HTTP stream still expires");oldController.close();
+  System.out.println("PASS: actual native UDP frames, independent 50 Hz publication, scoped/replay ACK rejection, stale-input fence, safe stop burst, HTTP simulator transition and acknowledged HTTP watchdog");
  }
 }

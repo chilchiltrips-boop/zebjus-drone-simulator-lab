@@ -150,8 +150,8 @@ class ZebjusClient:
     def gps_read(self):
         return self.command("gps_read")
 
-    def matrix_config(self, address=0x70):
-        return self.command("matrix_config", address=int(address))
+    def matrix_config(self, address=0x70, driver="HT16K33", din_pin=-1, clk_pin=-1, cs_pin=-1):
+        return self.command("matrix_config", address=int(address), driver=str(driver).upper(), dinPin=int(din_pin), clkPin=int(clk_pin), csPin=int(cs_pin))
 
     def matrix_write(self, rows):
         if len(rows) != 8:

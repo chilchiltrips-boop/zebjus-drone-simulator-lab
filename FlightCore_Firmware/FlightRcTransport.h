@@ -22,10 +22,11 @@ void rcUdpTask(void*){
    RcUdpProtocol::Frame frame;if(size!=(int)sizeof(bytes)||!RcUdpProtocol::decode(bytes,read,frame)||frame.device!=key)continue;
    uint32_t now=millis();bool accepted=false,actualArmed=false,ready=false;
    portENTER_CRITICAL(&stateMux);
-   if(rcUdpToken&&frame.token==rcUdpToken&&(int32_t)(controlExpiresAt-now)>0&&benchMode==BENCH_NONE&&!fcSetupActive&&!configurationBusy&&!firmwareUploadActive&&(!rcUdpSequenceSeen||RcUdpProtocol::newer(frame.sequence,rcUdpLastSequence))){
+   if((FLIGHT_CONTROL_ENABLED||trainingActive)&&rcUdpToken&&frame.token==rcUdpToken&&(int32_t)(controlExpiresAt-now)>0&&benchMode==BENCH_NONE&&!fcSetupActive&&!configurationBusy&&!firmwareUploadActive&&(!rcUdpSequenceSeen||RcUdpProtocol::newer(frame.sequence,rcUdpLastSequence))){
     for(int i=0;i<10;i++)webRcCh[i]=frame.channels[i];
     webRcLastMs=now;webRcFrames++;controlExpiresAt=now+LOCK_TIMEOUT_MS;
-    rcUdpLastSequence=frame.sequence;rcUdpSequenceSeen=true;accepted=true;actualArmed=trainingActive?frame.channels[4]>1500:armed;ready=flightReady||trainingActive;
+    if(trainingActive&&trainingAppOwned&&trainingInput==1)trainingExpires=now+5000;
+    rcUdpLastSequence=frame.sequence;rcUdpSequenceSeen=true;accepted=true;actualArmed=armed;ready=flightReady||trainingActive;
    }
    portEXIT_CRITICAL(&stateMux);
    if(accepted){uint8_t ack[RcUdpProtocol::ACK_BYTES];RcUdpProtocol::ack(ack,frame,actualArmed,ready);rcUdp.beginPacket(rcUdp.remoteIP(),rcUdp.remotePort());rcUdp.write(ack,sizeof(ack));rcUdp.endPacket();}
@@ -34,7 +35,7 @@ void rcUdpTask(void*){
  }
 }
 void startRcUdp(){
- if(rcUdpTaskHandle||!FLIGHT_CONTROL_ENABLED)return;
+ if(rcUdpTaskHandle||!ALLOW_WEB_RC)return;
  if(!rcUdp.begin(RcUdpProtocol::PORT))return;
  if(xTaskCreate(rcUdpTask,"aerion-rc-udp",4096,nullptr,2,&rcUdpTaskHandle)!=pdPASS){rcUdp.stop();rcUdpTaskHandle=nullptr;}
 }

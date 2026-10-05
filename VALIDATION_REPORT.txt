@@ -1,19 +1,13 @@
-ZEBJUS Aerion V18.3.66 validation
+ZEBJUS Aerion V18.3.67 validation
 
-PASS: rebuilt APK manifest / Java DEX / v2-v3 signature / ZIP alignment; exact bundled flight UI and Android transport. Same update certificate.
-PASS: compiled A1/A2 with Arduino CLI 1.3.1 and Arduino-ESP32 3.3.12; APP/FACTORY headers, chip profiles, dual OTA slots, size and matching catalog hashes.
-PASS: actual controller arming / bench / setup / PWM and training command functions; props/identity/MOBILE grant, exclusive targets, private nonces, late cancellation, lease/owner expiry, output inhibition and neutral/manual re-arm, and expired training cleanup isolation from a new Real grant.
-PASS: actual Android bundled UI plus actual web Lab sharing a mock kit; app home mode selection, observer without control takeover, app ARM starts Flight Training, exclusive Tripod/Flight RC, Real simulation OFF, private app lease, pending selection STOP and native lifecycle cleanup.
-PASS: native Java grant/lifecycle policy and actual UDP loopback; scoped ACK/replay, independent 50 Hz publication, input/ACK timeout and safe stop bursts.
-PASS: complete setup browser/session regression; ESC checklist / HIGH timeout / HIGH to LOW, bounded output sliders / delayed ACK Stop, motor direction/readback, PPM, scan ownership preservation, Airframe Back/Next and reachable Restart.
-PASS: sixteen mission core and browser tests; smoothed keys/joysticks, forward/backward movement and tilt, cameras/find drone, real RC virtual takeoff/hover/soft landing, ring height/direction/distance, collision alert/stuck/back-off/recovery, HOME/FINISH and new mission actions.
-PASS: all eleven web pages at five widths and nested Wix frames, fifth-position Python Lab, local Python execution/file operations, permission fallback, 320/390 px training and software rendering.
-PASS: flight app offline cache/multitouch/STOP/reconnect/identity/AP-STA and portrait/landscape; mobile view-only mirror, safe settings and Wi-Fi; controller math, RC protocol, setup/download/upload integrity and camera/output lifecycles.
+PASS: Android APK 18.3.67-android.1 compiled with SDK 36; DEX, manifest, signature, ZIP alignment and exact bundled source/assets verified; existing update certificate retained.
+PASS: actual firmware simulator commands and HTTP RC handler execute for A1/A2, without an IMU readiness gate or simulator propeller checkbox. Physical/virtual ARM metadata, RC lease renewal, expired-run rejection and setup/bench inhibition verified.
+PASS: actual arming/bench/PWM output guards keep physical outputs at minimum during training, on timeout, STOP and neutral/manual re-arm transitions.
+PASS: actual Java native policy and DatagramSocket transport; UDP ACK scope/replay/loss, lifecycle/old-grant fencing, HTTP simulator transition and acknowledged HTTP watchdog.
+PASS: actual bundled app/adapter plus web simulators against a simulated kit; A1/no-IMU practice, one-tap targets, delayed HTTP ACK, safe same-target recovery, late Flight/Tripod page opening, exclusive mode input, STOP and background cancellation.
+PASS: runtime RC routing, identity/AP-STA reconnect, firmware import/OTA guards, camera/output cleanup and sixteen mission/input core checks.
+PASS: project syntax, catalog references, offline asset inventory and sealed release integrity checks.
 
-APK: 18.3.66-android.2, code 1836602, 62060 bytes
-APK SHA256: d41398259f2edaf3ad8ee0af1d6198752811e9aac7b5f8cface610906ead086c
-Local compilation figures; CI may rebuild identical source. Catalog/build-report contain the final package metrics.
-ZFC-A1: APP 1200944 bytes; FACTORY 4194304 bytes
-ZFC-A2: APP 1287248 bytes; FACTORY 4194304 bytes
+Matching A1/A2 target compiler results and binary headers/hashes are recorded separately in FlightCore_Firmware/build-report.json and catalog.json after the firmware workflow completes. Check those files before claiming a matching target build.
 
-No physical Android phone, RF link, ESC/motor calibration or drone flight qualification was performed. Browser tests use simulated kit APIs. ESC tones and starting pulses require pilot observation.
+Boundary: no Android phone/emulator, physical Wi-Fi link, ESC/motor, IMU or drone flight was tested. Browser integration uses the production UI and native grant policy with a simulated kit/radio. Physical ARM remains guarded by its existing supported profile and IMU requirements.

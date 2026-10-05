@@ -60,8 +60,11 @@ public final class LeaseGate {
         return accept(grant,now,0);
     }
     public synchronized boolean accept(Grant grant, long now, long controllerTimeout) {
+        return accept(grant,now,controllerTimeout,false);
+    }
+    public synchronized boolean accept(Grant grant,long now,long controllerTimeout,boolean simulationOutputsBlocked) {
         if (pending!=grant || !foreground || grant.generation!=generation || current!=null) return false;
-        long timeout=controllerTimeout>0 ? Math.max(200,Math.min(MAX_ACK_TIMEOUT_MS,controllerTimeout-100)) : ACK_TIMEOUT_MS;
+        long timeout=simulationOutputsBlocked ? 2600 : controllerTimeout>0 ? Math.max(200,Math.min(MAX_ACK_TIMEOUT_MS,controllerTimeout-100)) : ACK_TIMEOUT_MS;
         pending=null; current=new Lease(grant.origin,grant.deviceId,grant.clientId,grant.network,now,timeout,grant.generation); return true;
     }
     public synchronized Lease cancel(Grant grant) {

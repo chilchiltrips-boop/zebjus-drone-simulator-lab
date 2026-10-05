@@ -1,4 +1,19 @@
-# ZEBJUS Aerion V18.3.66
+# ZEBJUS Aerion V18.3.67
+
+- Setup startup waits for its verified begin grant, preventing the false “session expired or changed” race. Polls renew the existing five-second lease. Completed checks and values retain Next when navigating Back.
+- ESC calibration uses the three pre-Start checks, HIGH → Stop/LOW and pilot-confirmed tones. After success the battery may stay connected; **Calibrate ESC again** resets the next attempt's battery check. Physical motor tests use real PWM with bounded two-second Start/Stop.
+- Pending checks can use **Skip / Next** and remain red in Telemetry alongside errors and missing calibration. App/Web receiver needs no RX calibration. PPM uses a live transmitter guide with modes 1–4, default mode 2, automatic throttle/roll/pitch/yaw detection, optional channels up to eight roles, centre capture and measured travel. Four stick axes are mandatory. Ordinary setup retains current/default PID; tuning is a separate tool.
+- Python servo/GPS examples expose pin variables. LED matrix supports fixed-bus HT16K33 or MAX7219 on three selected free A2 pins, with conflicts rejected.
+- Android 18.3.67-android.2 keeps one-tap Tripod, Flight Training and Real Joystick buttons and permits slower HTTP ACKs only in controller-verified output-blocked simulator sessions. Physical control ACK and native input timeouts retain their limits. Simulator selection does not ask for propeller removal; physical motor/ESC setup retains its safety checks.
+- Simulator control works on both ESP32-C3 A1 and XIAO ESP32-C6 A2 without requiring a flight-ready IMU. A1 telemetry now returns the selected APP/PPM channels. Simulation always inhibits physical outputs and reports physical ARM separately from virtual ARM.
+- Simulator grants explicitly negotiate acknowledged HTTP RC. The real-flight native 50 Hz UDP transport remains available on its supported profile. Accepted simulator RC renews the output-block lease without redundant HTTP pings, and old-run frames cannot cross into another simulator or real flight.
+- Foreground link/ACK recovery restores the selected simulator at minimum throttle and DISARM, with fresh manual ARM. Late status replies cannot cancel recovery. STOP and app background cancel recovery.
+- Both web simulators follow app ARM and sticks automatically, including a page opened after ARM at neutral throttle. Stale input pauses/disarms the virtual aircraft; Flight Training retains mission progress until the session changes.
+
+Install the new APK and flash the matching 18.3.67 APP.bin for your board. See SUPPORT/V18_3_67_UPDATE_AND_TEST.md. Phone/radio/physical-drone testing remains outstanding.
+
+## Previous V18.3.66
+
 
 Web r2 / Android r2: selecting an app simulator enables its transmitter at safe values; ARM remains manual. Flight Training joins from verified telemetry without a separate browser enable or status poll. A late-opened page can join an already armed app at neutral, minimum-throttle input. Stale RC pauses and disarms the virtual model without discarding progress; neutral DISARM then ARM in the app resumes the same lesson. Changing destinations, leaving the page, or loss of the app lease still stops the simulation.
 

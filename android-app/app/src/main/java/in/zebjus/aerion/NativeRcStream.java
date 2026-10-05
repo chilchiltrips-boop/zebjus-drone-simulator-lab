@@ -24,6 +24,10 @@ public final class NativeRcStream {
         Profile(LeaseGate.Lease lease,DatagramSocket socket,long device,long token){this.lease=lease;this.socket=socket;this.device=device;this.token=token;}
     }
     public NativeRcStream(LeaseGate gate,LongSupplier clock){this.gate=gate;this.clock=clock;}
+    public synchronized void useHttp(LeaseGate.Lease lease){
+        if(!gate.isCurrent(lease))throw new IllegalStateException("Control stopped.");
+        if(profile!=null){close(profile,false);profile=null;}
+    }
     public synchronized void configure(LeaseGate.Lease lease,DatagramSocket socket,InetSocketAddress target,long device,long token)throws Exception{
         if(!gate.isCurrent(lease)||token==0){socket.close();throw new IllegalStateException("Control stopped.");}
         if(profile!=null)close(profile,false);

@@ -1,17 +1,16 @@
 {
-  "version": "18.3.65-android.2",
-  "apk_sha256": "88d3e1781f6754c2f3959294978c1bc0445f6ff7b4af2874249a8762cc6756f6",
+  "version": "18.3.67-android.2",
+  "apk_sha256": "c04069eda412ec2966bd736bed9c559e54c9bdda67afe2015326d5f13ee1fcf5",
   "checks": {
-    "APK_DEX_manifest_signature_alignment_and_exact_assets": "passed official Android SDK 36 local build tools",
-    "same_development_certificate_and_incremented_version_code": "passed",
-    "native_lease_scope_cancel_and_local_API_policy": "passed Java runtime",
-    "native_UDP_50Hz_loss_replay_stale_input_stop": "passed actual Java DatagramSocket loopback",
-    "bundled_flight_UI_and_transport_browser": "passed local Chrome Headless Shell 151 with simulated native bridge and controller API"
+    "APK_DEX_manifest_signature_alignment_and_exact_assets": "passed Android SDK 36 build",
+    "native_grant_scope_lifecycle_and_UDP_to_HTTP_simulator_transition": "passed actual Java runtime/DatagramSocket loopback",
+    "production_firmware_simulator_commands_HTTP_RC_and_PWM_inhibition": "passed host execution",
+    "app_web_simulator_no_IMU_ACK_delay_recovery_late_attach_STOP": "passed Chromium integration against a simulated kit",
+    "verified_simulator_ACK_window_real_ACK_limits_and_native_input_watchdog": "passed Java policy and delayed-HTTP browser integration"
   },
   "test_boundary": {
     "Android_phone_or_emulator_tested": false,
     "physical_drone_tested": false,
-    "native_UDP": "actual Java DatagramSocket loopback",
-    "firmware": "unchanged 18.3.65"
+    "firmware": "18.3.67 A1 and A2 compiled locally with pinned Arduino-ESP32 3.3.12; chip/OTA/factory/version checks passed"
   }
 }

@@ -51,7 +51,7 @@ CC3D X top view uses M1 front left, M2 front right, M3 rear right, M4 rear left.
 | `i2c_write` | decimal `address`, `reg`, `bytes` comma-separated (1–8) | disarmed register write, except the detected IMU |
 | `servo_config` / `servo_write` | `pin=-1` or GPIO17/19/20/18; `pulseUs` 1000–2000 | A2 50 Hz PWM on one free D7–D10 pin |
 | `gps_config` / `gps_read` | `pin=-1` or a free GPIO17/19/20/18 for FC RX; `protocol=NMEA_9600` or `UBX_10HZ`; `txPin` a distinct free GPIO for UBX; none to read | NMEA is 9600 baud RX-only; UBX configures 38400 baud and requests 100 ms epochs, then restarts FC; `gps_read` returns `measuredHz`, `targetHz`, `configError`, freshness, fix/quality fields in UBX mode |
-| `matrix_config` / `matrix_write` / `matrix_read` | address 112–119; eight comma-separated decimal `rows`; none | HT16K33 8×8 |
+| `matrix_config` / `matrix_write` / `matrix_read` | `driver=HT16K33`, address 112–119; or `driver=MAX7219`, distinct free `dinPin`, `clkPin`, `csPin`; eight comma-separated decimal `rows`; none to read | HT16K33 on fixed I²C, or MAX7219 on three free A2 D7–D10 pins |
 | `gpio_read` / `gpio_write` / `gpio_release` | free GPIO17/19/20/18; `value=0/1` on write | A2 3.3 V digital I/O; release drives LOW then returns pin to input |
 
 `GET /api/i2c/scan` scans every address 1–126 and reports ACK devices. Read-only commands work without the control lock; mutations require `/api/control/acquire`. Bus operations and pin changes are blocked while armed or a bench motor test is active. The firmware implements only the listed drivers, not arbitrary I²C device-specific protocols.
@@ -182,8 +182,18 @@ All mutations require exact Device ID, current control ownership and a unique 12
 - `airframe_set`: airframe=QUAD_X or QUAD_H.
 - `setup_calibrate`: kind=gyro (2000 attempts) or level (120 attempts), asynchronous status progress; missing / moving / non-level samples fail.
 - `setup_esc`: stage=HIGH (2000 µs, max 12 s) then LOW (1000 µs, 3 s), confirm=PROPS_REMOVED. PWM ESC only.
-- `setup_motor`: mask=1..15, pulse=1000..1300, durationMs=100..2000, confirm=PROPS_REMOVED. Wizard uses 800 ms. No RPM feedback.
+- `setup_motor`: mask=1..15, pulse=1000..1300, durationMs=100..2000, confirm=PROPS_REMOVED. Wizard uses a bounded 2 s test. No RPM feedback.
 - `input_set`: source=WEB or PPM, persistent.
-- `receiver_setup_set`: map0..5 (distinct CH1..10), min0..5 / centre0..5 / max0..5, reverse0..3 and armMode=YAW_RIGHT / YAW_LEFT / CH5_SWITCH. Complete atomic validation and NVS write; endpoints 750..2250, span >=400; directional centre margins >=150.
+- `receiver_setup_set`: map0..7, min0..7 / centre0..7 / max0..7, reverse0..3, txMode=1..4 (default 2), armMode=YAW_RIGHT / YAW_LEFT / CH5_SWITCH. Roles are roll, pitch, throttle, yaw, ARM switch, flight-mode switch, AUX1, AUX2. The first four require distinct CH1..10; optional roles accept map=0 for unassigned. A switch ARM method requires a mapped ARM role. Complete atomic validation and NVS write; endpoints 750..2250, span >=400; directional centre margins >=150. NVS schema 2 migrates existing six-role schema 1 calibrations.
 
 Setup inhibits flight RC and ARM. Lease / owner loss and the output supervisor stop bench outputs even before flight readiness. Completing setup requires neutral directional sticks, throttle minimum, ARM low and a new manual ARM. Calibration and receiver setup use a separate NVS namespace; FlightSettings schema 1 stays compatible.
+
+## V18.3.67 setup and expansion update
+
+The PPM decoder accepts valid frames with 4–10 channels and resets absent optional channels to safe values every frame. App/Web input needs no PPM calibration. The guided web receiver maps throttle, roll, pitch and yaw from actual channel movement before allowing optional channel skipping, then captures centres and measured travel. Transmitter mode changes only the displayed stick arrangement; detected PPM channels remain the source of mapping.
+
+Setup starts polling only after the matching active begin grant. Every poll renews the unchanged five-second setup lease. Completed checks retain Next when navigating Back; pending checks can be skipped and remain red in the device-scoped browser Telemetry report. Skipping does not calibrate a receiver or bypass firmware arming guards. Ordinary setup retains current/default PID; separate PID tuning lives in Hardware I/O.
+
+`pinmap_get.expansion` adds matrixDriver, matrixDinPin, matrixClkPin and matrixCsPin. Matrix pin configuration is disarmed-only; servo, GPS, PPM and GPIO reject occupied matrix pins. HT16K33 retains the board's fixed SDA/SCL bus. Python `matrix_config(driver="MAX7219", din_pin=17, clk_pin=19, cs_pin=20)` selects spare pins explicitly.
+
+A control grant adds `simulationOutputsBlocked` and `simulationRcTransport`. The Android native gate allows a 2600 ms ACK window only for a controller-verified outputs-blocked HTTP simulator grant. Physical UDP ACK limits and the 300 ms native input watchdog remain unchanged.

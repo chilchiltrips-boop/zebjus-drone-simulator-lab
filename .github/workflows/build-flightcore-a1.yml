@@ -105,7 +105,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-arduino-1.5.1-esp32-3.3.12-partial-v1-
       - name: Check dependency setup failure handling
-        run: python3 -B tools/test_firmware_setup.py
+        run: |
+          python3 -B tools/test_firmware_setup.py
+          python3 -B tools/test_simulator_rc_runtime.py
       - name: Install pinned ESP32 core with bounded download retries
         id: arduino-setup
         run: python3 -B tools/build_firmware.py --install-only

@@ -14,7 +14,7 @@ public final class NativeGateHarness {
             try{
                 switch(f[1]){
                     case "begin":pending.put(f[2],gate.beginGrant(f[3],f[4],f[5],wifi));break;
-                    case "accept":if(!gate.accept(pending.remove(f[2]),now,1000))throw new IllegalStateException("Grant cancelled");break;
+                    case "accept":if(!gate.accept(pending.remove(f[2]),now,1000,f.length>6&&"SIM".equals(f[6])))throw new IllegalStateException("Grant cancelled");break;
                     case "authorize":gate.authorize(f[3],f[4],f[5]);break;
                     case "rc":{LeaseGate.Lease lease=gate.authorize(f[3],f[4],f[5]);int[] channels=LocalPolicy.channels(LocalPolicy.form("type=rc_frame&channels="+f[6]));gate.rcAck(lease,now,channels);break;}
                     case "ping":gate.ack(gate.authorize(f[3],f[4],f[5]),now);break;

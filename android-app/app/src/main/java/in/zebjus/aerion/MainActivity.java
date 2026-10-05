@@ -240,6 +240,7 @@ public final class MainActivity extends Activity {
         DatagramSocket socket=null;
         try{
             JSONObject info=new JSONObject(body);int port=info.optInt("rcUdpPort",0);String nonce=info.optString("rcUdpToken","");
+            if(port==0){rcStream.useHttp(gate.authorize(grant.origin,grant.deviceId,grant.clientId));return;}
             if(port!=4210||!nonce.matches("[0-9a-fA-F]{16}"))return;
             if(!grant.deviceId.matches("ZFC-[0-9a-fA-F]{12}"))return;
             LeaseGate.Lease lease=gate.authorize(grant.origin,grant.deviceId,grant.clientId);
@@ -299,13 +300,13 @@ public final class MainActivity extends Activity {
                 if(!allowed())throw new IllegalStateException("Control stopped.");
                 Result result=http(network,url,method,body,timeout,this);
                 boolean ok=result.code>=200 && result.code<300 && new JSONObject(result.body).optBoolean("ok",true);
-                if(grant!=null){if(ok && !cancelled && gate.accept(grant,now(),new JSONObject(result.body).optLong("rcTimeoutMs",0))){configureRcStream(grant,result.body);}else{gate.cancel(grant);if(ok)releaseGrant(grant);if(ok)throw new IllegalStateException("Control request cancelled. Take control again.");}}
+                if(grant!=null){if(ok && !cancelled && gate.accept(grant,now(),new JSONObject(result.body).optLong("rcTimeoutMs",0),new JSONObject(result.body).optBoolean("simulationOutputsBlocked",false)&&"HTTP".equals(new JSONObject(result.body).optString("simulationRcTransport")))){configureRcStream(grant,result.body);}else{gate.cancel(grant);if(ok)releaseGrant(grant);if(ok)throw new IllegalStateException("Control request cancelled. Take control again.");}}
                 if(ok && lease!=null){if("rc_frame".equals(fields.get("type")))gate.rcAck(lease,now(),LocalPolicy.channels(fields));else gate.ack(lease,now());}
                 if(ok && url.getPath().equals("/api/control/release"))rcStream.stop(gate.release(LocalPolicy.origin(url),fields.get("expectedDeviceId"),fields.get("clientId")));
                 if(!cancelled)reply(id,result.code,result.body);
             }catch(Exception e){
                 if(grant!=null){gate.cancel(grant);releaseGrant(grant);}
-                if(!cancelled)failure(id,e instanceof IllegalArgumentException || e instanceof IllegalStateException ? e.getMessage() : "Kit not reachable. Join its Wi-Fi and check the address.");
+                if(!cancelled)failure(id,e instanceof IllegalArgumentException || e instanceof IllegalStateException ? e.getMessage() : e instanceof java.net.SocketTimeoutException ? "Kit request timed out. Retrying the verified connection." : "Kit not reachable. Join its Wi-Fi and check the address.");
             }finally{jobs.remove(id,this);}
         }
     }

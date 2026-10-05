@@ -25,7 +25,7 @@ for name in provenance['pythonPackages']:
     p = ROOT / 'vendor/pyodide' / package['file_name']
     assert hashlib.sha256(p.read_bytes()).hexdigest() == package['sha256'], name
     assert p.relative_to(ROOT).as_posix() in paths
-for required in ['lab-workflow.js','lab-workflow.css','fc-setup.js','mobile-flight-console.js','flight-training.js','flight-training-core.js','telemetry-cockpit.js','control-sticks.js','kit-console.js','flight-diagnostics.js','app.js','python-worker.js','monaco-worker.js','offline-support.js',
+for required in ['lab-workflow.js','lab-workflow.css','fc-setup.js','receiver-wizard.js','mobile-flight-console.js','flight-training.js','flight-training-core.js','telemetry-cockpit.js','control-sticks.js','kit-console.js','flight-diagnostics.js','app.js','python-worker.js','monaco-worker.js','offline-support.js',
                  'python_companion/simple_syntax.py','python_companion/browser_cv2.py',
                  'python_companion/browser_cvzone.py','vendor/pyodide/pyodide.js',
                  'vendor/pyodide/pyodide.asm.wasm','vendor/pyodide/python_stdlib.zip',
