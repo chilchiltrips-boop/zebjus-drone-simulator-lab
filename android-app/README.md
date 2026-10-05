@@ -1,6 +1,6 @@
-# Aerion Flight Android — 18.3.66-android.2
+# Aerion Flight Android — 18.3.66-android.3
 
-Rebuilt with versionCode 1836602 and the same development certificate. This
+Rebuilt with versionCode 1836603 and the same development certificate. This
 update accompanies the web lab's fifth-position Python Lab and compact Wix
 embed layout. The Android interface retains Controls, Safety and Wi-Fi;
 advanced setup and Python continue in the web lab. Matching controller firmware 18.3.66 adds exclusive app simulator destinations.
@@ -112,3 +112,7 @@ node tests/browser_transport_test.js
 Official references: [local WebView content](https://developer.android.com/develop/ui/views/layout/webapps/load-local-content), [Wi-Fi-specific connections](https://developer.android.com/reference/android/net/Network#openConnection(java.net.URL)), [APK signing verification](https://developer.android.com/tools/apksigner).
 
 App home Mode: choose **Real flight**, **Tripod simulator**, or **Flight Training**. Simulation requires propeller removal and blocks real motor outputs. The selected web simulator follows app ARM and joysticks in view-only mode. Switching destination resets throttle and requires manual ARM; both simulators never receive app flight input together. See the update/test guide for matching APK and firmware installation.
+
+Android r3 fixes paused same-session native control renewal after changing training destination. The app/web integration test now runs the production Java grant policy. Old status/telemetry replies cannot stop a newer transmitter or destination. The installed browser Flight UI uses local-address-space requests.
+
+For AP firmware OTA, use the web lab Firmware page: load the matching APP image while internet is available, download it, then join the kit AP. Import accepts files regardless of OS MIME classification and validates their extension, image header and board profile. Auto Load falls back to this browser's cached image when the internet is unavailable. Factory images remain USB-only.

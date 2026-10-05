@@ -8,6 +8,7 @@ public final class LeaseGate {
     public static final class Lease {
         public final String origin, deviceId, clientId;
         public final Object network;
+        private final long generation;
         private long ack;
         private final long ackTimeout;
         private long inputAt;
@@ -17,8 +18,8 @@ public final class LeaseGate {
         private boolean streaming=false;
         private volatile boolean hasRc=false;
         public boolean hasRc(){return hasRc;}
-        Lease(String origin, String id, String client, Object network, long now, long timeout) {
-            this.origin=origin; deviceId=id; clientId=client; this.network=network; ack=now; ackTimeout=timeout;
+        Lease(String origin, String id, String client, Object network, long now, long timeout, long generation) {
+            this.origin=origin; deviceId=id; clientId=client; this.network=network; ack=now; ackTimeout=timeout;this.generation=generation;
         }
         public boolean matches(String base, String id, String client) {
             return origin.equals(base) && deviceId.equals(id) && clientId.equals(client);
@@ -46,7 +47,13 @@ public final class LeaseGate {
     public synchronized boolean isPending(Grant grant) { return foreground && pending==grant && grant.generation==generation; }
     public synchronized Grant beginGrant(String base, String id, String client, Object network) {
         if (!foreground || network==null) throw new IllegalStateException("Open the app and join the kit Wi-Fi.");
-        if (current!=null || pending!=null) throw new IllegalStateException("Release the previous control session first.");
+        if (pending!=null) throw new IllegalStateException("Release the previous control session first.");
+        if(current!=null){
+            // A destination change invalidates the controller's UDP token.
+            // Renew only this paused reservation; never replace a live stream.
+            if(!current.matches(base,id,client)||current.network!=network||current.streaming||current.input!=null)throw new IllegalStateException("Stop the current transmitter before renewing control.");
+            generation++;current=null;
+        }
         pending=new Grant(generation,base,id,client,network); return pending;
     }
     public synchronized boolean accept(Grant grant, long now) {
@@ -55,11 +62,11 @@ public final class LeaseGate {
     public synchronized boolean accept(Grant grant, long now, long controllerTimeout) {
         if (pending!=grant || !foreground || grant.generation!=generation || current!=null) return false;
         long timeout=controllerTimeout>0 ? Math.max(200,Math.min(MAX_ACK_TIMEOUT_MS,controllerTimeout-100)) : ACK_TIMEOUT_MS;
-        pending=null; current=new Lease(grant.origin,grant.deviceId,grant.clientId,grant.network,now,timeout); return true;
+        pending=null; current=new Lease(grant.origin,grant.deviceId,grant.clientId,grant.network,now,timeout,grant.generation); return true;
     }
     public synchronized Lease cancel(Grant grant) {
         if(pending==grant)pending=null;
-        return current!=null&&current.matches(grant.origin,grant.deviceId,grant.clientId)&&current.network==grant.network ? fence(false) : null;
+        return current!=null&&current.generation==grant.generation&&current.matches(grant.origin,grant.deviceId,grant.clientId)&&current.network==grant.network ? fence(false) : null;
     }
     public synchronized Lease authorize(String base, String id, String client) {
         if (!foreground || current==null || !current.matches(base,id,client)) throw new IllegalStateException("Take control again before sending commands.");

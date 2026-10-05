@@ -43,9 +43,9 @@ async function fetchLocal(url,options={},timeoutMs=2200){
     throw e;
   }finally{clearTimeout(timer)}
 }
-async function requestBase(base,path,{method='GET',data=null,timeout=2200,keepalive=false}={}){
+async function requestBase(base,path,{method='GET',data=null,body=null,timeout=2200,keepalive=false}={}){
   const started=performance.now(),headers={'Accept':'application/json'},opts={method,headers,keepalive};
-  if(data!==null){headers['Content-Type']='application/x-www-form-urlencoded;charset=UTF-8';opts.body=formBody(data)}
+  if(body!==null)opts.body=body;else if(data!==null){headers['Content-Type']='application/x-www-form-urlencoded;charset=UTF-8';opts.body=formBody(data)}
   let res;try{res=await fetchLocal(base+path,opts,timeout)}catch(e){emit({kind:'http-fail',base,path,message:e?.message||String(e)});throw e}
   const text=await res.text();let payload={};try{payload=text?JSON.parse(text):{}}catch(_){payload={ok:res.ok,message:text}}
   if(!res.ok){const err=new Error(payload?.message||payload?.error||`Kit HTTP ${res.status}`);err.status=res.status;err.payload=payload;err.reachable=true;throw err}
@@ -171,6 +171,12 @@ class LocalKitClient{
   async refresh(timeout=2100){if(!this.base)throw new Error('Kit not connected.');const base=this.base,id=this.deviceId,generation=this._generation,st=await requestBase(base,`/api/status?clientId=${encodeURIComponent(this.clientId)}`,{timeout});if(generation!==this._generation)throw new Error('Status request cancelled.');if(id&&!sameDeviceIdentity(st.deviceId,id))throw new Error('Connected device identity changed.');return this._accept(st,base)}
   async reconnect(retries=4){if(this._reconnectPromise)return this._reconnectPromise;this._reconnectPromise=(async()=>{let last;const waits=[0,350,800,1500,2500];for(let i=0;i<Math.max(1,retries);i++){if(waits[i])await new Promise(r=>setTimeout(r,waits[i]));try{return await this.connect(this.name||this.deviceId,this.ipHint,this.deviceId)}catch(e){last=e}}throw last||new Error('Kit reconnect failed.')})();try{return await this._reconnectPromise}finally{this._reconnectPromise=null}}
   async request(path,options={}){if(!this.base)throw Error('Kit not connected.');return requestBase(this.base,path,options)}
+  async uploadFirmware(bytes,name,boardId){
+    if(!this.base||!this.deviceId)throw Error('Connect and verify the kit first.');
+    const body=new FormData();body.append('firmware',new Blob([bytes],{type:'application/octet-stream'}),name);
+    const path='/api/firmware/update?'+new URLSearchParams({clientId:this.clientId,expectedDeviceId:this.deviceId,boardId});
+    return requestBase(this.base,path,{method:'POST',body,timeout:120000});
+  }
   async telemetry(){return requestBase(this.base,'/api/telemetry?clientId='+encodeURIComponent(this.clientId),{timeout:1400})}
   async i2cScan(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/i2c/scan',{timeout:6500})}
   async imuRead(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/imu',{timeout:2200})}

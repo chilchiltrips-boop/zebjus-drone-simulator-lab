@@ -35,7 +35,7 @@
     {
       "path": "FILE_COUNT.txt",
       "bytes": 4,
-      "sha256": "ffab722c4165f59136c1fab84214789efd376d3851cc4195e3555c3755201e7e"
+      "sha256": "83e576c61bcb563ad0a0f9cccf38461d540e54878f4975f29ac6341d80a5caec"
     },
     {
       "path": "FILE_REPLACEMENT_POLICY.md",
@@ -399,8 +399,8 @@
     },
     {
       "path": "SUPPORT/V18_3_66_UPDATE_AND_TEST.md",
-      "bytes": 11000,
-      "sha256": "c52c01f0064be26a5f8444732555ce45649e9d6094a5addc4ea19cb4f211e856"
+      "bytes": 12247,
+      "sha256": "ed61763d71841cce41c25f417196a55ece4f44b1e8076bb0f0ad85755a55fb16"
     },
     {
       "path": "SUPPORT/VERIFICATION_V18_3_59.json",
@@ -474,8 +474,8 @@
     },
     {
       "path": "android-app/README.md",
-      "bytes": 11590,
-      "sha256": "4d78088b148f932fc70d3cdae1b953959f9dcca9f1fe1221881683b51c9c8a66"
+      "bytes": 12288,
+      "sha256": "66e9c01fe85be59e63bef050ac4906917fce1514d108b6a4ab0d0ffafca38d21"
     },
     {
       "path": "android-app/THIRD_PARTY_NOTICES.md",
@@ -490,7 +490,7 @@
     {
       "path": "android-app/app/build.gradle",
       "bytes": 775,
-      "sha256": "9e3ab5ff5d25df09fb3de9f310fbd58c03337f4ce4133071fc9d2ea0e74e0144"
+      "sha256": "0a3df5152dcb62ee5ff5af53f8e142ddbe97257fa4f8a851564ea0f513701f2b"
     },
     {
       "path": "android-app/app/src/main/AndroidManifest.xml",
@@ -504,8 +504,8 @@
     },
     {
       "path": "android-app/app/src/main/assets/flight/index.html",
-      "bytes": 73749,
-      "sha256": "d36284da6b1b639bdd6be66ce31774680d7fb1653242ac585f4dca70ce2f87cc"
+      "bytes": 73955,
+      "sha256": "9458c79c4f4bf4146d171cafc7f532b043279393de4ff9495c55c68e436ee473"
     },
     {
       "path": "android-app/app/src/main/java/in/zebjus/aerion/LaunchPolicy.java",
@@ -514,8 +514,8 @@
     },
     {
       "path": "android-app/app/src/main/java/in/zebjus/aerion/LeaseGate.java",
-      "bytes": 6171,
-      "sha256": "3786646aeb5107a83f2e062b8b05be4b9a8e35ac6b0aad65c2e4b4ced0daf32a"
+      "bytes": 6728,
+      "sha256": "983797e64e81ce42fb59e1dd377d10cb9faa2a2134b057355032a2e8914d1760"
     },
     {
       "path": "android-app/app/src/main/java/in/zebjus/aerion/LocalPolicy.java",
@@ -550,7 +550,7 @@
     {
       "path": "android-app/dist/APK_MANIFEST.txt",
       "bytes": 1666,
-      "sha256": "c37a0c9d1b920ace20ee9e0c69deb7ec9c3a1b93ca63136db76aaadada3dd83f"
+      "sha256": "a8b50d5b2fb093b915a8d3bd8edf845becc47d292aefa6c376e8dc3b394b7c75"
     },
     {
       "path": "android-app/dist/APK_SIGNATURE.txt",
@@ -560,12 +560,12 @@
     {
       "path": "android-app/dist/BUILD_REPORT.json",
       "bytes": 642,
-      "sha256": "a746bb8a0ccf656c46413b8b40a8598dae5d03bd35ceed90d6bebface129293e"
+      "sha256": "d69915c6ead6e61f3e2c1434c997d68ffd4192b17740b85ddabfb984b3fedfb6"
     },
     {
       "path": "android-app/dist/ZEBJUS_Aerion_V18_3_66_Android.apk",
       "bytes": 62060,
-      "sha256": "de2fa665acc144e6012d0dbcea12b8e2af0f469cec6786bcd8a707e76ccac50e"
+      "sha256": "c9b99b32dfea29525ba1decd22908decffaecf8701837e7e95051e2773faf964"
     },
     {
       "path": "android-app/gradle/wrapper/gradle-wrapper.jar",
@@ -604,8 +604,13 @@
     },
     {
       "path": "android-app/tests/LeaseGateTest.java",
-      "bytes": 6175,
-      "sha256": "01e359cd1abe1af8d7621de9af2ce4c7790d4b5d90cad579b5acafd49c97fff8"
+      "bytes": 7336,
+      "sha256": "1d0ceaed66987991b633347112eaf7e34304a69b8142900080d7fc26daebec1a"
+    },
+    {
+      "path": "android-app/tests/NativeGateHarness.java",
+      "bytes": 1736,
+      "sha256": "b8d88d81a0519efe10eba7a8f9cf66f9b103781e6318789a12b86726273c8bf8"
     },
     {
       "path": "android-app/tests/NativeRcStreamTest.java",
@@ -614,8 +619,8 @@
     },
     {
       "path": "android-app/tests/browser_modes_test.js",
-      "bytes": 13592,
-      "sha256": "725c4fbea0f0842ed111caad6ff3ad867c81b35d38c3eeeb9cc1deafa8258776"
+      "bytes": 18044,
+      "sha256": "1d661bd560c999d84d73d7cacb745e6ccf786f9e8ab30afb5909cbdb8ba6932d"
     },
     {
       "path": "android-app/tests/browser_transport_test.js",
@@ -625,7 +630,7 @@
     {
       "path": "android-app/tools/build_apk.py",
       "bytes": 6381,
-      "sha256": "c452ed81d88dc2031d61cb66dd2224049b206e3431fcc869762edbc33131fc07"
+      "sha256": "1d7863698516ac64284b146351b86260763cea90008b05ccb1ecf7e26a2cb048"
     },
     {
       "path": "app.js",
@@ -699,8 +704,8 @@
     },
     {
       "path": "firmware-updater.js",
-      "bytes": 29787,
-      "sha256": "60a2f63906115f2619e5e76292a7fad068b905e1b2cb2d99a386ea69d7b88dde"
+      "bytes": 29974,
+      "sha256": "5230f4fa25ac3ad670394daff32f0912f95ad5e0a0bce4acdd059dd3f8101f3e"
     },
     {
       "path": "flight/app.webmanifest",
@@ -709,13 +714,13 @@
     },
     {
       "path": "flight/index.html",
-      "bytes": 73701,
-      "sha256": "e9aecb28995a5c41cdf85b45659073784d2256feaa193faacead0434a505d104"
+      "bytes": 73907,
+      "sha256": "feafdeb8627e04449c9e837a1b3d37c1130c82fa300265dbf7e74fedbf84d574"
     },
     {
       "path": "flight/service-worker.js",
       "bytes": 1175,
-      "sha256": "ed2cf641813f08875b59b86ffd8e929da43f41f1bc1d44cdf12b2b6aa05cc258"
+      "sha256": "8d6389bdcdcb1afbc87a9c1da061db69b9ee5212cab63753fbe16baa04cd51ea"
     },
     {
       "path": "flight-diagnostics.js",
@@ -779,8 +784,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 79408,
-      "sha256": "87eb77f3c8a09f9b92e10680155f440b160c823e7721891df39c3a16ad75b66f"
+      "bytes": 79446,
+      "sha256": "acb8d832c65ef227896a1f45c91238f93033c01799a2acbb493e6a2bbf3b352b"
     },
     {
       "path": "kit-console.js",
@@ -789,8 +794,8 @@
     },
     {
       "path": "kit-local.js",
-      "bytes": 17674,
-      "sha256": "326604a27881a3f349d50009255f6e962b916e6d3056dc0e257530ee8fec5a76"
+      "bytes": 18164,
+      "sha256": "c7f6e40cf226289ac7bda0852a4620b39700c613c607d44a356971d9d5ba6fe4"
     },
     {
       "path": "lab-workflow.css",
@@ -830,7 +835,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 42344,
-      "sha256": "2f08c084d76586dd1969977042cc1e8b7a397be2d0be7efe2374480d73b8decb"
+      "sha256": "a7ead7a9fa3b148d47bd3434335aeb59b888b2a70a3313de8ee4366d74cd4e02"
     },
     {
       "path": "offline-support.js",
@@ -1075,7 +1080,7 @@
     {
       "path": "service-worker.js",
       "bytes": 6698,
-      "sha256": "e3b5eea6b6c1b690ddfa9a99749a07f264a2beba7255f18ac66194b355005832"
+      "sha256": "bed4b00b4d350c86be980303468291f15e330a98019b42f5c8a571b956791b49"
     },
     {
       "path": "start_offline.py",
@@ -1194,8 +1199,8 @@
     },
     {
       "path": "tools/flight_app_source.html",
-      "bytes": 73701,
-      "sha256": "e9aecb28995a5c41cdf85b45659073784d2256feaa193faacead0434a505d104"
+      "bytes": 73907,
+      "sha256": "feafdeb8627e04449c9e837a1b3d37c1130c82fa300265dbf7e74fedbf84d574"
     },
     {
       "path": "tools/make_offline_manifest.py",
@@ -1269,8 +1274,8 @@
     },
     {
       "path": "tools/test_firmware_updater.js",
-      "bytes": 3984,
-      "sha256": "b2b379c809199996dc6c03d30a0bb6de030785df1742bfe9f2a29405a16a80de"
+      "bytes": 5169,
+      "sha256": "3a992b3db3b27b5891185d1d16e01e9a85e681f9ffcbc0486480b18715b110df"
     },
     {
       "path": "tools/test_flight_app_browser.js",

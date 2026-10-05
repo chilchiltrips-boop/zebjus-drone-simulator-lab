@@ -1,6 +1,6 @@
 {
   "version": "18.3.66",
-  "totalBytes": 114463255,
+  "totalBytes": 114464176,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -114,8 +114,8 @@
     },
     {
       "path": "firmware-updater.js",
-      "bytes": 29787,
-      "sha256": "60a2f63906115f2619e5e76292a7fad068b905e1b2cb2d99a386ea69d7b88dde"
+      "bytes": 29974,
+      "sha256": "5230f4fa25ac3ad670394daff32f0912f95ad5e0a0bce4acdd059dd3f8101f3e"
     },
     {
       "path": "flight/app.webmanifest",
@@ -124,13 +124,13 @@
     },
     {
       "path": "flight/index.html",
-      "bytes": 73701,
-      "sha256": "e9aecb28995a5c41cdf85b45659073784d2256feaa193faacead0434a505d104"
+      "bytes": 73907,
+      "sha256": "feafdeb8627e04449c9e837a1b3d37c1130c82fa300265dbf7e74fedbf84d574"
     },
     {
       "path": "flight/service-worker.js",
       "bytes": 1175,
-      "sha256": "ed2cf641813f08875b59b86ffd8e929da43f41f1bc1d44cdf12b2b6aa05cc258"
+      "sha256": "8d6389bdcdcb1afbc87a9c1da061db69b9ee5212cab63753fbe16baa04cd51ea"
     },
     {
       "path": "flight-diagnostics.js",
@@ -194,8 +194,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 79408,
-      "sha256": "87eb77f3c8a09f9b92e10680155f440b160c823e7721891df39c3a16ad75b66f"
+      "bytes": 79446,
+      "sha256": "acb8d832c65ef227896a1f45c91238f93033c01799a2acbb493e6a2bbf3b352b"
     },
     {
       "path": "kit-console.js",
@@ -204,8 +204,8 @@
     },
     {
       "path": "kit-local.js",
-      "bytes": 17674,
-      "sha256": "326604a27881a3f349d50009255f6e962b916e6d3056dc0e257530ee8fec5a76"
+      "bytes": 18164,
+      "sha256": "c7f6e40cf226289ac7bda0852a4620b39700c613c607d44a356971d9d5ba6fe4"
     },
     {
       "path": "lab-workflow.css",
