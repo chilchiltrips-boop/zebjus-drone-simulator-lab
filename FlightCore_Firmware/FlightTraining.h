@@ -14,7 +14,7 @@ bool trainingCommand(const String& type){
  if(type=="training_status"){sendJson(200,trainingJson());return true;}
  if(!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){sendMessage(409,"Exact Device ID is required for training");return true;}
  const String token=server.arg("session"),owner=server.arg("clientId");if(!setupTokenValid(token)){sendMessage(400,"Unique training session is required");return true;}
- if(type=="training_end"){cancelTrainingToken(token);if(trainingSession==token&&trainingOwner==owner)finishTraining();sendJson(200,trainingJson());return true;}
+ if(type=="training_end"){cancelTrainingToken(token);if(trainingActive&&trainingSession==token&&trainingOwner==owner)finishTraining();sendJson(200,trainingJson());return true;}
  if(type=="training_begin"||type=="training_select"){
   if(!requireControl())return true;if(!FLIGHT_CONTROL_ENABLED){sendMessage(403,"Training RC bridge requires an A2 controller");return true;}
   const bool select=type=="training_select";if(select&&controlRole!="MOBILE"){sendMessage(403,"App mode selection requires the mobile control grant");return true;}

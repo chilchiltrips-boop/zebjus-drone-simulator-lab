@@ -2,7 +2,7 @@ ZEBJUS Aerion V18.3.66 validation
 
 PASS: rebuilt APK manifest / Java DEX / v2-v3 signature / ZIP alignment; exact bundled flight UI and Android transport. Same update certificate.
 PASS: compiled A1/A2 with Arduino CLI 1.3.1 and Arduino-ESP32 3.3.12; APP/FACTORY headers, chip profiles, dual OTA slots, size and matching catalog hashes.
-PASS: actual controller arming / bench / setup / PWM and training command functions; props/identity/MOBILE grant, exclusive targets, private nonces, late cancellation, lease/owner expiry, output inhibition and neutral/manual re-arm.
+PASS: actual controller arming / bench / setup / PWM and training command functions; props/identity/MOBILE grant, exclusive targets, private nonces, late cancellation, lease/owner expiry, output inhibition and neutral/manual re-arm, and expired training cleanup isolation from a new Real grant.
 PASS: actual Android bundled UI plus actual web Lab sharing a mock kit; app home mode selection, observer without control takeover, app ARM starts Flight Training, exclusive Tripod/Flight RC, Real simulation OFF, private app lease, pending selection STOP and native lifecycle cleanup.
 PASS: native Java grant/lifecycle policy and actual UDP loopback; scoped ACK/replay, independent 50 Hz publication, input/ACK timeout and safe stop bursts.
 PASS: complete setup browser/session regression; ESC checklist / HIGH timeout / HIGH to LOW, bounded output sliders / delayed ACK Stop, motor direction/readback, PPM, scan ownership preservation, Airframe Back/Next and reachable Restart.
@@ -12,7 +12,8 @@ PASS: flight app offline cache/multitouch/STOP/reconnect/identity/AP-STA and por
 
 APK: 18.3.66-android.1, code 1836601, 62060 bytes
 APK SHA256: d41398259f2edaf3ad8ee0af1d6198752811e9aac7b5f8cface610906ead086c
-ZFC-A1: APP 1200928 bytes; FACTORY 4194304 bytes
+Local compilation figures; CI may rebuild identical source. Catalog/build-report contain the final package metrics.
+ZFC-A1: APP 1200944 bytes; FACTORY 4194304 bytes
 ZFC-A2: APP 1287248 bytes; FACTORY 4194304 bytes
 
 No physical Android phone, RF link, ESC/motor calibration or drone flight qualification was performed. Browser tests use simulated kit APIs. ESC tones and starting pulses require pilot observation.
