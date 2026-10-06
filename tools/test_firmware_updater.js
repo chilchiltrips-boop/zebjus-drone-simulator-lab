@@ -10,10 +10,12 @@ const client={base:'http://192.168.4.1',deviceId:ID,clientId:'WEB-TEST',connecte
 const school={client,getSelectedDevice:()=>selected,canControl:()=>true,markOffline(){},reconnectAfterFirmware:async()=>selected,refreshNow:async()=>selected};
 class XHR{constructor(){this.upload={}}open(method,url){this.method=method;this.url=url}send(form){posts.push({url:this.url,form});this.status=200;this.responseText='{"ok":true}';this.onload()}}
 const sandbox={window:{zebjusSchool:school,addEventListener(){}},document:{querySelector:s=>nodes.get(s)||null,readyState:'loading',addEventListener(){}},console,Uint8Array,Blob,FormData,XMLHttpRequest:XHR,setTimeout:f=>{queueMicrotask(f)},setInterval:()=>1,clearInterval(){},confirm:()=>true,Date};
-vm.createContext(sandbox);vm.runInContext(source.replace(/\}\)\(\);\s*$/,`window.test={validateEspImage,usbFlash,wifiFlash,set:(f,id)=>{fw=f;catalog=globalThis.cat;usbBoardId=id;loader={writeFlash:async options=>globalThis.writes.push(options),after:async()=>{if(globalThis.resetFailure)throw Error('Reset unavailable')}}},busy:()=>busy};})();`),Object.assign(sandbox,{cat:catalog,writes,resetFailure:false}));
+vm.createContext(sandbox);vm.runInContext(source.replace(/\}\)\(\);\s*$/,`window.test={mapHardwareSignature,validateEspImage,usbFlash,wifiFlash,set:(f,id)=>{fw=f;catalog=globalThis.cat;usbBoardId=id;loader={writeFlash:async options=>globalThis.writes.push(options),after:async()=>{if(globalThis.resetFailure)throw Error('Reset unavailable')}}},busy:()=>busy};})();`),Object.assign(sandbox,{cat:catalog,writes,resetFailure:false}));
 const api=sandbox.window.test;
 function image(board,kind){return new Uint8Array(fs.readFileSync(path.join(root,'FlightCore_Firmware',board.latest[kind].file)))}
 (async()=>{
+ api.set({},'');
+ for(const [signature,expected] of [['ESP32-C6 (revision 0)','ZFC-A2'],['ESP32C6','ZFC-A2'],['ESP32-C3 (revision v0.4)','ZFC-A1'],['ESP32-C61 (revision v0.0)',''],['unknown ESP32-C6','']])assert.equal(api.mapHardwareSignature(signature),expected);
  for(const b of catalog.boards){
   for(const kind of ['app','factory']){
    const bytes=image(b,kind);api.set({bytes,name:b.latest[kind].file,type:kind,boardId:b.id,version:catalog.version},b.id);assert.equal(api.validateEspImage(bytes,b.id,kind).chipId,b.imageChipIds[0]);
