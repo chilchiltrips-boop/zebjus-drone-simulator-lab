@@ -829,8 +829,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 80747,
-      "sha256": "005a00dcacc8e060bb53889a86d6cf6c141445ba686bb5aac5b0ff55893fda9c"
+      "bytes": 80753,
+      "sha256": "e27f4c09a75cbc8fad5e067ee8ca109fa51a831d1cafbe0688f7ad76c9950194"
     },
     {
       "path": "kit-console.js",
@@ -880,7 +880,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 42947,
-      "sha256": "45f343a940ffa22b2d901fddd208ba8417428acf4060bea0fa0d8e4c65723ee7"
+      "sha256": "61bc44bbcf1ed6c6a61041aa50175e05d05252d36d0f2d369c6546e47f2d051a"
     },
     {
       "path": "offline-support.js",
@@ -1140,7 +1140,7 @@
     {
       "path": "service-worker.js",
       "bytes": 6754,
-      "sha256": "98de8cf934e9a1e9fcacb1f550b883a79a8316da493c0b0660c0a008d217b566"
+      "sha256": "480291e7d5f7c45b83caacc40f2ee15a1c2548ba8a6a9c431fe8f8cefc464118"
     },
     {
       "path": "start_offline.py",
