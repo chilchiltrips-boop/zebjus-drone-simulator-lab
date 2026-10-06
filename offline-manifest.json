@@ -1,36 +1,36 @@
 {
   "version": "18.3.68",
-  "totalBytes": 114514344,
+  "totalBytes": 114514312,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
-      "bytes": 1208432,
-      "sha256": "c1f0b370e3cfaff4794250f90d77a8874eef026cd9d9712119182dbbd5fbed82"
+      "bytes": 1208416,
+      "sha256": "e969435466bd6a367cd929912236aea5eb83d34d3e6f6c12adae410a1e1ddafc"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "b823394135b7959e074d2348a6d63b857b3d3a5cb41f808960574b3ffe4de591"
+      "sha256": "994ada14743e079f8b39ea0f8731eadacd4ff7bb054b4009f7dc77df1aab6139"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin",
-      "bytes": 1293936,
-      "sha256": "65c4288b6afd0125b1919baf91b83659dda4a6df93bc71ce52c233de41548605"
+      "bytes": 1293920,
+      "sha256": "ecd0beb1049fdc3487185680abe08f71438eb7ae0f2892ed126653f139c92617"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "08e00e47108fba1990d854ab3e56f00b454f8f3268370ea528472bb16f3c6bf7"
+      "sha256": "4e705cc61e692ad205dc4f59bd5b6b6fe9e5ced3d19bc7ca56b91038392f53bd"
     },
     {
       "path": "FlightCore_Firmware/catalog.json",
       "bytes": 2793,
-      "sha256": "16f77c0ee857f4e6a00ddbb6a81cf186521be3d78a407bdfe0d471534e0429d2"
+      "sha256": "14ad75906a6fcf3e72076bbd102d0d8aece7648e0d36561495b3016b70a3d951"
     },
     {
       "path": "FlightCore_Firmware/latest.json",
       "bytes": 259,
-      "sha256": "5c6b5147055f851465dcfd3039a248bad20770e498f0abd574a6e3974d1760b6"
+      "sha256": "350ad98db8e92aaac89b53160f33e5f4456b4816746b1e3da20248ef78a12faf"
     },
     {
       "path": "WIX_EMBED.html",
@@ -105,17 +105,17 @@
     {
       "path": "firmware-catalog.json",
       "bytes": 2793,
-      "sha256": "16f77c0ee857f4e6a00ddbb6a81cf186521be3d78a407bdfe0d471534e0429d2"
+      "sha256": "14ad75906a6fcf3e72076bbd102d0d8aece7648e0d36561495b3016b70a3d951"
     },
     {
       "path": "firmware-latest.json",
       "bytes": 268,
-      "sha256": "0c6a1b947afdb87b4f21a3c1ea60a9e5fabd7a476ec0e680d2eb55d6d4cf1f6c"
+      "sha256": "156234814adafc0adbbe5e31187830cf1d4f20b269ff9e00e7921671bc72f7ea"
     },
     {
       "path": "firmware-updater.js",
       "bytes": 29974,
-      "sha256": "6581258a844c27c643a6da0c84c28118bb0b8b29360cc084feb598299c52e1b3"
+      "sha256": "4ac44e446d9005a7d12966daef49f148ea7b9f0b530902628b6b998f6ce0d0dc"
     },
     {
       "path": "flight/app.webmanifest",
