@@ -1,6 +1,6 @@
 {
   "version": "18.3.72",
-  "totalBytes": 114574731,
+  "totalBytes": 114582290,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -114,8 +114,8 @@
     },
     {
       "path": "firmware-updater.js",
-      "bytes": 30944,
-      "sha256": "823aa4837f0f5b0d99c85c1e0bb7682e9db7ef31ff26bc92cbf4d4093c80f266"
+      "bytes": 36393,
+      "sha256": "4a8bf53571f1d93119309fd11e2e431e8e066244851383080ea028a4ed491b80"
     },
     {
       "path": "flight/app.webmanifest",
@@ -199,8 +199,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 80105,
-      "sha256": "27349b1f1fcc0c6c28018ee90fd144f874c3bf9f76c0f5a471604e32d733aaa5"
+      "bytes": 80747,
+      "sha256": "005a00dcacc8e060bb53889a86d6cf6c141445ba686bb5aac5b0ff55893fda9c"
     },
     {
       "path": "kit-console.js",
@@ -209,8 +209,8 @@
     },
     {
       "path": "kit-local.js",
-      "bytes": 18250,
-      "sha256": "49a0c20608dee26cb2c5341ca291275c417041ff3d778e50fdfdf9c53b824ea8"
+      "bytes": 18588,
+      "sha256": "0d625eb096f7d9b8529f6ff291cacb9013e342aade2d91359d5c6330ccc9eb7b"
     },
     {
       "path": "lab-workflow.css",
@@ -399,8 +399,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 79755,
-      "sha256": "158971037206be5f365e2e6d20d01a3dd2e55c24b699aa52181e20df471f580f"
+      "bytes": 80885,
+      "sha256": "c0505e9d46eecfc2b58ee7902b29a0a5beb45d373c0c8d501ea1aa536ca19b75"
     },
     {
       "path": "server.js",

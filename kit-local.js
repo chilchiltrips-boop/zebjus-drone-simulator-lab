@@ -189,6 +189,8 @@ class LocalKitClient{
   async scanWifi(){let r;for(let i=0;i<40;i++){r=await requestBase(this.base,'/api/wifi/scan?clientId='+encodeURIComponent(this.clientId),{timeout:1800});if(!r.scanning)return r;await new Promise(resolve=>setTimeout(resolve,250))}throw Error('Wi-Fi scan timed out.')}
   async savedWifi(){return requestBase(this.base,'/api/wifi/saved',{timeout:2200})}
   async setWifi(ssid,password){return requestBase(this.base,'/api/wifi/set',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,ssid,password},timeout:2600})}
+  async testWifi(ssid,password,name=''){return requestBase(this.base,'/api/setup/test',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,ssid,password,name},timeout:3500})}
+  async wifiTestStatus(){return requestBase(this.base,'/api/setup/test/status?clientId='+encodeURIComponent(this.clientId),{timeout:3500})}
   async useWifi(ssid){return requestBase(this.base,'/api/wifi/use',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,ssid},timeout:2200})}
   async forgetWifi(ssid){return requestBase(this.base,'/api/wifi/forget',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,ssid},timeout:2200})}
   async resetWifi(){return requestBase(this.base,'/api/wifi/reset',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:2200})}

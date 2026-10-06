@@ -16,12 +16,12 @@ function formatBuildTime(v){if(!v)return'--';const d=new Date(v);return Number.i
 function stage(name,state){const e=$('#fwStage'+name);if(e)e.className=state||''}
 function resetStages(){['Prepare','Flash','Verify','Reboot','Reconnect'].forEach(x=>stage(x,''))}
 function progress(p,title){p=Math.max(0,Math.min(100,Math.round(p)));const b=$('#fwProgressBar');if(b)b.style.width=p+'%';text('#fwProgressPct',p+'%');if(title)text('#fwProgressTitle',title)}
-function setBusy(on){busy=!!on;['#fwUpgradeBtn','#fwUpgradeEraseBtn','#fwAutoLoadBtn','#fwWifiFlashBtn','#fwUsbFlashBtn','#fwRebootBtn','#fwConnectUsbBtn','#fwDisconnectUsbBtn','#fwRefreshKitBtn','#fwReconnectBtn','#fwForgetBtn','#fwDownloadBinBtn','#fwBoardProfile','#fwImageType','#fwFileInput','#fwUsbBaud','#fwEraseUsb'].forEach(s=>{const e=$(s);if(e)e.disabled=busy});const page=$('#tab-firmware'),label=$('.firmware-file-label');if(page)page.classList.toggle('firmware-busy',busy);if(label)label.setAttribute('aria-disabled',busy?'true':'false')}
+function setBusy(on){busy=!!on;['#fwUpgradeBtn','#fwUpgradeEraseBtn','#fwAutoLoadBtn','#fwWifiFlashBtn','#fwUsbFlashBtn','#fwRebootBtn','#fwConnectUsbBtn','#fwDisconnectUsbBtn','#fwRefreshKitBtn','#fwReconnectBtn','#fwForgetBtn','#fwDownloadBinBtn','#fwBoardProfile','#fwImageType','#fwFileInput','#fwUsbBaud','#fwUsbManualBoot','#fwEraseUsb'].forEach(s=>{const e=$(s);if(e)e.disabled=busy});const page=$('#tab-firmware'),label=$('.firmware-file-label');if(page)page.classList.toggle('firmware-busy',busy);if(label)label.setAttribute('aria-disabled',busy?'true':'false')}
 async function sha256(bytes){try{const h=await crypto.subtle.digest('SHA-256',bytes);return[...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch{return''}}
 function inferType(name){return/factory|merged|merge\.bin/i.test(String(name||''))?'factory':'app'}
 function inferVersion(name){const m=String(name||'').match(/(?:v|_)(\d+)[._-](\d+)[._-](\d+)/i);return m?`${m[1]}.${m[2]}.${m[3]}`:'Custom'}
 function boardById(id){return catalog?.boards?.find(b=>b.id===id)||null}
-function mapHardwareSignature(raw){const s=String(raw||'').toUpperCase();if(/\bUNKNOWN\b/.test(s))return'';const chips=Array.from(s.matchAll(/\bESP32[-_\s]*([A-Z]\d+)\b/g),m=>'ESP32'+m[1]);for(const b of catalog?.boards||[])for(const match of b.usbMatch||[]){const alias=String(match).toUpperCase(),compact=alias.replace(/[-_\s]+/g,'');if(compact.startsWith('ESP32')?chips.includes(compact):s.includes(alias))return b.id}return''}
+function mapHardwareSignature(raw){const s=String(raw||'').toUpperCase();if(/\bUNKNOWN\b/.test(s))return'';const chips=Array.from(s.matchAll(/\bESP32[-_\s]*(C6(?:FH[48])?|[A-Z]\d+)\b/g),m=>'ESP32'+m[1].replace(/FH[48]$/,''));for(const b of catalog?.boards||[])for(const match of b.usbMatch||[]){const alias=String(match).toUpperCase(),compact=alias.replace(/[-_\s]+/g,'');if(compact.startsWith('ESP32')?chips.includes(compact):s.includes(alias))return b.id}return''}
 function boardName(id){return boardById(id)?.name||id||'Unknown board'}
 function cleanHardwareText(v){return String(v||'').replace(/ESP32[- ]?C[36]/ig,'controller').replace(/ESP32C[36]/ig,'controller').replace(/ESP-ROM[^\n]*/ig,'FlightCore bootloader').replace(/Espressif/ig,'ZEBJUS controller')}
 function validateEspImage(bytes,boardId,type='app'){if(!(bytes instanceof Uint8Array)||bytes.length<32768)throw new Error('Firmware file is too small to be a valid controller image.');if(bytes[0]!==0xE9)throw new Error('Invalid firmware image: ESP image magic 0xE9 is missing.');const segments=bytes[1];if(segments<1||segments>16)throw new Error('Invalid firmware image: segment table is not plausible.');let nonZero=0,nonFF=0;const step=Math.max(1,Math.floor(bytes.length/8192));for(let i=0;i<bytes.length;i+=step){if(bytes[i]!==0)nonZero++;if(bytes[i]!==0xFF)nonFF++}if(nonZero<64||nonFF<64)throw new Error('Invalid firmware image: file contains mostly empty/zero data.');const board=boardById(boardId),chipId=bytes.length>13?(bytes[12]|(bytes[13]<<8)):null,allowed=board?.imageChipIds||[];if(allowed.length&&chipId!=null&&!allowed.includes(chipId))throw new Error(`Firmware chip ID ${chipId} does not match ${boardName(boardId)}.`);const appOffset=type==='factory'?parseInt(board?.appAddress||'0x10000'):0;
@@ -126,7 +126,48 @@ async function wifiFlash(){
  }catch(e){stage('Flash','error');badge('#fwOverallBadge','FAILED','danger');progress(0,'Update failed');log('Wi-Fi update failed: '+e.message)}finally{setBusy(false)}
 }
 async function loadUsbFlasher(){try{return await import('./vendor/esptool/bundle.mjs')}catch(e){throw new Error('Local USB flasher files are missing. Extract the complete offline ZIP. '+(e?.message||''))}}
-async function connectUsb(){if(busy)return;if(!('serial'in navigator)){log('Web Serial is not available in this browser. Use desktop Chrome/Edge on HTTPS or localhost.');return}setBusy(true);badge('#fwOverallBadge','USB CONNECT','warn');try{serialPort=await navigator.serial.requestPort();const mod=await loadUsbFlasher();transport=new mod.Transport(serialPort,true);loader=new mod.ESPLoader({transport,baudrate:+($('#fwUsbBaud')?.value||460800),terminal:{clean(){},writeLine(d){if(String(d).trim())log('[BOOT] '+cleanHardwareText(d))},write(d){if(String(d).trim())log('[BOOT] '+cleanHardwareText(d))}}});usbSignature=await loader.main();usbBoardId=mapHardwareSignature(usbSignature);if(!usbBoardId)throw new Error('This USB controller is not in the current ZEBJUS board catalog.');text('#fwUsbChip',boardName(usbBoardId));text('#fwUsbState','Bootloader connected');const b=$('#fwSerialBadge');if(b){b.textContent='USB CONNECTED';b.className='firmware-badge online'}badge('#fwOverallBadge','USB READY','good');await targetBoardId(true);log('USB bootloader connected: '+boardName(usbBoardId));await autoLoad()}catch(e){await disconnectUsb(false);badge('#fwOverallBadge','USB FAILED','danger');log('USB connect failed: '+cleanHardwareText(e.message))}finally{setBusy(false)}}
+function installUsbCompatibility(instance){
+ // Espressif's Python C6 driver uses package bits 24..26 and revision bits 18..23.
+ // The bundled JS driver reads older package/revision fields; correct only chip ID 13.
+ const detect=instance.detectChip;
+ instance.detectChip=async function(mode){await detect.call(this,mode);const c=this.chip;if(c?.IMAGE_CHIP_ID!==13||c.CHIP_NAME!=='ESP32-C6')return;
+  c.getPkgVersion=async l=>((await l.readReg(c.EFUSE_BASE+0x50))>>>24)&7;
+  c.getChipRevision=async l=>((await l.readReg(c.EFUSE_BASE+0x50))>>>18)&15;
+  c.getChipDescription=async l=>{const word=await l.readReg(c.EFUSE_BASE+0x50),pkg=(word>>>24)&7,major=(word>>>22)&3,minor=(word>>>18)&15;let name='unknown ESP32-C6';if(pkg===0)name='ESP32-C6 (QFN40)';else if(pkg===1){const cap=(await l.readReg(c.EFUSE_BASE+0x54))&7;if(cap===1)name='ESP32-C6FH4 (QFN32)';else if(cap===2)name='ESP32-C6FH8 (QFN32)'}return `${name} (revision v${major}.${minor})`};
+ };
+ const runStub=instance.runStub;
+ instance.runStub=async function(){const result=await runStub.call(this);if(this.syncStubDetected)this.IS_STUB=true;return result};
+ const readId=instance.readFlashId;
+ instance.readFlashId=async function(){let value,error;try{value=await readId.call(this)}catch(e){error=e}if(!error&&value!==0&&value!==0xffffff)return value;if(![5,13].includes(this.chip?.IMAGE_CHIP_ID)){if(error)throw error;return value}log('Retrying flash probe with default SPI attachment.');await this.flashSpiAttach(0);await sleep(100);return readId.call(this)};
+}
+async function probeUsbFlash(instance,board){
+ let id=await instance.readFlashId();
+ if(id===0||id===0xffffff){log('Flash ID unavailable; reattaching default SPI flash and checking again.');await instance.flashSpiAttach(0);await sleep(100);id=await instance.readFlashId()}
+ const capacity=(id>>>16)&255,detected=instance.DETECTED_FLASH_SIZES?.[capacity],size=detected?instance.flashSizeBytes(detected):(capacity>=18&&capacity<=28?2**capacity:0),required=instance.flashSizeBytes(board.flashSize||'4MB');
+ if(!Number.isInteger(id)||id<=0||id>=0xffffff||!size)throw Error('Flash chip did not respond with a valid ID. No erase/write was started. Disconnect external wiring, use USB power only, hold BOOT while tapping RESET, release BOOT, then retry USB Connect.');
+ if(size<required)throw Error(`Detected flash ${prettyBytes(size)} is smaller than the ${board.flashSize||'4MB'} board profile. No erase/write was started.`);
+ log(`Flash ID 0x${id.toString(16)} • ${prettyBytes(size)} verified.`);return id;
+}
+function usbMd5Hex(bytes){
+ // MD5 checks flash transfer integrity; firmware authenticity/file checks remain SHA-256.
+ const data=new Uint8Array(Math.ceil((bytes.length+9)/64)*64);data.set(bytes);data[bytes.length]=128;const view=new DataView(data.buffer);view.setUint32(data.length-8,(bytes.length*8)>>>0,true);view.setUint32(data.length-4,Math.floor(bytes.length/0x20000000),true);
+ const shifts=[7,12,17,22,5,9,14,20,4,11,16,23,6,10,15,21],state=[0x67452301,0xefcdab89,0x98badcfe,0x10325476];
+ for(let block=0;block<data.length;block+=64){let [a,b,c,d]=state;for(let i=0;i<64;i++){let f,g;if(i<16){f=(b&c)|(~b&d);g=i}else if(i<32){f=(d&b)|(~d&c);g=(5*i+1)%16}else if(i<48){f=b^c^d;g=(3*i+5)%16}else{f=c^(b|~d);g=(7*i)%16}const shift=shifts[(i>>>4)*4+(i%4)],sum=(a+f+Math.floor(Math.abs(Math.sin(i+1))*4294967296)+view.getUint32(block+g*4,true))|0,next=(b+((sum<<shift)|(sum>>>(32-shift))))|0;a=d;d=c;c=b;b=next}state[0]=(state[0]+a)|0;state[1]=(state[1]+b)|0;state[2]=(state[2]+c)|0;state[3]=(state[3]+d)|0}
+ return state.map(word=>[0,8,16,24].map(shift=>((word>>>shift)&255).toString(16).padStart(2,'0')).join('')).join('');
+}
+async function connectUsb(){
+ if(busy)return;if(!('serial'in navigator)){log('Web Serial is not available in this browser. Use desktop Chrome/Edge on HTTPS or localhost.');return}setBusy(true);badge('#fwOverallBadge','USB CONNECT','warn');
+ try{
+  const port=await navigator.serial.requestPort();log('USB port access granted • checking bootloader and flash chip.');await disconnectUsb(false);await loadCatalog();const mod=await loadUsbFlasher(),requested=+($('#fwUsbBaud')?.value||115200),rates=requested===115200?[115200]:[requested,115200],mode=$('#fwUsbManualBoot')?.checked?'no_reset':'default_reset';
+  for(let attempt=0;attempt<rates.length;attempt++){
+   try{serialPort=port;transport=new mod.Transport(port,true);loader=new mod.ESPLoader({transport,baudrate:rates[attempt],terminal:{clean(){},writeLine(d){if(String(d).trim())log('[BOOT] '+String(d).trim())},write(d){if(String(d).trim())log('[BOOT] '+String(d).trim())}}});installUsbCompatibility(loader);usbSignature=await loader.main(mode);usbBoardId=mapHardwareSignature(usbSignature);const board=boardById(usbBoardId);if(!board||!board.imageChipIds?.includes(loader.chip?.IMAGE_CHIP_ID))throw Error('Unsupported USB chip: '+usbSignature+'. Select the actual A1/C3 or A2/C6 controller port.');await probeUsbFlash(loader,board);if($('#fwUsbBaud'))$('#fwUsbBaud').value=String(rates[attempt]);break}
+   catch(error){await disconnectUsb(false);if(attempt+1===rates.length||/Unsupported USB chip|smaller than/.test(error.message))throw error;log('USB handshake failed at '+rates[attempt]+' baud; retrying the same port at 115200.');}
+  }
+  text('#fwUsbChip',boardName(usbBoardId));text('#fwUsbState','Bootloader + flash verified');const b=$('#fwSerialBadge');if(b){b.textContent='USB CONNECTED';b.className='firmware-badge online'}badge('#fwOverallBadge','USB READY','good');await targetBoardId(true);log('USB bootloader connected: '+usbSignature);
+  if(!kitStatus().online&&$('#fwImageType')){$('#fwImageType').value='factory';fw=null;renderFirmware();log('Offline USB recovery selected: complete FACTORY image. Flashing this image resets saved settings.')}
+  await autoLoad();
+ }catch(e){await disconnectUsb(false);badge('#fwOverallBadge','USB FAILED','danger');log('USB connect failed: '+e.message);log('Close Arduino/other serial tabs. For manual recovery: hold BOOT, tap RESET, release BOOT, select Already in BOOT mode and reconnect the USB port.')}finally{setBusy(false)}
+}
 function flashReconnectPending(expectedVersion){
  stage('Reboot','active');stage('Reconnect','active');progress(99,'Firmware written • boot/reconnect not confirmed');badge('#fwOverallBadge','FLASHED • BOOT / RECONNECT PENDING','warn');
  log('Firmware bytes were written. Join the kit Wi-Fi to verify boot. If its Wi-Fi is absent, release BOOT and press RESET once; check the USB boot log if it remains absent.');startPostFlashWatch(expectedVersion)
@@ -137,12 +178,15 @@ async function usbFlash(){
  if(usbBoardId&&target!==usbBoardId)return log(`Blocked: firmware is for ${boardName(target)}, USB controller is ${boardName(usbBoardId)}.`);
  const erase=!!$('#fwEraseUsb')?.checked;if(erase&&type!=='factory')return log('Erase is blocked for application-only images because it would remove the bootloader/partition table.');
  const bp=boardById(target);if(!bp)return log('Selected board profile is not available.');
- if(!await confirmInLab(`USB flash ${fw.name}\nType: ${type==='factory'?'Factory/Merged':'Application'}\nBoard: ${boardName(target)}\n\nContinue?`))return;
+ const address=type==='factory'?0:parseInt(bp.appAddress||'0x10000'),limit=parseInt(bp.flashSize||'4MB',10)*1048576;
+ if(!Number.isFinite(address)||address<0||address+fw.bytes.length>limit)return log('Blocked: firmware exceeds the selected board flash capacity.');
+ if(!await confirmInLab(`USB flash ${fw.name}\nType: ${type==='factory'?'Factory/Merged':'Application'}\nBoard: ${boardName(target)}${type==='factory'?'\nSaved Wi-Fi, PID and calibration settings will be reset.':''}\n\nContinue?`))return;
  setBusy(true);resetStages();stage('Prepare','done');stage('Flash','active');progress(2,'Preparing USB flash…');badge('#fwOverallBadge','FLASHING','warn');let written=false;
  try{
   if(erase){progress(4,'Erasing flash…');await loader.eraseFlash()}
-  const address=type==='factory'?0:parseInt(bp.appAddress||'0x10000');
-  await loader.writeFlash({fileArray:[{data:fw.bytes,address}],flashMode:bp.flashMode||'dio',flashFreq:bp.flashFreq||'80m',flashSize:bp.flashSize||'4MB',eraseAll:false,compress:true,reportProgress:(i,w,t)=>progress(5+(w/t)*80,`USB flash ${prettyBytes(w)} / ${prettyBytes(t)}`)});
+  // Preserve the compiled boot header/hash. C6 encodes 80 MHz differently from C3;
+  // rewriting it with the generic JS driver's 80m value invalidates its appended hash.
+  await loader.writeFlash({fileArray:[{data:fw.bytes,address}],flashMode:'keep',flashFreq:'keep',flashSize:'keep',eraseAll:false,compress:true,calculateMD5Hash:usbMd5Hex,reportProgress:(i,w,t)=>progress(5+(w/t)*80,`USB flash ${prettyBytes(w)} / ${prettyBytes(t)}`)});
   written=true;stage('Flash','done');stage('Verify','done');stage('Reboot','active');progress(90,'Firmware written • requesting reset…');await loader.after('hard_reset');
   progress(94,'Reset requested • waiting for kit boot');log('USB firmware write completed.');await disconnectUsb(false);stage('Reconnect','active');
   const s=school();if(s?.getSelectedDevice?.()){
@@ -154,7 +198,7 @@ async function usbFlash(){
   flashReconnectPending(expectedVersion)
  }catch(e){
   if(written){log('Firmware write completed, but reset/reconnect failed: '+e.message);await disconnectUsb(false);flashReconnectPending(expectedVersion)}
-  else{stage('Flash','error');badge('#fwOverallBadge','FAILED','danger');progress(0,'USB flash failed');log('USB flash failed: '+e.message)}
+  else{stage('Flash','error');badge('#fwOverallBadge','FAILED','danger');progress(0,'USB flash failed');log('USB flash failed: '+e.message);await disconnectUsb(false);log('Reconnect USB at 115200 before retrying. Use BOOT + RESET if the kit remains in download mode.')}
  }finally{setBusy(false)}
 }
 async function disconnectUsb(update=true){try{if(transport)await transport.disconnect()}catch{}loader=null;transport=null;serialPort=null;usbSignature='';usbBoardId='';text('#fwUsbChip','--');text('#fwUsbState','Not connected');const b=$('#fwSerialBadge');if(b){b.textContent='USB NOT CONNECTED';b.className='firmware-badge offline'}if(update){log('USB disconnected.');await targetBoardId(true)}}

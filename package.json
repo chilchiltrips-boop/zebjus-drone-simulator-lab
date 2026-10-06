@@ -9,7 +9,7 @@
     "check": "python3 tools/validate_project.py && python3 tools/validate_offline_bundle.py",
     "test:flight": "node tools/test_flight_app_browser.js",
     "test:offline": "node tools/test_offline_browser.js",
-    "test:control": "node tools/test_joystick_runtime.js && node tools/test_reconnect_runtime.js && node tools/test_firmware_updater.js && node tools/test_camera_lifecycle.js && node tools/test_python_output_lifecycle.js",
+    "test:control": "node tools/test_joystick_runtime.js && node tools/test_reconnect_runtime.js && node tools/test_firmware_updater.js && node tools/test_usb_recovery.js && node tools/test_camera_lifecycle.js && node tools/test_python_output_lifecycle.js",
     "test:real-browser": "node tools/test_real_control_browser.js",
     "test:mobile-view": "node tools/test_mobile_view_browser.js",
     "test:flight-math": "g++ -std=c++17 tools/test_flight_math.cpp -o /tmp/aerion-flight-math && /tmp/aerion-flight-math",

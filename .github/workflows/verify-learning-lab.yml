@@ -31,6 +31,8 @@ jobs:
           ZEBJUS_TRAINING_SCREENSHOTS: ${{ runner.temp }}/training-screenshots
         run: |
           npm run check
+          node tools/test_firmware_updater.js
+          node tools/test_usb_recovery.js
           npm run release:check
           npm run test:setup-browser
           npm run test:receiver

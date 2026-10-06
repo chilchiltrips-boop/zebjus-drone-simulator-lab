@@ -14,8 +14,8 @@
     },
     {
       "path": ".github/workflows/verify-learning-lab.yml",
-      "bytes": 6468,
-      "sha256": "5b1127001503965797d68e4d8b051bff3d81375dcded198bd0091c96ae01f1e6"
+      "bytes": 6556,
+      "sha256": "4ecddfe6bf849c7e64a0bddd88004bd712dd32789ffc48eae736176cd0164c59"
     },
     {
       "path": ".gitignore",
@@ -35,7 +35,7 @@
     {
       "path": "FILE_COUNT.txt",
       "bytes": 4,
-      "sha256": "e3eebf5db7f62a8a42bdea11ff52c2e05664e676fb96fe668d51a960f7e6165e"
+      "sha256": "fc84c5c02f6d755e1d1a88d551ad24e8396446b5e811f2360d89075d3a95a889"
     },
     {
       "path": "FILE_REPLACEMENT_POLICY.md",
@@ -744,8 +744,8 @@
     },
     {
       "path": "firmware-updater.js",
-      "bytes": 30712,
-      "sha256": "1ba5d39da6659cc359244fa37cdc17c7e61072d666f95385f0efeb2431c547d7"
+      "bytes": 36393,
+      "sha256": "4a8bf53571f1d93119309fd11e2e431e8e066244851383080ea028a4ed491b80"
     },
     {
       "path": "flight/app.webmanifest",
@@ -829,8 +829,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 80105,
-      "sha256": "27349b1f1fcc0c6c28018ee90fd144f874c3bf9f76c0f5a471604e32d733aaa5"
+      "bytes": 80747,
+      "sha256": "005a00dcacc8e060bb53889a86d6cf6c141445ba686bb5aac5b0ff55893fda9c"
     },
     {
       "path": "kit-console.js",
@@ -839,8 +839,8 @@
     },
     {
       "path": "kit-local.js",
-      "bytes": 18250,
-      "sha256": "49a0c20608dee26cb2c5341ca291275c417041ff3d778e50fdfdf9c53b824ea8"
+      "bytes": 18588,
+      "sha256": "0d625eb096f7d9b8529f6ff291cacb9013e342aade2d91359d5c6330ccc9eb7b"
     },
     {
       "path": "lab-workflow.css",
@@ -880,7 +880,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 42947,
-      "sha256": "ceb3aed396f14c1ac232d072d0e9b5962ec742e6cc0b291dca6fba2af269ebad"
+      "sha256": "7e47f7182bb16b6062682b385255fce7201cb915fb6918c5e71e23789c9d3f73"
     },
     {
       "path": "offline-support.js",
@@ -889,8 +889,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 3086,
-      "sha256": "d6f559d30f6434d04d531ff22b26f86cf23cfdfe45b5899298a0056c18a512fa"
+      "bytes": 3121,
+      "sha256": "9ee3272a026636ca60826af161b80a4cb1daa75205f40e56276a13a9d06445ac"
     },
     {
       "path": "pid-tuning.js",
@@ -1129,8 +1129,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 79755,
-      "sha256": "158971037206be5f365e2e6d20d01a3dd2e55c24b699aa52181e20df471f580f"
+      "bytes": 80885,
+      "sha256": "c0505e9d46eecfc2b58ee7902b29a0a5beb45d373c0c8d501ea1aa536ca19b75"
     },
     {
       "path": "server.js",
@@ -1140,7 +1140,7 @@
     {
       "path": "service-worker.js",
       "bytes": 6754,
-      "sha256": "6ee57b894a0b3d7859d133e8c681d5522375177461321ee981321dd009b1b209"
+      "sha256": "98de8cf934e9a1e9fcacb1f550b883a79a8316da493c0b0660c0a008d217b566"
     },
     {
       "path": "start_offline.py",
@@ -1334,8 +1334,8 @@
     },
     {
       "path": "tools/test_firmware_updater.js",
-      "bytes": 6124,
-      "sha256": "6436dd563b45d39f791b0eed1c16c373768b989c06969d63e28c259d4a2f0bb3"
+      "bytes": 6608,
+      "sha256": "2d71863e2671fd93e4cfecfae7f39eca96ab73c07767c9e55c58c7430255ea87"
     },
     {
       "path": "tools/test_flight_app_browser.js",
@@ -1476,6 +1476,11 @@
       "path": "tools/test_upload_integrity.py",
       "bytes": 4335,
       "sha256": "8366766f2ad20ec9026e7469ae1cb73bc39df82fc4d766d54a3a277acbe049ce"
+    },
+    {
+      "path": "tools/test_usb_recovery.js",
+      "bytes": 9835,
+      "sha256": "65ecb0e05aec52516297d436430a1ffec9ee8583007226a5387de0247016c5cf"
     },
     {
       "path": "tools/test_wix_embed_browser.js",

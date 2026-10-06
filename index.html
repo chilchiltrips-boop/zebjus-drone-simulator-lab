@@ -321,7 +321,8 @@
 <div class="panel-head"><div><small>STEP 2 • TARGET</small><h2>Connect controller</h2></div></div>
 <div class="firmware-target-option wifi"><div class="firmware-target-icon">Wi-Fi</div><div><b>Online Kit OTA</b><span>Fast update through the selected same-Wi-Fi kit. Requires Take Control, DISARMED state, and an application .bin.</span></div><button class="btn ghost small" id="fwRefreshKitBtn">Check Kit</button></div>
 <div class="firmware-target-option usb"><div class="firmware-target-icon">USB</div><div><b>USB Web Serial</b><span>First flash / recovery / factory image. Chrome or Edge on HTTPS/localhost. The browser will ask you to select the FlightCore USB port.</span></div><button class="btn primary small" id="fwConnectUsbBtn">Connect USB</button></div>
-<div class="firmware-usb-info"><div><span>Detected board</span><b id="fwUsbChip">--</b></div><div><span>USB status</span><b id="fwUsbState">Not connected</b></div><div><span>Baud</span><select id="fwUsbBaud"><option value="115200">115200</option><option selected="" value="460800">460800</option><option value="921600">921600</option></select></div></div>
+<div class="firmware-usb-info"><div><span>Detected board</span><b id="fwUsbChip">--</b></div><div><span>USB status</span><b id="fwUsbState">Not connected</b></div><div><span>Baud</span><select id="fwUsbBaud"><option selected="" value="115200">115200</option><option value="460800">460800</option><option value="921600">921600</option></select></div></div>
+<label class="firmware-check"><input id="fwUsbManualBoot" type="checkbox"/> Already in BOOT mode <small>For recovery: USB power only, hold BOOT, tap RESET, release BOOT, then connect the USB port. Close Arduino Serial Monitor first. Pairing grants port access; USB READY confirms the bootloader and flash chip.</small></label>
 <label class="firmware-check"><input id="fwEraseUsb" type="checkbox"/> Erase entire flash before USB factory flash <small>Only available for Factory/Merged images. Never erase when flashing an app-only image.</small></label>
 <div class="firmware-upgrade-actions"><button class="btn primary" id="fwUpgradeBtn">Upgrade</button><button class="btn danger ghost" id="fwUpgradeEraseBtn">Upgrade &amp; Erase</button><p class="micro-note">Upgrade uses the connected kit or USB port. Upgrade &amp; Erase requires USB and a complete factory image; it clears saved configuration.</p></div><div class="firmware-target-actions"><button class="btn primary full" id="fwWifiFlashBtn">Flash Selected Kit over Wi-Fi</button><button class="btn ghost full" id="fwUsbFlashBtn">Flash Connected FlightCore over USB</button></div>
 </div>
@@ -412,9 +413,11 @@
 <div class="settings-network-summary" id="settingsNetworkSummary">Connect a kit to view STA details.</div><div class="button-row"><button class="btn ghost" id="scanWifiBtn">Scan Wi-Fi</button><button class="btn danger ghost" id="resetWifiBtn">Forget All Wi-Fi</button></div>
 <div class="callout"><b>Direct AP, no case button needed</b><p>Every kit has a unique AP name and permanent Device ID. Use the AP password shown on the kit label. Switch to AP while disarmed, or the kit enters AP if saved Wi-Fi is unavailable. After joining that Wi-Fi, open the installed Aerion Flight app or your locally running web lab. AP stays selected across power cycles.</p></div><div class="button-row"><button class="btn ghost" id="showApCredentialsBtn">Show this kit's AP details</button><button class="btn ghost" id="switchApBtn">Switch selected kit to AP</button></div><span class="micro-note" id="apCredentials">Select a verified kit and Take Control to display its AP details.</span>
 <label>Wi-Fi network<select id="wifiSelect"><option value="">Connect kit first</option></select></label>
+<label>Wi-Fi name / SSID<input id="wifiSsidManual" value="keralvision binu" placeholder="Exact Wi-Fi name" autocomplete="off" maxlength="32"/></label>
 <label>Wi-Fi password<input autocomplete="new-password" id="wifiPassword" placeholder="Password" type="password"/></label>
-<button class="btn primary full" id="saveWifiBtn">Save Wi-Fi &amp; reconnect</button>
-<div class="callout"><b>Saved Wi-Fi profiles on this kit</b><p>SSID + password are stored separately inside this ZEBJUS controller. Passwords are never shown back to the browser. Use the APK Wi-Fi panel to test a new network before saving while the kit is in AP mode.</p></div>
+<button class="btn primary full" id="saveWifiBtn">Test &amp; save Wi-Fi</button>
+<p class="micro-note">In AP mode, the kit tests the 2.4 GHz Wi-Fi before saving. After success, join that network on this computer and reconnect the kit. Allow Local Network Access for this site in Chrome/Edge.</p>
+<div class="callout"><b>Saved Wi-Fi profiles on this kit</b><p>SSID + password are stored inside this controller. Passwords are never shown back to the browser. Test and save from this page while the kit is in AP mode.</p></div>
 <label>Saved network<select id="savedWifiSelect"><option value="">Connect kit first</option></select></label>
 <div class="button-row"><button class="btn ghost" id="refreshSavedWifiBtn">Refresh Saved</button><button class="btn ghost" id="useSavedWifiBtn">Use Selected</button><button class="btn ghost" id="forgetSavedWifiBtn">Forget Selected</button></div>
 <span class="micro-note" id="wifiMessage"></span>
@@ -429,7 +432,7 @@
 <script src="ui-runtime.js?v=18.3.72-r3"></script>
 <script src="offline-support.js?v=18.3.72-r3"></script>
 <script src="rc-live.js?v=18.3.72-web.1"></script>
-<script src="kit-local.js?v=18.3.72-r3"></script>
+<script src="kit-local.js?v=18.3.72-net.2"></script>
 <script src="control-sticks.js?v=18.3.72-r3"></script>
 <script src="receiver-wizard.js?v=18.3.72-web.4"></script>
 <script src="pid-tuning.js?v=18.3.72-web.5"></script>

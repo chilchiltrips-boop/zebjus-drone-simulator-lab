@@ -19,7 +19,7 @@ function image(board,kind){return new Uint8Array(fs.readFileSync(path.join(root,
  for(const b of catalog.boards){
   for(const kind of ['app','factory']){
    const bytes=image(b,kind);api.set({bytes,name:b.latest[kind].file,type:kind,boardId:b.id,version:catalog.version},b.id);assert.equal(api.validateEspImage(bytes,b.id,kind).chipId,b.imageChipIds[0]);
-   selected=null;nodes.get('#fwImageType').value=kind;await api.usbFlash();assert.equal(writes.at(-1).fileArray[0].address,kind==='factory'?0:65536);assert.equal(writes.at(-1).fileArray[0].data.length,bytes.length);assert.match(nodes.get('#fwOverallBadge').textContent,/PENDING/,'writing bytes alone does not confirm boot');
+   selected=null;nodes.get('#fwImageType').value=kind;await api.usbFlash();assert.equal(writes.at(-1).fileArray[0].address,kind==='factory'?0:65536);assert.equal(writes.at(-1).fileArray[0].data.length,bytes.length);assert.equal(writes.at(-1).flashMode,'keep');assert.equal(writes.at(-1).flashFreq,'keep');assert.equal(writes.at(-1).flashSize,'keep');assert.equal(typeof writes.at(-1).calculateMD5Hash,'function');assert.match(nodes.get('#fwOverallBadge').textContent,/PENDING/,'writing bytes alone does not confirm boot');
   }
   const other=catalog.boards.find(x=>x.id!==b.id);assert.throws(()=>api.validateEspImage(image(b,'app'),other.id,'app'),/chip ID/);
   assert.throws(()=>api.validateEspImage(image(b,'factory'),b.id,'app'),/descriptor/,'factory cannot be relabelled as OTA APP');
