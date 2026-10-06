@@ -89,8 +89,8 @@
 })();
 
 (()=>{'use strict';
-const VERSION='18.3.71',MAX_SAMPLES=900,MAX_EVENTS=240;
-const fields=['deviceId','firmware','sampleMs','controllerMs','rcFrameCount','observerTransport','rcMonitor','trainingSelection','loopCount','flightMode','armed','flightReady','rcSource','rcAgeMs','receiverHealth','rc','motors','roll','pitch','yaw','gyroX','gyroY','gyroZ','accX','accY','accZ','battery','batteryValid','batteryLow','batteryCritical','ppmFrameHz','webRcFrameHz','flightLoopHz','loopPeriodUs','maxLoopGapUs','loopOverruns','outputWatchdogTripped','outputWatchdogTrips','lastDisarmReason','lastEvent','trainingActive','trainingTarget','trainingController','trainingRunId','trainingInput','outputsBlocked','virtualArmed','controlRole','lockMine','viewOnly','requestLatencyMs','imuHealth','sensorHealth','targetAngle','targetRate','rcTransport','nativeRc'];
+const VERSION='18.3.72',MAX_SAMPLES=900,MAX_EVENTS=240;
+const fields=['boot','deviceId','firmware','sampleMs','controllerMs','rcFrameCount','observerTransport','rcMonitor','trainingSelection','loopCount','flightMode','armed','flightReady','rcSource','rcAgeMs','receiverHealth','rc','motors','roll','pitch','yaw','gyroX','gyroY','gyroZ','accX','accY','accZ','battery','batteryValid','batteryLow','batteryCritical','ppmFrameHz','webRcFrameHz','flightLoopHz','loopPeriodUs','maxLoopGapUs','loopOverruns','outputWatchdogTripped','outputWatchdogTrips','lastDisarmReason','lastEvent','trainingActive','trainingTarget','trainingController','trainingRunId','trainingInput','outputsBlocked','virtualArmed','controlRole','lockMine','viewOnly','requestLatencyMs','imuHealth','sensorHealth','targetAngle','targetRate','rcTransport','nativeRc'];
 const clean=v=>{if(Array.isArray(v))return v.map(clean);if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).filter(([k])=>!/(token|password|passphrase|clientId|session|authorization|wifiProfiles)/i.test(k)).map(([k,x])=>[k,clean(x)]));return v;};
 const copy=v=>JSON.parse(JSON.stringify(clean(v))),number=v=>typeof v==='number'&&Number.isFinite(v),fmt=(v,unit='')=>number(v)?v.toFixed(v%1?1:0)+unit:'—';
 function create(a={}){
@@ -294,7 +294,7 @@ async function selectDestination(target,recovery=false){
   safeValues();await Promise.resolve(state.pending).catch(()=>{});if(state.tx)await sendFrame();window.AerionAndroid?.pauseStream?.(base,id,client);state.tx=false;state.txEpoch++;state.resumeControl=false;state.recovering=false;
   const found=await request(base,'/api/command',{clientId:client,type:'training_status'},2400,id);
   if(e!==state.epoch||!state.own)return;
-  if(!found.supported||!found.selectionSupported||found.simulationRcProtocol!=='ZRC2')throw Error('Install matching 18.3.71 firmware to enable simulator controls on this kit.');
+  if(!found.supported||!found.selectionSupported||found.simulationRcProtocol!=='ZRC2')throw Error('Install matching 18.3.72 firmware to enable simulator controls on this kit.');
   const simulationTransport=window.AerionAndroid?'UDP2':'HTTP'; // Virtual input is acknowledged independently of real-flight UDP.
   mode={base,id,client,target,transport:simulationTransport,token:'TRAIN-'+crypto.randomUUID(),runId:0,failures:0,good:performance.now()};state.training=mode;
   state.modePending=request(base,'/api/command',{clientId:client,type:'training_select',session:mode.token,target,source:'APP'},2400,id);

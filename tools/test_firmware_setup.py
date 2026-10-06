@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Exercise transient setup errors and persistent failures without network access."""
-import contextlib, hashlib, io, runpy, subprocess, sys, unittest
+import contextlib, hashlib, io, runpy, subprocess, sys, tempfile, unittest
 from pathlib import Path
 from unittest.mock import patch
 
@@ -8,6 +8,17 @@ ROOT = Path(__file__).resolve().parents[1]
 BUILD = runpy.run_path(str(ROOT / 'tools/build_firmware.py'))
 
 class SetupTest(unittest.TestCase):
+    def test_monitor_task_frame_budget(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory);report=path/'monitor.su'
+            with self.assertRaisesRegex(RuntimeError,'unmeasured'): BUILD['verify_monitor_stack'](path)
+            report.write_text('FlightRcMonitor.h:15:6:void rcMonitorTask(void*)\t6672\tstatic\n')
+            with self.assertRaisesRegex(RuntimeError,'1024-byte'): BUILD['verify_monitor_stack'](path)
+            report.write_text('FlightRcMonitor.h:15:6:void rcMonitorTask(void*)\t256\tstatic\n')
+            self.assertEqual(BUILD['verify_monitor_stack'](path)['directFrameBytes'],256)
+            report.write_text('FlightRcMonitor.h:15:6:void rcMonitorTask(void*)\t256\tdynamic\n')
+            with self.assertRaisesRegex(RuntimeError,'unmeasured'): BUILD['verify_monitor_stack'](path)
+
     def test_transient_server_failure_recovers(self):
         failure = subprocess.CalledProcessError(1, ['arduino-cli'])
         with patch('subprocess.run', side_effect=[failure, failure, None]) as call, patch('time.sleep') as sleep, contextlib.redirect_stdout(io.StringIO()):

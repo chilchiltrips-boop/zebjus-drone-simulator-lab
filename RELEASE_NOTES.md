@@ -1,4 +1,8 @@
-# ZEBJUS Aerion V18.3.71
+# V18.3.72 monitor boot recovery
+
+Moved the read-only monitor buffers off its task stack, avoided idle formatting, added reset/heap/stack diagnostics, and enforced the compiler stack-frame budget for both firmware profiles. Serial boot evidence from the affected kit is still needed to confirm its exact failure cause. APK protocol remains compatible with V18.3.71.
+
+# ZEBJUS Aerion V18.3.72
 
 Field reports showed 49 Hz real input but only 1 Hz simulator HTTP input. Tripod stopped and Flight Training paused while Wi-Fi stayed connected. This release gives Android simulator input a scoped native ZRC2 50 Hz publisher and the web a separate read-only 25 Hz NDJSON1 observer on port 4211. HTTP replies no longer pace simulation sticks.
 

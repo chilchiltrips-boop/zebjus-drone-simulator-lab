@@ -1,4 +1,4 @@
-ZEBJUS Aerion V18.3.71 validation
+ZEBJUS Aerion V18.3.72 validation
 
 Software verification covers simplified firmware PID UI, native ZRC2 simulator input, NDJSON1 monitoring/manual ARM/output inhibition, native real-flight UDP/ACK/input watchdogs, actual app/web stick mirroring, marked diagnostics and ChatGPT JSON/CSV export. Firmware compiles for A1 and A2 with board/image/OTA checks. APK retains the update certificate and exact bundled assets.
 

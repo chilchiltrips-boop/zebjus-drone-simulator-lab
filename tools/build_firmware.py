@@ -80,6 +80,19 @@ def verify_build(build, board, version):
     return {'boardId':board['id'],'fqbn':board['build']['fqbn'],'chipId':chip,'appBytes':len(app),'otaSlots':slots,'factoryBytes':len(merged),'factoryAddress':'0x0','checks':['image magic','profile chip ID','release version','dual OTA slots','slot size','factory bootloader at 0x0','factory/APP identical']}
 
 
+def verify_monitor_stack(build):
+    # Direct frame only: leave the remaining task stack for ROM/library calls.
+    frames=[]
+    for path in build.rglob('*.su'):
+        for line in path.read_text().splitlines():
+            fields=line.split('\t')
+            if len(fields)>=3 and 'void rcMonitorTask(void*)' in fields[0]:
+                frames.append((int(fields[1]),fields[2]))
+    if len(frames)!=1 or frames[0][1]!='static' or frames[0][0]>1024:
+        raise RuntimeError(f'RC monitor stack frame exceeds its 1024-byte budget or is unmeasured: {frames}')
+    return {'taskStackBytes':8192,'directFrameBytes':frames[0][0],'directFrameLimitBytes':1024,'includesROMCallDepth':False}
+
+
 def sync_catalog_version(catalog,version):
     catalog['version']=version
     for board in catalog.get('boards',[]):
@@ -136,8 +149,8 @@ def main():
             if (OUT/'src').is_dir(): shutil.copytree(OUT/'src',sketch/'src')
             build=td/'build'; build.mkdir()
             print(f'\n=== BUILD {b["id"]} • {b["name"]} • {cfg["fqbn"]} ===',flush=True)
-            run(command+['compile','--fqbn',cfg['fqbn'],'--warnings','all','--output-dir',str(build),str(sketch)], f'{b["id"]} ({cfg["fqbn"]}) compile')
-            report['boards'].append(verify_build(build,b,version))
+            run(command+['compile','--fqbn',cfg['fqbn'],'--warnings','all','--build-path',str(build),'--build-property','compiler.cpp.extra_flags=-fstack-usage','--output-dir',str(build),str(sketch)], f'{b["id"]} ({cfg["fqbn"]}) compile')
+            verified=verify_build(build,b,version);verified['rcMonitorStack']=verify_monitor_stack(build);report['boards'].append(verified)
             srcbin=find_app_bin(build); dst=OUT/filename; shutil.copy2(srcbin,dst); digest=sha(dst)
             build_id=f'{version}-{b["id"]}-{digest[:12]}'
             pkg.update({'available':True,'sha256':digest,'size':dst.stat().st_size,'builtAt':built_at,'buildId':build_id}); b['latest']['builtAt']=built_at

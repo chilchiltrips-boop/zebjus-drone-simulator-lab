@@ -12,13 +12,18 @@ struct RcMonitorClient {
  void close(){socket.stop();length=offset=requestLength=0;subscribed=closeAfter=false;}
  void queue(const char* text,uint32_t now){length=strlen(text);memcpy(bytes,text,length);offset=0;changedAt=now;}
 };
+// One task owns these fixed buffers. BSS leaves room for ESP32 ROM printf
+// and socket call stacks; the former automatic task frame used 6672 bytes.
+struct RcMonitorWorkspace {RcMonitorClient clients[3];char json[1000],chunk[RcMonitorProtocol::PACKET_BYTES],header[512];};
+RcMonitorWorkspace rcMonitorWorkspace;
 void rcMonitorTask(void*){
- RcMonitorClient clients[3];uint32_t publishedAt=0;char json[1000],chunk[RcMonitorProtocol::PACKET_BYTES];
+ auto& clients=rcMonitorWorkspace.clients;auto& json=rcMonitorWorkspace.json;auto& chunk=rcMonitorWorkspace.chunk;auto& header=rcMonitorWorkspace.header;
+ for(auto& c:clients)c.close();uint32_t publishedAt=0;
  for(;;){
   uint32_t now=millis();WiFiClient incoming=rcMonitorServer.accept();
   if(incoming){bool used=false;for(auto& c:clients)if(!c.socket.connected()){c.close();c.socket=incoming;c.socket.setNoDelay(true);c.changedAt=now;used=true;break;}if(!used)incoming.stop();}
   bool publish=(uint32_t)(now-publishedAt)>=RcMonitorProtocol::PERIOD_MS;size_t packetLength=0;
-  if(publish){publishedAt=now;buildRcMonitorPacket(json,sizeof(json));packetLength=RcMonitorProtocol::chunk(chunk,sizeof(chunk),json);}
+  if(publish){publishedAt=now;bool subscribed=false;for(auto& c:clients)if(c.subscribed&&c.socket.connected()){subscribed=true;break;}if(subscribed){buildRcMonitorPacket(json,sizeof(json));packetLength=RcMonitorProtocol::chunk(chunk,sizeof(chunk),json);}}
   for(auto& c:clients){
    if(!c.socket.connected()){c.close();continue;}
    if(!c.subscribed&&!c.length){
@@ -28,7 +33,7 @@ void rcMonitorTask(void*){
      if(c.requestLength>=4&&!strcmp(c.bytes+c.requestLength-4,"\r\n\r\n")){
       int kind=RcMonitorProtocol::requestKind(c.bytes,deviceId.c_str());c.requestLength=0;
       const char* cors="Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, OPTIONS\r\nAccess-Control-Allow-Private-Network: true\r\nAccess-Control-Allow-Headers: *\r\nCache-Control: no-store\r\n";
-      char header[512];snprintf(header,sizeof(header),kind==1?"HTTP/1.1 200 OK\r\n%sContent-Type: application/x-ndjson\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\n\r\n":kind==2?"HTTP/1.1 204 No Content\r\n%sContent-Length: 0\r\nConnection: close\r\n\r\n":"HTTP/1.1 404 Not Found\r\n%sContent-Length: 0\r\nConnection: close\r\n\r\n",cors);
+      snprintf(header,sizeof(header),kind==1?"HTTP/1.1 200 OK\r\n%sContent-Type: application/x-ndjson\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\n\r\n":kind==2?"HTTP/1.1 204 No Content\r\n%sContent-Length: 0\r\nConnection: close\r\n\r\n":"HTTP/1.1 404 Not Found\r\n%sContent-Length: 0\r\nConnection: close\r\n\r\n",cors);
       c.subscribed=kind==1;c.closeAfter=kind!=1;c.queue(header,now);break;
      }
     }

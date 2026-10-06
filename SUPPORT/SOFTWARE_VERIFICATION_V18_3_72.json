@@ -1,5 +1,5 @@
 {
-  "version": "18.3.71",
+  "version": "18.3.72",
   "fieldEvidence": {
     "previousVersion": "18.3.70",
     "realReceivedHzMedian": 49,
@@ -15,7 +15,11 @@
     "Dedicated 25 Hz read-only NDJSON1 observer on port 4211",
     "Fresh live RC takes precedence over delayed HTTP",
     "Native destination/run scope fences late input",
-    "Offered and accepted channels, virtual ARM, monitor health and simulator pose in JSON exports"
+    "Offered and accepted channels, virtual ARM, monitor health and simulator pose in JSON exports",
+    "Static monitor buffers remove a measured 6672-byte automatic task frame",
+    "No RC monitor formatting before a subscriber connects",
+    "Compiler-enforced <=1024-byte direct monitor task frame budget",
+    "Boot reset reason, free heap and monitor stack headroom exported"
   ],
   "validationBoundary": {
     "physicalControllerTested": false,
@@ -26,14 +30,14 @@
   "artifacts": {
     "apk": {
       "product": "ZEBJUS Aerion Flight",
-      "version": "18.3.71-android.1",
-      "versionCode": 1837101,
+      "version": "18.3.72-android.1",
+      "versionCode": 1837201,
       "package": "in.zebjus.aerion",
       "minSdk": 26,
       "targetSdk": 36,
       "signing": "development key, included for development updates; not a private production key",
       "apkBytes": 70252,
-      "sha256": "52080c44d8328ab70f318e3361a343bdbe978e9f9c834ef55e7fa9fb0194d428",
+      "sha256": "77730541334431bcb959523b570abdebba25c9a17ef70dfffdac4c8f590cd61b",
       "verification": [
         "APK ZIP integrity",
         "DEX compiled",
@@ -46,8 +50,8 @@
       "physicalDroneTested": false
     },
     "firmware": {
-      "version": "18.3.71",
-      "builtAt": "2026-10-06T11:23:08Z",
+      "version": "18.3.72",
+      "builtAt": "2026-10-06T12:08:52Z",
       "arduinoEsp32": "3.3.12",
       "hardwareFlashingTested": false,
       "boards": [
@@ -55,7 +59,7 @@
           "boardId": "ZFC-A1",
           "fqbn": "esp32:esp32:esp32c3",
           "chipId": 5,
-          "appBytes": 1217136,
+          "appBytes": 1218144,
           "otaSlots": [
             {
               "address": 65536,
@@ -76,13 +80,19 @@
             "slot size",
             "factory bootloader at 0x0",
             "factory/APP identical"
-          ]
+          ],
+          "rcMonitorStack": {
+            "taskStackBytes": 8192,
+            "directFrameBytes": 272,
+            "directFrameLimitBytes": 1024,
+            "includesROMCallDepth": false
+          }
         },
         {
           "boardId": "ZFC-A2",
           "fqbn": "esp32:esp32:XIAO_ESP32C6",
           "chipId": 13,
-          "appBytes": 1302304,
+          "appBytes": 1303312,
           "otaSlots": [
             {
               "address": 65536,
@@ -103,7 +113,13 @@
             "slot size",
             "factory bootloader at 0x0",
             "factory/APP identical"
-          ]
+          ],
+          "rcMonitorStack": {
+            "taskStackBytes": 8192,
+            "directFrameBytes": 272,
+            "directFrameLimitBytes": 1024,
+            "includesROMCallDepth": false
+          }
         }
       ]
     }
@@ -130,6 +146,10 @@
     "actualAppWeb1200msHTTPDelay": "passed",
     "APKSignatureAndExactAssets": "passed",
     "A1A2FirmwareCompile": "passed",
-    "projectAndReleaseInventory": "passed"
-  }
+    "projectAndReleaseInventory": "passed",
+    "compilerMonitorStackBudget": "passed: A1/A2 direct frame 272 <=1024 bytes",
+    "noIdleMonitorFormatting": "passed",
+    "USBFlashBootReadbackAndResetFailure": "passed"
+  },
+  "physicalBootCauseConfirmed": false
 }

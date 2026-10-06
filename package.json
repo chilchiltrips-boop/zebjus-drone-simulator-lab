@@ -1,6 +1,6 @@
 {
   "name": "zebjus-flightcore-drone-lab",
-  "version": "18.3.71",
+  "version": "18.3.72",
   "private": true,
   "description": "ZEBJUS Aerion \u2014 Build, Code, Fly with offline Python and drone simulation",
   "main": "server.js",
