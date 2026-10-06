@@ -14,13 +14,14 @@ function baseFromName(name){const h=hostFromName(name);return h?`http://${h}.loc
 function loadKnown(){try{const a=JSON.parse(localStorage.getItem(KNOWN_KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&x.name&&x.deviceId):[]}catch(_){return []}}
 function saveKnown(list){try{localStorage.setItem(KNOWN_KEY,JSON.stringify(list.slice(0,40)))}catch(_){}}
 function rememberKit(status,base){
-  if(!status?.deviceId||!status?.name)return;
+  if(!status?.deviceId)return;
   const id=String(status.deviceId), now=Date.now();
   // Device ID is the physical identity. Never delete another board only because it
   // currently uses the same human-readable Kit Name; multi-kit labs may temporarily
   // contain duplicate names during replacement/provisioning.
   const old=loadKnown().filter(x=>!sameDeviceIdentity(x.deviceId,id));
-  old.unshift({deviceId:id,name:status.name,ip:status.ip||'',base:base||baseFromName(status.name),ssid:status.ssid||'',lastSeen:now});
+  const name=status.name||status.deviceName||id;
+  old.unshift({deviceId:id,name,ip:status.ip||'',base:base||baseFromName(name),ssid:status.ssid||'',lastSeen:now});
   saveKnown(old);
 }
 function sessionId(){
@@ -69,7 +70,7 @@ function sameDeviceIdentity(a,b){
   return shorter.length===6&&longer.length>=12&&longer.endsWith(shorter);
 }
 function isCompatibleKit(status){
-  if(!status||status.ok===false||!status.deviceId||!status.name)return false;
+  if(!status||status.ok===false||!isDeviceId(status.deviceId))return false;
   const kit=String(status.kit||'').trim().toUpperCase();
   const boardId=String(status.boardId||'').trim().toUpperCase();
   if(['ZEBJUS_F450','ZEBJUS_FLIGHTCORE','ZEBJUS_FLIGHTCORE_BOOTSTRAP'].includes(kit))return true;

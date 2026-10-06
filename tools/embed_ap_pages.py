@@ -1,4 +1,4 @@
-"""Generate installed/offline Flight App copies; firmware AP serves API only."""
+"""Generate installed/offline Flight App copies; firmware AP serves a small Wi-Fi recovery page."""
 from pathlib import Path
 import sys,re
 root=Path(__file__).resolve().parents[1]
@@ -14,4 +14,4 @@ for path,data in outputs.items():
     if '--check' in sys.argv:
         if not path.is_file() or path.read_bytes()!=data:raise SystemExit('Regenerate installed Flight App: '+str(path))
     else:path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
-print('Installed Flight App copies '+('verified' if '--check' in sys.argv else 'generated')+'; AP is API-only')
+print('Installed Flight App copies '+('verified' if '--check' in sys.argv else 'generated')+'; AP Wi-Fi recovery page is separate')

@@ -8,7 +8,7 @@ const port={getInfo:()=>({usbVendorId:0x303a,usbProductId:0x1001})};
 class Transport{constructor(p){assert.equal(p,port)}async disconnect(){disconnects++}}
 class Loader{
  constructor(options){this.baudrate=options.baudrate;this.DETECTED_FLASH_SIZES={22:'4MB'};this.chip=null;this.IS_STUB=false;this.syncStubDetected=false}
- async detectChip(){this.chip={CHIP_NAME:'ESP32-C6',IMAGE_CHIP_ID:13,EFUSE_BASE:0x600b0800,getChipDescription:async()=> 'unknown ESP32-C6'}}
+ async detectChip(){this.chip={CHIP_NAME:'ESP32-C6',IMAGE_CHIP_ID:13,SPI_REG_BASE:0x60002000,EFUSE_BASE:0x600b0800,getChipDescription:async()=> 'unknown ESP32-C6'}}
  async readReg(address){return address===0x600b0850?(1<<24)|(1<<22)|(9<<18):1}
  async runStub(){if(!this.syncStubDetected)this.IS_STUB=true;return this.chip}
  async readFlashId(){return scenario==='bad-flash'?0xffffff:0x1640ef}
@@ -36,6 +36,12 @@ const md5=bytes=>crypto.createHash('md5').update(bytes).digest('hex');
  const a2=catalog.boards.find(b=>b.id==='ZFC-A2');await assert.rejects(()=>api.probeUsbFlash({readFlashId:async()=>0x1540ef,flashSizeBytes:Loader.prototype.flashSizeBytes},a2),/smaller than/);
  // Run the actual vendor write/MD5 verification path with a memory flash transport.
  const {ESPLoader}=await import(path.join(root,'vendor/esptool/bundle.mjs'));
+ // Exercise the bundled production SPI transaction, not a canned flash-ID result.
+ const bundle=fs.readFileSync(path.join(root,'vendor/esptool/bundle.mjs'),'utf8'),start=bundle.indexOf('class Ws extends vs{'),end=bundle.indexOf('var Zs=',start);
+ assert(start>=0&&end>start);const C6=Function('vs',bundle.slice(start,end)+';return Ws;')(class{}),spi=Object.create(ESPLoader.prototype);spi.chip=new C6();assert.equal(spi.chip.SPI_REG_BASE,0x60003000);
+ let triggered=false;const registerWrites=[];spi.readReg=async address=>address===0x60003058&&triggered?0x1640ef:0;spi.writeReg=async(address,value)=>{registerWrites.push(address);if(address===0x60003000&&value===(1<<18))triggered=true};
+ assert.equal(await spi.readFlashId(),0x1640ef);assert(registerWrites.includes(0x60003000));assert(!registerWrites.includes(0x60002000));
+ const cached=new Loader({baudrate:115200});api.installUsbCompatibility(cached);await cached.detectChip();assert.equal(cached.chip.SPI_REG_BASE,0x60003000,'Patch cached bundles before the first flash-ID probe');
  const headerLoader=Object.create(ESPLoader.prototype);Object.assign(headerLoader,{chip:{BOOTLOADER_FLASH_OFFSET:0,CHIP_NAME:'ESP32-C6'},debug(){}});const factory=new Uint8Array(fs.readFileSync(path.join(root,'FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin')));assert.equal(factory[3],0x20,'Compiled C6 boot frequency encoding');assert.equal(await headerLoader._updateImageFlashParams(factory,0,'keep','keep','keep'),factory,'Do not mutate the factory boot header or appended SHA');
  for(const compressed of [false,true]){
   const flasher=Object.create(ESPLoader.prototype),chunks=[];flasher.transport={trace(){}};let written=null,resets=0,mismatch=false;

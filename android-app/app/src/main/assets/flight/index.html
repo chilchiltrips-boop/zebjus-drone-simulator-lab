@@ -83,13 +83,13 @@
  for(const [name,type] of [['gyro','calibrate_gyro'],['level','level_calibrate']])action(name,async()=>{await writeCheck();$('progress').hidden=false;try{await cmd(type);await read();say(name==='gyro'?'Gyro calibrated. Take control again when ready.':'Level calibrated. Take control again when ready.');}finally{$('progress').hidden=true}});
  action('saved',async()=>{const d=await a.request('/api/wifi/saved');$('savedNetwork').replaceChildren(...(d.profiles||[]).map(p=>new Option(p.ssid,p.ssid)));say('Choose a saved network.');});
  action('scan',async()=>{let d=await a.request('/api/wifi/scan');for(let i=0;d.scanning&&i<40;i++){await new Promise(r=>setTimeout(r,250));d=await a.request('/api/wifi/scan')}if(d.scanning)throw Error('Scan is still running. Retry shortly.');$('nearby').replaceChildren(...(d.networks||[]).map(p=>new Option(p.ssid+' · '+p.rssi+' dBm',p.ssid)));say('Choose a nearby network.');});$('nearby').onchange=()=>{$('ssid').value=$('nearby').value};
- action('ap',async()=>{await writeCheck();await cmd('network_mode_set',{mode:'AP'});a.networkChanged('AP');});action('useSaved',async()=>{await writeCheck();if(!$('savedNetwork').value)throw Error('Read and select a saved network first.');await a.request('/api/wifi/use',{ssid:$('savedNetwork').value});a.networkChanged('STA');});action('saveWifi',async()=>{await writeCheck();const ssid=$('ssid').value.trim(),password=$('password').value;if(!ssid)throw Error('Enter the SSID.');if(String(a.kit().mode).startsWith('AP')){await a.request('/api/setup/test',{ssid,password,name:a.kit().name||''});$('password').value='';for(let i=0;i<70;i++){await new Promise(r=>setTimeout(r,250));const d=await a.request('/api/setup/test/status');if(d.status==='failed')throw Error(d.message||'Wi-Fi test failed.');if(d.status==='success'){a.networkChanged('STA');return}}throw Error('Wi-Fi test still pending; reconnect to check.');}await a.request('/api/wifi/set',{ssid,password});$('password').value='';a.networkChanged('STA');});$('disconnect').onclick=()=>a.disconnect?.();$('forget').onclick=()=>a.forget?.();root.querySelectorAll('[data-mobile-tab]').forEach(b=>b.onclick=()=>show(b.dataset.mobileTab));show('Controls');return{show,update,refresh:read,telemetry:t=>{last=t;update()}};
+ action('ap',async()=>{await writeCheck();await cmd('network_mode_set',{mode:'AP'});a.networkChanged('AP');});action('useSaved',async()=>{await writeCheck();if(!$('savedNetwork').value)throw Error('Read and select a saved network first.');await a.request('/api/wifi/use',{ssid:$('savedNetwork').value});await a.networkChanged('STA',{ssid:$('savedNetwork').value});});action('saveWifi',async()=>{await writeCheck();const ssid=$('ssid').value.trim(),password=$('password').value;if(!ssid)throw Error('Enter the SSID.');if(String(a.kit().mode).startsWith('AP')){await a.request('/api/setup/test',{ssid,password,name:a.kit().name||''});for(let i=0;i<70;i++){await new Promise(r=>setTimeout(r,250));const d=await a.request('/api/setup/test/status');if(d.status==='failed')throw Error(d.message||'Wi-Fi test failed.');if(d.status==='success'){$('password').value='';await a.networkChanged('STA',d);return}}throw Error('Wi-Fi test still pending; reconnect to check.');}await a.request('/api/wifi/set',{ssid,password});$('password').value='';await a.networkChanged('STA',{ssid});});$('disconnect').onclick=()=>a.disconnect?.();$('forget').onclick=()=>a.forget?.();root.querySelectorAll('[data-mobile-tab]').forEach(b=>b.onclick=()=>show(b.dataset.mobileTab));show('Controls');return{show,update,refresh:read,telemetry:t=>{last=t;update()}};
  }
  window.AerionFlightConsole={mount};
 })();
 
 (()=>{'use strict';
-const VERSION='18.3.72',MAX_SAMPLES=900,MAX_EVENTS=240;
+const VERSION='18.3.73',MAX_SAMPLES=900,MAX_EVENTS=240;
 const fields=['boot','deviceId','firmware','sampleMs','controllerMs','rcFrameCount','observerTransport','rcMonitor','trainingSelection','loopCount','flightMode','armed','flightReady','rcSource','rcAgeMs','receiverHealth','rc','motors','roll','pitch','yaw','gyroX','gyroY','gyroZ','accX','accY','accZ','battery','batteryValid','batteryLow','batteryCritical','ppmFrameHz','webRcFrameHz','flightLoopHz','loopPeriodUs','maxLoopGapUs','loopOverruns','outputWatchdogTripped','outputWatchdogTrips','lastDisarmReason','lastEvent','trainingActive','trainingTarget','trainingController','trainingRunId','trainingInput','outputsBlocked','virtualArmed','controlRole','lockMine','viewOnly','requestLatencyMs','imuHealth','sensorHealth','targetAngle','targetRate','rcTransport','nativeRc'];
 const clean=v=>{if(Array.isArray(v))return v.map(clean);if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).filter(([k])=>!/(token|password|passphrase|clientId|session|authorization|wifiProfiles)/i.test(k)).map(([k,x])=>[k,clean(x)]));return v;};
 const copy=v=>JSON.parse(JSON.stringify(clean(v))),number=v=>typeof v==='number'&&Number.isFinite(v),fmt=(v,unit='')=>number(v)?v.toFixed(v%1?1:0)+unit:'—';
@@ -294,7 +294,7 @@ async function selectDestination(target,recovery=false){
   safeValues();await Promise.resolve(state.pending).catch(()=>{});if(state.tx)await sendFrame();window.AerionAndroid?.pauseStream?.(base,id,client);state.tx=false;state.txEpoch++;state.resumeControl=false;state.recovering=false;
   const found=await request(base,'/api/command',{clientId:client,type:'training_status'},2400,id);
   if(e!==state.epoch||!state.own)return;
-  if(!found.supported||!found.selectionSupported||found.simulationRcProtocol!=='ZRC2')throw Error('Install matching 18.3.72 firmware to enable simulator controls on this kit.');
+  if(!found.supported||!found.selectionSupported||found.simulationRcProtocol!=='ZRC2')throw Error('Install matching 18.3.73 firmware to enable simulator controls on this kit.');
   const simulationTransport=window.AerionAndroid?'UDP2':'HTTP'; // Virtual input is acknowledged independently of real-flight UDP.
   mode={base,id,client,target,transport:simulationTransport,token:'TRAIN-'+crypto.randomUUID(),runId:0,failures:0,good:performance.now()};state.training=mode;
   state.modePending=request(base,'/api/command',{clientId:client,type:'training_select',session:mode.token,target,source:'APP'},2400,id);
@@ -340,15 +340,20 @@ const kitConsole=AerionFlightConsole.mount($('kitConsole'),{
  prepareSetup:async()=>{state.resumeControl=false;state.recovering=false;await pauseTransmission();if(state.status.armed||channels[4]>1500)throw Error('Disarm before FC setup.');},
  networkChanged:networkChanged,disconnect:()=>{stopControl('Disconnected.',true);state.manual=true;$('kitDialog').close();},forget:()=>{$('kitDialog').close();$('forget').click();}
 });
-async function networkChanged(target=''){
+async function networkChanged(target='',network={}){
+ const fromAp=String(state.status.mode).startsWith('AP');
+ if(network.name)state.name=network.name;
+ if(network.staIp)saved.staBase='http://'+network.staIp;
+ if(network.name)saved.name=network.name;
+ write(KNOWN,saved);
  stopControl('Kit Wi-Fi mode changed. Join the selected network.',true);state.networkTarget=target;state.manual=false;state.base='';$('kitAddress').value='';if($('kitDialog').open)$('kitDialog').close();await state.cleanup;
- if(window.AerionAndroid){if(target==='STA')window.AerionAndroid.useRouterWifi();else if(target==='AP')window.AerionAndroid.joinWifi();}else connect(false);
+ if(window.AerionAndroid){if(target==='STA')window.AerionAndroid.useRouterWifi(network.ssid||'',fromAp);else if(target==='AP')window.AerionAndroid.joinWifi();}else connect(false);
 }
 async function toggleKitNetwork(){
  if(state.networkBusy||!state.online)return;state.networkBusy=true;render();try{
   if(state.status.armed||channels[4]>1500||Number(state.status.benchMode||0)!==0)throw Error('Disarm and stop motor tests before switching Wi-Fi.');
   await pauseTransmission();if(!state.own){if(window.AerionAndroid)await reserveMobile();else{await takeControl();await pauseTransmission();}}if(!state.own)throw Error('Take configuration control first.');
-  if(String(state.status.mode).startsWith('AP')){const d=await api('/api/wifi/saved?clientId='+encodeURIComponent(cid)),profiles=d.profiles||[],p=profiles.find(x=>x.preferred)||profiles.find(x=>x.current)||(profiles.length===1?profiles[0]:null);if(!p){await openKitSettings('Wi-Fi');return}await api('/api/wifi/use',{clientId:cid,ssid:p.ssid});await networkChanged('STA');}
+  if(String(state.status.mode).startsWith('AP')){const d=await api('/api/wifi/saved?clientId='+encodeURIComponent(cid)),profiles=d.profiles||[],p=profiles.find(x=>x.preferred)||profiles.find(x=>x.current)||(profiles.length===1?profiles[0]:null);if(!p){await openKitSettings('Wi-Fi');return}await api('/api/wifi/use',{clientId:cid,ssid:p.ssid});await networkChanged('STA',{ssid:p.ssid});}
   else{await api('/api/command',{clientId:cid,type:'network_mode_set',mode:'AP'});await networkChanged('AP');}
  }catch(e){notify(e.message)}finally{state.networkBusy=false;render();}
 }

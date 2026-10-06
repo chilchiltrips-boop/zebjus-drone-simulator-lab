@@ -479,7 +479,8 @@ async function saveWifi(){
    setText('wifiMessage',`Testing ${ssid}; keep this computer connected to the kit AP.`);await client.testWifi(ssid,password,d?.deviceName||'');let result;
    for(let i=0;i<40;i++){await new Promise(resolve=>setTimeout(resolve,500));result=await client.wifiTestStatus();if(result.status==='failed')throw Error(result.message||'Wi-Fi test failed.');if(result.status==='success')break}
    if(result?.status!=='success')throw Error('Wi-Fi test status not confirmed. Keep the AP connection and retry.');
-   setText('wifiMessage',`Verified and saved ${ssid}. Join that Wi-Fi on this computer, then reconnect ${result.name||d?.deviceName||'the kit'}.`);
+   if(result.staIp){const status={...client.status,deviceId:d.deviceId,name:result.name||d.deviceName,ip:result.staIp,mode:'STA / LOCAL'};window.ZebjusDroneKit?.rememberKit(status,'http://'+result.staIp);client.ipHint=result.staIp;client.name=status.name;}
+   setText('wifiMessage',`Verified and saved ${ssid}. Join that Wi-Fi on this computer, then reconnect ${result.name||d?.deviceName||'the kit'}.${result.staIp?' STA IP: '+result.staIp:''}`);
   }else{const result=await client.setWifi(ssid,password);setText('wifiMessage',result.message||`Saved ${ssid}; kit restarting.`)}
   if($('#wifiPassword'))$('#wifiPassword').value='';disconnectKit(false);
  }catch(e){setText('wifiMessage','Wi-Fi change failed: '+e.message)}finally{if(button)button.disabled=false}

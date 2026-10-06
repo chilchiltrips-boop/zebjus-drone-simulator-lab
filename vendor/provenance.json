@@ -36,8 +36,12 @@
     {
       "path": "vendor/esptool/bundle.mjs",
       "bytes": 218551,
-      "sha256": "ef7d5a237d3f273ecf546bcee65dddad90bd82cf02f22a980d1537e0cd79a152",
-      "source": "https://registry.npmjs.org/esptool-js/-/esptool-js-0.6.1.tgz"
+      "sha256": "3dade235dec1fdd74096355f43fb9706fca21cbc5815a367ce80a6d72eb7f4a0",
+      "source": "https://registry.npmjs.org/esptool-js/-/esptool-js-0.6.1.tgz",
+      "upstreamSha256": "ef7d5a237d3f273ecf546bcee65dddad90bd82cf02f22a980d1537e0cd79a152",
+      "patches": [
+        "ESP32-C6 SPI1 register base 0x60003000 (C3 base unchanged)"
+      ]
     },
     {
       "path": "vendor/mediapipe/LICENSE",

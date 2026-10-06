@@ -3,6 +3,7 @@
 import concurrent.futures
 import hashlib
 import json
+import re
 import tarfile
 import urllib.request
 from pathlib import Path
@@ -82,9 +83,15 @@ def main():
     npm('@mediapipe/tasks-vision', '0.10.21', VENDOR / 'mediapipe', ['wasm/', 'vision_bundle.mjs', 'LICENSE', 'NOTICE'])
     npm('esptool-js', '0.6.1', VENDOR / 'esptool', ['bundle.js', 'LICENSE'])
     (VENDOR / 'esptool/bundle.js').rename(VENDOR / 'esptool/bundle.mjs')
+    flasher=VENDOR/'esptool/bundle.mjs'
+    patched,count=re.subn(r'(this.CHIP_NAME="ESP32-C6".*?this.SPI_REG_BASE=)1610620928',r'\g<1>1610625024',flasher.read_text(),count=1)
+    if count!=1:raise RuntimeError('Pinned esptool C6 SPI1 patch did not match')
+    flasher.write_text(patched)
     for rec in records:
         if rec['path'] == 'vendor/esptool/bundle.js':
             rec['path'] = 'vendor/esptool/bundle.mjs'
+            rec['upstreamSha256']=rec['sha256'];rec['sha256']=hashlib.sha256(flasher.read_bytes()).hexdigest();rec['bytes']=flasher.stat().st_size
+            rec['patches']=['ESP32-C6 SPI1 register base 0x60003000 (C3 base unchanged)']
     # Pyodide runs package-relative paths against indexURL; no CDN fallback is needed.
     (VENDOR / 'provenance.json').write_text(json.dumps({
         'pyodide': '0.27.7', 'pythonPackages': sorted(names),

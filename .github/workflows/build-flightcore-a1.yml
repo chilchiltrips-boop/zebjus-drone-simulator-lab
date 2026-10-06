@@ -70,6 +70,7 @@ jobs:
         run: |
           npm run test:control
           npm run test:setup
+          npm run test:wifi
           python3 -B tools/test_upload_integrity.py
           npm run test:flight-math
           npm run test:rc-link

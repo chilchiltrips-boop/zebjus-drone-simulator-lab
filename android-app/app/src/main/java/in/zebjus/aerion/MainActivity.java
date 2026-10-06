@@ -11,6 +11,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.Uri;
 import android.net.wifi.WifiNetworkSpecifier;
+import android.net.wifi.WifiInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PatternMatcher;
@@ -77,8 +78,9 @@ public final class MainActivity extends Activity {
     private static final int WIFI_PERMISSION=41;
 
     private final ConnectivityManager.NetworkCallback wifiCallback=new ConnectivityManager.NetworkCallback(){
-        @Override public void onAvailable(Network network){chooseWifi(network);}
-        @Override public void onLost(Network network){if(network.equals(wifi)){wifi=null;emergency(gate.fence(false));emit("networkLost");}}
+        @Override public void onAvailable(Network network){runOnUiThread(()->chooseWifi(network));}
+        @Override public void onCapabilitiesChanged(Network network,NetworkCapabilities capabilities){runOnUiThread(()->chooseWifi(network));}
+        @Override public void onLost(Network network){runOnUiThread(()->{if(network.equals(wifi)){wifi=null;emergency(gate.fence(false));emit("networkLost");}if(preferRouterWifi)selectRouterWifi();});}
     };
     private static long now(){return System.nanoTime()/1_000_000L;}
 
@@ -123,7 +125,21 @@ public final class MainActivity extends Activity {
         web.loadUrl(HOME);immersive();
     }
     private boolean preferRouterWifi=false;
+    private Network departingKitWifi;
+    private String routerSsid="";
+    private int routerScore(Network network){
+        NetworkCapabilities c=connectivity.getNetworkCapabilities(network);if(c==null)return -1;
+        String ssid="";if(Build.VERSION.SDK_INT>=29 && c.getTransportInfo() instanceof WifiInfo)ssid=((WifiInfo)c.getTransportInfo()).getSSID();
+        return RouterNetworkPolicy.score(c.hasTransport(NetworkCapabilities.TRANSPORT_WIFI),network.equals(departingKitWifi),c.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET),c.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED),network.equals(connectivity.getActiveNetwork()),ssid,routerSsid);
+    }
+    private void selectRouterWifi(){
+        if(destroyed || !preferRouterWifi)return;Network best=null;int score=-1;
+        for(Network n:connectivity.getAllNetworks()){int s=routerScore(n);if(s>score){score=s;best=n;}}
+        if(best==null || best.equals(wifi))return;
+        emergency(gate.fence(false));wifi=best;if(resumed&&web.hasWindowFocus())gate.resume();emit("routerReady");
+    }
     private void chooseWifi(Network network){
+        if(preferRouterWifi){selectRouterWifi();return;}
         if(selectedKitWifi!=null && !selectedKitWifi.equals(network))return;
         if(destroyed || network.equals(wifi))return;
         if(selectedKitWifi==null && wifi!=null)return;
@@ -132,7 +148,7 @@ public final class MainActivity extends Activity {
     private void immersive(){getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);}
     private void emit(String method){runOnUiThread(()->{if(!destroyed && web!=null)web.evaluateJavascript("window.AerionAndroid&&window.AerionAndroid."+method+"&&window.AerionAndroid."+method+"()",null);});}
     private void pauseControl(){emergency(gate.fence(true));emit("pause");}
-    @Override protected void onResume(){super.onResume();resumed=true;if(web!=null){web.onResume();web.resumeTimers();}gate.resume();emit("resume");immersive();if(joinAfterPermission){joinAfterPermission=false;joinKitWifi(pendingWifiId);}}
+    @Override protected void onResume(){super.onResume();resumed=true;if(web!=null){web.onResume();web.resumeTimers();}gate.resume();if(preferRouterWifi)selectRouterWifi();emit("resume");immersive();if(joinAfterPermission){joinAfterPermission=false;joinKitWifi(pendingWifiId);}}
     @Override protected void onPause(){resumed=false;pauseControl();if(web!=null){web.onPause();web.pauseTimers();}super.onPause();}
     @Override public void onWindowFocusChanged(boolean focus){super.onWindowFocusChanged(focus);if(focus && resumed){gate.resume();emit("resume");immersive();}else if(!focus && resumed)pauseControl();}
     @Override public void onBackPressed(){pauseControl();finish();}
@@ -154,18 +170,15 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);pauseControl();setIntent(intent);readLaunch(intent);if(resumed && web.hasWindowFocus())gate.resume();deliverLaunch();}
     private void wifiMessage(String method,String message){runOnUiThread(()->{if(!destroyed && web!=null)web.evaluateJavascript("window.AerionAndroid&&window.AerionAndroid."+method+"&&window.AerionAndroid."+method+"("+JSONObject.quote(message)+")",null);});}
-    private void useRouterWifi(){
-        pauseControl();preferRouterWifi=true;
+    private void useRouterWifi(String ssid,boolean fromAp){
+        pauseControl();preferRouterWifi=true;routerSsid=RouterNetworkPolicy.ssid(ssid);departingKitWifi=fromAp?wifi:selectedKitWifi;
         if(kitRequest!=null)try{connectivity.unregisterNetworkCallback(kitRequest);}catch(RuntimeException ignored){}
         kitRequest=null;selectedKitWifi=null;wifi=null;
-        Network preferred=connectivity.getActiveNetwork();NetworkCapabilities cap=preferred==null?null:connectivity.getNetworkCapabilities(preferred);
-        if(cap!=null&&cap.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))wifi=preferred;
-        if(wifi==null)for(Network n:connectivity.getAllNetworks()){NetworkCapabilities c=connectivity.getNetworkCapabilities(n);if(c!=null&&c.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)&&c.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)){wifi=n;break;}}
-        if(resumed&&web.hasWindowFocus())gate.resume();emit("routerReady");
-        if(wifi==null)wifiMessage("wifiError","Join the kit's saved router Wi-Fi in Phone Wi-Fi settings, then return here.");
+        selectRouterWifi();
+        if(wifi==null)wifiMessage("wifiError","Join "+(routerSsid.isEmpty()?"the kit's saved router Wi-Fi":routerSsid)+" in Phone Wi-Fi settings, then return here. Waiting for router Wi-Fi.");
     }
     private void joinKitWifi(String id){
-        preferRouterWifi=false;
+        preferRouterWifi=false;departingKitWifi=null;routerSsid="";
         if(!resumed || destroyed)return;
         try{LaunchPolicy.apSsid(id);}catch(Exception e){wifiMessage("wifiError",e.getMessage());return;}
         if(Build.VERSION.SDK_INT<29){wifiMessage("wifiError","In-app Wi-Fi connection needs Android 10+. Use Phone Wi-Fi settings, then return here.");return;}
@@ -346,7 +359,7 @@ public final class MainActivity extends Activity {
             runOnUiThread(()->{pauseControl();exportText=body;Intent save=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mime).putExtra(Intent.EXTRA_TITLE,name);startActivityForResult(save,SAVE_EXPORT);});
         }
         @JavascriptInterface public void openWifi(String key){if(token.equals(key))runOnUiThread(()->{pauseControl();startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));});}
-        @JavascriptInterface public void useRouterWifi(String key){if(token.equals(key))runOnUiThread(()->MainActivity.this.useRouterWifi());}
+        @JavascriptInterface public void useRouterWifi(String key,String ssid,boolean fromAp){if(token.equals(key))runOnUiThread(()->MainActivity.this.useRouterWifi(ssid,fromAp));}
         @JavascriptInterface public void joinWifi(String key,String deviceId){if(token.equals(key))runOnUiThread(()->joinKitWifi(deviceId));}
     }
 }

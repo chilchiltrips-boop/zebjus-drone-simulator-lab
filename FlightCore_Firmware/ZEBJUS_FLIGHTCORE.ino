@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.72 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
+  ZEBJUS FlightCore V18.3.73 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -61,7 +61,7 @@
 #endif
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.72";
+static const char* FW_VERSION="18.3.73";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -98,8 +98,15 @@ static const int MOTOR_PINS[4]={-1,-1,-1,-1};
 
 // Factory default Wi-Fi profile. It is seeded only once after first flash / factory reset.
 // Students can later change or forget it from the webapp/AP setup page.
-static const char* DEFAULT_WIFI_SSID="";
-static const char* DEFAULT_WIFI_PASS="";
+// Optional local build defaults. Public release stores router credentials through AP/app setup.
+#ifndef ZEBJUS_DEFAULT_WIFI_SSID
+#define ZEBJUS_DEFAULT_WIFI_SSID ""
+#endif
+#ifndef ZEBJUS_DEFAULT_WIFI_PASS
+#define ZEBJUS_DEFAULT_WIFI_PASS ""
+#endif
+static const char* DEFAULT_WIFI_SSID=ZEBJUS_DEFAULT_WIFI_SSID;
+static const char* DEFAULT_WIFI_PASS=ZEBJUS_DEFAULT_WIFI_PASS;
 static const uint32_t CONNECT_TIMEOUT_MS=12000;
 static const uint32_t LOCK_TIMEOUT_MS=10000;
 static const uint32_t WIFI_LOST_TO_SETUP_MS=20000;
@@ -228,7 +235,7 @@ int ConfigGuard::benchModeForGuard(){return (int)benchMode;}
 enum WifiTestState{WT_IDLE,WT_RUNNING,WT_SUCCESS,WT_FAILED};
 WifiTestState wifiTestState=WT_IDLE;
 String testName,testSSID,testPASS,testMessage,testRedirect;
-unsigned long wifiTestStarted=0,wifiTestRestartAt=0;
+unsigned long wifiTestStarted=0;
 
 // ---------------- Recovery button ----------------
 unsigned long recoveryPressedAt=0;
@@ -303,7 +310,7 @@ bool isLegacyAutoName(const String& name){return hostFromName(name)==hostFromNam
 void loadKitName(){
   prefs.begin("zjdrone",true);kitName=normalizeDisplayName(prefs.getString("name",""));prefs.end();
   autoNameRequired=!kitName.length()||isLegacyAutoName(kitName);
-  if(autoNameRequired)kitName="";
+  if(autoNameRequired)kitName="zebjus_drone_"+shortId();
   updateApName();
 }
 void saveKitName(const String& name){
@@ -311,41 +318,45 @@ void saveKitName(const String& name){
   prefs.begin("zjdrone",false);if(kitName.length())prefs.putString("name",kitName);else prefs.remove("name");prefs.end();updateApName();
 }
 void clearKitName(){prefs.begin("zjdrone",false);prefs.remove("name");prefs.end();kitName="";autoNameRequired=true;updateApName();}
+bool saveWiFi(String ssid,String password,bool preferred=true);
 void loadSavedWiFi(){
   prefs.begin("zjwifi",true);preferredSSID=prefs.getString("preferred","");
   bool any=false;
   for(int i=0;i<MAX_WIFI;i++){String sk="s"+String(i),pk="p"+String(i);savedSSID[i]=prefs.getString(sk.c_str(),"");savedPASS[i]=prefs.getString(pk.c_str(),"");if(savedSSID[i].length())any=true;}
   prefs.end();
 
-  // Seed the requested home/school Wi-Fi once. A normal "Forget All Wi-Fi" will not add it back.
+  // Seed an optional local-build Wi-Fi profile once. A normal "Forget All Wi-Fi" will not add it back.
   // A full factory reset clears the seed marker, so firmware defaults are restored.
-  prefs.begin("zjsys",false);bool seeded=prefs.getBool("wifi_seeded",false);
-  if(!seeded){
+  prefs.begin("zjsys",false);bool seeded=prefs.getBool("wifi_seeded",false),optout=prefs.getBool("wifi_optout",false);uint8_t seedVersion=prefs.getUChar("wifi_seed_v",0);
+  if(!optout&&(!seeded||(!any&&seedVersion<1))){
     if(!any&&strlen(DEFAULT_WIFI_SSID)){
       prefs.end();
-      prefs.begin("zjwifi",false);prefs.putString("s0",DEFAULT_WIFI_SSID);prefs.putString("p0",DEFAULT_WIFI_PASS);prefs.putString("preferred",DEFAULT_WIFI_SSID);prefs.end();
-      savedSSID[0]=DEFAULT_WIFI_SSID;savedPASS[0]=DEFAULT_WIFI_PASS;preferredSSID=DEFAULT_WIFI_SSID;any=true;
+      bool installed=saveWiFi(DEFAULT_WIFI_SSID,DEFAULT_WIFI_PASS,true);any=installed;
       prefs.begin("zjsys",false);
-      Serial.println("Default Wi-Fi profile installed: "+String(DEFAULT_WIFI_SSID));
+      if(installed)Serial.println("Default Wi-Fi profile installed: "+String(DEFAULT_WIFI_SSID));
     }
-    prefs.putBool("wifi_seeded",true);
+    if(any){prefs.putBool("wifi_seeded",true);prefs.putUChar("wifi_seed_v",1);}
   }
+  if(any&&seedVersion<1){prefs.putBool("wifi_seeded",true);prefs.putUChar("wifi_seed_v",1);}
   prefs.end();
 }
 int savedIndex(const String& ssid){for(int i=0;i<MAX_WIFI;i++)if(savedSSID[i]==ssid)return i;return -1;}
-void saveWiFi(String ssid,String password,bool preferred=true){
-  ssid.trim();if(!ssid.length())return;prefs.begin("zjwifi",false);
+bool saveWiFi(String ssid,String password,bool preferred){
+  ssid.trim();if(!ssid.length()||ssid.length()>32||password.length()>63)return false;if(!prefs.begin("zjwifi",false))return false;
   int idx=savedIndex(ssid);
   if(idx<0){for(int i=0;i<MAX_WIFI;i++)if(!savedSSID[i].length()){idx=i;break;}}
   if(idx<0){idx=prefs.getUChar("next",0)%MAX_WIFI;prefs.putUChar("next",(idx+1)%MAX_WIFI);}
-  String sk="s"+String(idx),pk="p"+String(idx);prefs.putString(sk.c_str(),ssid);prefs.putString(pk.c_str(),password);savedSSID[idx]=ssid;savedPASS[idx]=password;
-  if(preferred){preferredSSID=ssid;prefs.putString("preferred",ssid);}prefs.end();
+  String sk="s"+String(idx),pk="p"+String(idx);prefs.putString(sk.c_str(),ssid);prefs.putString(pk.c_str(),password);
+  if(preferred)prefs.putString("preferred",ssid);
+  bool stored=prefs.getString(sk.c_str(),"")==ssid&&prefs.getString(pk.c_str(),"\x01")==password&&(!preferred||prefs.getString("preferred","")==ssid);prefs.end();if(!stored)return false;
+  savedSSID[idx]=ssid;savedPASS[idx]=password;if(preferred)preferredSSID=ssid;return true;
 }
-void clearSavedWiFi(){prefs.begin("zjwifi",false);prefs.clear();prefs.end();preferredSSID="";for(int i=0;i<MAX_WIFI;i++){savedSSID[i]="";savedPASS[i]="";}}
+void clearSavedWiFi(){prefs.begin("zjwifi",false);prefs.clear();prefs.end();prefs.begin("zjsys",false);prefs.putBool("wifi_optout",true);prefs.end();preferredSSID="";for(int i=0;i<MAX_WIFI;i++){savedSSID[i]="";savedPASS[i]="";}}
 void forgetSavedWiFi(const String& ssid){
   int idx=savedIndex(ssid);if(idx<0)return;prefs.begin("zjwifi",false);String sk="s"+String(idx),pk="p"+String(idx);prefs.remove(sk.c_str());prefs.remove(pk.c_str());savedSSID[idx]="";savedPASS[idx]="";if(preferredSSID==ssid){preferredSSID="";prefs.remove("preferred");}prefs.end();
+  prefs.begin("zjsys",false);prefs.putBool("wifi_optout",true);prefs.end();
 }
-void setPreferredWiFi(const String& ssid){int idx=savedIndex(ssid);if(idx<0)return;preferredSSID=ssid;prefs.begin("zjwifi",false);prefs.putString("preferred",ssid);prefs.end();}
+bool setPreferredWiFi(const String& ssid){int idx=savedIndex(ssid);if(idx<0||!prefs.begin("zjwifi",false))return false;prefs.putString("preferred",ssid);bool stored=prefs.getString("preferred","")==ssid;prefs.end();if(stored)preferredSSID=ssid;return stored;}
 void setForceSetupFlag(bool on){prefs.begin("zjsys",false);if(on)prefs.putBool("forceap",true);else prefs.remove("forceap");prefs.end();}
 bool consumeForceSetupFlag(){prefs.begin("zjsys",false);bool on=prefs.getBool("forceap",false);if(on)prefs.remove("forceap");prefs.end();return on;}
 void setPreferredApMode(bool on){prefs.begin("zjsys",false);if(on)prefs.putBool("preferap",true);else prefs.remove("preferap");prefs.end();}
@@ -1057,10 +1068,10 @@ void savedWifiApi(){
   j+="]}";sendJson(200,j);
 }
 void setWifiApi(){
-  if(!requireControl())return;if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"Wi-Fi change blocked while armed or bench outputs active");return;}String ssid=server.arg("ssid"),pass=server.arg("password");ssid.trim();if(!ssid.length()){sendMessage(400,"Wi-Fi SSID is required");return;}saveWiFi(ssid,pass,true);setPreferredApMode(false);setForceSetupFlag(false);sendMessage(200,"Wi-Fi profile saved. Kit will restart and try this network first.");restartAt=millis()+900;
+  if(!requireControl())return;if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"Wi-Fi change blocked while armed or bench outputs active");return;}String ssid=server.arg("ssid"),pass=server.arg("password");ssid.trim();if(!ssid.length()||ssid.length()>32||pass.length()>63){sendMessage(400,"SSID must be 1-32 bytes; password at most 63 bytes");return;}if(!saveWiFi(ssid,pass,true)){sendMessage(500,"Wi-Fi could not be saved. Retry before changing networks.");return;}setPreferredApMode(false);setForceSetupFlag(false);sendMessage(200,"Wi-Fi profile saved. Kit will restart and try this network first.");restartAt=millis()+900;
 }
 void useWifiApi(){
-  if(!requireControl())return;if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"Wi-Fi change blocked while armed or bench outputs active");return;}String ssid=server.arg("ssid");if(savedIndex(ssid)<0){sendMessage(404,"Saved Wi-Fi profile not found");return;}setPreferredWiFi(ssid);setPreferredApMode(false);setForceSetupFlag(false);sendMessage(200,"Preferred Wi-Fi selected. Kit will restart.");restartAt=millis()+900;
+  if(!requireControl())return;if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"Wi-Fi change blocked while armed or bench outputs active");return;}String ssid=server.arg("ssid");if(savedIndex(ssid)<0){sendMessage(404,"Saved Wi-Fi profile not found");return;}if(!setPreferredWiFi(ssid)){sendMessage(500,"Preferred Wi-Fi could not be saved");return;}setPreferredApMode(false);setForceSetupFlag(false);sendMessage(200,"Preferred Wi-Fi selected. Kit will restart.");restartAt=millis()+900;
 }
 void forgetWifiApi(){
   if(!requireControl())return;if(effectiveArmed()){sendMessage(423,"Wi-Fi change blocked while armed");return;}String ssid=server.arg("ssid");if(savedIndex(ssid)<0){sendMessage(404,"Saved Wi-Fi profile not found");return;}forgetSavedWiFi(ssid);sendMessage(200,"Saved Wi-Fi profile removed");
@@ -1073,12 +1084,14 @@ void resetNameApi(){
 }
 
 // ============================================================
-// Captive portal
+// Local AP setup
 // ============================================================
 
 
 
 void noPortal(){cors();server.sendHeader("Cache-Control","no-store");server.send(204);}
+#include "WIFI_SETUP_PAGE.h"
+void wifiSetupPage(){if(!setupMode){noPortal();return;}server.sendHeader("Cache-Control","no-store");server.send_P(200,"text/html",WIFI_SETUP_PAGE);}
 void wifiScanApi(){
  if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"Disarm before Wi-Fi scan");return;}
  if(lockActive()&&!lockMine(server.arg("clientId"))){sendMessage(423,"View-only session cannot scan / change kit radio");return;}
@@ -1093,24 +1106,27 @@ void wifiScanApi(){
 }
 void startWifiTestApi(){
   if(lockActive()&&!requireControl())return;
-  if(!setupMode){sendMessage(409,"Wi-Fi setup is available from AP setup mode");return;}if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"Wi-Fi test blocked while armed or bench outputs active");return;}if(wifiTestState==WT_RUNNING){sendMessage(409,"A Wi-Fi test is already running");return;}
+  if(!setupMode){sendMessage(409,"Wi-Fi setup is available from AP setup mode");return;}if(effectiveArmed()||benchMode!=BENCH_NONE){sendMessage(423,"Wi-Fi test blocked while armed or bench outputs active");return;}if(wifiTestState==WT_RUNNING||wifiTestState==WT_SUCCESS){sendMessage(409,"Wait for Wi-Fi setup / restart to finish");return;}
   testName=normalizeDisplayName(server.arg("name"));testSSID=server.arg("ssid");testSSID.trim();testPASS=server.arg("password");if(testName.length()&&testName.length()<3){sendMessage(400,"Kit Name must be at least 3 characters, or leave it blank for automatic naming");return;}if(!testSSID.length()){sendMessage(400,"Wi-Fi SSID is required");return;}
-  wifiTestState=WT_RUNNING;testMessage="Connecting";testRedirect="";wifiTestStarted=millis();wifiTestRestartAt=0;
+  if(testSSID.length()>32||testPASS.length()>63){sendMessage(400,"SSID at most 32 bytes; password at most 63 bytes");return;}
+  wifiTestState=WT_RUNNING;testMessage="Connecting";testRedirect="";wifiTestStarted=millis();
   WiFi.mode(WIFI_AP_STA);WiFi.begin(testSSID.c_str(),testPASS.c_str());sendJson(202,"{\"ok\":true,\"status\":\"testing\"}");
 }
 void wifiTestStatusApi(){
   String st=wifiTestState==WT_RUNNING?"testing":wifiTestState==WT_SUCCESS?"success":wifiTestState==WT_FAILED?"failed":"idle";
-  String j="{\"ok\":true,\"status\":\""+st+"\",\"ssid\":\""+jsonEscape(testSSID)+"\",\"name\":\""+jsonEscape(kitName)+"\",\"deviceId\":\""+deviceId+"\",\"message\":\""+jsonEscape(testMessage)+"\",\"redirect\":\""+jsonEscape(testRedirect)+"\"}";sendJson(200,j);
+  String ip=WiFi.status()==WL_CONNECTED?WiFi.localIP().toString():"";uint32_t remaining=restartAt&&(long)(restartAt-millis())>0?restartAt-millis():0;
+  String j="{\"ok\":true,\"status\":\""+st+"\",\"ssid\":\""+jsonEscape(testSSID)+"\",\"name\":\""+jsonEscape(kitName)+"\",\"deviceId\":\""+deviceId+"\",\"staIp\":\""+ip+"\",\"restartInMs\":"+String(remaining)+",\"message\":\""+jsonEscape(testMessage)+"\",\"redirect\":\""+jsonEscape(testRedirect)+"\"}";sendJson(200,j);
 }
 void processWifiTest(){
   if(wifiTestState!=WT_RUNNING)return;
   if(WiFi.status()==WL_CONNECTED){
     Serial.println("Wi-Fi test connected: "+WiFi.localIP().toString());
-    if(!startProbeMdns()){wifiTestState=WT_FAILED;testMessage="Could not check Kit Name on this Wi-Fi";WiFi.disconnect(false,false);WiFi.mode(WIFI_AP);return;}
-    delay(180);int count=MDNS.queryService("zebjus-drone","tcp");
-    if(!testName.length())testName=chooseFreeAutoNameFromCurrentQuery(count);
-    else{for(int i=0;i<count;i++)if(queryResultIsName(i,testName,false)){wifiTestState=WT_FAILED;testMessage="Kit Name already exists on this Wi-Fi. Choose another name or leave it blank for automatic naming.";MDNS.end();mdnsStarted=false;WiFi.disconnect(false,false);WiFi.mode(WIFI_AP);return;}}
-    MDNS.end();mdnsStarted=false;saveKitName(testName);autoNameRequired=false;saveWiFi(testSSID,testPASS,true);setPreferredApMode(false);setForceSetupFlag(false);testRedirect=optionalWebappUrl();testMessage="Wi-Fi verified and saved";wifiTestState=WT_SUCCESS;wifiTestRestartAt=millis()+7500;Serial.println("Setup verified. Saved Kit Name: "+kitName);return;
+    bool probe=startProbeMdns();int count=0;bool conflict=false;
+    if(probe){delay(180);count=MDNS.queryService("zebjus-drone","tcp");for(int i=0;i<count;i++)if(queryResultIsName(i,testName,true)){conflict=true;break;}}
+    if(!testName.length()||conflict)testName=probe?chooseFreeAutoNameFromCurrentQuery(count):"zebjus_drone_"+shortId();
+    if(mdnsStarted){MDNS.end();mdnsStarted=false;}
+    if(!saveWiFi(testSSID,testPASS,true)){wifiTestState=WT_FAILED;testMessage="Connected, but Wi-Fi could not be saved. Retry.";WiFi.disconnect(false,false);WiFi.mode(WIFI_AP);return;}
+    saveKitName(testName);autoNameRequired=false;setPreferredApMode(false);setForceSetupFlag(false);testRedirect=optionalWebappUrl();testMessage=probe?"Wi-Fi verified and saved. Restarting in STA mode.":"Wi-Fi saved. mDNS unavailable; use the STA IP. Restarting.";wifiTestState=WT_SUCCESS;restartAt=millis()+7500;testPASS="";Serial.println("Setup verified. Saved Kit Name: "+kitName);return;
   }
   if(millis()-wifiTestStarted>CONNECT_TIMEOUT_MS){wifiTestState=WT_FAILED;testMessage="Could not connect. Check password and signal.";WiFi.disconnect(false,false);WiFi.mode(WIFI_AP);}
 }
@@ -1180,7 +1196,7 @@ void firmwareUploadHandler(){
 // ============================================================
 void setupRoutes(){
   const char* headers[]={"X-Zebjus-Control","User-Agent"};server.collectHeaders(headers,2);
-  server.on("/",HTTP_GET,noPortal);
+  server.on("/",HTTP_GET,wifiSetupPage);server.on("/setup",HTTP_GET,wifiSetupPage);
   server.on("/api/status",HTTP_GET,statusApi);server.on("/api/telemetry",HTTP_GET,telemetryApi);server.on("/api/i2c/scan",HTTP_GET,i2cScanApi);server.on("/api/imu",HTTP_GET,imuApi);
   server.on("/api/control/acquire",HTTP_POST,acquireApi);server.on("/api/control/ping",HTTP_POST,lockPingApi);server.on("/api/control/release",HTTP_POST,releaseApi);
   server.on("/api/command",HTTP_POST,commandApi);server.on("/api/name",HTTP_POST,renameApi);server.on("/api/name/reset",HTTP_POST,resetNameApi);
@@ -1197,7 +1213,7 @@ void setupRoutes(){
 }
 void startNormalServer(){
   setupMode=false;WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();startRcUdp();startRcMonitor();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.72 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.73 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
   invalidateRcUdp();setupMode=true;if(!preferredApMode())setPreferredApMode(true);controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();serviceTraining();if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());server.begin();startRcUdp();startRcMonitor();wifiTestState=WT_IDLE;
@@ -1220,7 +1236,7 @@ void setup(){
   if(USER_LED_PIN>=0){pinMode(USER_LED_PIN,OUTPUT);digitalWrite(USER_LED_PIN,HIGH);}
   Serial.begin(115200);delay(300);Serial.printf("Boot: reset reason %u, free heap %u bytes\n",(unsigned)esp_reset_reason(),(unsigned)ESP.getFreeHeap());WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);loadExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}
   busMutex=xSemaphoreCreateRecursiveMutex();deviceId=getDeviceId();loadFlightSettings();loadFcSetup();loadKitName();updateApName();loadApPassword();loadSavedWiFi();loadPidSettings();loadCalibrationSettings();probeImuAtBoot();setupFlightCore();flightHeartbeatUs=micros();if(FLIGHT_CONTROL_ENABLED&&xTaskCreate(flightOutputSupervisor,"fc-output-guard",3072,nullptr,21,nullptr)!=pdPASS){flightReady=false;motorsSafe();Serial.println("Output supervisor unavailable: arming disabled");}setupExpansionPeripherals();setupRoutes();startFlightTask();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.72 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.73 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
   bool forceApOnce=consumeForceSetupFlag();if(forceApOnce||preferredApMode()){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }

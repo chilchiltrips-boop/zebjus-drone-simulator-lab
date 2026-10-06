@@ -1,18 +1,17 @@
 {
-  "version": "18.3.72-android.1",
-  "apk_sha256": "77730541334431bcb959523b570abdebba25c9a17ef70dfffdac4c8f590cd61b",
+  "version": "18.3.73-android.1",
+  "apk_sha256": "1a1ee10d943c48bd02b8eba280432b9bfab21e6e981ae052104ea96984f39526",
   "checks": {
-    "APK_DEX_manifest_signature_alignment_and_exact_assets": "passed Android SDK 36 build; original development certificate retained",
-    "native_scope_watchdog_and_ZRC2_protocol_ACK_rejection": "passed actual Java runtime and DatagramSocket loopback",
-    "production_firmware_simulator_HTTP_UDP_and_PWM_inhibition": "production setup/UDP handlers and read-only monitor host execution passed",
-    "app_web_delayed_HTTP_live_roll_pitch_virtual_motion_and_recovery": "actual UI and native loopback; 1200 ms HTTP delay injection; native ZRC2 and NDJSON1 observation tested",
-    "PID_preview_explicit_save_background_leases_output_STOP": "passed actual Lab browser integration; Basic/Advanced/Expert and bank controls absent",
-    "recorder_JSON_CSV_marked_events_and_redaction": "passed core recorder and actual bundled app/web export tests",
-    "monitor_idle_format_and_stack_budget": "passed host task runtime and compiler-measured 272-byte direct frame for both A1/A2"
+    "SDK_36_DEX_manifest_signature_alignment_exact_assets": "passed; original certificate retained",
+    "native_control_scope_watchdog_UDP": "production Java tests passed",
+    "router_policy": "old AP/cellular/wrong SSID rejected; offline/redacted router accepted",
+    "WiFi_NVS_test_restart": "production host runtime passed",
+    "app_WebApp_AP_STA_and_password": "browser and production VM regressions passed",
+    "recovery_sources": "product firmware, Java and bundled UI restored byte-for-byte from previously verified hashes"
   },
   "test_boundary": {
     "Android_phone_or_emulator_tested": false,
     "physical_drone_tested": false,
-    "firmware": "18.3.72 A1 and A2 compiled locally with pinned Arduino-ESP32 3.3.12; chip/OTA/factory/version checks passed"
+    "physical_USB_flash_tested": false
   }
 }

@@ -1,5 +1,7 @@
-ZEBJUS Aerion V18.3.72 validation
+ZEBJUS Aerion V18.3.73 validation
 
-Software verification covers simplified firmware PID UI, native ZRC2 simulator input, NDJSON1 monitoring/manual ARM/output inhibition, native real-flight UDP/ACK/input watchdogs, actual app/web stick mirroring, marked diagnostics and ChatGPT JSON/CSV export. Firmware compiles for A1 and A2 with board/image/OTA checks. APK retains the update certificate and exact bundled assets.
+C6 SPI1 flash-ID probe and cached-target patch, AP discovery before naming, verified credential/preferred-profile storage, actual scheduled STA restart, mDNS fallback, AP setup form, mobile password retry and native router selection are covered by production runtime/browser/native tests.
 
-Boundary: Automated tests use mocked controller HTTP plus production firmware handlers and native loopback. No actual phone, Wi-Fi radio, ESC, motor or physical flight test was performed. App-side and web-side exports are both needed to diagnose a field issue.
+A1/A2 build checks verify chip/version/OTA size/factory equality/monitor stack. APK 18.3.73-android.1 (1837301) retains the previous certificate and exact validated source/transport. Offline/project/release integrity checks verify the complete version and file hashes.
+
+Boundary: host radio/NVS doubles and simulated controller/native Wi-Fi APIs are used. Production handlers and Java UDP loopback are executed. No physical flash, phone/emulator Wi-Fi, router association, motor/ESC or flight test is claimed. See SUPPORT/V18_3_73_UPDATE_AND_TEST.md.

@@ -234,3 +234,7 @@ Packets include controller uptime/frame count, Device ID, ten RC channels/source
 Diagnostic JSON retains up to 1200 app control samples at 200 ms intervals, with offered channels, native accepted channels/sequence, virtual ARM, run and input/ACK ages. Web reports include monitor state and simulator pose/pause events. Telemetry capture remains bounded at 900 samples; events at 240. Private grants are redacted. Capture both app and web for the same Device ID; observer UTC clocks and controller uptime are different.
 
 V18.3.72 keeps monitor workspace buffers outside the task stack and formats only for live subscriptions. Builds enforce a <=1024-byte direct task frame within its 8192-byte allocation. Public status/telemetry includes `boot` with resetReasonCode, uptimeMs, freeHeapBytes, rcMonitorRunning and rcMonitorFreeStackBytes. This is diagnostic evidence, not a physical boot verification.
+
+## V18.3.73 Wi-Fi setup result
+
+AP GET / and /setup serve a local Wi-Fi recovery form. Captive probes retain 204. GET /api/setup/test/status adds staIp and restartInMs alongside status, name, SSID and Device ID. Success confirms association and verified NVS profile storage and schedules the main-loop restartAt deadline. mDNS failure uses an ID-based name/IP hint; failed tests stay in AP and retain password input. Clients verify Device ID when reconnecting.
