@@ -105,22 +105,22 @@
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
       "bytes": 1218128,
-      "sha256": "37e04b7cc52485169d0cff8520ce02d0144d1669f0f0acfafbc78bab09f682e3"
+      "sha256": "610e37e2571f9fd7457cb4d1d2397ed5056d55a55156a50d92488a12ad5b05b7"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "b15ae53627c99c23a4d29652fb7636c38bceeb0e3fc5f47fd4e6be7b2874da49"
+      "sha256": "80f1822ba291a419653bcff5846f8f5dc847c0e6246c3eefdb95925471e55f72"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin",
       "bytes": 1303296,
-      "sha256": "1334e02fe06550e767ebe3ea84bcafba34c35e6fb18a4413c9346d86b1afdbbb"
+      "sha256": "8bb376a3e06fae324639b2f139c427cecbf44da0a49792c3fc29376a32b2b744"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "7a28d72f873b4e886646f0a60fc685ea4f08dd4fefc176c43b260619c76c7793"
+      "sha256": "af84a4a33d7472770a51253ffe436d005a0c2f966f3509948beeb55cfd542762"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h",
@@ -130,17 +130,17 @@
     {
       "path": "FlightCore_Firmware/build-report.json",
       "bytes": 1677,
-      "sha256": "0335d4c2af844585bcd8034825698827637c9715863ba801cfbd27cd7f59fd58"
+      "sha256": "278a84f3aa92d3041ddbd7f93cf21d60549b9b76be7961a23f7e885bf2e56dc1"
     },
     {
       "path": "FlightCore_Firmware/catalog.json",
       "bytes": 2793,
-      "sha256": "4114012190b7854a57355e304908a20f160418c2e7d3380843998979598e1304"
+      "sha256": "73d50f5adf0aaca58504ea5e459537c8d5b6d5b6006dfd5b4431f9350645d8ea"
     },
     {
       "path": "FlightCore_Firmware/latest.json",
       "bytes": 259,
-      "sha256": "805064d9534542a266735349ca0a19f3b87f40ea28b0d3998e5d986a340f5c61"
+      "sha256": "895b14cd3bd1b8f9b23a7412e0ff646cad6501b05183602a6aa740c664de25a7"
     },
     {
       "path": "FlightCore_Firmware/src/DroneGPS.cpp",
@@ -735,17 +735,17 @@
     {
       "path": "firmware-catalog.json",
       "bytes": 2793,
-      "sha256": "4114012190b7854a57355e304908a20f160418c2e7d3380843998979598e1304"
+      "sha256": "73d50f5adf0aaca58504ea5e459537c8d5b6d5b6006dfd5b4431f9350645d8ea"
     },
     {
       "path": "firmware-latest.json",
       "bytes": 268,
-      "sha256": "819cf05c0e80876e1fbd6816f4195cff7b6d0421605dc3281d3a4ddbb222e52d"
+      "sha256": "bbbdb1a6db59753c65575dc01c6c33723d86c70ef378a3d9402a29258d2bd2bf"
     },
     {
       "path": "firmware-updater.js",
       "bytes": 36393,
-      "sha256": "4a8bf53571f1d93119309fd11e2e431e8e066244851383080ea028a4ed491b80"
+      "sha256": "07de8f6ca86ebf131c154a8c72e032194d0389d90f6949620b859dfb02d22b96"
     },
     {
       "path": "flight/app.webmanifest",
@@ -880,7 +880,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 42947,
-      "sha256": "7e47f7182bb16b6062682b385255fce7201cb915fb6918c5e71e23789c9d3f73"
+      "sha256": "45f343a940ffa22b2d901fddd208ba8417428acf4060bea0fa0d8e4c65723ee7"
     },
     {
       "path": "offline-support.js",
