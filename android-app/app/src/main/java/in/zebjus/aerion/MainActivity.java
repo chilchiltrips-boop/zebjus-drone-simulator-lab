@@ -244,11 +244,12 @@ public final class MainActivity extends Activity {
             if(port!=4210||!nonce.matches("[0-9a-fA-F]{16}")||!grant.deviceId.matches("ZFC-[0-9a-fA-F]{12}"))throw new IllegalStateException("Controller UDP grant is invalid. Update matching firmware.");
             boolean simulation=info.optBoolean("simulationOutputsBlocked",false);
             if(simulation&&!("UDP".equals(info.optString("simulationRcTransport"))&&"ZRC2".equals(info.optString("rcProtocol"))))throw new IllegalStateException("Simulator UDP protocol was not confirmed.");
+            if(simulation&&(info.optLong("trainingRunId",0)<=0||!grant.deviceId.equals(info.optString("deviceId"))))throw new IllegalStateException("Simulator Device ID / run was not confirmed. Update matching firmware.");
             LeaseGate.Lease lease=gate.authorize(grant.origin,grant.deviceId,grant.clientId);
             socket=new DatagramSocket();((Network)grant.network).bindSocket(socket);
             URL url=new URL(grant.origin);
             InetSocketAddress target=new InetSocketAddress(((Network)grant.network).getAllByName(url.getHost())[0],port);
-            rcStream.configure(lease,socket,target,Long.parseUnsignedLong(grant.deviceId.substring(4),16),Long.parseUnsignedLong(nonce,16),simulation);
+            rcStream.configure(lease,socket,target,Long.parseUnsignedLong(grant.deviceId.substring(4),16),Long.parseUnsignedLong(nonce,16),simulation,simulation?info.optLong("trainingRunId",0):0);
         }catch(Exception error){if(socket!=null)socket.close();throw error;}
     }
     private static final class Result{final int code;final String body;Result(int code,String body){this.code=code;this.body=body;}}
@@ -322,8 +323,12 @@ public final class MainActivity extends Activity {
             if(!token.equals(key) || destroyed || id==null || !id.matches("[A-Za-z0-9-]{1,96}"))return;
             Job job=null;
             try{URL url=LocalPolicy.api(address,method);if(url.getPath().equals("/api/control/acquire"))form=form.replaceAll("(?:^|&)clientRole=[^&]*","")+"&clientRole=MOBILE";boolean rc="rc_frame".equals(LocalPolicy.form(form).get("type"));job=new Job(id,url,method,form,Math.max(150,Math.min(rc?1500:8000,requestedTimeout)),wifi);
-                if(rc&&job.lease!=null&&rcStream.offer(job.lease,LocalPolicy.channels(job.fields))){
+                if(rc&&job.lease!=null&&rcStream.nativeProfile(job.lease)){
+                    int[] channels=LocalPolicy.channels(job.fields);
+                    if(!rcStream.matchesRun(job.lease,job.fields.get("simulationRunId"),channels)){reply(id,409,new JSONObject().put("ok",false).put("message","RC frame belongs to another destination / run. Select it again.").toString());return;}
+                    if(!rcStream.offer(job.lease,channels))throw new IllegalStateException("Native publisher stopped. Take control again.");
                     JSONObject result=new JSONObject().put("ok",true).put("rcQueued",true).put("rcAckAgeMs",gate.ackAge(job.lease,now())).put("deviceId",job.lease.deviceId);
+                    java.util.Map<String,Object> ack=rcStream.acknowledgement(job.lease);if(Boolean.TRUE.equals(ack.get("outputsBlocked")))result.put("outputsBlocked",true).put("virtualArmed",ack.get("virtualArmed")).put("validatedControllerAck",ack.get("validatedControllerAck"));
                     if(job.lease.hasControllerAck())result.put("armed",job.lease.controllerArmed()).put("flightReady",job.lease.controllerReady());
                     reply(id,200,result.toString());return;
                 }

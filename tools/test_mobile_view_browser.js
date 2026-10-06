@@ -41,7 +41,7 @@ const wait=(page,f,arg)=>page.waitForFunction(f,arg,{timeout:30000});
  const phoneCtx=await browser.newContext({viewport:{width:1000,height:560},hasTouch:true,serviceWorkers:'block'}),phone=await phoneCtx.newPage();
  await phone.exposeFunction('__api',(address,form)=>api(address,form,'mobile'));
  await phone.exposeFunction('__export',(name,body,mime)=>fileExports.push({name,body,mime}));
- await phoneCtx.addInitScript(()=>{window.__aerionToken='test';window.NativeAerion={request(token,id,address,method,form){window.__api(address,form).then(r=>window.AerionAndroid.deliver(id,r.code,r.body))},cancel(){},openWifi(){},joinWifi(){},saveFile(token,name,body,mime){window.__export(name,body,mime)}}});
+ await phoneCtx.addInitScript(()=>{localStorage.setItem('zebjus-flight-destination',JSON.stringify('REAL'));window.__aerionToken='test';window.NativeAerion={request(token,id,address,method,form){window.__api(address,form).then(r=>window.AerionAndroid.deliver(id,r.code,r.body))},cancel(){},openWifi(){},joinWifi(){},saveFile(token,name,body,mime){window.__export(name,body,mime)}}});
  phone.on('pageerror',e=>errors.push(e.message));await phone.goto(origin+'/android-app/app/src/main/assets/flight/index.html');
  await phone.screenshot({path:path.join(output,'branding.png')});assert.equal(await phone.locator('#brandSplash').count(),1,'opening brand animation exists');
  await wait(phone,()=>!document.getElementById('heroAction').disabled);await phone.click('#connect');await phone.fill('#expectedId',ID);await phone.fill('#kitAddress','192.168.4.1');await phone.click('#checkConnection');

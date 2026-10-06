@@ -221,3 +221,14 @@ The shipped app selects `rcTransport=HTTP` for Tripod and Flight Training, even 
 Status and telemetry add public `rcTransport` diagnostics: UDP listening state, current protocol, received/accepted/rejected packet counts and last rejection reason. These never include private UDP tokens. Native Android adds `nativeRc` to its received telemetry with grant/input/ACK ages, protocol, native stop reason and UDP counters; HTTP diagnostics can retain previous UDP counts separately.
 
 App Kit settings and web Telemetry record the schema `zebjus.flight-diagnostics.v1`. Bounded JSON exports contain UTC observer receipt times, Device ID, configuration when received, RC/motor/controller/simulator samples, marked events and browser errors. CSV preserves numerical samples. App and web reports must be compared to diagnose both ends; missing fields are not proof of absent hardware or a particular bug.
+
+
+## V18.3.71 native simulator input and live observer
+
+The Android app requests `rcTransport=UDP2` with the current `simulationRunId`. A simulator grant supplies matching `deviceId`/`trainingRunId`, ZRC2, port 4210 and inhibited physical outputs. Native input is offered and published at 50 Hz independently of HTTP. Native rejects another run and delayed simulation input entering a real grant. ACK/channel capture confirms virtual ARM independently of physical ARM. Real watchdogs are unchanged. The native app requires matching grant fields; browser RC retains HTTP.
+
+Public status advertises `rcMonitorProtocol:"NDJSON1"`, `rcMonitorPort:4211`. `GET http://<kit>:4211/api/rc/live?deviceId=<exact-id>` returns HTTP chunked NDJSON at 25 Hz. OPTIONS supports local-network CORS. No command, control acquisition or token is accepted or disclosed here. The task allows three subscribers, bounded 768-byte requests/1200-byte packets, one pending packet each, nonblocking writes and a 1200 ms slow-write timeout.
+
+Packets include controller uptime/frame count, Device ID, ten RC channels/source/age, attitude/rates, physical ARM, outputsBlocked/virtualArmed and simulator destination/run/input/owner. The browser rejects invalid/wrong-kit/old-uptime packets and preserves newer stream RC over delayed HTTP snapshots. Full HTTP telemetry polls every two seconds while live; unavailable monitors reconnect and retain polling. Actual stale input pauses the virtual model; neutral/manual ARM is required.
+
+Diagnostic JSON retains up to 1200 app control samples at 200 ms intervals, with offered channels, native accepted channels/sequence, virtual ARM, run and input/ACK ages. Web reports include monitor state and simulator pose/pause events. Telemetry capture remains bounded at 900 samples; events at 240. Private grants are redacted. Capture both app and web for the same Device ID; observer UTC clocks and controller uptime are different.

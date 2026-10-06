@@ -14,6 +14,7 @@ const HEALTH_INTERVAL_MS=2000, OFFLINE_AFTER_MS=10000, RECONNECT_INTERVAL_MS=250
 
 const client=window.ZebjusDroneKit?new window.ZebjusDroneKit.LocalKitClient():null;
 const st={devices:[],selectedDeviceId:'',query:'',preferredDeviceId:'',preferredDeviceName:'',autoAcquire:false,demoMode:false,joy:[...DEFAULT_CH],joySeq:0,lastJoySent:0,joyBusy:false,booted:false,lastDiscoverAt:0,lastHealthAt:0,lastTelemetryAt:0,lastTelemetryGoodAt:0,lastLockBeat:0,lastLockGoodAt:0,lockBusy:false,failures:0,reconnectBusy:false,healthBusy:false,telemetryBusy:false,lastReconnectAt:0,lastError:'',txOn:false,remoteTxOn:false,remoteTxSource:"NONE",activeJoyTarget:'sim',joyKeys:new Set(),joyPointerActive:0,lastJoyInputAt:Date.now(),watchdogMs:1500,watchdogWarnArmed:true,watchdogLatched:false,lastCommandSentAt:0,lastCommandAckAt:0,lastCommandErrorAt:0,receiverLastAt:0,receiverChannels:null,receiverHealth:'NOT_FOUND',sensorHealth:{imu:'NOT_FOUND',barometer:'NOT_FOUND',lidar:'NOT_FOUND',receiver:'NOT_FOUND'},manualDisconnect:false,rcMirrorSource:'NONE',pythonRcActive:false,txFrames:0,rateFrames:0,rateAt:0,txRateHz:0,rcRates:null,tripodRun:null,tripodJoinArmed:false,tripodLow:false,tripodArmed:false};
+const rcMonitor=window.AerionRcLive?new window.AerionRcLive.RcLiveStream({packet:t=>receiveRcTelemetry(t,true),event:detail=>window.dispatchEvent(new CustomEvent('aerion-link-event',{detail}))}):null;
 
 function api(){return window.zebjusLabAPI||null}
 function ready(){return !!client}
@@ -308,15 +309,36 @@ async function reconnectAfterFirmware({totalMs=120000,onProgress=null}={}){
    if(!selected()?.online&&lastErr)log('Firmware reconnect still waiting • '+(lastErr.message||lastErr));
  }
 }
+function expireReceiverMirror(){
+ if(!st.receiverLastAt||Date.now()-st.receiverLastAt<=900)return;
+ if(st.tripodArmed)window.dispatchEvent(new CustomEvent('aerion-link-event',{detail:{kind:'simulator',target:'TRIPOD',run:st.tripodRun,message:'Tripod stopped: live RC monitor became stale; neutral and manual ARM are required.'}}));
+ st.receiverHealth='STALE';st.sensorHealth.receiver='STALE';st.tripodArmed=st.tripodLow=st.tripodJoinArmed=false;
+ if(!st.txOn&&!st.pythonRcActive&&api()?.getSimInputOwner?.()==='receiver'){api()?.controlSim?.({roll:0,pitch:0,yaw:0},'receiver');api()?.setSimRunning?.(false)}
+}
+function receiveRcTelemetry(t,live=false){
+ const d=selected();if(!selectedConnected()||t.deviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(t.deviceId,d.deviceId))return;
+ const before=JSON.stringify([d.controlRole,d.armed,d.trainingActive,d.trainingTarget,d.trainingRunId]);
+ if(live){st.liveRc=t;st.liveRcAt=Date.now();d.lastSeen=Date.now();d.lastSeenText='Live RC';st.failures=0;t={...t,expansion:d.expansion||st.rcRates?.expansion,rcMonitor:rcMonitor.diagnostics()};}
+ if(t.controlRole!==undefined){d.controlRole=t.controlRole;d.locked=!!t.controlRole;if(t.viewOnly!==undefined)d.lockMine=!t.viewOnly&&ownsLock();else if(t.controlRole==='MOBILE')d.lockMine=false;}
+ for(const key of ['armed','trainingSelection','trainingActive','trainingTarget','trainingController','trainingRunId'])if(t[key]!==undefined)d[key]=t[key];
+ if(t.trainingSelection&&(t.controlRole==='MOBILE'||t.trainingActive)&&(!t.trainingActive||t.trainingTarget!=='TRIPOD'))stopAppTripod();
+ st.lastTelemetryGoodAt=Date.now();healthFromTelemetry(t);st.rcRates=t;updateRateUi();
+ const rcLive=String(t.rcSource||'NONE').toUpperCase()!=='NONE'&&Array.isArray(t.rc)&&Number.isFinite(t.rcAgeMs)&&t.rcAgeMs<700;
+ if(rcLive)applyPhysicalReceiver(t);else expireReceiverMirror();
+ window.dispatchEvent(new CustomEvent('aerion-telemetry',{detail:t}));api()?.receiveDevicePacket(t);api()?.setFcConnected(true);
+ if(!live||before!==JSON.stringify([d.controlRole,d.armed,d.trainingActive,d.trainingTarget,d.trainingRunId]))statusUi();updateHealthUi();
+}
 async function telemetryTick(now){
- const d=selected();
- if(!selectedConnected()||st.telemetryBusy||now-st.lastTelemetryAt<150)return;
+ const d=selected();if(!selectedConnected())return;
+ rcMonitor?.update(client.base,d.deviceId,client.status);expireReceiverMirror();
+ const period=rcMonitor?.live?2000:150;
+ if(st.telemetryBusy||now-st.lastTelemetryAt<period)return;
  st.lastTelemetryAt=now;st.telemetryBusy=true;
  try{
-   const sent=performance.now(),t=await client.telemetry(!!((d.controlRole==='MOBILE'||d.trainingActive)&&api()?.getActiveTab?.()!=='telemetry'));t.requestLatencyMs=Math.round(performance.now()-sent);if(t.deviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(t.deviceId,d.deviceId))throw Error('Telemetry Device ID mismatch');if(t.controlRole!==undefined){d.controlRole=t.controlRole;d.locked=!!t.controlRole;if(t.viewOnly!==undefined)d.lockMine=!t.viewOnly&&ownsLock();}for(const key of ['trainingSelection','trainingActive','trainingTarget','trainingController','trainingRunId'])if(t[key]!==undefined)d[key]=t[key];if(t.trainingSelection&&(t.controlRole==='MOBILE'||t.trainingActive)&&(!t.trainingActive||t.trainingTarget!=='TRIPOD'))stopAppTripod();st.lastTelemetryGoodAt=Date.now();healthFromTelemetry(t);st.rcRates=t;updateRateUi();
-   const rcSource=String(t?.rcSource||'NONE').toUpperCase(),rcLive=rcSource!=='NONE'&&Array.isArray(t?.rc)&&(+t.rcAgeMs||0)<700;
-   if(rcLive)applyPhysicalReceiver(t);else if(st.receiverLastAt&&Date.now()-st.receiverLastAt>900){st.receiverHealth='STALE';st.sensorHealth.receiver='STALE';st.tripodArmed=st.tripodLow=st.tripodJoinArmed=false;if(!st.txOn&&!st.pythonRcActive&&api()?.getSimInputOwner?.()==='receiver'){api()?.controlSim?.({roll:0,pitch:0,yaw:0},'receiver');api()?.setSimRunning?.(false)}}
-   window.dispatchEvent(new CustomEvent('aerion-telemetry',{detail:t}));statusUi();api()?.receiveDevicePacket(t);api()?.setFcConnected(true);updateHealthUi();
+  const sent=performance.now(),startedAt=Date.now(),identity=d.deviceId,base=client.base;let t=await client.telemetry(!!((d.controlRole==='MOBILE'||d.trainingActive)&&api()?.getActiveTab?.()!=='telemetry'));t.requestLatencyMs=Math.round(performance.now()-sent);
+  if(selected()?.deviceId!==identity||client.base!==base)return;if(t.deviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(t.deviceId,identity))throw Error('Telemetry Device ID mismatch');
+  if(rcMonitor?.live&&st.liveRcAt>startedAt){delete t.lockMine;delete t.viewOnly;t={...t,...st.liveRc,rcMonitor:rcMonitor.diagnostics()};}
+  receiveRcTelemetry(t);
  }catch(_){updateHealthUi()}
  finally{st.telemetryBusy=false}
 }
@@ -445,7 +467,7 @@ async function scanKitsUi(){
    if(list.length===1&&!selectedConnected()&&(!st.preferredDeviceId||window.ZebjusDroneKit.sameDeviceIdentity(list[0].deviceId,st.preferredDeviceId))){await selectDevice(list[0].deviceId,{take:false});}
  }finally{if(btn)btn.disabled=false}
 }
-function disconnectKit(manual=true){window.zebjusStopPythonForSafety?.('Kit disconnected');if(manual)st.manualDisconnect=true;releaseLock(false).catch(()=>{});client?.disconnect();if(selected()){selected().online=false;selected().lockMine=false}if(manual)st.selectedDeviceId='';st.lastTelemetryGoodAt=0;st.lastCommandAckAt=0;st.receiverLastAt=0;st.receiverHealth='NOT_FOUND';st.sensorHealth={imu:'NOT_FOUND',barometer:'NOT_FOUND',lidar:'NOT_FOUND',receiver:'NOT_FOUND'};const b=$('#kitConnBadge');if(b){b.textContent='Not connected';b.className='status'};if(manual)setText('kitNameMessage','Disconnected by user. Press Connect Kit or Scan This Wi-Fi to reconnect.');statusUi()}
+function disconnectKit(manual=true){rcMonitor?.stop();st.liveRc=null;st.liveRcAt=0;window.zebjusStopPythonForSafety?.('Kit disconnected');if(manual)st.manualDisconnect=true;releaseLock(false).catch(()=>{});client?.disconnect();if(selected()){selected().online=false;selected().lockMine=false}if(manual)st.selectedDeviceId='';st.lastTelemetryGoodAt=0;st.lastCommandAckAt=0;st.receiverLastAt=0;st.receiverHealth='NOT_FOUND';st.sensorHealth={imu:'NOT_FOUND',barometer:'NOT_FOUND',lidar:'NOT_FOUND',receiver:'NOT_FOUND'};const b=$('#kitConnBadge');if(b){b.textContent='Not connected';b.className='status'};if(manual)setText('kitNameMessage','Disconnected by user. Press Connect Kit or Scan This Wi-Fi to reconnect.');statusUi()}
 async function resetKitName(){if(!client?.connected)return setText('kitNameMessage','Connect kit first.');try{const r=await client.resetName();setText('kitNameMessage',r.message||'Auto name selected; kit restarting.');disconnectKit(false)}catch(e){setText('kitNameMessage','Reset failed: '+e.message)}}
 async function scanWifi(){const sel=$('#wifiSelect');if(!client?.connected){if(sel)sel.innerHTML='<option value="">Connect kit first</option>';return setText('wifiMessage','Connect kit first.')}if(sel)sel.innerHTML='<option value="">Scanning…</option>';setText('wifiMessage','Scanning Wi-Fi…');try{const r=await client.scanWifi();if(sel){sel.innerHTML='';(r.networks||[]).forEach(n=>{const o=document.createElement('option');o.value=n.ssid;o.textContent=`${n.ssid} (${n.rssi} dBm)${n.secure?' 🔒':''}`;sel.appendChild(o)});if(!sel.options.length)sel.innerHTML='<option value="">No networks found</option>'}setText('wifiMessage',`${(r.networks||[]).length} network(s) found.`)}catch(e){setText('wifiMessage','Wi-Fi scan failed: '+e.message)}}
 async function saveWifi(){if(!canControl())return setText('wifiMessage','Take Control first.');const ssid=$('#wifiSelect')?.value||'',password=$('#wifiPassword')?.value||'';if(!ssid)return setText('wifiMessage','Select a Wi-Fi network first.');try{const r=await client.setWifi(ssid,password);if($('#wifiPassword'))$('#wifiPassword').value='';setText('wifiMessage',r.message||`Saved ${ssid}; kit restarting.`);disconnectKit(false)}catch(e){setText('wifiMessage','Wi-Fi change failed: '+e.message)}}
@@ -473,6 +495,6 @@ function initUi(){
  if(st.preferredDeviceId){seedPreferredDevice();reconnectTick(true).then(refreshSavedWifi)}else if(st.preferredDeviceName||st.query){connectExact(st.preferredDeviceName||st.query,st.autoAcquire).then(refreshSavedWifi).catch(e=>{log('Auto-connect: '+e.message);scanKitsUi()})}else scanKitsUi();
 }
 function loop(t){joystickTick(t);joystickWatchdogTick();telemetryTick(t);lockTick(t);updateHealthUi();requestAnimationFrame(loop)}
-function start(){if(st.booted)return;st.booted=true;window.__zebjusSchoolReady=true;initUi();requestAnimationFrame(loop);setInterval(()=>{refreshLastSeenText();healthRefresh();reconnectTick();requestModules(false);if(window.AerionWorkflow?.full?.active||window.AerionWorkflow?.individual?.active)lockTick(performance.now())},1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){healthRefresh(true);reconnectTick(true)}});window.addEventListener('online',()=>{healthRefresh(true);reconnectTick(true)});window.zebjusSchool={keepControlForSetup:()=>lockTick(performance.now()),prepareFcSetup:async()=>{window.zebjusStopPythonForSafety?.('FC setup');setPythonControlMode(false);setTxSafe();st.txOn=false;await queueSafeJoystickFrame(true);api()?.setSimRunning?.(false);renderJoy();},sendDeviceCommand,commandDevice,setPythonControlMode,mirrorPythonRc,i2cScan,imuRead,isViewOnly,isCloudActive:()=>selectedConnected(),isKitActive:()=>selectedConnected(),getSelectedDevice:selected,isSelectedConnected:selectedConnected,canControl,ownsLock,requestModules,acquireLock,releaseLock,state:st,client,markOffline:markSelectedOffline,refreshNow:async()=>{await healthRefresh(true);return selected()},reconnectNow:async()=>{const d=selected();if(!d)return null;if(d.online&&client?.connected){await healthRefresh(true);return selected()}if(d.online)markSelectedOffline('Reconnect requested');await reconnectTick(true);return selected()},reconnectAfterFirmware} }
+function start(){if(st.booted)return;st.booted=true;window.__zebjusSchoolReady=true;initUi();requestAnimationFrame(loop);setInterval(()=>{refreshLastSeenText();healthRefresh();reconnectTick();requestModules(false);if(window.AerionWorkflow?.full?.active||window.AerionWorkflow?.individual?.active)lockTick(performance.now())},1000);document.addEventListener('visibilitychange',()=>{if(document.hidden)rcMonitor?.stop();else{healthRefresh(true);reconnectTick(true)}});window.addEventListener('online',()=>{healthRefresh(true);reconnectTick(true)});window.zebjusSchool={keepControlForSetup:()=>lockTick(performance.now()),prepareFcSetup:async()=>{window.zebjusStopPythonForSafety?.('FC setup');setPythonControlMode(false);setTxSafe();st.txOn=false;await queueSafeJoystickFrame(true);api()?.setSimRunning?.(false);renderJoy();},sendDeviceCommand,commandDevice,setPythonControlMode,mirrorPythonRc,i2cScan,imuRead,isViewOnly,isCloudActive:()=>selectedConnected(),isKitActive:()=>selectedConnected(),getSelectedDevice:selected,isSelectedConnected:selectedConnected,canControl,ownsLock,requestModules,acquireLock,releaseLock,state:st,client,rcMonitor,markOffline:markSelectedOffline,refreshNow:async()=>{await healthRefresh(true);return selected()},reconnectNow:async()=>{const d=selected();if(!d)return null;if(d.online&&client?.connected){await healthRefresh(true);return selected()}if(d.online)markSelectedOffline('Reconnect requested');await reconnectTick(true);return selected()},reconnectAfterFirmware} }
 window.addEventListener('zebjus-app-ready',start,{once:true});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{if(window.__zebjusAppLoaded)start()},0));else setTimeout(()=>{if(window.__zebjusAppLoaded)start()},0);
 })();

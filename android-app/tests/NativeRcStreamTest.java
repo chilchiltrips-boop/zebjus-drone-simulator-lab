@@ -17,7 +17,7 @@ public final class NativeRcStreamTest {
   check(gate.accept(grant,now.get(),1000),"grant");LeaseGate.Lease lease=gate.authorize(grant.origin,grant.deviceId,grant.clientId);
   DatagramSocket controller=new DatagramSocket(0,InetAddress.getLoopbackAddress());controller.setSoTimeout(1000);
   NativeRcStream stream=new NativeRcStream(gate,now::get);stream.configure(lease,new DatagramSocket(),new InetSocketAddress(InetAddress.getLoopbackAddress(),controller.getLocalPort()),DEVICE,TOKEN);
-  int[] channels={1500,1500,1430,1500,2000,1000,1000,1000,1500,1000};byte[] buffer=new byte[64];
+  int[] channels={1500,1500,1430,1500,2000,1000,1000,1000,1500,1000};byte[] buffer=new byte[64];check(stream.matchesRun(lease,null,channels),"real input accepted");check(!stream.matchesRun(lease,"7",channels),"late simulation cannot enter real publisher");
   for(int i=0;i<40;i++){
    now.addAndGet(20);
    // Simulate a 160 ms WebView pause: native must continue at 50 Hz.
@@ -56,7 +56,8 @@ public final class NativeRcStreamTest {
   // ZRC2 uses the actual 50 Hz transport while HTTP replies are held elsewhere.
   now.set(9000);LeaseGate.Grant simGrant=gate.beginGrant(grant.origin,grant.deviceId,"FLY-udp-simulation",new Object());check(gate.accept(simGrant,now.get(),1000),"ZRC2 grant");LeaseGate.Lease simLease=gate.authorize(simGrant.origin,simGrant.deviceId,simGrant.clientId);
   DatagramSocket simController=new DatagramSocket(0,InetAddress.getLoopbackAddress());simController.setSoTimeout(1000);
-  stream.configure(simLease,new DatagramSocket(),new InetSocketAddress(InetAddress.getLoopbackAddress(),simController.getLocalPort()),DEVICE,TOKEN+1,true);
+  stream.configure(simLease,new DatagramSocket(),new InetSocketAddress(InetAddress.getLoopbackAddress(),simController.getLocalPort()),DEVICE,TOKEN+1,true,7);
+  check(stream.matchesRun(simLease,"7",channels),"same simulator run");check(!stream.matchesRun(simLease,"6",channels),"old run rejected");check(!stream.matchesRun(simLease,null,channels),"real ARM rejected for simulation");
   for(int i=0;i<150;i++){
    now.addAndGet(20);channels[0]=i%2==0?1800:1200;channels[1]=i%3==0?1700:1300;
    check(stream.offer(simLease,channels),"fresh simulator input");stream.tick();DatagramPacket packet=new DatagramPacket(buffer,buffer.length);simController.receive(packet);
@@ -64,6 +65,7 @@ public final class NativeRcStreamTest {
    ByteBuffer ack=ByteBuffer.allocate(28).order(ByteOrder.LITTLE_ENDIAN);ack.putInt(0x3141525a).put((byte)2).put((byte)0).put((byte)6).put((byte)0).putLong(DEVICE).putLong(TOKEN+1).putInt(frame.getInt(24));simController.send(new DatagramPacket(ack.array(),28,packet.getSocketAddress()));
    check(gate.watchdog(now.get())==null,"simulation keeps its normal native ACK deadline without HTTP");
   }
+  check(Boolean.TRUE.equals(stream.diagnostics().get("virtualArmed")),"virtual ARM is accepted independently of physical ARM");check(stream.diagnostics().containsKey("acceptedChannels"),"ACK channels recorded");
   check(simLease.hasControllerAck()&&!simLease.controllerArmed()&&simLease.controllerReady(),"simulation ACK confirms readiness with physical outputs disarmed");
   now.addAndGet(20);stream.offer(simLease,channels);stream.tick();DatagramPacket lastSim=new DatagramPacket(buffer,buffer.length);simController.receive(lastSim);long simAckAge=gate.ackAge(simLease,now.get());
   for(int bad=0;bad<3;bad++){

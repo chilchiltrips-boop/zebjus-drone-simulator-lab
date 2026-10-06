@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.70 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
+  ZEBJUS FlightCore V18.3.71 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -52,6 +52,7 @@
 #include <esp_timer.h>
 #include "FlightControlMath.h"
 #include "RcLinkPolicy.h"
+#include "RcMonitorProtocol.h"
 #include "RcUdpProtocol.h"
 #include "FlightSetupPolicy.h"
 #include "ZEBJUS_FLIGHTCORE_TYPES.h"
@@ -60,7 +61,7 @@
 #endif
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.70";
+static const char* FW_VERSION="18.3.71";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -903,7 +904,7 @@ String statusJson(const String& clientId=""){
   j+=",\"name\":\""+jsonEscape(kitName)+"\",\"deviceName\":\""+jsonEscape(kitName)+"\",\"hostname\":\""+hostFromName(kitName)+"\",\"deviceId\":\""+deviceId+"\",\"boardId\":\""+String(BOARD_ID)+"\",\"boardName\":\""+String(BOARD_NAME)+"\"";
   j+=",\"connected\":"+String(connected?"true":"false")+",\"ssid\":\""+jsonEscape(connected?WiFi.SSID():"")+"\",\"ip\":\""+(setupMode?WiFi.softAPIP().toString():WiFi.localIP().toString())+"\",\"rssi\":"+String(connected?WiFi.RSSI():0);
   j+=",\"mode\":\""+mode+"\",\"apPreferred\":"+String(preferredApMode()?"true":"false")+",\"apSsid\":\""+jsonEscape(apName)+"\",\"armed\":"+String(effectiveArmed()?"true":"false")+",\"locked\":"+String(lockActive()?"true":"false")+",\"lockMine\":"+String(lockMine(clientId)?"true":"false")+",\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+",\"rcTimeoutMs\":"+String(WEB_RC_STALE_MS)+",\"rcCenterMs\":"+String(RcLinkPolicy::CENTER_AFTER_MS)+",\"benchRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"webRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"apRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"firmwareRole\":\""+String(FLIGHT_CONTROL_ENABLED?"RATE_ANGLE_FLIGHT_CORE":"WIFI_SENSOR_BRIDGE")+"\",\"flightCoreIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"flightReady\":"+String(flightReady?"true":"false")+",\"escOutputs\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidWritable\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"calibrationIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"flightMode\":\""+String(flightModeName(flightMode))+"\",\"rcSource\":\""+String(rcSourceName(activeRcSource))+"\",\"rcPolicy\":\"WEB_ACTIVE_THEN_PPM_FALLBACK\",\"otaUpdate\":true,\"receiverHealth\":\""+receiverHealth()+"\",\"receiverPin\":"+String(ppmReceiverPin)+",\"i2cScan\":true,\"imuRead\":true,\"imuModel\":\""+String(imuName(detectedImu))+"\",\"i2cSda\":"+String(I2C_SDA_PIN)+",\"i2cScl\":"+String(I2C_SCL_PIN)+",\"benchMode\":"+String((int)benchMode)+",\"loopCount\":"+String(flightLoopCount)+",\"maxLoopGapUs\":"+String(maxFlightLoopGapUs)+",\"loopOverruns\":"+String(flightLoopOverruns)+",\"outputWatchdogTripped\":"+String(flightWatchdogTripped?"true":"false")+",\"outputWatchdogTrips\":"+String(flightWatchdogTrips)+",\"ppmFrameHz\":"+String(ppmFrameHz)+",\"webRcFrameHz\":"+String(webRcFrameHz)+",\"flightLoopHz\":"+String(flightLoopHz)+",\"expansion\":"+expansionJson()+",\"pid\":"+pidJson()+"}";
-  j.remove(j.length()-1);j+=rcTransportJson()+flightFeatureJson(server.arg("clientId"))+"}";return j;
+  j.remove(j.length()-1);j+=",\"rcMonitorPort\":"+String(RcMonitorProtocol::PORT)+",\"rcMonitorProtocol\":\"NDJSON1\""+rcTransportJson()+flightFeatureJson(server.arg("clientId"))+"}";return j;
 }
 void statusApi(){sendJson(200,statusJson(server.arg("clientId")));}
 void telemetryApi(){
@@ -923,6 +924,18 @@ void telemetryApi(){
   j+=",\"imuHealth\":\""+imuHealth+"\",\"barometerHealth\":\"NOT_FOUND\",\"lidarHealth\":\"NOT_FOUND\",\"loopCount\":"+String(flightLoopCount)+",\"maxLoopGapUs\":"+String(maxFlightLoopGapUs)+",\"loopOverruns\":"+String(flightLoopOverruns)+",\"outputWatchdogTripped\":"+String(flightWatchdogTripped?"true":"false")+",\"outputWatchdogTrips\":"+String(flightWatchdogTrips)+",\"ppmFrameHz\":"+String(ppmFrameHz)+",\"webRcFrameHz\":"+String(webRcFrameHz)+",\"flightLoopHz\":"+String(flightLoopHz);
   j+=",\"sensorHealth\":{\"imu\":\""+imuHealth+"\",\"barometer\":\"NOT_FOUND\",\"lidar\":\"NOT_FOUND\",\"receiver\":\""+rx+"\"}";j+=rcTransportJson()+flightFeatureJson(server.arg("clientId"))+"}";sendJson(200,j);
 }
+void buildRcMonitorPacket(char* out,size_t capacity){
+ RcSourceKind src=chooseRcSource();uint16_t rc[10];copyActiveRc(rc,src);
+ uint32_t last=webRcLastMs,now=millis();
+ uint32_t age=src==RC_PPM?receiverAgeMs():last?(uint32_t)(now-last):999999;
+ if(age==0xFFFFFFFFUL)age=999999;
+ bool active=trainingActive,ownerLive=(int32_t)(controlExpiresAt-now)>0;char channels[80];size_t used=0;
+ for(int i=0;i<10;i++)used+=snprintf(channels+used,sizeof(channels)-used,i?",%u":"%u",rc[i]);
+ snprintf(out,capacity,"{\"ok\":true,\"kit\":\"ZEBJUS_FLIGHTCORE\",\"type\":\"rc_live\",\"deviceId\":\"%s\",\"controllerMs\":%lu,\"rcFrameCount\":%lu,\"rcSource\":\"%s\",\"rcAgeMs\":%lu,\"rc\":[%s],\"armed\":%s,\"flightReady\":%s,\"flightMode\":\"%s\",\"trainingSelection\":true,\"trainingActive\":%s,\"trainingTarget\":\"%s\",\"trainingController\":\"%s\",\"trainingInput\":\"%s\",\"trainingRunId\":%lu,\"outputsBlocked\":%s,\"virtualArmed\":%s,\"controlRole\":\"%s\",\"receiverHealth\":\"%s\",\"roll\":%.3f,\"pitch\":%.3f,\"yaw\":%.3f,\"webRcFrameHz\":%lu,\"ppmFrameHz\":%lu,\"flightLoopHz\":%lu,\"observerTransport\":\"NDJSON1\"}",
+ deviceId.c_str(),(unsigned long)now,(unsigned long)(src==RC_PPM?ppmFrames:webRcFrames),rcSourceName(src),(unsigned long)age,channels,effectiveArmed()?"true":"false",flightReady?"true":"false",flightModeName(flightMode),active?"true":"false",trainingTarget==1?"TRIPOD":trainingTarget==2?"FLIGHT":"NONE",trainingAppOwned?"APP":"WEB",trainingInput==2?"PPM":"APP",(unsigned long)trainingRunId,active?"true":"false",active&&src!=RC_NONE&&rc[4]>1500?"true":"false",ownerLive?(mobileReserved?"MOBILE":"WEB"):"",src!=RC_NONE?"OK":"STALE",kalmanRoll,kalmanPitch,flightYaw,(unsigned long)webRcFrameHz,(unsigned long)ppmFrameHz,(unsigned long)flightLoopHz);
+}
+#include "FlightRcMonitor.h"
+
 void acquireApi(){
  String id=server.arg("clientId");id.trim();if(!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){sendMessage(409,"Verify the exact Device ID before taking control");return;}if(id.length()<4){sendMessage(400,"Invalid session ID");return;}
  if(wifiTestState==WT_RUNNING||wifiTestState==WT_SUCCESS||restartAt){sendMessage(423,"Kit is changing Wi-Fi");return;}expireLock();String role=server.arg("clientRole");role=role=="MOBILE"?"MOBILE":"WEB";
@@ -931,11 +944,12 @@ void acquireApi(){
  const bool webTransfer=role=="WEB"&&controlRole=="MOBILE"&&argBool("takeover")&&!effectiveArmed()&&benchMode==BENCH_NONE;
  if(controlOwner.length()&&controlOwner!=id&&!webTransfer&&!(role=="MOBILE"&&controlRole!="MOBILE"&&!effectiveArmed()&&benchMode==BENCH_NONE)){sendMessage(423,controlRole=="MOBILE"?"Mobile app owns this kit. Laptop is VIEW ONLY.":"Another session controls this kit. VIEW ONLY.");return;}
  if(controlOwner!=id){if(webTransfer&&trainingActive)finishTraining();invalidateRcUdp();webRcLastMs=0;forceDisarmRequested=false;setupAfterNeutral=true;armLowSeen=false;resetArmGesture();}
- controlOwner=id;controlRole=role;mobileReserved=role=="MOBILE";controlExpiresAt=millis()+LOCK_TIMEOUT_MS;
  const bool simulationUdp=trainingActive&&trainingAppOwned&&trainingInput==1&&trainingOwner==id&&role=="MOBILE"&&server.arg("rcTransport")=="UDP2";
+ if(server.hasArg("simulationRunId")&&(!simulationUdp||server.arg("simulationRunId")!=String(trainingRunId))){sendMessage(409,"Simulator grant belongs to an expired run");return;}
+ controlOwner=id;controlRole=role;mobileReserved=role=="MOBILE";controlExpiresAt=millis()+LOCK_TIMEOUT_MS;
  if(trainingActive&&!simulationUdp)invalidateRcUdp();
  if(role=="MOBILE"&&rcUdpTaskHandle&&(!trainingActive||simulationUdp)){portENTER_CRITICAL(&stateMux);if(!rcUdpToken||rcUdpSimulation!=simulationUdp){rcUdpToken=((uint64_t)esp_random()<<32)|esp_random();if(!rcUdpToken)rcUdpToken=1;rcUdpSequenceSeen=false;}rcUdpSimulation=simulationUdp;portEXIT_CRITICAL(&stateMux);}
- sendJson(200,"{\"ok\":true,\"lockMine\":true,\"controlRole\":\""+role+"\",\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+",\"rcTimeoutMs\":"+String(WEB_RC_STALE_MS)+",\"rcCenterMs\":"+String(RcLinkPolicy::CENTER_AFTER_MS)+",\"simulationOutputsBlocked\":"+String(trainingActive?"true":"false")+",\"simulationRcTransport\":\""+String(trainingActive&&!simulationUdp?"HTTP":"UDP")+"\""+rcUdpGrantJson()+"}");
+ sendJson(200,"{\"ok\":true,\"deviceId\":\""+deviceId+"\",\"lockMine\":true,\"controlRole\":\""+role+"\",\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+",\"rcTimeoutMs\":"+String(WEB_RC_STALE_MS)+",\"rcCenterMs\":"+String(RcLinkPolicy::CENTER_AFTER_MS)+",\"trainingRunId\":"+String(trainingRunId)+",\"simulationOutputsBlocked\":"+String(trainingActive?"true":"false")+",\"simulationRcTransport\":\""+String(trainingActive&&!simulationUdp?"HTTP":"UDP")+"\""+rcUdpGrantJson()+"}");
 }
 void lockPingApi(){if(!requireControl())return;controlExpiresAt=millis()+LOCK_TIMEOUT_MS;sendJson(200,"{\"ok\":true}");}
 void releaseApi(){String id=server.arg("clientId");if(server.hasArg("expectedDeviceId")&&!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){sendMessage(409,"Device ID mismatch: release belongs to another kit");return;}if(lockMine(id)){invalidateRcUdp();if(activeRcSource==RC_WEB_AP||activeRcSource==RC_WEB_STA)forceDisarmRequested=true;armLowSeen=false;webRcLastMs=0;controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();serviceTraining();}sendJson(200,"{\"ok\":true}");}
@@ -1180,11 +1194,11 @@ void setupRoutes(){
   server.onNotFound([](){if(server.method()==HTTP_OPTIONS){cors();server.send(204);return;}sendMessage(404,"Not found");});
 }
 void startNormalServer(){
-  setupMode=false;WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();startRcUdp();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.70 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  setupMode=false;WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();startRcUdp();startRcMonitor();wifiLostAt=0;
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.71 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
-  invalidateRcUdp();setupMode=true;if(!preferredApMode())setPreferredApMode(true);controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();serviceTraining();if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());server.begin();startRcUdp();wifiTestState=WT_IDLE;
+  invalidateRcUdp();setupMode=true;if(!preferredApMode())setPreferredApMode(true);controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();serviceTraining();if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());server.begin();startRcUdp();startRcMonitor();wifiTestState=WT_IDLE;
   Serial.println("==============================");Serial.println("ZEBJUS FlightCore SETUP MODE");Serial.println("AP Status: "+String(ok?"STARTED":"FAILED"));Serial.println("SSID     : "+apName);Serial.println("Password : "+apPassword);Serial.println("Write the AP SSID and password on the kit case before closing it.");Serial.println("Setup    : http://192.168.4.1");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);
 }
 
@@ -1204,7 +1218,7 @@ void setup(){
   if(USER_LED_PIN>=0){pinMode(USER_LED_PIN,OUTPUT);digitalWrite(USER_LED_PIN,HIGH);}
   Serial.begin(115200);delay(300);WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);loadExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}
   busMutex=xSemaphoreCreateRecursiveMutex();deviceId=getDeviceId();loadFlightSettings();loadFcSetup();loadKitName();updateApName();loadApPassword();loadSavedWiFi();loadPidSettings();loadCalibrationSettings();probeImuAtBoot();setupFlightCore();flightHeartbeatUs=micros();if(FLIGHT_CONTROL_ENABLED&&xTaskCreate(flightOutputSupervisor,"fc-output-guard",3072,nullptr,21,nullptr)!=pdPASS){flightReady=false;motorsSafe();Serial.println("Output supervisor unavailable: arming disabled");}setupExpansionPeripherals();setupRoutes();startFlightTask();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.70 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.71 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
   bool forceApOnce=consumeForceSetupFlag();if(forceApOnce||preferredApMode()){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }

@@ -1,17 +1,17 @@
 {
-  "version": "18.3.70-android.1",
-  "apk_sha256": "2f2652ad7d44155c3cf834914a2a696bb3bc0941f50c45435bb49414c828550b",
+  "version": "18.3.71-android.1",
+  "apk_sha256": "52080c44d8328ab70f318e3361a343bdbe978e9f9c834ef55e7fa9fb0194d428",
   "checks": {
     "APK_DEX_manifest_signature_alignment_and_exact_assets": "passed Android SDK 36 build; original development certificate retained",
     "native_scope_watchdog_and_ZRC2_protocol_ACK_rejection": "passed actual Java runtime and DatagramSocket loopback",
-    "production_firmware_simulator_HTTP_UDP_and_PWM_inhibition": "passed production host execution",
-    "app_web_delayed_HTTP_live_roll_pitch_virtual_motion_and_recovery": "passed actual bundled app and web Lab using mocked kit HTTP with production native grant policy",
+    "production_firmware_simulator_HTTP_UDP_and_PWM_inhibition": "production setup/UDP handlers and read-only monitor host execution passed",
+    "app_web_delayed_HTTP_live_roll_pitch_virtual_motion_and_recovery": "actual UI and native loopback; 1200 ms HTTP delay injection; native ZRC2 and NDJSON1 observation tested",
     "PID_preview_explicit_save_background_leases_output_STOP": "passed actual Lab browser integration; Basic/Advanced/Expert and bank controls absent",
     "recorder_JSON_CSV_marked_events_and_redaction": "passed core recorder and actual bundled app/web export tests"
   },
   "test_boundary": {
     "Android_phone_or_emulator_tested": false,
     "physical_drone_tested": false,
-    "firmware": "18.3.70 A1 and A2 compiled locally with pinned Arduino-ESP32 3.3.12; chip/OTA/factory/version checks passed"
+    "firmware": "18.3.71 A1 and A2 compiled locally with pinned Arduino-ESP32 3.3.12; chip/OTA/factory/version checks passed"
   }
 }

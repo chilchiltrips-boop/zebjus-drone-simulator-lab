@@ -1,0 +1,135 @@
+{
+  "version": "18.3.71",
+  "fieldEvidence": {
+    "previousVersion": "18.3.70",
+    "realReceivedHzMedian": 49,
+    "simulatorHTTPReceivedHzMedian": 1,
+    "simulatorHTTPLatencyMsMedian": [
+      553,
+      556
+    ],
+    "newControllerWatchdogTrips": 0
+  },
+  "changes": [
+    "Native 50 Hz ZRC2 simulator publication",
+    "Dedicated 25 Hz read-only NDJSON1 observer on port 4211",
+    "Fresh live RC takes precedence over delayed HTTP",
+    "Native destination/run scope fences late input",
+    "Offered and accepted channels, virtual ARM, monitor health and simulator pose in JSON exports"
+  ],
+  "validationBoundary": {
+    "physicalControllerTested": false,
+    "AndroidPhoneOrEmulatorTested": false,
+    "WiFiRadioESCMotorOrFlightTested": false,
+    "productionJavaFirmwareAndBundledUIExercisedWithMockRadio": true
+  },
+  "artifacts": {
+    "apk": {
+      "product": "ZEBJUS Aerion Flight",
+      "version": "18.3.71-android.1",
+      "versionCode": 1837101,
+      "package": "in.zebjus.aerion",
+      "minSdk": 26,
+      "targetSdk": 36,
+      "signing": "development key, included for development updates; not a private production key",
+      "apkBytes": 70252,
+      "sha256": "52080c44d8328ab70f318e3361a343bdbe978e9f9c834ef55e7fa9fb0194d428",
+      "verification": [
+        "APK ZIP integrity",
+        "DEX compiled",
+        "manifest/package/minSDK/targetSDK",
+        "v2/v3 APK signature",
+        "4-byte ZIP alignment",
+        "bundled UI/transport exact byte equality"
+      ],
+      "androidDeviceTested": false,
+      "physicalDroneTested": false
+    },
+    "firmware": {
+      "version": "18.3.71",
+      "builtAt": "2026-10-06T11:23:08Z",
+      "arduinoEsp32": "3.3.12",
+      "hardwareFlashingTested": false,
+      "boards": [
+        {
+          "boardId": "ZFC-A1",
+          "fqbn": "esp32:esp32:esp32c3",
+          "chipId": 5,
+          "appBytes": 1217136,
+          "otaSlots": [
+            {
+              "address": 65536,
+              "bytes": 1310720
+            },
+            {
+              "address": 1376256,
+              "bytes": 1310720
+            }
+          ],
+          "factoryBytes": 4194304,
+          "factoryAddress": "0x0",
+          "checks": [
+            "image magic",
+            "profile chip ID",
+            "release version",
+            "dual OTA slots",
+            "slot size",
+            "factory bootloader at 0x0",
+            "factory/APP identical"
+          ]
+        },
+        {
+          "boardId": "ZFC-A2",
+          "fqbn": "esp32:esp32:XIAO_ESP32C6",
+          "chipId": 13,
+          "appBytes": 1302304,
+          "otaSlots": [
+            {
+              "address": 65536,
+              "bytes": 1310720
+            },
+            {
+              "address": 1376256,
+              "bytes": 1310720
+            }
+          ],
+          "factoryBytes": 4194304,
+          "factoryAddress": "0x0",
+          "checks": [
+            "image magic",
+            "profile chip ID",
+            "release version",
+            "dual OTA slots",
+            "slot size",
+            "factory bootloader at 0x0",
+            "factory/APP identical"
+          ]
+        }
+      ]
+    }
+  },
+  "checks": {
+    "setup-browser": "passed",
+    "receiver": "passed",
+    "setup-session": "passed",
+    "learning-browser": "passed",
+    "training-browser": "passed",
+    "wix": "passed",
+    "control": "passed",
+    "recovery": "passed",
+    "real-browser": "passed",
+    "mobile-view": "passed",
+    "network": "passed",
+    "ui": "passed",
+    "floating": "passed",
+    "flight": "passed",
+    "nativeJavaRunAndACKFences": "passed",
+    "productionFirmwareSetupAndUDP": "passed",
+    "productionReadOnlyMonitorTask": "passed",
+    "NDJSONParser": "passed",
+    "actualAppWeb1200msHTTPDelay": "passed",
+    "APKSignatureAndExactAssets": "passed",
+    "A1A2FirmwareCompile": "passed",
+    "projectAndReleaseInventory": "passed"
+  }
+}

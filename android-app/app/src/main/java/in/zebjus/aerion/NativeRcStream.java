@@ -18,12 +18,14 @@ public final class NativeRcStream {
     private static final class Profile {
         final LeaseGate.Lease lease;
         final DatagramSocket socket;
-        final long device,token;
+        final long device,token,runId;
         final boolean simulation;
         final long[] sentAt=new long[64];
+        final int[][] sentChannels=new int[64][];
+        int[] acceptedChannels;
         int sequence,lastAck;long framesSent,acksReceived,sendErrors,ackRejected;
         boolean ackSeen,closed;
-        Profile(LeaseGate.Lease lease,DatagramSocket socket,long device,long token,boolean simulation){this.lease=lease;this.socket=socket;this.device=device;this.token=token;this.simulation=simulation;}
+        Profile(LeaseGate.Lease lease,DatagramSocket socket,long device,long token,boolean simulation,long runId){this.lease=lease;this.socket=socket;this.device=device;this.token=token;this.simulation=simulation;this.runId=runId;}
     }
     public NativeRcStream(LeaseGate gate,LongSupplier clock){this.gate=gate;this.clock=clock;}
     public synchronized void useHttp(LeaseGate.Lease lease){
@@ -34,9 +36,19 @@ public final class NativeRcStream {
         configure(lease,socket,target,device,token,false);
     }
     public synchronized void configure(LeaseGate.Lease lease,DatagramSocket socket,InetSocketAddress target,long device,long token,boolean simulation)throws Exception{
+        configure(lease,socket,target,device,token,simulation,0);
+    }
+    public synchronized void configure(LeaseGate.Lease lease,DatagramSocket socket,InetSocketAddress target,long device,long token,boolean simulation,long runId)throws Exception{
         if(!gate.isCurrent(lease)||token==0){socket.close();throw new IllegalStateException("Control stopped.");}
         if(profile!=null)close(profile,false);
-        socket.connect(target);socket.setSoTimeout(1);profile=new Profile(lease,socket,device,token,simulation);
+        socket.connect(target);socket.setSoTimeout(1);profile=new Profile(lease,socket,device,token,simulation,runId);
+    }
+    public boolean nativeProfile(LeaseGate.Lease lease){Profile p=profile;return p!=null&&!p.closed&&p.lease==lease;}
+    public boolean matchesRun(LeaseGate.Lease lease,String run,int[] channels){
+        Profile p=profile;if(p==null||p.closed||p.lease!=lease)return false;
+        if(!p.simulation)return run==null;
+        if(run==null)return LocalPolicy.safe(channels);
+        try{return Long.parseLong(run)==p.runId&&p.runId>0;}catch(NumberFormatException error){return false;}
     }
     public boolean offer(LeaseGate.Lease lease,int[] channels){
         Profile p=profile;return p!=null&&!p.closed&&p.lease==lease&&gate.input(lease,clock.getAsLong(),channels);
@@ -56,7 +68,7 @@ public final class NativeRcStream {
         synchronized(p){
             if(p.closed||!gate.isCurrent(p.lease))return;
             try{
-                int sequence=++p.sequence;p.sentAt[sequence&63]=now;
+                int sequence=++p.sequence;p.sentAt[sequence&63]=now;p.sentChannels[sequence&63]=channels;
                 byte[] bytes=frame(p.device,p.token,sequence,channels,p.simulation);p.socket.send(new DatagramPacket(bytes,bytes.length));p.framesSent++;
                 for(int i=0;i<8;i++){
                     byte[] ack=new byte[ACK_BYTES+1];DatagramPacket packet=new DatagramPacket(ack,ack.length);
@@ -67,12 +79,14 @@ public final class NativeRcStream {
                     if(b.getLong()!=p.device||b.getLong()!=p.token)continue;int acknowledged=b.getInt();
                     if(acknowledged-p.sequence>0||p.ackSeen&&acknowledged-p.lastAck<=0||p.sequence-acknowledged>=64)continue;
                     long age=clock.getAsLong()-p.sentAt[acknowledged&63];if(age<0||age>250)continue;
-                    p.lastAck=acknowledged;p.ackSeen=true;p.acksReceived++;p.ackRejected--;gate.udpAck(p.lease,clock.getAsLong(),(flags&1)!=0,(flags&2)!=0);
+                    if(p.sentChannels[acknowledged&63]==null)continue;
+                    p.lastAck=acknowledged;p.acceptedChannels=p.sentChannels[acknowledged&63].clone();p.ackSeen=true;p.acksReceived++;p.ackRejected--;gate.udpAck(p.lease,clock.getAsLong(),(flags&1)!=0,(flags&2)!=0);
                 }
             }catch(Exception ignored){p.sendErrors++;/* Next tick retries; watchdog bounds loss. */}
         }
     }
-    private java.util.Map<String,Object> profileDiagnostics(Profile p){java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("protocol",p.simulation?"ZRC2":"ZRC1");out.put("framesSent",p.framesSent);out.put("acksReceived",p.acksReceived);out.put("ackRejected",p.ackRejected);out.put("sendErrors",p.sendErrors);out.put("validatedControllerAck",p.ackSeen);return out;}
+    private java.util.Map<String,Object> profileDiagnostics(Profile p){java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("protocol",p.simulation?"ZRC2":"ZRC1");out.put("framesSent",p.framesSent);out.put("acksReceived",p.acksReceived);out.put("ackRejected",p.ackRejected);out.put("sendErrors",p.sendErrors);out.put("validatedControllerAck",p.ackSeen);out.put("outputsBlocked",p.simulation);out.put("trainingRunId",p.runId);out.put("virtualArmed",p.simulation&&p.acceptedChannels!=null&&p.acceptedChannels[4]>1500);out.put("lastAcceptedSequence",p.ackSeen?Integer.toUnsignedLong(p.lastAck):null);if(p.acceptedChannels!=null){java.util.List<Integer> channels=new java.util.ArrayList<>();for(int value:p.acceptedChannels)channels.add(value);out.put("acceptedChannels",channels);}return out;}
+    public java.util.Map<String,Object> acknowledgement(LeaseGate.Lease lease){Profile p=profile;if(p==null||p.lease!=lease)return new java.util.LinkedHashMap<>();synchronized(p){return profileDiagnostics(p);}}
     public java.util.Map<String,Object> diagnostics(){Profile p=profile;java.util.Map<String,Object> out=new java.util.LinkedHashMap<>(gate.diagnostics(clock.getAsLong()));if(p!=null){synchronized(p){out.putAll(profileDiagnostics(p));}}else{out.put("protocol","HTTP");out.put("previousUdp",new java.util.LinkedHashMap<>(archived));}return out;}
     public synchronized void stop(LeaseGate.Lease lease){Profile p=profile;if(p!=null&&p.lease==lease){profile=null;close(p,true);}}
     private void close(Profile p,boolean sendSafe){

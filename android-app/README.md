@@ -1,6 +1,6 @@
-# Aerion Flight Android — 18.3.70-android.1
+# Aerion Flight Android — 18.3.71-android.1
 
-VersionCode 1837001. Install `dist/ZEBJUS_Aerion_V18_3_70_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.70 for A1 or A2.
+VersionCode 1837101. Install `dist/ZEBJUS_Aerion_V18_3_71_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.71 for A1 or A2.
 
 ## Connect and practise
 
@@ -8,7 +8,7 @@ Open Connect drone → Connect kit Wi-Fi. Choose the kit network using its label
 
 App home has **Tripod**, **Flight Training** and **Real Joystick** buttons. Tap a simulator to enable controls at throttle 0%, DISARMED. Open its web page on a computer connected to the same kit, then manually ARM the virtual drone in the app. No web Enable or simulator propeller checkbox is required. Both A1/C3 and A2/C6 support virtual practice without a ready IMU. Physical outputs remain DISARMED and blocked.
 
-Tripod and Flight Training use **acknowledged HTTP simulator input**, bound to the verified Device ID and current training run with physical outputs inhibited. This avoids dependence on the simulator UDP path. The native gate permits a bounded 2600 ms ACK window only for the verified HTTP simulator grant. Real flight retains native ZRC1 UDP at 50 Hz, its 300 ms input watchdog and 900 ms ACK deadline. Destination changes reset throttle and require manual ARM.
+Tripod and Flight Training use **native ZRC2 UDP at 50 Hz** with an exact Device ID/run grant and inhibited physical outputs. The web lab uses a separate **NDJSON1 monitor on port 4211 at 25 Hz**. HTTP does not pace either end. Real flight retains native ZRC1, the 300 ms input watchdog and 900 ms ACK deadline. Destination changes reset throttle and require manual ARM.
 
 Kit settings includes Flight recorder: capture received channels, selection/recovery events, native stop reasons and transport diagnostics; mark an issue and export JSON for ChatGPT or numerical CSV after a test. Opening settings and the Android export picker pauses control. Export the web Telemetry report as well to compare both observers by Device ID and UTC time.
 
@@ -22,4 +22,4 @@ With JDK 17 and official Android SDK 36 tools, set `ANDROID_SDK_ROOT` and the ex
 
 Java tests cover grant scope, cancellation, old replies, watchdogs, UDP ACK scope/replay/loss and STOP. Browser tests use the actual bundled UI/adapter and web lab against a simulated kit; firmware host tests execute actual simulator/PWM guards. No Android phone/emulator or physical drone was tested.
 
-See [update/test guide](../SUPPORT/V18_3_70_UPDATE_AND_TEST.md) for installation and exact test boundaries.
+See [update/test guide](../SUPPORT/V18_3_71_UPDATE_AND_TEST.md) for installation and exact test boundaries.

@@ -1,4 +1,4 @@
-# ZEBJUS Aerion V18.3.70 — GitHub upload
+# ZEBJUS Aerion V18.3.71 — GitHub upload
 
 Batch upload ചെയ്യാൻ സമയം എടുക്കുന്നത് files corrupt ചെയ്യില്ല. Partial files live main-ൽ mix ആകാതിരിക്കാൻ:
 
@@ -16,6 +16,6 @@ The full release has the minimum four batches (<=100 files each), with no split 
 
 Known obsolete browser AP pages, older APKs and accidentally uploaded wrappers are removed by **python3 -B tools/cleanup_repo.py** before integrity checking. Main firmware publication commits those deletions. Intentional development edits need `npm run release:seal`, `npm run release:check`, `npm run check` and updated manifests.
 
-**Install the new APK and flash the matching firmware** after upload. APK: android-app/dist/ZEBJUS_Aerion_V18_3_70_Android.apk. A1/A2 APP + FACTORY images: FlightCore_Firmware. AP password is 12345678; open the installed app/local WebApp, because firmware AP has no browser pages.
+**Install the new APK and flash the matching firmware** after upload. APK: android-app/dist/ZEBJUS_Aerion_V18_3_71_Android.apk. A1/A2 APP + FACTORY images: FlightCore_Firmware. AP password is 12345678; open the installed app/local WebApp, because firmware AP has no browser pages.
 
 Arduino core 3.3.12 is pinned, with bounded dependency retries and cache reuse. A persistent upstream outage can still fail setup. Local compilation/tests do not establish a successful remote GitHub job or physical phone/kit/USB/OTA performance.
