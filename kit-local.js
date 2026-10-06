@@ -177,10 +177,10 @@ class LocalKitClient{
     const path='/api/firmware/update?'+new URLSearchParams({clientId:this.clientId,expectedDeviceId:this.deviceId,boardId});
     return requestBase(this.base,path,{method:'POST',body,timeout:120000});
   }
-  async telemetry(){return requestBase(this.base,'/api/telemetry?clientId='+encodeURIComponent(this.clientId),{timeout:1400})}
+  async telemetry(compact=false){return requestBase(this.base,'/api/telemetry?'+(compact?'stream=rc&':'')+'clientId='+encodeURIComponent(this.clientId),{timeout:1400})}
   async i2cScan(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/i2c/scan',{timeout:6500})}
   async imuRead(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/imu',{timeout:2200})}
-  async acquire(){const generation=this._generation,r=await requestBase(this.base,'/api/control/acquire',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:1800});if(generation!==this._generation)throw new Error('Control request cancelled.');await this.refresh();return r}
+  async acquire(takeover=false){const generation=this._generation,r=await requestBase(this.base,'/api/control/acquire',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,...(takeover?{takeover:1}:{})},timeout:1800});if(generation!==this._generation)throw new Error('Control request cancelled.');await this.refresh();return r}
   async heartbeat(){return requestBase(this.base,'/api/control/ping',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:1500})}
   async release({keepalive=false}={}){if(!this.base)return{ok:true};const generation=this._generation;try{return await requestBase(this.base,'/api/control/release',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:1200,keepalive})}finally{if(generation===this._generation&&this.status)this.status.lockMine=false}}
   async command(command){if(!this.base)throw new Error('Kit not connected.');const c=command||{},data={clientId:this.clientId,type:String(c.type||''),expectedDeviceId:this.deviceId};Object.entries(c).forEach(([k,v])=>{if(k==='type'||k==='expectedDeviceId')return;data[k]=Array.isArray(v)?v.join(','):(typeof v==='object'&&v!==null?JSON.stringify(v):v)});return requestBase(this.base,'/api/command',{method:'POST',data,timeout:c.type==='rc_frame'?180:['calibrate_gyro','flight_settings_set','settings_restore'].includes(c.type)?6500:2200})}

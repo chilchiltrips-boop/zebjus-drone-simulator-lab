@@ -21,7 +21,7 @@ Lock expires after 10 seconds without a valid owner command, accepted RC or hear
 
 ## V18.3.64 native flight transport
 
-A MOBILE grant on a flight-capable profile advertises `rcUdpPort=4210`, private `rcUdpToken` (16 hex digits), `rcUdpHz=50`, `rcTimeoutMs=1000` and `rcCenterMs=300`. This physical-flight grant applies to A2; A1 supports the ZRC2 simulator grant described in V18.3.68 below. Tokens are never in public status/telemetry. A legacy client can send an initial safe HTTP RC frame to invalidate the token and continue over HTTP.
+A MOBILE grant on a flight-capable profile advertises `rcUdpPort=4210`, private `rcUdpToken` (16 hex digits), `rcUdpHz=50`, `rcTimeoutMs=1000` and `rcCenterMs=300`. This physical-flight grant applies to A2; A1 supports the ZRC2 simulator grant described in V18.3.69 below. Tokens are never in public status/telemetry. A legacy client can send an initial safe HTTP RC frame to invalidate the token and continue over HTTP.
 
 All multi-byte fields are little endian. RC is exactly 48 bytes: magic `ZRC1` (0–3), version 1 (4), type 1 (5), reserved zero (6–7), device MAC uint64 (8–15), token uint64 (16–23), sequence uint32 (24–27), and ten uint16 channels (28–47), each 1000–2000. Only live tokens, exact device and newer sequence are accepted. Accepted packets renew RC/owner timestamps.
 
@@ -198,7 +198,7 @@ Setup starts polling only after the matching active begin grant. Every poll rene
 
 A control grant adds `simulationOutputsBlocked` and `simulationRcTransport`. The Android native gate allows a 2600 ms ACK window only for a controller-verified outputs-blocked HTTP simulator grant. Physical UDP ACK limits and the 300 ms native input watchdog remain unchanged.
 
-## V18.3.68 ZRC2 simulator transport and PID preview
+## V18.3.69 ZRC2 simulator transport and PID preview
 
 `training_status` advertises `simulationRcProtocol:"ZRC2"` alongside legacy HTTP capability. After `training_select` confirms the MOBILE-owned APP simulator and blocked outputs, the app requests `rcTransport=UDP2` on `control/acquire`. The grant includes `rcProtocol:"ZRC2"`, `simulationRcTransport:"UDP"`, `simulationOutputsBlocked:true`, port 4210 and a fresh private 16-hex `rcUdpToken`. Both A1 and A2 support simulation grants without a flight-ready IMU.
 
@@ -207,3 +207,9 @@ ZRC2 retains the 48-byte layout above, with version byte 2 and kind byte 2. The 
 Firmware only accepts a ZRC2 frame while the matching simulation grant is current and APP training is active. Training end/expiry, input/destination change, control release or replacement invalidates the token. A ZRC2 packet can never become a physical flight packet. Legacy HTTP simulation still requires the current run ID.
 
 The setup wizard renews both configuration and control leases independently of rendering frames. Hiding the page stops active motor/ESC output while preserving completed checks; closing it ends setup. PID read/draft/default/bank operations preview only the virtual Tripod. Explicit PID Save performs `pid_set` then checked `pid_get`; Tripod controls never send physical PID or RC.
+
+## V18.3.69 compact mirror and explicit web transfer
+
+`GET /api/telemetry?stream=rc&clientId=...` returns verified Device ID, ownership, simulation selection/run, live ten-channel RC/age/source/receiver health, cached attitude, frame rates and battery. It never performs sensor I2C reads or returns PID/configuration payloads. App transmission and web app-control observation use this payload; the full web Telemetry page retains normal sensor/config telemetry.
+
+`POST /api/control/acquire` with `takeover=1`, a WEB client ID and exact expected Device ID requests app-to-web transfer. It is refused during physical ARM, bench outputs or another session's setup. Successful transfer ends simulation, invalidates UDP grants and clears previous RC; the new owner must send neutral low-throttle/ARM-low input and ARM manually. Ordinary acquire and anonymous discovery cannot take mobile control.

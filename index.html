@@ -5,10 +5,10 @@
 <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content" name="viewport"/>
 <meta content="#07111b" name="theme-color"/>
 <title>ZEBJUS Aerion</title>
-<script src="wix-embed.js?v=18.3.68-web.3"></script>
-<link href="styles.css?v=18.3.68-r3" rel="stylesheet"/><link href="lab-workflow.css?v=18.3.68-web.4" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
-<link href="wix-embed.css?v=18.3.68-web.3" rel="stylesheet"/>
-<link href="flight-training.css?v=18.3.68-web.3" rel="stylesheet"/>
+<script src="wix-embed.js?v=18.3.69-web.3"></script>
+<link href="styles.css?v=18.3.69-r3" rel="stylesheet"/><link href="lab-workflow.css?v=18.3.69-web.4" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
+<link href="wix-embed.css?v=18.3.69-web.3" rel="stylesheet"/>
+<link href="flight-training.css?v=18.3.69-web.3" rel="stylesheet"/>
 <link href="icon-192.png" rel="apple-touch-icon"/>
 <meta content="#07111b" name="theme-color"/>
 </head>
@@ -16,7 +16,7 @@
 <div id="app">
 <header class="topbar">
 <div class="topbar-main">
-<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS Aerion</b><span>V18.3.68 • Build · Code · Fly</span></div></div>
+<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS Aerion</b><span>V18.3.69 • Build · Code · Fly</span></div></div>
 <div class="top-network-control"><span>STA</span><button id="topNetworkToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Switch kit between STA and AP" disabled><i></i></button><span>AP</span><b id="topNetworkMode">NO KIT</b></div>
 <div class="top-control-control"><span>Take control</span><button id="topControlToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Take or release kit control" disabled><i></i></button><b id="topControlState">OFF</b></div>
 <span class="top-kit-status offline" id="topKitStatus" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span>
@@ -203,7 +203,7 @@
 <div class="chart-card sim-chart-card"><div class="sim-chart-head"><b>PID RESPONSE</b><span><i class="c-target"></i>Target <i class="c-roll"></i>Roll <i class="c-pitch"></i>Pitch <i class="c-yaw"></i>Yaw rate</span></div><canvas height="260" id="simChart" width="1200"></canvas></div>
 </div>
 </section>
-<section class="panel tab-panel" id="tab-joystick"><div id="mobileMirrorBanner" class="mobile-mirror-banner" hidden>MOBILE CONTROLS THIS KIT · LAPTOP VIEW ONLY · Sticks show received mobile commands.</div>
+<section class="panel tab-panel" id="tab-joystick"><div id="mobileMirrorBanner" class="mobile-mirror-banner" hidden>APP CONTROLS THIS KIT · Live stick mirror <button id="mobileTakeWebControl" type="button">Take web control</button></div>
 <div class="joystick-page-grid">
 <section class="form-card joystick-main-card joystick-console">
 <a class="btn primary small" id="openFlightApp" href="flight/index.html">Open Aerion Flight App ↗</a><div class="panel-head joystick-head"><div><small>10-CHANNEL CONTROL LAB</small><h2>Virtual Transmitter</h2><p>Mouse, touch or keyboard control with visual safety interlocks.</p></div><div class="tx-power-wrap"><span class="status" id="webJoyRoleBadge">LOCAL</span><button class="tx-power-btn off" id="webTxPowerBtn" type="button"><i></i><span>TRANSMITTER OFF</span></button></div></div>
@@ -426,22 +426,22 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option selected="" value="balanced">Balanced</option><option value="low">Low-end laptop</option></select></label><button class="btn ghost full" id="applyPerformanceBtn">Apply graphics profile</button><pre class="terminal mini" id="startupDiagnostics">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.68-r3"></script>
-<script src="offline-support.js?v=18.3.68-r3"></script>
-<script src="kit-local.js?v=18.3.68-r3"></script>
-<script src="control-sticks.js?v=18.3.68-r3"></script>
-<script src="receiver-wizard.js?v=18.3.68-web.4"></script>
-<script src="pid-tuning.js?v=18.3.68-web.5"></script>
-<script src="fc-setup.js?v=18.3.68-web.5"></script>
-<script src="kit-console.js?v=18.3.68-r3"></script>
-<script src="lab-workflow.js?v=18.3.68-web.5"></script>
-<script src="telemetry-cockpit.js?v=18.3.68-web.4"></script>
-<script src="flight-training-core.js?v=18.3.68-web.3"></script>
-<script src="flight-training-input.js?v=18.3.68-web.3"></script>
-<script type="module" src="flight-training.js?v=18.3.68-web.3"></script>
-<script src="flight-diagnostics.js?v=18.3.68-r3"></script>
-<script src="app.js?v=18.3.68-web.5" type="module"></script>
-<script src="school-lab.js?v=18.3.68-web.5"></script>
-<script src="hardware-io.js?v=18.3.68-r3"></script>
-<script src="firmware-updater.js?v=18.3.68-r4"></script>
+<script src="ui-runtime.js?v=18.3.69-r3"></script>
+<script src="offline-support.js?v=18.3.69-r3"></script>
+<script src="kit-local.js?v=18.3.69-r3"></script>
+<script src="control-sticks.js?v=18.3.69-r3"></script>
+<script src="receiver-wizard.js?v=18.3.69-web.4"></script>
+<script src="pid-tuning.js?v=18.3.69-web.5"></script>
+<script src="fc-setup.js?v=18.3.69-web.5"></script>
+<script src="kit-console.js?v=18.3.69-r3"></script>
+<script src="lab-workflow.js?v=18.3.69-web.5"></script>
+<script src="telemetry-cockpit.js?v=18.3.69-web.4"></script>
+<script src="flight-training-core.js?v=18.3.69-web.3"></script>
+<script src="flight-training-input.js?v=18.3.69-web.3"></script>
+<script type="module" src="flight-training.js?v=18.3.69-web.3"></script>
+<script src="flight-diagnostics.js?v=18.3.69-r3"></script>
+<script src="app.js?v=18.3.69-web.5" type="module"></script>
+<script src="school-lab.js?v=18.3.69-web.5"></script>
+<script src="hardware-io.js?v=18.3.69-r3"></script>
+<script src="firmware-updater.js?v=18.3.69-r4"></script>
 </body></html>

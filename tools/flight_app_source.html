@@ -195,7 +195,7 @@ let refreshing=false;
 async function refresh(){
  if(refreshing||state.practiceBusy||state.busy||state.manual||document.hidden||$('connectDialog').open)return;if(!state.online){await connect(false);await retryControl();return}if(state.tx&&(state.recovering||performance.now()-state.lastStatus<1000))return;refreshing=true;const epoch=state.epoch,mode=state.training,txEpoch=state.txEpoch;
  try{const sent=performance.now();let t,s;
-  if(state.tx){t=await api('/api/telemetry?clientId='+encodeURIComponent(cid),null,1000);s=t.kit&&typeof t.lockMine==='boolean'?validate(t):validate(await api('/api/status?clientId='+encodeURIComponent(cid),null,1000));}
+  if(state.tx){t=await api('/api/telemetry?stream=rc&clientId='+encodeURIComponent(cid),null,1000);s=t.kit&&typeof t.lockMine==='boolean'?validate(t):validate(await api('/api/status?clientId='+encodeURIComponent(cid),null,1000));}
   else{s=validate(await api('/api/status?clientId='+encodeURIComponent(cid),null,1000));t=await api('/api/telemetry?clientId='+encodeURIComponent(cid),null,1000);}
   if(epoch!==state.epoch||state.practiceBusy||mode!==state.training||txEpoch!==state.txEpoch)return;if(t.deviceId&&t.deviceId!==state.deviceId)throw Error('Different Device ID.');const newerRc=state.tx&&sent<state.lastAckSent;if(!state.resumeControl&&(state.status.trainingActive&&!s.trainingActive||state.training&&s.trainingRunId!==undefined&&s.trainingRunId!==state.training.runId)){state.status=s;stopControl('Training ended or changed. Select the destination again; ARM manually.');return}state.status={...state.status,...s,...(newerRc?{armed:state.status.armed,flightReady:state.status.flightReady,lockMine:true}: {})};state.lastStatus=performance.now();state.statusFailures=0;
   if(state.own&&!newerRc&&!s.lockMine){stopControl('Control released. Take control again.');return}
@@ -238,7 +238,7 @@ async function selectDestination(target,recovery=false){
   safeValues();await Promise.resolve(state.pending).catch(()=>{});if(state.tx)await sendFrame();window.AerionAndroid?.pauseStream?.(base,id,client);state.tx=false;state.txEpoch++;state.resumeControl=false;state.recovering=false;
   const found=await request(base,'/api/command',{clientId:client,type:'training_status'},2400,id);
   if(e!==state.epoch||!state.own)return;
-  if(!found.supported||!found.selectionSupported||found.simulationRcTransport!=='HTTP')throw Error('Install matching 18.3.68 firmware to enable simulator controls on this kit.');
+  if(!found.supported||!found.selectionSupported||found.simulationRcTransport!=='HTTP')throw Error('Install matching 18.3.69 firmware to enable simulator controls on this kit.');
   const simulationTransport=window.AerionAndroid&&found.simulationRcProtocol==='ZRC2'?'UDP2':'HTTP';
   mode={base,id,client,target,transport:simulationTransport,token:'TRAIN-'+crypto.randomUUID(),runId:0,failures:0,good:performance.now()};state.training=mode;
   state.modePending=request(base,'/api/command',{clientId:client,type:'training_select',session:mode.token,target,source:'APP'},2400,id);

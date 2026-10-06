@@ -1,3 +1,12 @@
+# ZEBJUS Aerion V18.3.69
+
+- App RC mirrors update Web Joystick in Real, Tripod and Flight Training modes. Compact live RC telemetry avoids sensor/PID/config payloads; automatic discovery pauses during app control and setup. Android HTTP requests close their connections explicitly.
+- Take web control explicitly transfers a disarmed, idle mobile-owned kit to the web. Active simulation ends, old UDP grants are invalidated, and neutral input plus manual ARM is required. Physical armed outputs cannot be taken over.
+- Receiver setup defaults to PPM with guided calibration. Selecting App / Web saves that input automatically and enables Next without RX calibration.
+- Dark PID editor reads saved firmware gains, provides Roll/Pitch/Yaw Rate and Attitude editing, and previews drafts in Tripod. Only Save to controller writes hardware PID, followed by readback verification.
+
+Install matching 18.3.69 APK and controller firmware. Browser/native-loopback tests and compilation validate software behavior; physical phone/radio/motor checks remain necessary.
+
 # ZEBJUS Aerion V18.3.68
 
 - Setup PID tuning follows the supplied stabilization-page layout: Basic/Advanced/Expert tabs, three browser parameter banks, linked Roll/Pitch, Rate inner and Attitude outer loops, defaults, live Tripod response and explicit controller save/readback. Current/default PID permits Next; drafts survive Back/Next.

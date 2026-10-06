@@ -260,6 +260,7 @@ public final class MainActivity extends Activity {
         try{
             connection.setConnectTimeout(timeout);connection.setReadTimeout(timeout);connection.setInstanceFollowRedirects(false);connection.setUseCaches(false);connection.setRequestMethod(method);
             connection.setRequestProperty("Accept","application/json");
+            connection.setRequestProperty("Connection","close");
             if(method.equals("POST")){
                 connection.setDoOutput(true);byte[] bytes=body.getBytes(StandardCharsets.UTF_8);connection.setFixedLengthStreamingMode(bytes.length);connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
                 if(job!=null && !job.allowed())throw new IllegalStateException("Control stopped.");

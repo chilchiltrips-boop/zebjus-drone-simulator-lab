@@ -1,8 +1,9 @@
-ZEBJUS Aerion V18.3.68 validation
+ZEBJUS Aerion V18.3.69 validation
 
-PASS: Android APK 18.3.68-android.1 compiled with SDK 36; DEX, manifest, v2/v3 signature, ZIP alignment and exact bundled assets verified; original update certificate retained.
+PASS: Android APK 18.3.69-android.1 compiled with SDK 36; DEX, manifest, v2/v3 signature, ZIP alignment and exact bundled assets verified; original update certificate retained.
 PASS: A1/C3 and A2/C6 compiled using pinned Arduino-ESP32 3.3.12; matching version, chip IDs, dual OTA slot sizes and factory/application equality checked.
 PASS: Native grant/ACK/input watchdogs and real/ZRC2 packet distinction exercised on actual Java DatagramSocket loopback.
+PASS: Compact RC telemetry, Real joystick mirror and explicit safe app-to-web transfer are exercised with actual app/web UI.
 PASS: Actual app/web simulator integration retains live Flight/Tripod motion and roll/pitch stick reflection with 1 s HTTP RC latency; simulator ARM keeps physical output blocked.
 PASS: Reference PID layout, draft preview, local banks/link, explicit controller save/readback, simulator isolation, Back/Next, background configuration heartbeat and hidden/delayed-output STOP exercised in browser.
 PASS: Production setup, receiver, training and HTTP/UDP RC handlers exercised on host; old session/token/kind packets, owner loss and expired input are rejected.

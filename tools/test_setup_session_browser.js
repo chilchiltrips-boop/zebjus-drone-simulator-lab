@@ -33,6 +33,7 @@ function setup(){return {...status(),supported:true,active:fc.active,session:fc.
    if(f.type==='pid_get')return reply({ok:true,pid:fc.pid});
    if(f.type==='pid_set'){for(const k of loops)for(const t of ['P','I','D'])fc.pid[k][t]=Number(f[k+t]);return reply({ok:true});}
    if(f.type==='snapshot_get')return reply({ok:true,flightSettings:{maxTilt:35,maxRate:180,idleUs:1100}});
+   if(f.type==='input_set'){assert.equal(f.source,'WEB');return reply(setup());}
    if(f.type==='pinmap_get')return reply({ok:true,motors:[]});
    if(f.type==='setup_esc'){await pause(150);fc.bench=4;return reply(setup());}
    if(f.type==='setup_motor'){fc.bench=1;return reply(setup());}
@@ -55,7 +56,7 @@ function setup(){return {...status(),supported:true,active:fc.active,session:fc.
  await pause(700);assert(await page.evaluate(()=>AerionWorkflow.full.active),'background scan must not stop setup');assert.equal(fc.session,session);assert.equal(fc.acquires,acquires,'scan must not silently reacquire control');
  await wizard.locator('[data-fs=airframe]').selectOption('QUAD_H');await click('saveFrame');await message('Airframe saved: QUAD_H');await click('back');assert.equal(await wizard.locator('.fs-title').textContent(),'1. Board');await click('next');assert.equal(await wizard.locator('.fs-title').textContent(),'2. Airframe');
  // PID is shared with Tripod, but writes to real hardware require Save/readback.
- for(let i=1;i<9;i++)await click('skip');await wizard.locator('[data-fs-pid=angleRateRollP]').waitFor();await page.waitForFunction(()=>!document.querySelector('[data-fs=saveTuning]').disabled);
+ for(let i=1;i<9;i++){if(i===7){assert.equal(await wizard.locator('[data-fs=source]').inputValue(),'PPM');await wizard.locator('[data-fs=source]').selectOption('WEB');await page.waitForFunction(()=>!document.querySelector('#setupWizardRoot [data-fs=next]').disabled);await click('next');}else await click('skip');}await wizard.locator('[data-fs-pid=angleRateRollP]').waitFor();await page.waitForFunction(()=>!document.querySelector('[data-fs=saveTuning]').disabled);
  assert.equal(await wizard.locator('[data-fs-pid=angleRateRollP]').inputValue(),'0.9');assert(!(await wizard.locator('[data-fs=next]').isDisabled()),'default PID can continue');
  await wizard.locator('[data-pid-link=inner]').check();await wizard.locator('[data-fs-pid=angleRateRollP]').fill('1.2');assert.equal(await wizard.locator('[data-fs-pid=angleRatePitchP]').inputValue(),'1.2');assert.equal(await page.evaluate(()=>zebjusLabAPI.getPid().angleRateRoll.P),1.2);assert.equal(fc.pid.angleRateRoll.P,.9);assert.equal(fc.calls.filter(x=>x.type==='pid_set').length,0);
  await wizard.locator('[data-pid-bank="1"]').click();await wizard.locator('[data-fs-pid=angleRateRollP]').fill('1.4');await wizard.locator('[data-pid-bank="0"]').click();assert.equal(await wizard.locator('[data-fs-pid=angleRateRollP]').inputValue(),'1.2');

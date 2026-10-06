@@ -1,5 +1,5 @@
 {
-  "version": "18.3.68-android.1",
+  "version": "18.3.69-android.1",
   "apk_sha256": "2ed27f3958224da74aea4bd1492de1bd90a427dfc1b7276b70c8971b4069a958",
   "checks": {
     "APK_DEX_manifest_signature_alignment_and_exact_assets": "passed Android SDK 36 build; original development certificate retained",
@@ -11,6 +11,6 @@
   "test_boundary": {
     "Android_phone_or_emulator_tested": false,
     "physical_drone_tested": false,
-    "firmware": "18.3.68 A1 and A2 compiled locally with pinned Arduino-ESP32 3.3.12; chip/OTA/factory/version checks passed"
+    "firmware": "18.3.69 A1 and A2 compiled locally with pinned Arduino-ESP32 3.3.12; chip/OTA/factory/version checks passed"
   }
 }
