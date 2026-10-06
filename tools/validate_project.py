@@ -307,7 +307,7 @@ if 'calAccX' not in html or 'calCaptureBtn' not in html or 'calibrationUi' not i
 
 # V18.3.43 unified RC / simulator mirror.
 if 'if(webRcFresh())return setupMode?RC_WEB_AP:RC_WEB_STA;if(receiverFresh())return RC_PPM' not in ino: fail('V18.3.43 Web/AP/Python-first RC arbitration is missing')
-if 'REAL KIT + TRIPOD MIRROR' not in html or 'simRealMirrorTick' not in app or 'mirrorSimPidToReal' not in app: fail('V18.3.43 Tripod real-kit mirror is missing')
+if 'SIMULATOR ONLY' not in html or 'simulatorPidOnly:true' not in app or 'mirrorSimPidToReal' in app: fail('Tripod PID must stay isolated from real hardware')
 if "rcSource!=='NONE'" not in school or "api()?.controlSim?.({roll:(c[0]-1500)/500" not in school: fail('V18.3.43 active RC telemetry/Web joystick mirror is missing')
 if 'simulatorMirror:true' not in app: fail('V18.3.43 Python real-kit simulator mirror is missing')
 

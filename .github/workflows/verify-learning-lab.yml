@@ -1,8 +1,8 @@
-name: Verify and build Learning Lab V18.3.67
+name: Verify and build Learning Lab V18.3.68
 on:
   workflow_dispatch:
   push:
-    branches: ['main', 'release/v18.3.67', 'release/v18.3.67-ui', 'release/v18.3.67-wix']
+    branches: ['main', 'release/v18.3.68', 'release/v18.3.68-ui', 'release/v18.3.68-wix']
 permissions:
   contents: write
 concurrency:
@@ -38,6 +38,7 @@ jobs:
           npm run test:setup-session
           npm run test:learning-browser
           npm run test:fc-setup
+          npm run test:rc-link
           npm run test:training-core
           npm run test:training-browser
           npm run test:wix
@@ -47,7 +48,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Aerion-Learning-Lab-UI-V18.3.67
+          name: Aerion-Learning-Lab-UI-V18.3.68
           if-no-files-found: warn
           path: |
             ${{ runner.temp }}/learning-lab-screenshots
@@ -56,7 +57,7 @@ jobs:
   verify-build:
     needs: learning-browser
     # Main has dedicated Android and firmware build workflows.
-    if: github.ref == 'refs/heads/release/v18.3.67'
+    if: github.ref == 'refs/heads/release/v18.3.68'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -100,7 +101,7 @@ jobs:
           npm run test:flight-math
           npm run test:rc-link
           npm run test:fc-setup
-          npm run test:fc-setup
+          npm run test:rc-link
           npm run test:training-core
           python3 -B tools/test_expansion_contract.py
           node android-app/tests/browser_transport_test.js
@@ -135,14 +136,14 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add FlightCore_Firmware firmware-catalog.json firmware-latest.json firmware-updater.js android-app/dist FILE_COUNT.txt offline-manifest.json release-integrity.json
           if ! git diff --cached --quiet; then
-            git commit -m 'Build verified V18.3.67 firmware and Android packages [skip ci]'
-            git push origin HEAD:release/v18.3.67
+            git commit -m 'Build verified V18.3.68 firmware and Android packages [skip ci]'
+            git push origin HEAD:release/v18.3.68
           fi
       - name: Retain APK, firmware and UI verification images
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Aerion-Learning-Lab-V18.3.67
+          name: Aerion-Learning-Lab-V18.3.68
           if-no-files-found: warn
           path: |
             android-app/dist

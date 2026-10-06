@@ -1,4 +1,15 @@
-# ZEBJUS Aerion V18.3.67
+# ZEBJUS Aerion V18.3.68
+
+- Setup PID tuning follows the supplied stabilization-page layout: Basic/Advanced/Expert tabs, three browser parameter banks, linked Roll/Pitch, Rate inner and Attitude outer loops, defaults, live Tripod response and explicit controller save/readback. Current/default PID permits Next; drafts survive Back/Next.
+- Wizard PID loads and edits preview in Tripod. Tripod PID and RC edits stay virtual; they never forward to physical hardware. Only explicit Save to controller writes PID.
+- Setup configuration heartbeats continue when another browser tab is open. Motor/ESC output stops on hiding the page; setup progress and control are retained. Real ownership, device or session loss still stops setup.
+- Android 18.3.68-android.1 and matching A1/A2 firmware negotiate ZRC2 simulator UDP at 50 Hz, independently of HTTP replies. Phone roll/pitch/yaw/throttle update Tripod and Flight Training in real time. Simulator grants use distinct packet versions and fresh tokens; expired or changed simulator packets cannot control real outputs.
+- Genuine input/ACK loss still pauses/disarms virtual flight and requires neutral, minimum throttle and manual DISARM/ARM. Simulation keeps physical motors disarmed and blocked. Older browser/app clients retain acknowledged HTTP simulation compatibility.
+
+Install APK 18.3.68-android.1 and matching 18.3.68 firmware. Web, native loopback and compiled firmware checks are automated; physical phone/radio/motor testing remains outstanding. See SUPPORT/V18_3_68_UPDATE_AND_TEST.md.
+
+## Previous V18.3.67
+
 
 - Setup startup waits for its verified begin grant, preventing the false “session expired or changed” race. Polls renew the existing five-second lease. Completed checks and values retain Next when navigating Back.
 - ESC calibration uses the three pre-Start checks, HIGH → Stop/LOW and pilot-confirmed tones. After success the battery may stay connected; **Calibrate ESC again** resets the next attempt's battery check. Physical motor tests use real PWM with bounded two-second Start/Stop.

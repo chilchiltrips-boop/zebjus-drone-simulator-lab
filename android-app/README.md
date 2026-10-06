@@ -1,6 +1,6 @@
-# Aerion Flight Android — 18.3.67-android.2
+# Aerion Flight Android — 18.3.68-android.1
 
-VersionCode 1836702. Install `dist/ZEBJUS_Aerion_V18_3_67_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.67 for A1 or A2.
+VersionCode 1836801. Install `dist/ZEBJUS_Aerion_V18_3_68_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.68 for A1 or A2.
 
 ## Connect and practise
 
@@ -8,7 +8,9 @@ Open Connect drone → Connect kit Wi-Fi. Choose the kit network using its label
 
 App home has **Tripod**, **Flight Training** and **Real Joystick** buttons. Tap a simulator to enable controls at throttle 0%, DISARMED. Open its web page on a computer connected to the same kit, then manually ARM the virtual drone in the app. No web Enable or simulator propeller checkbox is required. Both A1/C3 and A2/C6 support virtual practice without a ready IMU. Physical outputs remain DISARMED and blocked.
 
-Simulation uses a controller-verified 2600 ms HTTP ACK window only while physical outputs are blocked. Real UDP ACK and native input watchdogs keep their original limits. Simulation uses negotiated HTTP RC acknowledgements and renews the inhibition lease with accepted input. Foreground recovery restores the selected simulator at throttle 0%, DISARMED; manual ARM is required. STOP and background cancel recovery. Returning from background does not start control. Mode changes reset input; an old-run frame cannot cross into real flight.
+The matching APK and firmware negotiate **ZRC2 simulator UDP at 50 Hz**. Native publication and ACKs continue independently of HTTP status/settings. Version 2 / kind 2 frames and simulation ACKs are bound to the verified Device ID and a fresh private token. Switching destinations or ending training invalidates that token. Simulation never arms physical outputs. The normal 300 ms input and 900 ms UDP ACK watchdogs remain active. Older firmware/browser clients retain the verified HTTP fallback.
+
+Foreground link recovery restores the selected simulator at throttle 0%, DISARMED; manual ARM is required. STOP and background cancel flight recovery. Web setup configuration can continue in another tab; active motor/ESC output stops when its page is hidden.
 
 Real Joystick retains the supported physical A2 profile and native 50 Hz UDP transport. It needs a ready IMU/calibration, explicit Take control and manual ARM. Controls settings adjust stick feel; physical setup and calibration keep their guards.
 
@@ -18,4 +20,4 @@ With JDK 17 and official Android SDK 36 tools, set `ANDROID_SDK_ROOT` and the ex
 
 Java tests cover grant scope, cancellation, old replies, watchdogs, UDP ACK scope/replay/loss and STOP. Browser tests use the actual bundled UI/adapter and web lab against a simulated kit; firmware host tests execute actual simulator/PWM guards. No Android phone/emulator or physical drone was tested.
 
-See [update/test guide](../SUPPORT/V18_3_67_UPDATE_AND_TEST.md) for installation and exact test boundaries.
+See [update/test guide](../SUPPORT/V18_3_68_UPDATE_AND_TEST.md) for installation and exact test boundaries.

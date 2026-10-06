@@ -138,7 +138,7 @@ async function takeControl(recovery=false){
   if(!(s.flightReady||s.trainingActive))throw Error('Controller is not flight-ready. Check the IMU / profile.');
   if(s.armed)throw Error('Controller is already armed. Waiting for safe disarm.');
   safeValues();const base=state.base,id=state.deviceId,client=cid;
-  const grant=await request(base,'/api/control/acquire',{clientId:client,clientRole:window.AerionAndroid?'MOBILE':'WEB',...(state.training?{rcTransport:'HTTP'}:{})},1000,id);
+  const grant=await request(base,'/api/control/acquire',{clientId:client,clientRole:window.AerionAndroid?'MOBILE':'WEB',...(state.training?{rcTransport:state.training.transport||'HTTP'}:{})},1000,id);
   if(epoch!==state.epoch){await request(base,'/api/control/release',{clientId:client},600,id);return}
   state.rcTimeoutMs=Number(grant.rcTimeoutMs||s.rcTimeoutMs)||0;
   state.status={...s,lockMine:true,locked:true};state.own=state.tx=true;state.resumeControl=false;state.recovering=false;
@@ -226,7 +226,7 @@ function leave(){state.resumeControl=false;state.recovering=false;if(state.busy)
 document.addEventListener('visibilitychange',()=>{if(document.hidden)leave()});addEventListener('pagehide',leave);addEventListener('blur',()=>{if(!window.AerionAndroid)leave()});let lastWidth=innerWidth;addEventListener('resize',()=>{// Layout changes centre directional input while retaining throttle and ownership.
 lastWidth=innerWidth;resetInputs()});$('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else{await document.documentElement.requestFullscreen();try{await screen.orientation.lock('landscape')}catch{}}}catch{notify('Use your browser full-screen option.')}};
 if(hosted){const link=document.createElement('link');link.rel='manifest';link.href='./app.webmanifest';document.head.appendChild(link);if('serviceWorker' in navigator)navigator.serviceWorker.register('./service-worker.js').catch(()=>{})}
-// Simulation negotiates acknowledged HTTP RC; physical flight retains native UDP.
+// Native simulator input uses scoped 50 Hz ZRC2 UDP. Browser input keeps HTTP.
 async function selectDestination(target,recovery=false){
  if(state.practiceBusy||state.busy||!['TRIPOD','FLIGHT','REAL'].includes(target))return;
  state.practiceBusy=true;render();let mode=null;
@@ -238,20 +238,22 @@ async function selectDestination(target,recovery=false){
   safeValues();await Promise.resolve(state.pending).catch(()=>{});if(state.tx)await sendFrame();window.AerionAndroid?.pauseStream?.(base,id,client);state.tx=false;state.txEpoch++;state.resumeControl=false;state.recovering=false;
   const found=await request(base,'/api/command',{clientId:client,type:'training_status'},2400,id);
   if(e!==state.epoch||!state.own)return;
-  if(!found.supported||!found.selectionSupported||found.simulationRcTransport!=='HTTP')throw Error('Install matching 18.3.67 firmware to enable simulator controls on this kit.');
-  mode={base,id,client,target,token:'TRAIN-'+crypto.randomUUID(),runId:0,failures:0,good:performance.now()};state.training=mode;
+  if(!found.supported||!found.selectionSupported||found.simulationRcTransport!=='HTTP')throw Error('Install matching 18.3.68 firmware to enable simulator controls on this kit.');
+  const simulationTransport=window.AerionAndroid&&found.simulationRcProtocol==='ZRC2'?'UDP2':'HTTP';
+  mode={base,id,client,target,transport:simulationTransport,token:'TRAIN-'+crypto.randomUUID(),runId:0,failures:0,good:performance.now()};state.training=mode;
   state.modePending=request(base,'/api/command',{clientId:client,type:'training_select',session:mode.token,target,source:'APP'},2400,id);
   const ack=await state.modePending;
   if(e!==state.epoch||!state.own){await request(base,'/api/command',{clientId:client,type:'training_end',session:mode.token},600,id);return;}
   if(ack.target!==(target==='REAL'?'NONE':target)||ack.active!==(target!=='REAL')||target!=='REAL'&&!ack.outputsBlocked)throw Error('Kit did not confirm the selected simulator and blocked outputs.');
   mode.runId=ack.runId;state.training=target==='REAL'?null:mode;
   state.status={...state.status,armed:false,trainingActive:ack.active,outputsBlocked:ack.outputsBlocked,trainingSelection:true,trainingTarget:ack.target,trainingController:ack.controller,trainingRunId:ack.runId};
-  state.modePending=request(base,'/api/control/acquire',{clientId:client,clientRole:'MOBILE',...(target==='REAL'?{}:{rcTransport:'HTTP'})},2400,id);
+  state.modePending=request(base,'/api/control/acquire',{clientId:client,clientRole:'MOBILE',...(target==='REAL'?{}:{rcTransport:simulationTransport})},2400,id);
   const grant=await state.modePending;
   if(e!==state.epoch||!state.own){await request(base,'/api/control/release',{clientId:client},600,id);return;}
-  if(target!=='REAL'&&Number(grant.rcUdpPort)>0)throw Error('Simulator transport was not confirmed. Update matching firmware.');
+  if(target!=='REAL'&&(simulationTransport==='UDP2'?Number(grant.rcUdpPort)!==4210||grant.rcProtocol!=='ZRC2'||grant.simulationOutputsBlocked!==true||grant.simulationRcTransport!=='UDP':Number(grant.rcUdpPort)>0))throw Error('Simulator transport was not confirmed. Update matching firmware.');
   state.selectedTarget=target;write('zebjus-flight-destination',target);state.resumeTarget=null;state.modePending=null;state.rcTimeoutMs=Number(grant.rcTimeoutMs)||state.rcTimeoutMs;safeValues();
   if(target!=='REAL'){state.tx=true;state.txEpoch++;state.lastAck=state.lastFrame=performance.now();await sendFrame();}
+  if(target!=='REAL')$('practiceState').textContent=(simulationTransport==='UDP2'?'ZRC2 · 50 Hz simulator link':'HTTP simulator link')+' · physical outputs blocked';
   notify(target==='REAL'?'Real Joystick selected. Take control, then ARM manually.':recovery?'Simulator link restored. Throttle 0%; ARM manually.':(target==='TRIPOD'?'Tripod':'Flight Training')+' ready. Open its web page and ARM the virtual drone here. Real kit stays DISARMED.');
  }catch(error){if(mode)stopControl('Destination change stopped: '+error.message);else notify(error.message);if(recovery){state.resumeControl=true;state.resumeTarget=target;state.recoveryLastAt=performance.now();}}
  finally{state.practiceBusy=false;render();}

@@ -23,7 +23,7 @@ struct{std::map<std::string,String>fields;String arg(const char*n){return fields
 bool ALLOW_WEB_RC=true,FLIGHT_CONTROL_ENABLED=false,trainingActive=false,trainingAppOwned=true,fcSetupActive=false,armed=false,flightReady=false;
 int benchMode=0;const int BENCH_NONE=0;int stateMux=0;void portENTER_CRITICAL(int*){}void portEXIT_CRITICAL(int*){}
 uint8_t trainingInput=1;uint32_t trainingRunId=42,trainingExpires=0,clockMs=100,webRcLastMs=0,webRcFrames=0;uint32_t millis(){return clockMs;}
-uint16_t webRcCh[10]={};uint64_t rcUdpToken=0;bool rcUdpSequenceSeen=false;
+uint16_t webRcCh[10]={};uint64_t rcUdpToken=0;bool rcUdpSequenceSeen=false,rcUdpSimulation=false;
 String deviceId="ZFC-001122334455",lastDisarmReason="Training";int code=0;String reply;
 void sendJson(int c,const String&s){code=c;reply=s;}void sendMessage(int c,const char*s){code=c;reply=s;}
 String jsonEscape(const String&s){return s;}enum RcSourceKind{RC_NONE,RC_WEB_AP};RcSourceKind chooseRcSource(){return RC_WEB_AP;}const char* rcSourceName(RcSourceKind){return "WEB_AP";}

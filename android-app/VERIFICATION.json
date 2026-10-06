@@ -1,16 +1,16 @@
 {
-  "version": "18.3.67-android.2",
-  "apk_sha256": "c04069eda412ec2966bd736bed9c559e54c9bdda67afe2015326d5f13ee1fcf5",
+  "version": "18.3.68-android.1",
+  "apk_sha256": "2ed27f3958224da74aea4bd1492de1bd90a427dfc1b7276b70c8971b4069a958",
   "checks": {
-    "APK_DEX_manifest_signature_alignment_and_exact_assets": "passed Android SDK 36 build",
-    "native_grant_scope_lifecycle_and_UDP_to_HTTP_simulator_transition": "passed actual Java runtime/DatagramSocket loopback",
-    "production_firmware_simulator_commands_HTTP_RC_and_PWM_inhibition": "passed host execution",
-    "app_web_simulator_no_IMU_ACK_delay_recovery_late_attach_STOP": "passed Chromium integration against a simulated kit",
-    "verified_simulator_ACK_window_real_ACK_limits_and_native_input_watchdog": "passed Java policy and delayed-HTTP browser integration"
+    "APK_DEX_manifest_signature_alignment_and_exact_assets": "passed Android SDK 36 build; original development certificate retained",
+    "native_scope_watchdog_and_ZRC2_protocol_ACK_rejection": "passed actual Java runtime and DatagramSocket loopback",
+    "production_firmware_simulator_HTTP_UDP_and_PWM_inhibition": "passed production host execution",
+    "app_web_delayed_HTTP_live_roll_pitch_virtual_motion_and_recovery": "passed actual bundled app and web Lab using native ZRC2 loopback",
+    "PID_preview_explicit_save_local_banks_background_leases_output_STOP": "passed actual Lab browser integration"
   },
   "test_boundary": {
     "Android_phone_or_emulator_tested": false,
     "physical_drone_tested": false,
-    "firmware": "18.3.67 A1 and A2 compiled locally with pinned Arduino-ESP32 3.3.12; chip/OTA/factory/version checks passed"
+    "firmware": "18.3.68 A1 and A2 compiled locally with pinned Arduino-ESP32 3.3.12; chip/OTA/factory/version checks passed"
   }
 }

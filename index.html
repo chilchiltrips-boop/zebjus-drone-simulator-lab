@@ -5,10 +5,10 @@
 <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content" name="viewport"/>
 <meta content="#07111b" name="theme-color"/>
 <title>ZEBJUS Aerion</title>
-<script src="wix-embed.js?v=18.3.67-web.3"></script>
-<link href="styles.css?v=18.3.67-r3" rel="stylesheet"/><link href="lab-workflow.css?v=18.3.67-web.4" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
-<link href="wix-embed.css?v=18.3.67-web.3" rel="stylesheet"/>
-<link href="flight-training.css?v=18.3.67-web.3" rel="stylesheet"/>
+<script src="wix-embed.js?v=18.3.68-web.3"></script>
+<link href="styles.css?v=18.3.68-r3" rel="stylesheet"/><link href="lab-workflow.css?v=18.3.68-web.4" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
+<link href="wix-embed.css?v=18.3.68-web.3" rel="stylesheet"/>
+<link href="flight-training.css?v=18.3.68-web.3" rel="stylesheet"/>
 <link href="icon-192.png" rel="apple-touch-icon"/>
 <meta content="#07111b" name="theme-color"/>
 </head>
@@ -16,7 +16,7 @@
 <div id="app">
 <header class="topbar">
 <div class="topbar-main">
-<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS Aerion</b><span>V18.3.67 • Build · Code · Fly</span></div></div>
+<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS Aerion</b><span>V18.3.68 • Build · Code · Fly</span></div></div>
 <div class="top-network-control"><span>STA</span><button id="topNetworkToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Switch kit between STA and AP" disabled><i></i></button><span>AP</span><b id="topNetworkMode">NO KIT</b></div>
 <div class="top-control-control"><span>Take control</span><button id="topControlToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Take or release kit control" disabled><i></i></button><b id="topControlState">OFF</b></div>
 <span class="top-kit-status offline" id="topKitStatus" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span>
@@ -135,6 +135,7 @@
 <div><span>RESPONSE</span><b id="simTuneState">READY</b><small id="simDiagnosis">Adjust PID and disturb the drone</small></div>
 </div>
 <div class="tx-title"><div><b>VIRTUAL TRANSMITTER</b><span>Mouse / touch + keyboard</span></div><div class="rx-mirror-state"><i class="health-dot lost" id="simRxMirrorLed"></i><span><b id="simRxMirrorBadge">REAL RX WAITING</b><em id="simRxMirrorText">PPM, WebApp, AP or Python RC can mirror into the Tripod transmitter.</em></span></div></div>
+<p class="micro-note"><b>SIMULATOR ONLY</b> · Setup PID values can be previewed here. Tripod PID edits and controls stay in the simulator.</p>
 <div class="tx-sticks v15-sticks">
 <div class="gimbal-card"><small>THROTTLE / YAW RATE</small><div class="web-stick v15-gimbal tripod-stick" id="leftStick"><i id="leftStickKnob"></i></div><span id="leftStickRead">T 1000 • Y 0</span><span class="stick-hint">W/S throttle • A/D yaw</span></div>
 <div class="gimbal-card"><small>PITCH / ROLL</small><div class="web-stick v15-gimbal tripod-stick" id="rightStick"><i id="rightStickKnob"></i></div><span id="rightStickRead">P 0 • R 0</span><span class="stick-hint">Arrow keys • pitch / roll</span></div>
@@ -215,7 +216,7 @@
 </div>
 <div class="target-separation"><div class="target-card sim"><b>SIMULATOR</b><span>Safe local practice. No kit command is sent.</span></div><div class="target-card real"><b>REAL KIT</b><span>Single-controller lock • supervised prop-off bench only.</span></div></div>
 <div class="form-grid compact-form-grid tx-top-controls">
-<label>Control target<select id="webJoyTarget"><option value="sim">SIMULATOR • Safe / Local</option><option value="device">REAL KIT + TRIPOD MIRROR</option></select></label>
+<label>Control target<select id="webJoyTarget"><option value="sim">SIMULATOR • Safe / Local</option><option value="device">REAL KIT · dedicated transmitter</option></select></label>
 <label>Flight mode<select id="webMode"><option value="1000">ANGLE</option><option value="1500">RATE</option><option value="2000">ALTITUDE</option></select></label>
 <label>Send rate<select id="webJoyRate"><option value="20">20 Hz • default</option><option value="25">25 Hz</option><option value="50">50 Hz • bench timing check</option><option value="10">10 Hz</option><option value="5">5 Hz</option></select></label>
 </div>
@@ -425,21 +426,22 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option selected="" value="balanced">Balanced</option><option value="low">Low-end laptop</option></select></label><button class="btn ghost full" id="applyPerformanceBtn">Apply graphics profile</button><pre class="terminal mini" id="startupDiagnostics">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.67-r3"></script>
-<script src="offline-support.js?v=18.3.67-r3"></script>
-<script src="kit-local.js?v=18.3.67-r3"></script>
-<script src="control-sticks.js?v=18.3.67-r3"></script>
-<script src="receiver-wizard.js?v=18.3.67-web.4"></script>
-<script src="fc-setup.js?v=18.3.67-web.4"></script>
-<script src="kit-console.js?v=18.3.67-r3"></script>
-<script src="lab-workflow.js?v=18.3.67"></script>
-<script src="telemetry-cockpit.js?v=18.3.67-web.4"></script>
-<script src="flight-training-core.js?v=18.3.67-web.3"></script>
-<script src="flight-training-input.js?v=18.3.67-web.3"></script>
-<script type="module" src="flight-training.js?v=18.3.67-web.3"></script>
-<script src="flight-diagnostics.js?v=18.3.67-r3"></script>
-<script src="app.js?v=18.3.67-r4" type="module"></script>
-<script src="school-lab.js?v=18.3.67-web.3"></script>
-<script src="hardware-io.js?v=18.3.67-r3"></script>
-<script src="firmware-updater.js?v=18.3.67-r4"></script>
+<script src="ui-runtime.js?v=18.3.68-r3"></script>
+<script src="offline-support.js?v=18.3.68-r3"></script>
+<script src="kit-local.js?v=18.3.68-r3"></script>
+<script src="control-sticks.js?v=18.3.68-r3"></script>
+<script src="receiver-wizard.js?v=18.3.68-web.4"></script>
+<script src="pid-tuning.js?v=18.3.68-web.5"></script>
+<script src="fc-setup.js?v=18.3.68-web.5"></script>
+<script src="kit-console.js?v=18.3.68-r3"></script>
+<script src="lab-workflow.js?v=18.3.68-web.5"></script>
+<script src="telemetry-cockpit.js?v=18.3.68-web.4"></script>
+<script src="flight-training-core.js?v=18.3.68-web.3"></script>
+<script src="flight-training-input.js?v=18.3.68-web.3"></script>
+<script type="module" src="flight-training.js?v=18.3.68-web.3"></script>
+<script src="flight-diagnostics.js?v=18.3.68-r3"></script>
+<script src="app.js?v=18.3.68-web.5" type="module"></script>
+<script src="school-lab.js?v=18.3.68-web.5"></script>
+<script src="hardware-io.js?v=18.3.68-r3"></script>
+<script src="firmware-updater.js?v=18.3.68-r4"></script>
 </body></html>

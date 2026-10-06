@@ -5,13 +5,14 @@ TaskHandle_t rcUdpTaskHandle=nullptr;
 uint64_t rcUdpToken=0;
 uint32_t rcUdpLastSequence=0;
 bool rcUdpSequenceSeen=false;
+bool rcUdpSimulation=false;
 void invalidateRcUdp(){
- portENTER_CRITICAL(&stateMux);rcUdpToken=0;rcUdpSequenceSeen=false;portEXIT_CRITICAL(&stateMux);
+ portENTER_CRITICAL(&stateMux);rcUdpToken=0;rcUdpSequenceSeen=false;rcUdpSimulation=false;portEXIT_CRITICAL(&stateMux);
 }
 String rcUdpGrantJson(){
- uint64_t token;portENTER_CRITICAL(&stateMux);token=rcUdpToken;portEXIT_CRITICAL(&stateMux);
+ uint64_t token;bool simulation;portENTER_CRITICAL(&stateMux);token=rcUdpToken;simulation=rcUdpSimulation;portEXIT_CRITICAL(&stateMux);
  char encoded[17];snprintf(encoded,sizeof(encoded),"%016llx",(unsigned long long)token);
- return String(",\"rcUdpPort\":")+String(token?RcUdpProtocol::PORT:0)+",\"rcUdpToken\":\""+(token?String(encoded):String(""))+"\",\"rcUdpHz\":50";
+ return String(",\"rcUdpPort\":")+String(token?RcUdpProtocol::PORT:0)+",\"rcUdpToken\":\""+(token?String(encoded):String(""))+"\",\"rcUdpHz\":50,\"rcProtocol\":\""+String(simulation?"ZRC2":"ZRC1")+"\"";
 }
 void rcUdpTask(void*){
  const uint64_t key=ESP.getEfuseMac()&0xFFFFFFFFFFFFULL;
@@ -22,7 +23,7 @@ void rcUdpTask(void*){
    RcUdpProtocol::Frame frame;if(size!=(int)sizeof(bytes)||!RcUdpProtocol::decode(bytes,read,frame)||frame.device!=key)continue;
    uint32_t now=millis();bool accepted=false,actualArmed=false,ready=false;
    portENTER_CRITICAL(&stateMux);
-   if((FLIGHT_CONTROL_ENABLED||trainingActive)&&rcUdpToken&&frame.token==rcUdpToken&&(int32_t)(controlExpiresAt-now)>0&&benchMode==BENCH_NONE&&!fcSetupActive&&!configurationBusy&&!firmwareUploadActive&&(!rcUdpSequenceSeen||RcUdpProtocol::newer(frame.sequence,rcUdpLastSequence))){
+   if((FLIGHT_CONTROL_ENABLED||trainingActive)&&rcUdpToken&&frame.token==rcUdpToken&&RcUdpProtocol::permitted(frame,rcUdpSimulation,trainingActive,trainingAppOwned&&trainingInput==1)&&(int32_t)(controlExpiresAt-now)>0&&benchMode==BENCH_NONE&&!fcSetupActive&&!configurationBusy&&!firmwareUploadActive&&(!rcUdpSequenceSeen||RcUdpProtocol::newer(frame.sequence,rcUdpLastSequence))){
     for(int i=0;i<10;i++)webRcCh[i]=frame.channels[i];
     webRcLastMs=now;webRcFrames++;controlExpiresAt=now+LOCK_TIMEOUT_MS;
     if(trainingActive&&trainingAppOwned&&trainingInput==1)trainingExpires=now+5000;

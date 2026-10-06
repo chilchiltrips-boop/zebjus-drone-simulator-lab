@@ -8,7 +8,7 @@ void finishTraining(){
  setupAfterNeutral=true;armLowSeen=false;resetArmGesture();invalidateRcUdp();webRcLastMs=0;benchStop();disarmFlight("Training ended: neutral and manual ARM required");trainingActive=false;trainingTarget=0;trainingRunId++;
 }
 void serviceTraining(){if(trainingActive&&(!FlightSetupPolicy::live(millis(),trainingExpires)||(trainingAppOwned&&(controlOwner!=trainingOwner||!FlightSetupPolicy::live(millis(),controlExpiresAt)))))finishTraining();}
-String trainingJson(){return String("{\"ok\":true,\"deviceId\":\"")+deviceId+"\",\"supported\":true,\"selectionSupported\":true,\"simulationRcTransport\":\"HTTP\",\"active\":"+String(trainingActive?"true":"false")+",\"outputsBlocked\":"+String(trainingActive?"true":"false")+",\"input\":\""+String(trainingInput==2?"PPM":"APP")+"\",\"target\":\""+String(trainingTarget==1?"TRIPOD":trainingTarget==2?"FLIGHT":"NONE")+"\",\"controller\":\""+String(trainingAppOwned?"APP":"WEB")+"\",\"runId\":"+String(trainingRunId)+",\"leaseMs\":5000}";}
+String trainingJson(){return String("{\"ok\":true,\"deviceId\":\"")+deviceId+"\",\"supported\":true,\"selectionSupported\":true,\"simulationRcTransport\":\"HTTP\",\"simulationRcProtocol\":\"ZRC2\",\"active\":"+String(trainingActive?"true":"false")+",\"outputsBlocked\":"+String(trainingActive?"true":"false")+",\"input\":\""+String(trainingInput==2?"PPM":"APP")+"\",\"target\":\""+String(trainingTarget==1?"TRIPOD":trainingTarget==2?"FLIGHT":"NONE")+"\",\"controller\":\""+String(trainingAppOwned?"APP":"WEB")+"\",\"runId\":"+String(trainingRunId)+",\"leaseMs\":5000}";}
 bool trainingCommand(const String& type){
  if(!type.startsWith("training_"))return false;serviceTraining();
  if(type=="training_status"){sendJson(200,trainingJson());return true;}

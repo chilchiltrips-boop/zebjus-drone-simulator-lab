@@ -1,13 +1,10 @@
-ZEBJUS Aerion V18.3.67 validation
+ZEBJUS Aerion V18.3.68 validation
 
-PASS: Android APK 18.3.67-android.1 compiled with SDK 36; DEX, manifest, signature, ZIP alignment and exact bundled source/assets verified; existing update certificate retained.
-PASS: actual firmware simulator commands and HTTP RC handler execute for A1/A2, without an IMU readiness gate or simulator propeller checkbox. Physical/virtual ARM metadata, RC lease renewal, expired-run rejection and setup/bench inhibition verified.
-PASS: actual arming/bench/PWM output guards keep physical outputs at minimum during training, on timeout, STOP and neutral/manual re-arm transitions.
-PASS: actual Java native policy and DatagramSocket transport; UDP ACK scope/replay/loss, lifecycle/old-grant fencing, HTTP simulator transition and acknowledged HTTP watchdog.
-PASS: actual bundled app/adapter plus web simulators against a simulated kit; A1/no-IMU practice, one-tap targets, delayed HTTP ACK, safe same-target recovery, late Flight/Tripod page opening, exclusive mode input, STOP and background cancellation.
-PASS: runtime RC routing, identity/AP-STA reconnect, firmware import/OTA guards, camera/output cleanup and sixteen mission/input core checks.
-PASS: project syntax, catalog references, offline asset inventory and sealed release integrity checks.
+PASS: Android APK 18.3.68-android.1 compiled with SDK 36; DEX, manifest, v2/v3 signature, ZIP alignment and exact bundled assets verified; original update certificate retained.
+PASS: A1/C3 and A2/C6 compiled using pinned Arduino-ESP32 3.3.12; matching version, chip IDs, dual OTA slot sizes and factory/application equality checked.
+PASS: Native grant/ACK/input watchdogs and real/ZRC2 packet distinction exercised on actual Java DatagramSocket loopback.
+PASS: Actual app/web simulator integration retains live Flight/Tripod motion and roll/pitch stick reflection with 1 s HTTP RC latency; simulator ARM keeps physical output blocked.
+PASS: Reference PID layout, draft preview, local banks/link, explicit controller save/readback, simulator isolation, Back/Next, background configuration heartbeat and hidden/delayed-output STOP exercised in browser.
+PASS: Production setup, receiver, training and HTTP/UDP RC handlers exercised on host; old session/token/kind packets, owner loss and expired input are rejected.
 
-Matching A1/A2 target compiler results and binary headers/hashes are recorded separately in FlightCore_Firmware/build-report.json and catalog.json after the firmware workflow completes. Check those files before claiming a matching target build.
-
-Boundary: no Android phone/emulator, physical Wi-Fi link, ESC/motor, IMU or drone flight was tested. Browser integration uses the production UI and native grant policy with a simulated kit/radio. Physical ARM remains guarded by its existing supported profile and IMU requirements.
+Boundary: Physical phone, radio, ESC, motor and flight testing was not performed. Install the matching APK and board firmware before using ZRC2.

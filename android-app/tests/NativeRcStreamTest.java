@@ -53,6 +53,24 @@ public final class NativeRcStreamTest {
   stream.useHttp(httpLease);check(!stream.offer(httpLease,channels),"HTTP selection must discard the previous UDP profile");
   for(long t=6200;t<=7200;t+=200){gate.rcAck(httpLease,t,channels);check(gate.watchdog(t+150)==null,"accepted HTTP RC keeps native grant live without UDP");}
   check(gate.watchdog(8101)==httpLease,"unacknowledged HTTP stream still expires");oldController.close();
-  System.out.println("PASS: actual native UDP frames, independent 50 Hz publication, scoped/replay ACK rejection, stale-input fence, safe stop burst, HTTP simulator transition and acknowledged HTTP watchdog");
+  // ZRC2 uses the actual 50 Hz transport while HTTP replies are held elsewhere.
+  now.set(9000);LeaseGate.Grant simGrant=gate.beginGrant(grant.origin,grant.deviceId,"FLY-udp-simulation",new Object());check(gate.accept(simGrant,now.get(),1000),"ZRC2 grant");LeaseGate.Lease simLease=gate.authorize(simGrant.origin,simGrant.deviceId,simGrant.clientId);
+  DatagramSocket simController=new DatagramSocket(0,InetAddress.getLoopbackAddress());simController.setSoTimeout(1000);
+  stream.configure(simLease,new DatagramSocket(),new InetSocketAddress(InetAddress.getLoopbackAddress(),simController.getLocalPort()),DEVICE,TOKEN+1,true);
+  for(int i=0;i<150;i++){
+   now.addAndGet(20);channels[0]=i%2==0?1800:1200;channels[1]=i%3==0?1700:1300;
+   check(stream.offer(simLease,channels),"fresh simulator input");stream.tick();DatagramPacket packet=new DatagramPacket(buffer,buffer.length);simController.receive(packet);
+   ByteBuffer frame=ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN);check(frame.get(4)==2&&frame.get(5)==2&&frame.getLong(16)==TOKEN+1,"simulation frame is distinct from real flight");check((frame.getShort(28)&65535)==channels[0]&&(frame.getShort(30)&65535)==channels[1],"roll and pitch update every frame");
+   ByteBuffer ack=ByteBuffer.allocate(28).order(ByteOrder.LITTLE_ENDIAN);ack.putInt(0x3141525a).put((byte)2).put((byte)0).put((byte)6).put((byte)0).putLong(DEVICE).putLong(TOKEN+1).putInt(frame.getInt(24));simController.send(new DatagramPacket(ack.array(),28,packet.getSocketAddress()));
+   check(gate.watchdog(now.get())==null,"simulation keeps its normal native ACK deadline without HTTP");
+  }
+  check(simLease.hasControllerAck()&&!simLease.controllerArmed()&&simLease.controllerReady(),"simulation ACK confirms readiness with physical outputs disarmed");
+  now.addAndGet(20);stream.offer(simLease,channels);stream.tick();DatagramPacket lastSim=new DatagramPacket(buffer,buffer.length);simController.receive(lastSim);long simAckAge=gate.ackAge(simLease,now.get());
+  for(int bad=0;bad<3;bad++){
+   int sequence=ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).getInt(24);ByteBuffer ack=ByteBuffer.allocate(28).order(ByteOrder.LITTLE_ENDIAN);ack.putInt(0x3141525a).put((byte)(bad==0?1:2)).put((byte)0).put((byte)(bad==1?2:bad==2?7:6)).put((byte)0).putLong(DEVICE).putLong(TOKEN+1).putInt(sequence);simController.send(new DatagramPacket(ack.array(),28,lastSim.getSocketAddress()));
+   now.addAndGet(20);stream.offer(simLease,channels);stream.tick();lastSim=new DatagramPacket(buffer,buffer.length);simController.receive(lastSim);check(gate.ackAge(simLease,now.get())==simAckAge+20*(bad+1),"wrong protocol/kind or physical ARM cannot acknowledge simulation");
+  }
+  stream.stop(simLease);for(int i=0;i<3;i++){DatagramPacket safe=new DatagramPacket(buffer,buffer.length);simController.receive(safe);check(buffer[4]==2&&buffer[5]==2&&(ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).getShort(36)&65535)==1000,"simulation safe-stop remains a simulation packet");}simController.close();
+  System.out.println("PASS: actual native UDP frames, independent 50 Hz publication, scoped/replay ACK rejection, stale-input fence, safe stop burst, ZRC2 real-time input, protocol/physical-ARM ACK rejection, HTTP compatibility and acknowledged watchdog");
  }
 }

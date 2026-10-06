@@ -21,7 +21,7 @@ Lock expires after 10 seconds without a valid owner command, accepted RC or hear
 
 ## V18.3.64 native flight transport
 
-A MOBILE grant on a flight-capable profile advertises `rcUdpPort=4210`, private `rcUdpToken` (16 hex digits), `rcUdpHz=50`, `rcTimeoutMs=1000` and `rcCenterMs=300`. A1 provides no UDP grant. Tokens are never in public status/telemetry. A legacy client can send an initial safe HTTP RC frame to invalidate the token and continue over HTTP.
+A MOBILE grant on a flight-capable profile advertises `rcUdpPort=4210`, private `rcUdpToken` (16 hex digits), `rcUdpHz=50`, `rcTimeoutMs=1000` and `rcCenterMs=300`. This physical-flight grant applies to A2; A1 supports the ZRC2 simulator grant described in V18.3.68 below. Tokens are never in public status/telemetry. A legacy client can send an initial safe HTTP RC frame to invalidate the token and continue over HTTP.
 
 All multi-byte fields are little endian. RC is exactly 48 bytes: magic `ZRC1` (0–3), version 1 (4), type 1 (5), reserved zero (6–7), device MAC uint64 (8–15), token uint64 (16–23), sequence uint32 (24–27), and ten uint16 channels (28–47), each 1000–2000. Only live tokens, exact device and newer sequence are accepted. Accepted packets renew RC/owner timestamps.
 
@@ -197,3 +197,13 @@ Setup starts polling only after the matching active begin grant. Every poll rene
 `pinmap_get.expansion` adds matrixDriver, matrixDinPin, matrixClkPin and matrixCsPin. Matrix pin configuration is disarmed-only; servo, GPS, PPM and GPIO reject occupied matrix pins. HT16K33 retains the board's fixed SDA/SCL bus. Python `matrix_config(driver="MAX7219", din_pin=17, clk_pin=19, cs_pin=20)` selects spare pins explicitly.
 
 A control grant adds `simulationOutputsBlocked` and `simulationRcTransport`. The Android native gate allows a 2600 ms ACK window only for a controller-verified outputs-blocked HTTP simulator grant. Physical UDP ACK limits and the 300 ms native input watchdog remain unchanged.
+
+## V18.3.68 ZRC2 simulator transport and PID preview
+
+`training_status` advertises `simulationRcProtocol:"ZRC2"` alongside legacy HTTP capability. After `training_select` confirms the MOBILE-owned APP simulator and blocked outputs, the app requests `rcTransport=UDP2` on `control/acquire`. The grant includes `rcProtocol:"ZRC2"`, `simulationRcTransport:"UDP"`, `simulationOutputsBlocked:true`, port 4210 and a fresh private 16-hex `rcUdpToken`. Both A1 and A2 support simulation grants without a flight-ready IMU.
+
+ZRC2 retains the 48-byte layout above, with version byte 2 and kind byte 2. The 28-byte ACK uses version 2 and flag bit 2 for simulation, alongside ready bit 1. Physical armed bit 0 must be clear. Android rejects a real-flight ACK for a simulator grant and vice versa. Accepted frames refresh RC, control and simulator inhibition leases at 50 Hz; HTTP latency does not stall them. Device/token/sequence checks, the 300 ms native input deadline and 900 ms UDP ACK deadline remain unchanged.
+
+Firmware only accepts a ZRC2 frame while the matching simulation grant is current and APP training is active. Training end/expiry, input/destination change, control release or replacement invalidates the token. A ZRC2 packet can never become a physical flight packet. Legacy HTTP simulation still requires the current run ID.
+
+The setup wizard renews both configuration and control leases independently of rendering frames. Hiding the page stops active motor/ESC output while preserving completed checks; closing it ends setup. PID read/draft/default/bank operations preview only the virtual Tripod. Explicit PID Save performs `pid_set` then checked `pid_get`; Tripod controls never send physical PID or RC.

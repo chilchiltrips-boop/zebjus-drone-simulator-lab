@@ -236,19 +236,20 @@ public final class MainActivity extends Activity {
     private void releaseGrant(LeaseGate.Grant grant){
         try{safety.execute(()->{try{http((Network)grant.network,new URL(grant.origin+"/api/control/release"),"POST","clientId="+enc(grant.clientId)+"&expectedDeviceId="+enc(grant.deviceId),600,null);}catch(Exception ignored){}});}catch(RuntimeException ignored){}
     }
-    private void configureRcStream(LeaseGate.Grant grant,String body){
+    private void configureRcStream(LeaseGate.Grant grant,String body)throws Exception{
         DatagramSocket socket=null;
         try{
             JSONObject info=new JSONObject(body);int port=info.optInt("rcUdpPort",0);String nonce=info.optString("rcUdpToken","");
             if(port==0){rcStream.useHttp(gate.authorize(grant.origin,grant.deviceId,grant.clientId));return;}
-            if(port!=4210||!nonce.matches("[0-9a-fA-F]{16}"))return;
-            if(!grant.deviceId.matches("ZFC-[0-9a-fA-F]{12}"))return;
+            if(port!=4210||!nonce.matches("[0-9a-fA-F]{16}")||!grant.deviceId.matches("ZFC-[0-9a-fA-F]{12}"))throw new IllegalStateException("Controller UDP grant is invalid. Update matching firmware.");
+            boolean simulation=info.optBoolean("simulationOutputsBlocked",false);
+            if(simulation&&!("UDP".equals(info.optString("simulationRcTransport"))&&"ZRC2".equals(info.optString("rcProtocol"))))throw new IllegalStateException("Simulator UDP protocol was not confirmed.");
             LeaseGate.Lease lease=gate.authorize(grant.origin,grant.deviceId,grant.clientId);
             socket=new DatagramSocket();((Network)grant.network).bindSocket(socket);
             URL url=new URL(grant.origin);
             InetSocketAddress target=new InetSocketAddress(((Network)grant.network).getAllByName(url.getHost())[0],port);
-            rcStream.configure(lease,socket,target,Long.parseUnsignedLong(grant.deviceId.substring(4),16),Long.parseUnsignedLong(nonce,16));
-        }catch(Exception ignored){if(socket!=null)socket.close();/* Legacy HTTP fallback retains watchdog checks. */}
+            rcStream.configure(lease,socket,target,Long.parseUnsignedLong(grant.deviceId.substring(4),16),Long.parseUnsignedLong(nonce,16),simulation);
+        }catch(Exception error){if(socket!=null)socket.close();throw error;}
     }
     private static final class Result{final int code;final String body;Result(int code,String body){this.code=code;this.body=body;}}
     private Result http(Network network,URL url,String method,String body,int timeout,Job job)throws Exception{
@@ -305,7 +306,7 @@ public final class MainActivity extends Activity {
                 if(ok && url.getPath().equals("/api/control/release"))rcStream.stop(gate.release(LocalPolicy.origin(url),fields.get("expectedDeviceId"),fields.get("clientId")));
                 if(!cancelled)reply(id,result.code,result.body);
             }catch(Exception e){
-                if(grant!=null){gate.cancel(grant);releaseGrant(grant);}
+                if(grant!=null){emergency(gate.cancel(grant));releaseGrant(grant);}
                 if(!cancelled)failure(id,e instanceof IllegalArgumentException || e instanceof IllegalStateException ? e.getMessage() : e instanceof java.net.SocketTimeoutException ? "Kit request timed out. Retrying the verified connection." : "Kit not reachable. Join its Wi-Fi and check the address.");
             }finally{jobs.remove(id,this);}
         }
