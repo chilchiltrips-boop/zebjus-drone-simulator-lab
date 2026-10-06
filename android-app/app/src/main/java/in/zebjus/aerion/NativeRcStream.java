@@ -14,13 +14,14 @@ public final class NativeRcStream {
     private final LeaseGate gate;
     private final LongSupplier clock;
     private volatile Profile profile;
+    private volatile java.util.Map<String,Object> archived=new java.util.LinkedHashMap<>();
     private static final class Profile {
         final LeaseGate.Lease lease;
         final DatagramSocket socket;
         final long device,token;
         final boolean simulation;
         final long[] sentAt=new long[64];
-        int sequence,lastAck;
+        int sequence,lastAck;long framesSent,acksReceived,sendErrors,ackRejected;
         boolean ackSeen,closed;
         Profile(LeaseGate.Lease lease,DatagramSocket socket,long device,long token,boolean simulation){this.lease=lease;this.socket=socket;this.device=device;this.token=token;this.simulation=simulation;}
     }
@@ -56,25 +57,27 @@ public final class NativeRcStream {
             if(p.closed||!gate.isCurrent(p.lease))return;
             try{
                 int sequence=++p.sequence;p.sentAt[sequence&63]=now;
-                byte[] bytes=frame(p.device,p.token,sequence,channels,p.simulation);p.socket.send(new DatagramPacket(bytes,bytes.length));
+                byte[] bytes=frame(p.device,p.token,sequence,channels,p.simulation);p.socket.send(new DatagramPacket(bytes,bytes.length));p.framesSent++;
                 for(int i=0;i<8;i++){
                     byte[] ack=new byte[ACK_BYTES+1];DatagramPacket packet=new DatagramPacket(ack,ack.length);
                     try{p.socket.receive(packet);}catch(SocketTimeoutException timeout){break;}
-                    if(packet.getLength()!=ACK_BYTES)continue;
+                    p.ackRejected++;if(packet.getLength()!=ACK_BYTES)continue;
                     ByteBuffer b=ByteBuffer.wrap(ack).order(ByteOrder.LITTLE_ENDIAN);
                     if(b.getInt()!=0x3141525a||b.get()!=(p.simulation?2:1)||b.get()!=0)continue;int flags=b.get()&255;if(b.get()!=0||(flags&~7)!=0||((flags&4)!=0)!=p.simulation||p.simulation&&(flags&1)!=0)continue;
                     if(b.getLong()!=p.device||b.getLong()!=p.token)continue;int acknowledged=b.getInt();
                     if(acknowledged-p.sequence>0||p.ackSeen&&acknowledged-p.lastAck<=0||p.sequence-acknowledged>=64)continue;
                     long age=clock.getAsLong()-p.sentAt[acknowledged&63];if(age<0||age>250)continue;
-                    p.lastAck=acknowledged;p.ackSeen=true;gate.udpAck(p.lease,clock.getAsLong(),(flags&1)!=0,(flags&2)!=0);
+                    p.lastAck=acknowledged;p.ackSeen=true;p.acksReceived++;p.ackRejected--;gate.udpAck(p.lease,clock.getAsLong(),(flags&1)!=0,(flags&2)!=0);
                 }
-            }catch(Exception ignored){/* Next 20 ms tick retries latest values; watchdog bounds loss. */}
+            }catch(Exception ignored){p.sendErrors++;/* Next tick retries; watchdog bounds loss. */}
         }
     }
+    private java.util.Map<String,Object> profileDiagnostics(Profile p){java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("protocol",p.simulation?"ZRC2":"ZRC1");out.put("framesSent",p.framesSent);out.put("acksReceived",p.acksReceived);out.put("ackRejected",p.ackRejected);out.put("sendErrors",p.sendErrors);out.put("validatedControllerAck",p.ackSeen);return out;}
+    public java.util.Map<String,Object> diagnostics(){Profile p=profile;java.util.Map<String,Object> out=new java.util.LinkedHashMap<>(gate.diagnostics(clock.getAsLong()));if(p!=null){synchronized(p){out.putAll(profileDiagnostics(p));}}else{out.put("protocol","HTTP");out.put("previousUdp",new java.util.LinkedHashMap<>(archived));}return out;}
     public synchronized void stop(LeaseGate.Lease lease){Profile p=profile;if(p!=null&&p.lease==lease){profile=null;close(p,true);}}
     private void close(Profile p,boolean sendSafe){
         synchronized(p){
-            if(p.closed)return;p.closed=true;
+            if(p.closed)return;archived=profileDiagnostics(p);p.closed=true;
             if(sendSafe){try{String[] values=p.lease.safeChannels().split(",");int[] c=new int[10];for(int i=0;i<10;i++)c[i]=Integer.parseInt(values[i]);
                 for(int i=0;i<3;i++){byte[] safe=frame(p.device,p.token,++p.sequence,c,p.simulation);p.socket.send(new DatagramPacket(safe,safe.length));}
             }catch(Exception ignored){}}

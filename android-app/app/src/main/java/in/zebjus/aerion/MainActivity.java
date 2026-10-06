@@ -305,7 +305,7 @@ public final class MainActivity extends Activity {
                 if(grant!=null){if(ok && !cancelled && gate.accept(grant,now(),new JSONObject(result.body).optLong("rcTimeoutMs",0),new JSONObject(result.body).optBoolean("simulationOutputsBlocked",false)&&"HTTP".equals(new JSONObject(result.body).optString("simulationRcTransport")))){configureRcStream(grant,result.body);}else{gate.cancel(grant);if(ok)releaseGrant(grant);if(ok)throw new IllegalStateException("Control request cancelled. Take control again.");}}
                 if(ok && lease!=null){if("rc_frame".equals(fields.get("type")))gate.rcAck(lease,now(),LocalPolicy.channels(fields));else gate.ack(lease,now());}
                 if(ok && url.getPath().equals("/api/control/release"))rcStream.stop(gate.release(LocalPolicy.origin(url),fields.get("expectedDeviceId"),fields.get("clientId")));
-                if(!cancelled)reply(id,result.code,result.body);
+                if(!cancelled){String body=result.body;if(ok&&url.getPath().equals("/api/telemetry"))body=new JSONObject(body).put("nativeRc",new JSONObject(rcStream.diagnostics())).toString();reply(id,result.code,body);}
             }catch(Exception e){
                 if(grant!=null){emergency(gate.cancel(grant));releaseGrant(grant);}
                 if(!cancelled)failure(id,e instanceof IllegalArgumentException || e instanceof IllegalStateException ? e.getMessage() : e instanceof java.net.SocketTimeoutException ? "Kit request timed out. Retrying the verified connection." : "Kit not reachable. Join its Wi-Fi and check the address.");
@@ -330,6 +330,7 @@ public final class MainActivity extends Activity {
                 if(jobs.putIfAbsent(id,job)!=null)throw new IllegalArgumentException("Duplicate request.");(rc?flightWorker:workers).execute(job);}
             catch(Exception e){if(job!=null){job.cancel();jobs.remove(id,job);}failure(id,e.getMessage()==null?"Join your kit Wi-Fi and retry.":e.getMessage());}
         }
+        @JavascriptInterface public String rcDiagnostics(String key){return token.equals(key)?new JSONObject(rcStream.diagnostics()).toString():"{}";}
         @JavascriptInterface public void cancel(String key,String id){if(token.equals(key)){Job job=jobs.get(id);if(job!=null)job.cancel();}}
         @JavascriptInterface public void pauseStream(String key,String base,String device,String client){
             if(!token.equals(key)||destroyed)return;

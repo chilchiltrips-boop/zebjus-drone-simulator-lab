@@ -21,6 +21,7 @@ on:
       - 'tools/flight_app_source.html'
       - 'control-sticks.js'
       - 'mobile-flight-console.js'
+      - 'flight-recorder.js'
       - 'fc-setup.js'
       - 'kit-console.js'
   pull_request:
@@ -32,6 +33,7 @@ on:
       - 'tools/flight_app_source.html'
       - 'control-sticks.js'
       - 'mobile-flight-console.js'
+      - 'flight-recorder.js'
       - 'fc-setup.js'
       - 'kit-console.js'
 
@@ -95,7 +97,7 @@ jobs:
           name: Aerion-Android-APK
           if-no-files-found: error
           path: |
-            android-app/dist/ZEBJUS_Aerion_V18_3_69_Android.apk
+            android-app/dist/ZEBJUS_Aerion_V18_3_70_Android.apk
             android-app/dist/BUILD_REPORT.json
             android-app/dist/APK_SIGNATURE.txt
             android-app/dist/APK_MANIFEST.txt

@@ -5,10 +5,10 @@
 <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content" name="viewport"/>
 <meta content="#07111b" name="theme-color"/>
 <title>ZEBJUS Aerion</title>
-<script src="wix-embed.js?v=18.3.69-web.3"></script>
-<link href="styles.css?v=18.3.69-r3" rel="stylesheet"/><link href="lab-workflow.css?v=18.3.69-web.4" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
-<link href="wix-embed.css?v=18.3.69-web.3" rel="stylesheet"/>
-<link href="flight-training.css?v=18.3.69-web.3" rel="stylesheet"/>
+<script src="wix-embed.js?v=18.3.70-web.3"></script>
+<link href="styles.css?v=18.3.70-r3" rel="stylesheet"/><link href="lab-workflow.css?v=18.3.70-web.4" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
+<link href="wix-embed.css?v=18.3.70-web.3" rel="stylesheet"/>
+<link href="flight-training.css?v=18.3.70-web.3" rel="stylesheet"/>
 <link href="icon-192.png" rel="apple-touch-icon"/>
 <meta content="#07111b" name="theme-color"/>
 </head>
@@ -16,7 +16,7 @@
 <div id="app">
 <header class="topbar">
 <div class="topbar-main">
-<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS Aerion</b><span>V18.3.69 • Build · Code · Fly</span></div></div>
+<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS Aerion</b><span>V18.3.70 • Build · Code · Fly</span></div></div>
 <div class="top-network-control"><span>STA</span><button id="topNetworkToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Switch kit between STA and AP" disabled><i></i></button><span>AP</span><b id="topNetworkMode">NO KIT</b></div>
 <div class="top-control-control"><span>Take control</span><button id="topControlToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Take or release kit control" disabled><i></i></button><b id="topControlState">OFF</b></div>
 <span class="top-kit-status offline" id="topKitStatus" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span>
@@ -399,7 +399,7 @@
 <div id="pythonOutputWindow" class="python-output-window" role="dialog" aria-label="Python output window" hidden><div class="python-output-title" id="pythonOutputDrag"><b id="pythonOutputTitle">Python Output</b><div><a id="pythonOutputDownload" class="btn ghost small" hidden download="zebjus-output.png">Download</a><button class="btn ghost small" id="pythonOutputClose" type="button" aria-label="Close output window">×</button></div></div><img id="pythonOutputImage" alt="Live OpenCV or Matplotlib output"/><p>Drag the title to move • drag the lower right corner to resize.</p></div>
 </section>
 <section class="panel tab-panel" id="tab-training"><div id="flightTrainingRoot"></div></section>
-<section class="panel tab-panel" id="tab-telemetry"><div class="page-heading"><div><small>FLIGHT DATA</small><h1>Telemetry cockpit</h1><p>Live attitude and link health from your selected controller.</p></div><span id="cockpitLink" class="status">NO LINK</span></div><div class="cockpit-layout"><div class="form-card cockpit-data"><div class="cockpit-health" id="cockpitHealth"></div><div class="metrics"><div><span>ROLL</span><b id="telRoll">—</b></div><div><span>PITCH</span><b id="telPitch">—</b></div><div><span>YAW ESTIMATE</span><b id="telYaw">—</b></div><div><span>BATTERY</span><b id="telBatt">—</b></div></div><div class="cockpit-facts" id="cockpitFacts"></div><section class="cockpit-setup" id="cockpitSetup"><h3>Setup &amp; calibration</h3><p id="cockpitSetupSummary">Connect a kit to review its setup checks.</p><ul id="cockpitSetupChecks"></ul></section><details><summary>Received telemetry stream</summary><pre class="terminal" id="telemetryLog"></pre></details></div><div class="instrument-grid"><figure><canvas id="attitudeGauge" width="320" height="320" aria-label="Attitude indicator"></canvas><figcaption>ATTITUDE <b id="gaugeAttitude">WAITING</b></figcaption></figure><figure><canvas id="headingGauge" width="320" height="320" aria-label="Integrated yaw estimate"></canvas><figcaption>YAW ESTIMATE <b id="gaugeHeading">—</b></figcaption></figure><figure><canvas id="altitudeGauge" width="320" height="320" aria-label="Altitude gauge"></canvas><figcaption>ALTITUDE <b id="gaugeAltitude">SENSOR NOT AVAILABLE</b></figcaption></figure><figure><canvas id="vsiGauge" width="320" height="320" aria-label="Vertical speed indicator"></canvas><figcaption>VERTICAL SPEED <b id="gaugeVsi">SENSOR NOT AVAILABLE</b></figcaption></figure></div></div></section>
+<section class="panel tab-panel" id="tab-telemetry"><div class="page-heading"><div><small>FLIGHT DATA</small><h1>Telemetry cockpit</h1><p>Live attitude and link health from your selected controller.</p></div><span id="cockpitLink" class="status">NO LINK</span></div><section id="flightRecorderRoot"></section><div class="cockpit-layout"><div class="form-card cockpit-data"><div class="cockpit-health" id="cockpitHealth"></div><div class="metrics"><div><span>ROLL</span><b id="telRoll">—</b></div><div><span>PITCH</span><b id="telPitch">—</b></div><div><span>YAW ESTIMATE</span><b id="telYaw">—</b></div><div><span>BATTERY</span><b id="telBatt">—</b></div></div><div class="cockpit-facts" id="cockpitFacts"></div><section class="cockpit-setup" id="cockpitSetup"><h3>Setup &amp; calibration</h3><p id="cockpitSetupSummary">Connect a kit to review its setup checks.</p><ul id="cockpitSetupChecks"></ul></section><details><summary>Controller messages</summary><pre class="terminal" id="telemetryLog"></pre></details></div><div class="instrument-grid"><figure><canvas id="attitudeGauge" width="320" height="320" aria-label="Attitude indicator"></canvas><figcaption>ATTITUDE <b id="gaugeAttitude">WAITING</b></figcaption></figure><figure><canvas id="headingGauge" width="320" height="320" aria-label="Integrated yaw estimate"></canvas><figcaption>YAW ESTIMATE <b id="gaugeHeading">—</b></figcaption></figure><figure><canvas id="altitudeGauge" width="320" height="320" aria-label="Altitude gauge"></canvas><figcaption>ALTITUDE <b id="gaugeAltitude">SENSOR NOT AVAILABLE</b></figcaption></figure><figure><canvas id="vsiGauge" width="320" height="320" aria-label="Vertical speed indicator"></canvas><figcaption>VERTICAL SPEED <b id="gaugeVsi">SENSOR NOT AVAILABLE</b></figcaption></figure></div></div></section>
 <section class="panel tab-panel" id="tab-settings"><div class="settings-grid"><section class="form-card offline-settings">
 <div class="panel-head"><div><small>OFFLINE LAB</small><h2>Python, camera &amp; hands</h2></div></div>
 <p class="micro-note">Use Start_Offline on your laptop, then connect to the kit AP Wi-Fi. Python, OpenCV, plots and hand tracking use files included in this app. Allow camera access when asked.</p>
@@ -426,22 +426,23 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option selected="" value="balanced">Balanced</option><option value="low">Low-end laptop</option></select></label><button class="btn ghost full" id="applyPerformanceBtn">Apply graphics profile</button><pre class="terminal mini" id="startupDiagnostics">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.69-r3"></script>
-<script src="offline-support.js?v=18.3.69-r3"></script>
-<script src="kit-local.js?v=18.3.69-r3"></script>
-<script src="control-sticks.js?v=18.3.69-r3"></script>
-<script src="receiver-wizard.js?v=18.3.69-web.4"></script>
-<script src="pid-tuning.js?v=18.3.69-web.5"></script>
-<script src="fc-setup.js?v=18.3.69-web.5"></script>
-<script src="kit-console.js?v=18.3.69-r3"></script>
-<script src="lab-workflow.js?v=18.3.69-web.5"></script>
-<script src="telemetry-cockpit.js?v=18.3.69-web.4"></script>
-<script src="flight-training-core.js?v=18.3.69-web.3"></script>
-<script src="flight-training-input.js?v=18.3.69-web.3"></script>
-<script type="module" src="flight-training.js?v=18.3.69-web.3"></script>
-<script src="flight-diagnostics.js?v=18.3.69-r3"></script>
-<script src="app.js?v=18.3.69-web.5" type="module"></script>
-<script src="school-lab.js?v=18.3.69-web.5"></script>
-<script src="hardware-io.js?v=18.3.69-r3"></script>
-<script src="firmware-updater.js?v=18.3.69-r4"></script>
+<script src="ui-runtime.js?v=18.3.70-r3"></script>
+<script src="offline-support.js?v=18.3.70-r3"></script>
+<script src="kit-local.js?v=18.3.70-r3"></script>
+<script src="control-sticks.js?v=18.3.70-r3"></script>
+<script src="receiver-wizard.js?v=18.3.70-web.4"></script>
+<script src="pid-tuning.js?v=18.3.70-web.5"></script>
+<script src="fc-setup.js?v=18.3.70-web.5"></script>
+<script src="kit-console.js?v=18.3.70-r3"></script>
+<script src="lab-workflow.js?v=18.3.70-web.5"></script>
+<script src="telemetry-cockpit.js?v=18.3.70-web.4"></script>
+<script src="flight-training-core.js?v=18.3.70-web.3"></script>
+<script src="flight-training-input.js?v=18.3.70-web.3"></script>
+<script type="module" src="flight-training.js?v=18.3.70-web.3"></script>
+<script src="flight-recorder.js?v=18.3.70-r4"></script>
+<script src="flight-diagnostics.js?v=18.3.70-r3"></script>
+<script src="app.js?v=18.3.70-web.5" type="module"></script>
+<script src="school-lab.js?v=18.3.70-web.5"></script>
+<script src="hardware-io.js?v=18.3.70-r3"></script>
+<script src="firmware-updater.js?v=18.3.70-r4"></script>
 </body></html>

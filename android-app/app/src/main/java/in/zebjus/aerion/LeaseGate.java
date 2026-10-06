@@ -41,6 +41,7 @@ public final class LeaseGate {
     private boolean foreground;
     private Lease current;
     private Grant pending;
+    private String lastStopReason="";
 
     public synchronized void resume() { foreground=true; }
     public synchronized boolean isForeground() { return foreground; }
@@ -65,7 +66,7 @@ public final class LeaseGate {
     public synchronized boolean accept(Grant grant,long now,long controllerTimeout,boolean simulationOutputsBlocked) {
         if (pending!=grant || !foreground || grant.generation!=generation || current!=null) return false;
         long timeout=simulationOutputsBlocked ? 2600 : controllerTimeout>0 ? Math.max(200,Math.min(MAX_ACK_TIMEOUT_MS,controllerTimeout-100)) : ACK_TIMEOUT_MS;
-        pending=null; current=new Lease(grant.origin,grant.deviceId,grant.clientId,grant.network,now,timeout,grant.generation); return true;
+        lastStopReason="";pending=null; current=new Lease(grant.origin,grant.deviceId,grant.clientId,grant.network,now,timeout,grant.generation); return true;
     }
     public synchronized Lease cancel(Grant grant) {
         if(pending==grant)pending=null;
@@ -104,7 +105,12 @@ public final class LeaseGate {
         generation++; pending=null; if (pause) foreground=false;
         Lease old=current; current=null; return old;
     }
+    public synchronized java.util.Map<String,Object> diagnostics(long now) {
+        java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("foreground",foreground);out.put("reserved",current!=null);out.put("streaming",current!=null&&current.streaming);out.put("ackAgeMs",current==null?-1:Math.max(0,now-current.ack));out.put("inputAgeMs",current==null||current.input==null?-1:Math.max(0,now-current.inputAt));out.put("lastError",lastStopReason);return out;
+    }
     public synchronized Lease watchdog(long now) {
-        return current!=null && (current.input!=null&&now-current.inputAt>INPUT_TIMEOUT_MS || now-current.ack>(current.streaming?current.ackTimeout:5000)) ? fence(false) : null;
+        if(current==null)return null;
+        if(current.input!=null&&now-current.inputAt>INPUT_TIMEOUT_MS){lastStopReason="Native stick input stopped for more than 300 ms";return fence(false);}
+        if(now-current.ack>(current.streaming?current.ackTimeout:5000)){lastStopReason=current.streaming?"Controller RC acknowledgements expired":"Configuration reservation heartbeat expired";return fence(false);}return null;
     }
 }

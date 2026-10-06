@@ -1,4 +1,4 @@
-ZEBJUS Aerion V18.3.69 — Web update 1 / Wix embedding
+ZEBJUS Aerion V18.3.70 — Web update 1 / Wix embedding
 
 PYTHON LAB IS PAGE 5:
 Assembly Lab → 2D Wiring → Setup Wizard → Hardware I/O → Python Lab →
@@ -49,10 +49,10 @@ Open full lab button in that case; if local HTTP is still blocked, run the
 included localhost lab or use the Android app. Simulation and normal Python
 do not need a connected kit. There is no automatic ARM or ownership transfer.
 
-This update rebuilds APK 18.3.69-android.1 (versionCode 1836901). It keeps the
+This update rebuilds APK 18.3.70-android.1 (versionCode 1837001). It keeps the
 same development certificate so it can update the earlier development APK.
 The Android app retains its simple flight controls, Safety and Wi-Fi panels;
-the web lab provides the full editor/setup workflow. Matching controller firmware is 18.3.69.
+the web lab provides the full editor/setup workflow. Matching controller firmware is 18.3.70.
 
 Official references:
 https://support.wix.com/en/article/wix-editor-embedding-a-site-or-a-widget

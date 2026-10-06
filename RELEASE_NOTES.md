@@ -1,3 +1,13 @@
+# ZEBJUS Aerion V18.3.70
+
+- PID editor removes Basic/Advanced/Expert and parameter banks. Saved controller PID, Rate/Attitude edits, live virtual preview and explicit hardware Save/readback remain.
+- App virtual Tripod / Flight Training now explicitly use acknowledged HTTP simulation control, independent of real-flight ZRC1 UDP. Simulator selection confirms physical output inhibition before RC and manual virtual ARM. Firmware retains protocol isolation and bounded failsafes.
+- Telemetry adds a flight recorder: live channels, motor-command plots, link/owner/FC/simulator state, marked issues and event timeline. Repeated raw JSON screen logging is removed.
+- ChatGPT JSON exports from app and web include configuration/context, timestamped samples, errors, state changes, native input/ACK watchdog reasons, transport counters and guide text. CSV is available for plotting. Capture buffers and export size are bounded; control tokens and passwords are excluded. Native transport details require the app report; missing evidence is shown explicitly.
+- Firmware publishes UDP receive/accept/reject counts and rejection reasons without grant tokens.
+
+Install matching 18.3.70 APK and board firmware; reload web. Automated tests validate software behavior; real phone/Wi-Fi/motor validation remains outstanding. See SUPPORT/V18_3_70_UPDATE_AND_TEST.md.
+
 # ZEBJUS Aerion V18.3.69
 
 - App RC mirrors update Web Joystick in Real, Tripod and Flight Training modes. Compact live RC telemetry avoids sensor/PID/config payloads; automatic discovery pauses during app control and setup. Android HTTP requests close their connections explicitly.

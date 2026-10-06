@@ -32,7 +32,7 @@ function realKitAvailability(){
  if(!ownsLock())return{ok:false,text:d.locked?`${d.deviceName}: another controller owns this kit. View only.`:`${d.deviceName}: Take Control to enable the real transmitter.`};
  return{ok:true,text:`${d.deviceName} • ${d.deviceId} • verified • control active.`};
 }
-function log(t){const e=$('#schoolLog');if(e)e.textContent=`${new Date().toLocaleTimeString()} ${t}\n${e.textContent}`.slice(0,9000)}
+function log(t){if(typeof CustomEvent==='function'&&typeof window.dispatchEvent==='function')window.dispatchEvent(new CustomEvent('aerion-link-event',{detail:{message:String(t),at:Date.now()}}));const e=$('#schoolLog');if(e)e.textContent=`${new Date().toLocaleTimeString()} ${t}\n${e.textContent}`.slice(0,9000)}
 function signalText(rssi){rssi=+rssi;if(!Number.isFinite(rssi))return 'Unknown';if(rssi>=-55)return 'Excellent';if(rssi>=-67)return 'Good';if(rssi>=-75)return 'Weak';return 'Very weak'}
 function fmtBuildTime(v){if(!v)return'--';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleString([], {year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'})}
 function setText(id,v){const e=$('#'+id);if(e)e.textContent=v}

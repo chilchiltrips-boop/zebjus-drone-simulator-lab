@@ -6,6 +6,7 @@ uint64_t rcUdpToken=0;
 uint32_t rcUdpLastSequence=0;
 bool rcUdpSequenceSeen=false;
 bool rcUdpSimulation=false;
+uint32_t rcUdpReceived=0,rcUdpAccepted=0,rcUdpRejected=0;const char* rcUdpLastReject="";
 void invalidateRcUdp(){
  portENTER_CRITICAL(&stateMux);rcUdpToken=0;rcUdpSequenceSeen=false;rcUdpSimulation=false;portEXIT_CRITICAL(&stateMux);
 }
@@ -19,22 +20,24 @@ void rcUdpTask(void*){
  for(;;){
   for(int count=0;count<8;count++){
    int size=rcUdp.parsePacket();if(size<=0)break;
-   uint8_t bytes[RcUdpProtocol::FRAME_BYTES];int read=rcUdp.read(bytes,sizeof(bytes));
-   RcUdpProtocol::Frame frame;if(size!=(int)sizeof(bytes)||!RcUdpProtocol::decode(bytes,read,frame)||frame.device!=key)continue;
+   rcUdpReceived++;uint8_t bytes[RcUdpProtocol::FRAME_BYTES];int read=rcUdp.read(bytes,sizeof(bytes));
+   RcUdpProtocol::Frame frame;if(size!=(int)sizeof(bytes)||!RcUdpProtocol::decode(bytes,read,frame)||frame.device!=key){rcUdpRejected++;rcUdpLastReject="Invalid frame or Device ID";continue;}
    uint32_t now=millis();bool accepted=false,actualArmed=false,ready=false;
    portENTER_CRITICAL(&stateMux);
    if((FLIGHT_CONTROL_ENABLED||trainingActive)&&rcUdpToken&&frame.token==rcUdpToken&&RcUdpProtocol::permitted(frame,rcUdpSimulation,trainingActive,trainingAppOwned&&trainingInput==1)&&(int32_t)(controlExpiresAt-now)>0&&benchMode==BENCH_NONE&&!fcSetupActive&&!configurationBusy&&!firmwareUploadActive&&(!rcUdpSequenceSeen||RcUdpProtocol::newer(frame.sequence,rcUdpLastSequence))){
     for(int i=0;i<10;i++)webRcCh[i]=frame.channels[i];
     webRcLastMs=now;webRcFrames++;controlExpiresAt=now+LOCK_TIMEOUT_MS;
     if(trainingActive&&trainingAppOwned&&trainingInput==1)trainingExpires=now+5000;
-    rcUdpLastSequence=frame.sequence;rcUdpSequenceSeen=true;accepted=true;actualArmed=armed;ready=flightReady||trainingActive;
+    rcUdpLastSequence=frame.sequence;rcUdpSequenceSeen=true;accepted=true;rcUdpAccepted++;actualArmed=armed;ready=flightReady||trainingActive;
    }
+   if(!accepted){rcUdpRejected++;rcUdpLastReject=!rcUdpToken||frame.token!=rcUdpToken?"Grant expired / changed":!RcUdpProtocol::permitted(frame,rcUdpSimulation,trainingActive,trainingAppOwned&&trainingInput==1)?"Wrong RC mode / simulation ended":(int32_t)(controlExpiresAt-now)<=0?"Control lease expired":benchMode!=BENCH_NONE||fcSetupActive||configurationBusy||firmwareUploadActive?"Setup / outputs inhibit RC":"Replayed sequence";}
    portEXIT_CRITICAL(&stateMux);
    if(accepted){uint8_t ack[RcUdpProtocol::ACK_BYTES];RcUdpProtocol::ack(ack,frame,actualArmed,ready);rcUdp.beginPacket(rcUdp.remoteIP(),rcUdp.remotePort());rcUdp.write(ack,sizeof(ack));rcUdp.endPacket();}
   }
   vTaskDelay(pdMS_TO_TICKS(2));
  }
 }
+String rcTransportJson(){return String(",\"rcTransport\":{\"udpListening\":")+String(rcUdpTaskHandle?"true":"false")+",\"protocol\":\""+String(rcUdpToken?(rcUdpSimulation?"ZRC2":"ZRC1"):"HTTP / idle")+"\",\"udpReceived\":"+String(rcUdpReceived)+",\"udpAccepted\":"+String(rcUdpAccepted)+",\"udpRejected\":"+String(rcUdpRejected)+",\"lastReject\":\""+String(rcUdpLastReject)+"\"}";}
 void startRcUdp(){
  if(rcUdpTaskHandle||!ALLOW_WEB_RC)return;
  if(!rcUdp.begin(RcUdpProtocol::PORT))return;
