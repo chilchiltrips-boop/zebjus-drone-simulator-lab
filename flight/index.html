@@ -148,7 +148,7 @@ const $=id=>document.getElementById(id),clamp=(n,a,b)=>Math.max(a,Math.min(b,n))
 function read(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 const shared=read('zebjus.drone.knownKits.v183',[]),preferred=(()=>{try{return localStorage.getItem('zebjusV183LastKit')||''}catch{return ''}})(),saved=read(KNOWN,Array.isArray(shared)?shared.find(k=>k.deviceId===preferred)||shared[0]||{}:{}),channels=[1500,1500,1000,1500,1000,1000,1000,1000,1500,1000],held=new Set();
 const newSession=()=>'FLY-'+Math.random().toString(36).slice(2)+Date.now().toString(36);let cid=newSession();
-const state={base:'',deviceId:params.get('kitId')||saved.deviceId||'',name:params.get('kitName')||saved.name||'',lookupName:'',online:false,own:false,tx:false,busy:false,epoch:0,txEpoch:0,manual:false,status:{},lastAck:0,lastStatus:0,lastFrame:0,armAt:0,wasArmed:false,fails:0,statusFailures:0,networkBusy:false,networkTarget:'',preciseThrottle:1000,pending:null,recovering:false,resumeControl:false,recoveryLastAt:0,lastAckSent:0,rcTimeoutMs:0,cleanup:Promise.resolve(),floating:read('zebjus-flight-floating',true),training:null,practiceBusy:false,modePending:null,selectedTarget:read('zebjus-flight-destination','TRIPOD'),resumeTarget:null};
+const state={base:'',deviceId:params.get('kitId')||saved.deviceId||'',name:params.get('kitName')||saved.name||'',lookupName:'',online:false,own:false,tx:false,busy:false,epoch:0,txEpoch:0,destinationIntent:0,manual:false,status:{},lastAck:0,lastStatus:0,lastFrame:0,armAt:0,wasArmed:false,fails:0,statusFailures:0,networkBusy:false,networkTarget:'',preciseThrottle:1000,pending:null,recovering:false,resumeControl:false,recoveryLastAt:0,lastAckSent:0,rcTimeoutMs:0,cleanup:Promise.resolve(),floating:read('zebjus-flight-floating',true),training:null,practiceBusy:false,modePending:null,selectedTarget:read('zebjus-flight-destination','TRIPOD'),resumeTarget:null};
 const sticks={left:{x:0,y:0,pointer:null},right:{x:0,y:0,pointer:null}};let noticeTimer;
 const appRecorder=AerionFlightRecorder.create({actor:'app',context:()=>({deviceId:state.deviceId,controller:state.status,native:window.AerionAndroid?.rcDiagnostics?.(),selectedTarget:state.selectedTarget,confirmedTarget:state.training?.target,ownsControl:state.own,transmitting:state.tx,transport:state.training?.transport||'REAL',userAgent:navigator.userAgent}),download:(name,body,mime)=>window.AerionAndroid?window.AerionAndroid.saveFile(name,body,mime):(()=>{const a=document.createElement('a'),url=URL.createObjectURL(new Blob([body],{type:mime}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)})()});window.AerionAppRecorder=appRecorder;
 function notify(message){appRecorder.event('app',String(message));$('notice').textContent=message;$('notice').hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$('notice').hidden=true,4200)}
@@ -170,7 +170,7 @@ function home(side){const b=$(side).querySelector('.base');b.style.left='50%';b.
 function draw(side){const s=sticks[side],knob=$(side).querySelector('.knob');$(side).classList.toggle('touching',s.pointer!==null);knob.style.left=(50+s.x*30)+'%';knob.style.top=(50+s.y*30)+'%'}
 function resetInputs(){held.clear();for(const side of ['left','right']){const s=sticks[side],pointer=s.pointer;s.pointer=null;s.anchor=null;s.x=s.y=0;try{if(pointer!==null)$(side).releasePointerCapture(pointer)}catch{}home(side);draw(side)}}
 function safeValues(){channels[0]=channels[1]=channels[3]=1500;channels[2]=channels[4]=1000;state.armAt=0;state.wasArmed=false;state.preciseThrottle=1000;resetInputs();render(true)}
-function stopControl(message='',offline=false){const had=state.own,hadRc=state.tx||!!state.pending,base=state.base,id=state.deviceId,client=cid,pending=state.pending,training=state.training,modePending=state.modePending;if(had)window.AerionAndroid?.pauseStream?.(base,id,client);state.training=null;state.modePending=null;state.txEpoch++;state.epoch++;state.busy=false;state.own=state.tx=false;state.resumeControl=false;state.resumeTarget=null;state.recovering=false;state.pending=null;state.fails=0;if(offline){state.online=false;$('battery').hidden=true}safeValues();const safe=channels.join(',');if(had)state.cleanup=Promise.allSettled([state.cleanup,pending,modePending]).then(async()=>{if(training)try{await request(training.base,'/api/command',{clientId:training.client,type:'training_end',session:training.token},600,training.id)}catch{}if(hadRc)try{await request(base,'/api/command',{clientId:client,type:'rc_frame',channels:safe},600,id)}catch{}try{await request(base,'/api/control/release',{clientId:client},600,id)}catch{}});if(message)notify(message)}
+function stopControl(message='',offline=false){state.destinationIntent=(state.destinationIntent||0)+1;const had=state.own,hadRc=state.tx||!!state.pending,base=state.base,id=state.deviceId,client=cid,pending=state.pending,training=state.training,modePending=state.modePending;if(had)window.AerionAndroid?.pauseStream?.(base,id,client);state.training=null;state.modePending=null;state.txEpoch++;state.epoch++;state.busy=false;state.own=state.tx=false;state.resumeControl=false;state.resumeTarget=null;state.recovering=false;state.pending=null;state.fails=0;if(offline){state.online=false;$('battery').hidden=true}safeValues();const safe=channels.join(',');if(had)state.cleanup=Promise.allSettled([state.cleanup,pending,modePending]).then(async()=>{if(training)try{await request(training.base,'/api/command',{clientId:training.client,type:'training_end',session:training.token},600,training.id)}catch{}if(hadRc)try{await request(base,'/api/command',{clientId:client,type:'rc_frame',channels:safe},600,id)}catch{}try{await request(base,'/api/control/release',{clientId:client},600,id)}catch{}});if(message)notify(message)}
 async function connect(take=false){if(state.busy)return;state.busy=true;state.manual=false;const epoch=++state.epoch;render();$('pairMessage').textContent='Checking your kit…';let found=false,error='Kit not found. Join its Wi-Fi and try again.';try{state.lookupName=take?$('kitName').value.trim():'';const typed=$('expectedId').value.trim();if(typed&&state.deviceId&&typed!==state.deviceId)throw Error('Paired Device ID differs. Disconnect before pairing another kit.');if(typed)state.deviceId=typed;const matches=[];for(const base of candidates()){try{const s=validate(await request(base,'/api/status?clientId='+encodeURIComponent(cid),null,2400));if(epoch!==state.epoch)return;if(!matches.some(x=>x.status.deviceId===s.deviceId))matches.push({base,status:s});if(state.deviceId)break}catch(e){error=e.message}}if(matches.length>1)throw Error('Multiple kits match this name. Enter the exact Device ID from the kit label or rename one kit.');if(matches.length===1){const hit=matches[0];state.base=hit.base;state.status=hit.status;state.online=true;state.lastStatus=performance.now();remember(hit.status);channels[5]=String(hit.status.flightMode).toUpperCase()==='RATE'?1500:1000;found=true;}if(!found)throw Error(error);$('pairMessage').textContent='Connected to '+state.name+' · '+state.deviceId;if($('connectDialog').open)$('connectDialog').close()}catch(e){if(epoch!==state.epoch)return;state.online=false;$('pairMessage').textContent=e.message;if(take)notify(e.message)}finally{if(epoch===state.epoch){state.busy=false;render()}}if(found&&take){if(window.AerionAndroid)await reserveMobile();else await takeControl()}return found}
 // A reconnect may restore an explicitly enabled transmitter at safe values.
 // Only a fresh manual ARM may start motors after a hard loss.
@@ -278,7 +278,7 @@ async function refresh(){
 // Reserve heartbeat traffic for settings-only sessions and retry transient errors.
 let pingBusy=false,pingGood=0;
 setInterval(async()=>{
- if(!state.own||state.tx||pingBusy)return;pingBusy=true;const epoch=state.txEpoch;
+ if(!state.own||state.tx||state.practiceBusy||state.busy||pingBusy)return;pingBusy=true;const epoch=state.txEpoch;
  try{await api('/api/control/ping',{clientId:cid},600);pingGood=performance.now()}
  catch(e){if(epoch===state.txEpoch&&([403,409,423].includes(e.status)||performance.now()-Math.max(pingGood,state.lastAck)>4500))stopControl('Control reservation lost.',false)}
  finally{pingBusy=false}
@@ -289,41 +289,60 @@ $('forget').onclick=()=>{stopControl('',true);state.manual=true;state.deviceId=s
 $('arm').onclick=()=>{if(!state.own||!state.tx||state.practiceBusy)return;if(channels[4]>1500||state.status.armed){if(state.status.rcSource==='PPM')api('/api/command',{clientId:cid,type:'flight_stop'}).catch(()=>{});safeValues();sendFrame();return}if(channels[2]>1050){notify('Lower throttle before ARM.');return}safeValues();channels[4]=2000;state.armAt=performance.now();appRecorder.event('arm','Virtual / real ARM requested',{target:state.selectedTarget,runId:state.training?.runId,channels:[...channels]});render();sendFrame()};$('kill').onclick=async()=>{if(state.own&&state.status.rcSource==='PPM')try{await api('/api/command',{clientId:cid,type:'flight_stop'})}catch{}stopControl('Stopped. Motors disarmed.');};$('mode').onclick=()=>{if((channels[4]>1500||state.status.armed)&&!state.status.capabilities?.inflightModeSwitch){notify('This firmware requires disarm before changing mode.');return}channels[5]=channels[5]>=1500?1000:1500;render();if(state.own)sendFrame()};
 function keyAxes(){if(sticks.right.pointer===null){sticks.right.x=(held.has('arrowright')?1:0)-(held.has('arrowleft')?1:0);sticks.right.y=(held.has('arrowdown')?1:0)-(held.has('arrowup')?1:0);draw('right')}if(sticks.left.pointer===null){sticks.left.x=(held.has('d')?1:0)-(held.has('a')?1:0);draw('left')}updateAxes()}
 addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('connectDialog').open&&!$('settingsDialog').open&&!$('kitDialog').open&&!state.practiceBusy){stopControl('Stopped.');return}if(!state.own||!state.tx||state.practiceBusy||e.target.matches('input,textarea,select')||e.ctrlKey||e.metaKey||e.altKey)return;const k=e.key.toLowerCase();if(!['w','s','a','d','arrowleft','arrowright','arrowup','arrowdown','x','m'].includes(k))return;e.preventDefault();if(k==='x'){stopControl('Stopped.');return}if(k==='m'){if(!e.repeat)$('mode').click();return}held.add(k);keyAxes()});addEventListener('keyup',e=>{if(held.delete(e.key.toLowerCase()))keyAxes()});
-function leave(){state.resumeControl=false;state.recovering=false;if(state.busy){state.epoch++;state.busy=false}if(!state.own)return;const base=state.base,id=state.deviceId,hadRc=state.tx||!!state.pending,training=state.training;state.training=null;state.own=state.tx=false;state.txEpoch++;safeValues();try{if(training)navigator.sendBeacon(base+'/api/command',new URLSearchParams({clientId:cid,expectedDeviceId:id,type:'training_end',session:training.token}));if(hadRc)navigator.sendBeacon(base+'/api/command',new URLSearchParams({clientId:cid,expectedDeviceId:id,type:'rc_frame',channels:channels.join(',')}));navigator.sendBeacon(base+'/api/control/release',new URLSearchParams({clientId:cid,expectedDeviceId:id}))}catch{}}
+function leave(){state.destinationIntent=(state.destinationIntent||0)+1;state.resumeControl=false;state.recovering=false;if(state.busy){state.epoch++;state.busy=false}if(!state.own)return;const base=state.base,id=state.deviceId,hadRc=state.tx||!!state.pending,training=state.training;state.training=null;state.own=state.tx=false;state.txEpoch++;safeValues();try{if(training)navigator.sendBeacon(base+'/api/command',new URLSearchParams({clientId:cid,expectedDeviceId:id,type:'training_end',session:training.token}));if(hadRc)navigator.sendBeacon(base+'/api/command',new URLSearchParams({clientId:cid,expectedDeviceId:id,type:'rc_frame',channels:channels.join(',')}));navigator.sendBeacon(base+'/api/control/release',new URLSearchParams({clientId:cid,expectedDeviceId:id}))}catch{}}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)leave()});addEventListener('pagehide',leave);addEventListener('blur',()=>{if(!window.AerionAndroid)leave()});let lastWidth=innerWidth;addEventListener('resize',()=>{// Layout changes centre directional input while retaining throttle and ownership.
 lastWidth=innerWidth;resetInputs()});$('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else{await document.documentElement.requestFullscreen();try{await screen.orientation.lock('landscape')}catch{}}}catch{notify('Use your browser full-screen option.')}};
 if(hosted){const link=document.createElement('link');link.rel='manifest';link.href='./app.webmanifest';document.head.appendChild(link);if('serviceWorker' in navigator)navigator.serviceWorker.register('./service-worker.js').catch(()=>{})}
 // Native simulator input uses scoped 50 Hz ZRC2 UDP. Browser input keeps HTTP.
 async function selectDestination(target,recovery=false){
  if(state.practiceBusy||state.busy||!['TRIPOD','FLIGHT','REAL'].includes(target))return;
- state.practiceBusy=true;render();let mode=null;
+ state.practiceBusy=true;render();let mode=null,intent=state.destinationIntent;
+ const cancelled=()=>intent!==state.destinationIntent||state.manual||document.hidden;
  try{
   if(!state.online)throw Error('Connect the verified kit first.');
-  if(state.status.armed&&!state.status.trainingActive)throw Error('Disarm real motors before changing destination.');
+  if((state.status.armed||channels[4]>1500)&&!state.status.trainingActive)throw Error('Disarm real motors before changing destination.');
+  // Stop the old publisher before waiting: a revoked old lease must not cancel
+  // a fresh destination through a late RC error or native watchdog callback.
+  if(state.own)window.AerionAndroid?.pauseStream?.(state.base,state.deviceId,cid);
+  state.tx=false;state.txEpoch++;state.resumeControl=false;state.recovering=false;safeValues();
+  await Promise.resolve(state.pending).catch(()=>{});if(cancelled())return;
+  if(state.own){
+   const confirmed=validate(await api('/api/status?clientId='+encodeURIComponent(cid),null,2400));
+   if(cancelled())return;
+   if(typeof confirmed.lockMine!=='boolean')throw Error('Kit did not confirm control ownership.');
+   state.status=confirmed;
+   if(confirmed.armed&&!confirmed.trainingActive)throw Error('Disarm real motors before changing destination.');
+   if(!confirmed.lockMine){
+    stopControl();intent=state.destinationIntent;
+    await state.cleanup;if(cancelled())return;
+   }
+  }
   await ensureConfigurationControl();if(!state.own)throw Error('The app needs control. Stop any active Setup Wizard first.');
+  if(cancelled())return;
   const base=state.base,id=state.deviceId,client=cid,e=state.epoch;
-  safeValues();await Promise.resolve(state.pending).catch(()=>{});if(state.tx)await sendFrame();window.AerionAndroid?.pauseStream?.(base,id,client);state.tx=false;state.txEpoch++;state.resumeControl=false;state.recovering=false;
   const found=await request(base,'/api/command',{clientId:client,type:'training_status'},2400,id);
-  if(e!==state.epoch||!state.own)return;
+  if(cancelled()||e!==state.epoch||!state.own)return;
   if(!found.supported||!found.selectionSupported||found.simulationRcProtocol!=='ZRC2')throw Error('Install matching 18.3.75 firmware to enable simulator controls on this kit.');
   const simulationTransport=window.AerionAndroid?'UDP2':'HTTP'; // Virtual input is acknowledged independently of real-flight UDP.
   mode={base,id,client,target,transport:simulationTransport,token:'TRAIN-'+crypto.randomUUID(),runId:0,failures:0,good:performance.now()};state.training=mode;
   state.modePending=request(base,'/api/command',{clientId:client,type:'training_select',session:mode.token,target,source:'APP'},2400,id);
   const ack=await state.modePending;
-  if(e!==state.epoch||!state.own){await request(base,'/api/command',{clientId:client,type:'training_end',session:mode.token},600,id);return;}
+  if(cancelled()||e!==state.epoch||!state.own){await request(base,'/api/command',{clientId:client,type:'training_end',session:mode.token},600,id);return;}
   if(ack.target!==(target==='REAL'?'NONE':target)||ack.active!==(target!=='REAL')||target!=='REAL'&&!ack.outputsBlocked)throw Error('Kit did not confirm the selected simulator and blocked outputs.');
   mode.runId=ack.runId;state.training=target==='REAL'?null:mode;
   state.status={...state.status,armed:false,trainingActive:ack.active,outputsBlocked:ack.outputsBlocked,trainingSelection:true,trainingTarget:ack.target,trainingController:ack.controller,trainingRunId:ack.runId};
   state.modePending=request(base,'/api/control/acquire',{clientId:client,clientRole:'MOBILE',...(target==='REAL'?{}:{rcTransport:simulationTransport,simulationRunId:mode.runId})},2400,id);
   const grant=await state.modePending;
-  if(e!==state.epoch||!state.own){await request(base,'/api/control/release',{clientId:client},600,id);return;}
+  if(cancelled()||e!==state.epoch||!state.own){await request(base,'/api/control/release',{clientId:client},600,id);return;}
+  if(grant.deviceId!==id||grant.lockMine!==true||grant.controlRole!=='MOBILE')throw Error('Kit did not confirm the mobile control grant.');
   if(target!=='REAL'&&(simulationTransport==='UDP2'?Number(grant.rcUdpPort)!==4210||grant.rcProtocol!=='ZRC2'||grant.simulationOutputsBlocked!==true||grant.simulationRcTransport!=='UDP'||Number(grant.trainingRunId)!==mode.runId:Number(grant.rcUdpPort)>0))throw Error('Simulator transport was not confirmed. Update matching firmware.');
   state.selectedTarget=target;write('zebjus-flight-destination',target);state.resumeTarget=null;state.modePending=null;state.rcTimeoutMs=Number(grant.rcTimeoutMs)||state.rcTimeoutMs;safeValues();
   if(target!=='REAL'){state.tx=true;state.txEpoch++;state.lastAck=state.lastFrame=performance.now();await sendFrame();}
+  if(cancelled()||e!==state.epoch||!state.own)return;
   if(target!=='REAL')appRecorder.event('transport','Simulator native publisher confirmed',{protocol:grant.rcProtocol,run:mode.runId,outputsBlocked:grant.simulationOutputsBlocked});
   if(target!=='REAL')$('practiceState').textContent='Acknowledged simulator link · physical outputs blocked';
   notify(target==='REAL'?'Real Joystick selected. Take control, then ARM manually.':recovery?'Simulator link restored. Throttle 0%; ARM manually.':(target==='TRIPOD'?'Tripod':'Flight Training')+' ready. Open its web page and ARM the virtual drone here. Real kit stays DISARMED.');
- }catch(error){if(mode)stopControl('Destination change stopped: '+error.message);else notify(error.message);if(recovery){state.resumeControl=true;state.resumeTarget=target;state.recoveryLastAt=performance.now();}}
+ }catch(error){if(cancelled())return;if(mode)stopControl('Destination change stopped: '+error.message);else notify(error.message);if(recovery){state.resumeControl=true;state.resumeTarget=target;state.recoveryLastAt=performance.now();}}
  finally{state.practiceBusy=false;render();}
 }
 document.querySelectorAll('[data-destination]').forEach(b=>b.onclick=()=>selectDestination(b.dataset.destination));
@@ -397,7 +416,7 @@ if(window.AerionAndroid){
  }
  window.AerionAndroid.resume=()=>{state.manual=false;connect(false)};window.AerionAndroid.connectedRouter=()=>joinedNetwork();
  window.AerionAndroid.networkLost=()=>{interrupted('Kit Wi-Fi disconnected. Reconnecting safely.',true)};
- window.AerionAndroid.stopped=client=>{if(client&&client!==cid||!state.own&&!state.resumeControl)return;const native=window.AerionAndroid.rcDiagnostics?.()||{};appRecorder.event('native-stop',native.lastError||'Native control watchdog stopped',{nativeRc:native});interrupted((native.lastError||'Control ACK timeout')+'. Reconnecting safely.',false)};
+ window.AerionAndroid.stopped=client=>{if(client&&client!==cid||!state.tx&&!state.resumeControl)return;const native=window.AerionAndroid.rcDiagnostics?.()||{};appRecorder.event('native-stop',native.lastError||'Native control watchdog stopped',{nativeRc:native});interrupted((native.lastError||'Control ACK timeout')+'. Reconnecting safely.',false)};
  window.AerionAndroid.connectedWifi=()=>joinedNetwork('192.168.4.1');
  window.AerionAndroid.openKit=(id,base)=>{stopControl('',true);if(state.deviceId&&state.deviceId!==id){notify('This link is for another kit. Pair another kit to change identity.');return}state.deviceId=id;state.base=base;state.manual=false;$('expectedId').value=id;$('kitAddress').value=base;connect(false)};
 }

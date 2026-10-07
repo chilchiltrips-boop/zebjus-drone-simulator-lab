@@ -35,7 +35,7 @@
     "test:rc-monitor": "node tools/test_rc_live.js && g++ -std=c++17 tools/test_rc_monitor.cpp -o /tmp/aerion-rc-monitor && /tmp/aerion-rc-monitor && python3 -B tools/test_rc_monitor_runtime.py",
     "test:wifi": "python3 -B tools/test_wifi_runtime.py && node tools/test_ap_discovery.js && node tools/test_mobile_wifi.js",
     "test:wifi-browser": "node tools/test_wifi_setup_browser.js",
-    "test:stability": "node tools/test_connection_stability.js && node tools/test_tripod_direction.js && python3 -B tools/test_http_recovery_runtime.py",
+    "test:stability": "node tools/test_connection_stability.js && node tools/test_destination_ownership.js && node tools/test_tripod_direction.js && python3 -B tools/test_http_recovery_runtime.py",
     "test:ownership": "node tools/test_control_ownership.js"
   }
 }

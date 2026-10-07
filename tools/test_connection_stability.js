@@ -26,6 +26,8 @@ vm.createContext(ctx);vm.runInContext(section(app,'let renderAt=','function pain
  ctx.appRecorder={event(){}};vm.runInContext(callbacks,ctx);const before=interrupts;
  state.own=false;state.resumeControl=false;native.stopped('app');assert.equal(interrupts,before);
  state.own=true;native.stopped('another-session');assert.equal(interrupts,before);
+ native.stopped('app');assert.equal(interrupts,before,'a paused native publisher cannot cancel configuration');
+ state.tx=true;
  native.stopped('app');assert.equal(interrupts,before+1,'a genuine native stop is still handled');
  // High-rate channel updates retain DOM nodes and apply the newest value.
  const school=fs.readFileSync(path.join(root,'school-lab.js'),'utf8');let rebuilds=0;

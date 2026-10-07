@@ -6,8 +6,8 @@
   "minSdk": 26,
   "targetSdk": 36,
   "signing": "development key, included for development updates; not a private production key",
-  "apkBytes": 70252,
-  "sha256": "bc94c346ddaa9e142e8b6882af5fac9e05f43234a74ae365c09fe1c5c9533616",
+  "apkBytes": 74348,
+  "sha256": "7f94a0d2fb99bd36b1928b542c56c49004773afc388e618307332b2a8578f1b5",
   "verification": [
     "APK ZIP integrity",
     "DEX compiled",

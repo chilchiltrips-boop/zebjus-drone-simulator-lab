@@ -4,6 +4,8 @@
 
 Take Control accepts the verified FC grant immediately. Later telemetry reconciles ownership without allowing older replies or public monitor packets to overwrite a newer grant. Disconnect fences in-flight grants. Lease renewal and physical RC watchdogs remain separate.
 
+After a web takeover, the phone pauses the old publisher, checks current scoped ownership and reacquires a revoked reservation before selecting a simulator. Replies from the old stream cannot cancel the new selection. STOP or backgrounding cancels a pending selection and its recovery intent; recovery always returns with neutral throttle and manual ARM.
+
 Both connection screens show the unique Kit Name. An IP is a discovery hint; the saved full Device ID remains the reconnect identity. New factory kits default to `zebjus_drone_<full MAC>`. Existing names remain. Duplicate live names must be renamed or explicitly selected by Device ID. Name and identity checks are not encryption.
 
 Flash diagnostics include chip, stub state, flash ID, capacity and whether a write started. Invalid flash IDs still block every erase/write. A USB hardware fault cannot be repaired by suppressing this guard.
