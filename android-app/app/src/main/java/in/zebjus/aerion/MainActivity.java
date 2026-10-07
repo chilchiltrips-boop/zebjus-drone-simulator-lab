@@ -257,6 +257,7 @@ public final class MainActivity extends Activity {
     private void configureRcStream(LeaseGate.Grant grant,String body)throws Exception{
         DatagramSocket socket=null;
         try{
+            SecureTransport secure=secureTransports.get(grant.origin);if(secure==null||!secure.device.equals(grant.deviceId))throw new IllegalStateException("Pair the matching kit before RC streaming.");
             JSONObject info=new JSONObject(body);int port=info.optInt("rcUdpPort",0);String nonce=info.optString("rcUdpToken","");
             if(port==0){rcStream.useHttp(gate.authorize(grant.origin,grant.deviceId,grant.clientId));return;}
             if(port!=4210||!nonce.matches("[0-9a-fA-F]{16}")||!grant.deviceId.matches("ZFC-[0-9a-fA-F]{12}"))throw new IllegalStateException("Controller UDP grant is invalid. Update matching firmware.");
@@ -267,7 +268,7 @@ public final class MainActivity extends Activity {
             socket=new DatagramSocket();((Network)grant.network).bindSocket(socket);
             URL url=new URL(grant.origin);
             InetSocketAddress target=new InetSocketAddress(((Network)grant.network).getAllByName(url.getHost())[0],port);
-            rcStream.configure(lease,socket,target,Long.parseUnsignedLong(grant.deviceId.substring(4),16),Long.parseUnsignedLong(nonce,16),simulation,simulation?info.optLong("trainingRunId",0):0,secureTransports.get(grant.origin));
+            rcStream.configure(lease,socket,target,Long.parseUnsignedLong(grant.deviceId.substring(4),16),Long.parseUnsignedLong(nonce,16),simulation,simulation?info.optLong("trainingRunId",0):0,secure);
         }catch(Exception error){if(socket!=null)socket.close();throw error;}
     }
     private static final class Result{final int code;final String body;Result(int code,String body){this.code=code;this.body=body;}}

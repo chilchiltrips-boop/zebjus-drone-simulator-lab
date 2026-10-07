@@ -46,6 +46,7 @@
 #include <esp_random.h>
 #include <string.h>
 #include <Update.h>
+#include <esp_ota_ops.h>
 #include <Wire.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>

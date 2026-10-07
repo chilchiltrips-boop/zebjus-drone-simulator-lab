@@ -1,7 +1,8 @@
 name: Secure kit stage verification
 on:
   push:
-    branches: [codex/secure-kit-stages]
+    branches: [codex/secure-kit-stages, main]
+    paths-ignore: ["docs/**", "SUPPORT/**", "*.md", "*.txt"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -105,6 +106,8 @@ jobs:
       - name: Check secure pairing and permissions
         run: |
           cc -Wno-deprecated-declarations -I tools/security-host -I FlightCore_Firmware/src/crypto tools/security-host/srp_server.c FlightCore_Firmware/src/crypto/esp_srp.c FlightCore_Firmware/src/crypto/esp_srp_mpi.c -lmbedcrypto -o /tmp/zfc-srp-server
+          g++ -std=c++17 tools/security-host/secure_frame.cpp -lmbedcrypto -o /tmp/zfc-secure-frame
+          node tools/test_secure_frames.js
           node tools/test_secure_pairing.js
           node tools/test_secure_native.js
           g++ -std=c++17 tools/test_secure_policy.cpp -o /tmp/zfc-secure-policy
@@ -121,3 +124,23 @@ jobs:
           npm run test:recorder
       - name: Verify paired browser workflow
         run: node tools/test_secure_browser.js
+
+      - name: Verify UI and native regressions
+        run: |
+          npm run test:control
+          npm run test:wifi
+          npm run test:rc-monitor
+          npm run test:fc-setup
+          mkdir -p /tmp/aerion-java
+          javac -d /tmp/aerion-java android-app/app/src/main/java/in/zebjus/aerion/{LeaseGate,LocalPolicy,LaunchPolicy,NativeRcStream,SecureTransport,RouterNetworkPolicy}.java android-app/tests/{LeaseGateTest,NativeRcStreamTest,RouterNetworkPolicyTest}.java
+          java -cp /tmp/aerion-java in.zebjus.aerion.LeaseGateTest
+          java -cp /tmp/aerion-java in.zebjus.aerion.NativeRcStreamTest
+          java -cp /tmp/aerion-java in.zebjus.aerion.RouterNetworkPolicyTest
+          npm run test:network
+          npm run test:mobile-view
+          npm run test:wifi-browser
+          npm run test:setup-browser
+          npm run test:setup-session
+          npm run test:training-browser
+          npm run test:learning-browser
+          npm run test:wix

@@ -5,14 +5,14 @@ const root=path.resolve(__dirname,'..'),N=S.N,g=S.G;
 const H=(...data)=>crypto.createHash('sha512').update(Buffer.concat(data)).digest(),B=v=>Buffer.from(S.bytes(v)),pad=v=>Buffer.from(S.bytes(v,384)),num=v=>BigInt('0x'+v.toString('hex'));
 const fixtures=[],servers=[],errors=[];let browser;
 function makeKit(id,name,code){
- const kit={id,name,code,owner:'',role:'',run:0,active:false,target:'NONE',revision:1,invites:new Map(),sessions:new Map(),pending:new Map()};fixtures.push(kit);
+ const kit={id,name,code,owner:'',role:'',run:0,active:false,target:'NONE',revision:1,engine:'WEB',sensorSeq:0,freeze:false,invites:new Map(),sessions:new Map(),pending:new Map()};fixtures.push(kit);
  const status=cid=>({ok:true,kit:'ZEBJUS_FLIGHTCORE',deviceId:id,name,mode:'STA / LOCAL',ip:'127.0.0.1',firmware:'18.3.78',boardId:'ZFC-A2',securityRequired:true,securityProtocol:'ZFC3',flightReady:true,locked:!!kit.owner,lockMine:kit.owner===cid,controlRole:kit.role,trainingActive:kit.active,outputsBlocked:kit.active,trainingTarget:kit.target,trainingController:'APP',trainingRunId:kit.run,pidRevision:kit.revision});
  function encrypt(key,n,aad,plain){const c=crypto.createCipheriv('aes-256-gcm',key,Buffer.from(S.nonce(n)));c.setAAD(Buffer.from(aad));return Buffer.concat([c.update(plain),c.final(),c.getAuthTag()]);}
  function decrypt(key,n,aad,cipher){const c=crypto.createDecipheriv('aes-256-gcm',key,Buffer.from(S.nonce(n)));c.setAAD(Buffer.from(aad));c.setAuthTag(cipher.subarray(-16));return Buffer.concat([c.update(cipher.subarray(0,-16)),c.final()]);}
  const server=http.createServer(async(req,res)=>{let raw='';for await(const chunk of req)raw+=chunk;const u=new URL(req.url,'http://localhost'),p=Object.fromEntries(new URLSearchParams(raw));res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Cache-Control','no-store');
   const send=(code,body)=>{res.statusCode=code;res.setHeader('Content-Type','application/json');res.end(JSON.stringify(body));};
   try{
-   if(u.pathname==='/fixture'){res.setHeader('Content-Type','text/html');res.end('<script src="/vendor/crypto/zfc-crypto.js"></script><script src="/kit-security.js"></script><script src="/kit-local.js"></script><div>Pairing browser test</div>');return;}
+   if(u.pathname==='/fixture'){res.setHeader('Content-Type','text/html');res.end('<script src="/vendor/crypto/zfc-crypto.js"></script><script src="/kit-security.js"></script><script src="/kit-local.js"></script><script src="/fc-training-bridge.js"></script><div>Pairing browser test</div>');return;}
    if(!u.pathname.startsWith('/api/')){const f=path.resolve(root,'.'+u.pathname);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)){res.statusCode=404;res.end();return;}res.setHeader('Content-Type',f.endsWith('.js')?'text/javascript':f.endsWith('.html')?'text/html':'text/plain');res.end(fs.readFileSync(f));return;}
    if(u.pathname==='/api/status'){send(200,status(''));return;}
    if(u.pathname==='/api/security/hello'){
@@ -28,8 +28,8 @@ function makeKit(id,name,code){
    }
    if(u.pathname!=='/api/security/request'){send(401,{message:'Pair required'});return;}
    const s=kit.sessions.get(p.sessionId);if(!s||s.seen.has(p.seq)){send(401,{message:'Replay'});return;}
-   const plain=decrypt(s.keys.HTTP_C2S,p.seq,'ZFC3|'+s.sid+'|'+p.seq+'|HTTP_C2S',Buffer.from(p.cipher,'hex')),d=Object.fromEntries(new URLSearchParams(plain.toString()));s.seen.add(p.seq);let result={ok:true},code=200;
-   const fail=(c,m)=>{code=c;result={ok:false,message:m};};
+   const plain=decrypt(s.keys.HTTP_C2S,p.seq,'ZFC3|'+s.sid+'|'+p.seq+'|HTTP_C2S',Buffer.from(p.cipher,'hex')),d=Object.fromEntries(new URLSearchParams(plain.toString()));s.seen.add(p.seq);let result={ok:true},httpStatus=200;
+   const fail=(c,m)=>{httpStatus=c;result={ok:false,message:m};};
    if(d.expectedDeviceId!==id||d.clientId!==s.cid)fail(409,'Identity differs');
    else if(s.role==='COMPANION'&&(d.path.startsWith('/api/control/')||d.type==='rc_frame'))fail(403,'Companion cannot control');
    else if(d.path==='/api/security/info')result={ok:true,deviceId:id,name,role:s.role,pidPermission:true,controlPermission:s.role!=='COMPANION',mode:'STA'};
@@ -37,20 +37,22 @@ function makeKit(id,name,code){
    else if(d.path==='/api/control/acquire'){if(kit.owner&&kit.owner!==s.cid)fail(423,'In use');else{kit.owner=s.cid;kit.role=s.role;result={...status(s.cid),lockMine:true,lockTimeoutMs:10000};}}
    else if(d.path==='/api/security/invite'){if(kit.owner!==s.cid)fail(403,'Owner required');else{const credential='LAB-'+crypto.randomBytes(4).toString('hex'),secret=crypto.randomBytes(16).toString('hex').toUpperCase();kit.invites.set(credential,secret);result={ok:true,invitation:credential+':'+secret,deviceId:id,name};}}
    else if(d.type==='training_select'){kit.run++;kit.active=true;kit.target=d.target;result={ok:true,deviceId:id,active:true,outputsBlocked:true,runId:kit.run};}
+   else if(d.type==='training_engine'){if(!kit.active||Number(d.runId)!==kit.run)fail(409,'Wrong run');else{kit.engine=d.engine;result={ok:true,deviceId:id,runId:kit.run,outputsBlocked:true,engine:kit.engine};}}
+   else if(d.type==='training_sensor'){if(!kit.active||Number(d.runId)!==kit.run||kit.engine!=='FC_PID')fail(409,'Wrong run');else{if(!kit.freeze)kit.sensorSeq=Number(d.sensorSeq);result={ok:true,deviceId:id,runId:kit.run,outputsBlocked:true,engine:kit.engine,sensorSeq:kit.sensorSeq,virtualArmed:true,motors:[1200,1200,1200,1200]};}}
    else if(d.type==='pid_get')result={ok:true,pidRevision:kit.revision,savedRevision:kit.revision,pid:{rateRoll:{P:1,I:0,D:0}}};
    else if(d.type==='pid_set'){if(!kit.active||Number(d.pidRevision)!==kit.revision)fail(409,'Revision / training differs');else{kit.revision++;result={ok:true,saving:true,pidRevision:kit.revision};}}
    else if(d.path==='/api/control/release'){kit.owner='';kit.role='';}
-   const n=++s.send,cipher=encrypt(s.keys.HTTP_S2C,n,'ZFC3|'+s.sid+'|'+n+'|HTTP_S2C',Buffer.from(JSON.stringify({status:code,requestSeq:p.seq,body:result})));send(200,{sessionId:s.sid,seq:String(n),cipher:cipher.toString('hex')});
+   const n=++s.send,cipher=encrypt(s.keys.HTTP_S2C,n,'ZFC3|'+s.sid+'|'+n+'|HTTP_S2C',Buffer.from(JSON.stringify({status:httpStatus,requestSeq:p.seq,body:result})));send(200,{sessionId:s.sid,seq:String(n),cipher:cipher.toString('hex')});
   }catch(e){send(400,{message:e.message});}
  });return new Promise(resolve=>server.listen(0,'127.0.0.1',()=>{servers.push(server);kit.base='http://127.0.0.1:'+server.address().port;resolve(kit);}));
 }
 async function pair(page,kit,role,code){
  await page.goto(kit.base+'/fixture');page.on('pageerror',e=>errors.push(e.message));
- const pending=page.evaluate(async({base,id,role})=>{window.client=new ZebjusDroneKit.LocalKitClient();const st=await (await fetch(base+'/api/status')).json();client.clientId=role+'-browser-test';await ZfcSecurity.ensure(base,st,client.clientId,role,async(p,d)=>{const r=await fetch(base+p,{method:'POST',body:new URLSearchParams(d)});const b=await r.json();if(!r.ok)throw Error(b.message);return b;});client._accept(await ZebjusDroneKit.requestBase(base,'/api/status'),base);return client.status;},{base:kit.base,id:kit.id,role});
+ const pending=page.evaluate(async({base,id,role})=>{window.client=new ZebjusDroneKit.LocalKitClient();const st=await (await fetch(base+'/api/status')).json();client.clientId=role+'-browser-test';await ZfcSecurity.ensure(base,st,client.clientId,role,async(p,d)=>{const r=await fetch(base+p,{method:'POST',body:new URLSearchParams(d)});const b=await r.json();if(!r.ok)throw Error(b.message);return b;});client._accept(await ZebjusDroneKit.requestBase(base,'/api/status'),base);window.zebjusSchool={client,getSelectedDevice:()=>client.status,isSelectedConnected:()=>client.connected};return client.status;},{base:kit.base,id:kit.id,role});
  await page.locator('dialog input').fill(code);await page.locator('dialog button[value=pair]').click();return pending;
 }
 (async()=>{
- const a=await makeKit('ZFC-001122334455','zebjus_drone_001122334455','0123456789ABCDEF0123456789ABCDEF'),b=await makeKit('ZFC-FFEEDDCCBBAA','zebjus_drone_ffeeddccbbaa','FEDCBA9876543210FEDCBA9876543210');
+ const a=await makeKit('ZFC-001122334455','zebjus_drone_001122334455','0123456789ABCDEF0123456789ABCDEF'),b=await makeKit('ZFC-FFEEDDCCBBAA','zebjus_drone_001122334455','FEDCBA9876543210FEDCBA9876543210');
  browser=await chromium.launch({headless:true});const phone=await browser.newPage(),web=await browser.newPage();await pair(phone,a,'MOBILE',a.code);
  // Avoid recursively wrapping a raw transport: public client acquire is WEB-only; native role is confirmed directly.
  await phone.evaluate(async()=>{const ch=ZfcSecurity.get(client.base);const raw=async(p,d)=>{const r=await fetch(client.base+p,{method:'POST',body:new URLSearchParams(d)});return r.json();};await ch.request('/api/control/acquire',{clientId:client.clientId,expectedDeviceId:client.deviceId},raw);});
@@ -59,6 +61,12 @@ async function pair(page,kit,role,code){
  await assert.rejects(web.evaluate(()=>client.acquire()),/App keeps joystick control/);
  await assert.rejects(web.evaluate(()=>client.request('/api/control/acquire',{method:'POST',data:{clientId:client.clientId}})),/Companion cannot control/);
  await phone.evaluate(()=>client.command({type:'training_select',target:'TRIPOD'}));const saved=await web.evaluate(()=>client.command({type:'pid_set',rateRollP:2}));assert.equal(saved.saved,true);assert.equal(a.role,'MOBILE');
+ await web.evaluate(()=>client.refresh());assert.equal(await web.evaluate(()=>AerionFcTraining.allowed('TRIPOD')),true);assert.equal(await web.evaluate(()=>AerionFcTraining.allowed('FLIGHT')),false);
+ await assert.rejects(web.evaluate(()=>client.request('/api/status',{data:{expectedDeviceId:'ZFC-FFEEDDCCBBAA'}})),/another paired kit/);
+ await web.evaluate(async()=>{await AerionFcTraining.select('FC_PID','TRIPOD');window.sensorTimer=setInterval(()=>AerionFcTraining.tick('TRIPOD',{roll:0,pitch:0,rollRate:0,pitchRate:0,yawRate:0}),40);});await web.waitForFunction(()=>AerionFcTraining.current('TRIPOD')?.motors[0]===1200);a.freeze=true;await web.waitForTimeout(300);assert.equal(await web.evaluate(()=>AerionFcTraining.current('TRIPOD')),null,'Frozen FC output cannot remain fresh through new HTTP responses');
+ await web.evaluate(()=>{clearInterval(sensorTimer);client.status.trainingActive=false;AerionFcTraining.tick('TRIPOD',{});});assert.equal(await web.evaluate(()=>AerionFcTraining.allowed('TRIPOD')),false);
+ const reused=await browser.newPage();await assert.rejects(pair(reused,a,'WEB',invitation.invitation),/Invitation denied/);
+
  const wrong=await browser.newPage();await assert.rejects(pair(wrong,b,'WEB',a.code),/Wrong pairing code/);assert.equal(b.owner,'');
  assert.deepEqual(errors,[]);console.log('PASS: real browser dialog, encrypted pairing, unique kit identity, single-use app invitation, companion control denial and concurrent PID save.');
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{await browser?.close();for(const s of servers)s.close();});

@@ -4,7 +4,7 @@ const root=path.resolve(__dirname,'..'),origin='http://localhost:8928',ID='ZFC-0
 const loops=['rateRoll','ratePitch','rateYaw','angleRateRoll','angleRatePitch','angleRateYaw','angleRoll','anglePitch'];
 const initialPid=Object.fromEntries(loops.map(k=>[k,{P:k==='angleRoll'||k==='anglePitch'?3:k.endsWith('Yaw')?3:.9,I:k==='angleRoll'||k==='anglePitch'?0:15,D:k==='angleRoll'||k==='anglePitch'||k.endsWith('Yaw')?0:.03}]));
 const fc={pid:structuredClone(initialPid),ownerAt:0,pingAt:0,bench:0,owner:'',active:false,session:'',airframe:'QUAD_X',calls:[],acquires:0,ends:0};
-function status(cid=''){return {ok:true,kit:'ZEBJUS_FLIGHTCORE',deviceId:ID,name:'zebjus_drone_1',boardId:'ZFC-A2',boardName:'Aerion F1',firmware:'18.3.65',mode:'AP / DIRECT',ip:'192.168.4.1',armed:false,benchMode:fc.bench,locked:!!fc.owner,lockMine:!!cid&&cid===fc.owner,controlRole:fc.owner?'WEB':'',webRc:true,flightCoreIntegrated:true,flightReady:true,rcTimeoutMs:1000,receiverHealth:'NOT_FOUND'};}
+function status(cid=''){return {ok:true,securityRequired:true,kit:'ZEBJUS_FLIGHTCORE',deviceId:ID,name:'zebjus_drone_1',boardId:'ZFC-A2',boardName:'Aerion F1',firmware:'18.3.65',mode:'STA / LOCAL',ip:'192.168.4.1',armed:false,benchMode:fc.bench,locked:!!fc.owner,lockMine:!!cid&&cid===fc.owner,controlRole:fc.owner?'WEB':'',webRc:true,flightCoreIntegrated:true,flightReady:true,rcTimeoutMs:1000,receiverHealth:'NOT_FOUND'};}
 function setup(){return {...status(),supported:true,active:fc.active,session:fc.active?fc.session:'',airframe:fc.airframe,input:'WEB',job:0,samples:0,total:0,pulse:1000,receiver:{armMode:'YAW_RIGHT'},raw:[1500,1500,1000,1500,1000,1000],channels:[1500,1500,1000,1500,1000,1000]};}
 (async()=>{
  server=spawn('python3',[path.join(root,'start_offline.py'),'--no-browser','--port','8928'],{cwd:root});
@@ -44,7 +44,7 @@ function setup(){return {...status(),supported:true,active:fc.active,session:fc.
   }
   return reply({ok:true});
  });
- await page.addInitScript(()=>{window.__setupHidden=false;Object.defineProperty(document,'hidden',{get:()=>window.__setupHidden});const raf=requestAnimationFrame;window.requestAnimationFrame=callback=>raf(time=>{if(!window.__setupHidden)callback(time);else setTimeout(()=>requestAnimationFrame(callback),500)});});
+ await require('./browser_pairing_double').install(page);await page.addInitScript(()=>{window.__setupHidden=false;Object.defineProperty(document,'hidden',{get:()=>window.__setupHidden});const raf=requestAnimationFrame;window.requestAnimationFrame=callback=>raf(time=>{if(!window.__setupHidden)callback(time);else setTimeout(()=>requestAnimationFrame(callback),500)});});
  await page.goto(origin);await page.waitForFunction(()=>window.__zebjusAppLoaded&&window.AerionWorkflow&&window.zebjusSchool);
  await page.click('[data-tab="firmware"]');await page.fill('#kitSearchInput','zebjus_drone_1');await page.fill('#kitCachedIp','192.168.4.1');await page.click('#kitSearchBtn');await page.waitForFunction(()=>zebjusSchool.canControl());
  await page.click('[data-tab="setup"]');const wizard=page.locator('#setupWizardRoot'),click=n=>wizard.locator(`[data-fs="${n}"]`).click(),message=t=>page.waitForFunction(t=>document.querySelector('#setupWizardRoot .fs-status').textContent.includes(t),t);
