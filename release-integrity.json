@@ -560,7 +560,7 @@
     {
       "path": "android-app/VERIFICATION.json",
       "bytes": 568,
-      "sha256": "c29ae91f8ff34466f78ed45539dc8aebe0ba7a5843963398af69ce70ff1678f7"
+      "sha256": "471757c1475b170c0d0c44099e35a170454e1e8ee49333361bdf5767ec11823b"
     },
     {
       "path": "android-app/app/build.gradle",
@@ -630,7 +630,7 @@
     {
       "path": "android-app/dist/APK_MANIFEST.txt",
       "bytes": 1666,
-      "sha256": "1c97fff1abf3394331b4082b3040df2ec1b98e9fc603d1a12e7f8bbfa7512c62"
+      "sha256": "e04c241b69401aebacf70d38c8be88baf7b5b0b06046c04917886185e5280026"
     },
     {
       "path": "android-app/dist/APK_SIGNATURE.txt",
@@ -640,12 +640,12 @@
     {
       "path": "android-app/dist/BUILD_REPORT.json",
       "bytes": 642,
-      "sha256": "a7619ef254ed0d6646141a2e2f3b2e1b98feaea251e7fcc410d2172d4cf7474e"
+      "sha256": "d976e76e2d8bcca1d27438f421f6ae1cc363ea26a0727987e4f9c2ac55f070ba"
     },
     {
       "path": "android-app/dist/ZEBJUS_Aerion_V18_3_75_Android.apk",
       "bytes": 74348,
-      "sha256": "7f94a0d2fb99bd36b1928b542c56c49004773afc388e618307332b2a8578f1b5"
+      "sha256": "568d1ea04005b69e8a772f9d75666a3690fadc69d5df03b98b34f53201f18633"
     },
     {
       "path": "android-app/gradle/wrapper/gradle-wrapper.jar",
