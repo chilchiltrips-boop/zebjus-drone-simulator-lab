@@ -69,7 +69,7 @@ def verify_build(build, board, version):
         magic,typ,sub,address,size,label,flags=struct.unpack_from('<HBBII16sI',table,offset)
         if magic!=0x50AA: break
         if typ==0 and sub in (0x10,0x11): slots.append({'address':address,'bytes':size})
-    if len(slots)!=2 or slots[0]['address']!=int(board['appAddress'],0): raise RuntimeError('Matching dual OTA partition layout is required')
+    if len(slots)!=2 or slots[0]['address']!=int(board['appAddress'],0) or [v['bytes'] for v in slots]!=[0x1e0000,0x1e0000] or slots[1]['address']!=0x1f0000: raise RuntimeError('Matching dual OTA partition layout is required')
     if any(len(app)>slot['bytes'] for slot in slots): raise RuntimeError('Application exceeds an OTA slot')
     factory=find_factory_bin(build)
     if not factory: raise RuntimeError('Merged USB factory image was not produced')
@@ -144,7 +144,7 @@ def main():
         cfg=b['build']; pkg=b['latest']['app']; filename=pkg['file']
         with tempfile.TemporaryDirectory(prefix='zfc-build-') as td:
             td=Path(td); sketch=td/'ZEBJUS_FLIGHTCORE'; sketch.mkdir(); shutil.copy2(SRC,sketch/'ZEBJUS_FLIGHTCORE.ino')
-            for pattern in ('*.h','*.hpp','*.c','*.cpp'):
+            for pattern in ('*.h','*.hpp','*.c','*.cpp','partitions.csv'):
                 for extra in OUT.glob(pattern): shutil.copy2(extra,sketch/extra.name)
             if (OUT/'src').is_dir(): shutil.copytree(OUT/'src',sketch/'src')
             build=td/'build'; build.mkdir()

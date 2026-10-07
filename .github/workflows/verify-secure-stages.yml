@@ -52,3 +52,34 @@ jobs:
             /tmp/zfc-crypto-build/SHA256.txt
             /tmp/zfc-crypto-build/*LICENSE
             /tmp/zfc-crypto-build/host
+
+  firmware-compile:
+    runs-on: ubuntu-latest
+    env:
+      ARDUINO_NETWORK_CONNECTION_TIMEOUT: 120s
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set Arduino cache directories
+        run: |
+          printf '%s\n' "ARDUINO_DIRECTORIES_DATA=$RUNNER_TEMP/zebjus-arduino/data" "ARDUINO_DIRECTORIES_DOWNLOADS=$RUNNER_TEMP/zebjus-arduino/downloads" >> "$GITHUB_ENV"
+      - uses: arduino/setup-arduino-cli@v2
+        with:
+          version: '1.5.1'
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/zebjus-arduino
+          key: ${{ runner.os }}-arduino-1.5.1-esp32-3.3.12-complete-v1
+      - run: python3 -B tools/build_firmware.py --install-only
+      - name: Compile secure firmware for both boards
+        run: python3 -B tools/build_firmware.py --board all --skip-core-install
+      - uses: actions/upload-artifact@v4
+        with:
+          name: secure-flightcore-candidate
+          path: |
+            FlightCore_Firmware/*_APP.bin
+            FlightCore_Firmware/*_FACTORY.bin
+            FlightCore_Firmware/build-report.json
+            FlightCore_Firmware/catalog.json
+            FlightCore_Firmware/latest.json
+            firmware-catalog.json
+            firmware-latest.json

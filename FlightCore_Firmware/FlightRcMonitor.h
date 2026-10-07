@@ -52,6 +52,8 @@ void rcMonitorTask(void*){
  }
 }
 void startRcMonitor(){
+ return; // ZFC3 never exposes plaintext telemetry on port 4211.
+
  if(rcMonitorTaskHandle)return;rcMonitorServer.begin();rcMonitorServer.setNoDelay(true);
  if(xTaskCreate(rcMonitorTask,"aerion-rc-view",8192,nullptr,1,&rcMonitorTaskHandle)!=pdPASS){rcMonitorServer.end();rcMonitorTaskHandle=nullptr;}
 }
