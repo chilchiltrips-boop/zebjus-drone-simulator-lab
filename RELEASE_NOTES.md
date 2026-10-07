@@ -1,16 +1,39 @@
-# ZEBJUS Aerion V18.3.75 — Android control-stability hotfix r2
+## V18.3.78 web.2 / android.2 — exclusive mobile session
 
-APK **18.3.75-android.2** fixes the field regression where a short Android/WebView scheduling stall could trigger the native 300 ms input watchdog, drop Take Control, disarm Tripod/Flight Training and recreate the training run. Native input now uses a 300 ms soft-stale stage that centres roll/pitch/yaw while boundedly retaining throttle/ARM, with a 900 ms hard fence. The Flight App treats a still-reserved ZRC1/ZRC2 native publisher as the control-health authority instead of tearing down a healthy grant because a JavaScript ACK callback is late.
+- Native RC remains 50 Hz; the laptop observer is limited to 10 Hz.
+- Active native control suspends app HTTP telemetry/status and web background polling, health, discovery and lease pings. Stream retry uses 1/2/4/8-second backoff.
+- Verified simulation ACK gaps neutralize virtual input and retain the same run/grant for up to 8 seconds. Fresh ACKs alone cannot restore ARM; STOP/background and hard expiry still fence.
+- Web takeover is blocked while mobile training/native transmission is active.
+- Secure observer packets maintain paired-kit freshness and output-inhibition state. Advanced virtual sensors are bounded to 10 Hz; brief link gaps retain the chosen FC engine.
+- Dual OTA slots provide 1,966,080 bytes each. First migration requires the matching USB FACTORY image.
+- Automated verification does not replace physical phone/kit/router/USB/flight acceptance.
 
-Regression coverage runs the production native gate watchdog during the bundled app/browser mode test and inserts a 500 ms phone main-thread stall; the same Take Control grant and training run must survive. Genuine prolonged loss still fences the lease and requires safe/manual re-arm. Firmware remains **18.3.75**; this is an Android/web-source hotfix and does not require a new controller binary beyond matching 18.3.75.
+# ZEBJUS Aerion V18.3.78 — secure paired-kit stages 2–4
 
-# ZEBJUS Aerion V18.3.75 — Control ownership and unique kit names
+Ship matching app, web and firmware together. Per-kit SRP-6a pairing binds full
+Device ID, name and permissions; HTTP, native RC/ACK and monitor telemetry use
+separate AES-256-GCM keys/counters with replay rejection. Android stores owner
+codes with Keystore encryption. Single-use app invitations grant laptop training
+and PID permission while the app retains joystick ownership; companions cannot
+ARM, take control, run bench outputs or flash. Revoke permissions in app Settings.
 
-The first stage fixes Take Control acknowledgements being discarded after status timeouts. Status and telemetry replies are fenced across grants and disconnects, public monitor packets cannot change browser ownership, and accepted grants start lease renewal immediately. USB boot/flash probing now appears in diagnostic exports. Partial telemetry no longer emits false safety state changes.
+The first upgrade requires USB FACTORY migration to two 1,966,080-byte slots.
+AP passwords are random per kit. AP provides owner joystick/STOP and explicit
+disarmed Wi-Fi maintenance. STA on a shared router provides training/PID/admin;
+no public WAN physical RC relay is added.
 
-App connection has a Kit Name field and verifies both the requested name and remembered Device ID. New automatic firmware names include all 48 MAC bits. Existing custom names remain. Name collisions are refused; the exact Device ID is always checked.
+Tripod/Flight Training require a live paired kit and active inhibited run. PID
+save uses revision checks, a staged FC apply and complete-record persistence with
+confirmed readback. A2 advanced training runs actual FC PID against laptop virtual
+sensors and returns virtual motor commands while every physical output is blocked.
+Native input reaches the UDP publisher independently of HTTP callbacks; validated
+ACKs prevent false stale stops. Frozen virtual outputs still expire.
 
-18.3.75 app/web support matching 18.3.75 firmware and retain 18.3.74 control compatibility. This stage does not claim cryptographic pairing: names identify kits, while enrollment/encryption and companion permissions belong to the next stage.
+Install **18.3.78-android.2 / 1837802** and matching A1/A2 firmware. The development
+signing certificate is unchanged. Older clients cannot control secure firmware.
+See [installation, pairing and verification](SUPPORT/V18_3_78_SECURE_KIT_UPDATE.md).
+Automated checks and both board builds are required; physical phone/FC/flash/flight
+verification remains a field-test boundary.
 
 # V18.3.74 connection stability and Tripod roll
 

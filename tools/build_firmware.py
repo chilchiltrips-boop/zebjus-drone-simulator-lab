@@ -69,7 +69,7 @@ def verify_build(build, board, version):
         magic,typ,sub,address,size,label,flags=struct.unpack_from('<HBBII16sI',table,offset)
         if magic!=0x50AA: break
         if typ==0 and sub in (0x10,0x11): slots.append({'address':address,'bytes':size})
-    if len(slots)!=2 or slots[0]['address']!=int(board['appAddress'],0): raise RuntimeError('Matching dual OTA partition layout is required')
+    if len(slots)!=2 or slots[0]['address']!=int(board['appAddress'],0) or [v['bytes'] for v in slots]!=[0x1e0000,0x1e0000] or slots[1]['address']!=0x1f0000: raise RuntimeError('Matching dual OTA partition layout is required')
     if any(len(app)>slot['bytes'] for slot in slots): raise RuntimeError('Application exceeds an OTA slot')
     factory=find_factory_bin(build)
     if not factory: raise RuntimeError('Merged USB factory image was not produced')
@@ -144,12 +144,12 @@ def main():
         cfg=b['build']; pkg=b['latest']['app']; filename=pkg['file']
         with tempfile.TemporaryDirectory(prefix='zfc-build-') as td:
             td=Path(td); sketch=td/'ZEBJUS_FLIGHTCORE'; sketch.mkdir(); shutil.copy2(SRC,sketch/'ZEBJUS_FLIGHTCORE.ino')
-            for pattern in ('*.h','*.hpp','*.c','*.cpp'):
+            for pattern in ('*.h','*.hpp','*.c','*.cpp','partitions.csv'):
                 for extra in OUT.glob(pattern): shutil.copy2(extra,sketch/extra.name)
             if (OUT/'src').is_dir(): shutil.copytree(OUT/'src',sketch/'src')
             build=td/'build'; build.mkdir()
             print(f'\n=== BUILD {b["id"]} • {b["name"]} • {cfg["fqbn"]} ===',flush=True)
-            run(command+['compile','--fqbn',cfg['fqbn'],'--warnings','all','--build-path',str(build),'--build-property','compiler.cpp.extra_flags=-fstack-usage','--output-dir',str(build),str(sketch)], f'{b["id"]} ({cfg["fqbn"]}) compile')
+            run(command+['compile','--fqbn',cfg['fqbn'],'--warnings','all','--build-path',str(build),'--build-property','upload.maximum_size=1966080','--build-property','compiler.cpp.extra_flags=-fstack-usage','--output-dir',str(build),str(sketch)], f'{b["id"]} ({cfg["fqbn"]}) compile')
             verified=verify_build(build,b,version);verified['rcMonitorStack']=verify_monitor_stack(build);report['boards'].append(verified)
             srcbin=find_app_bin(build); dst=OUT/filename; shutil.copy2(srcbin,dst); digest=sha(dst)
             build_id=f'{version}-{b["id"]}-{digest[:12]}'

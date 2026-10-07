@@ -80,7 +80,7 @@ function updateTopKitStatus(){
  const el=$('#topKitStatus'),d=selected();if(!el)return;
  if(selectedConnected()){const mode=d.lockMine?'CONTROL':d.locked?'VIEW ONLY':'CONNECTED';el.className='top-kit-status online';el.innerHTML=`<i></i><span><b>KIT CONNECTED</b><em>${esc(d.deviceName||d.deviceId)} • ${esc(d.deviceId)} • ${mode} • ${esc(d.flightMode||'--')} • ${d.armed?'ARMED':'DISARMED'}</em></span>`;}
  else if(d?.online){el.className='top-kit-status offline';el.innerHTML=`<i></i><span><b>KIT FOUND</b><em>${esc(d.deviceName||d.deviceId)} • press Connect</em></span>`;}
- else{el.className='top-kit-status offline';el.innerHTML='<i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span>';}
+ else{el.className='top-kit-status offline';el.innerHTML='<i></i><span><b>KIT OFFLINE</b><em>Pair a STA kit for training</em></span>';}
 }
 function targetUi(){
  const mobile=!!window.__zebjusMobileViewOnly;
@@ -140,15 +140,15 @@ function updateRemoteTransmitter(){
  st.remoteTxOn=!!remote;st.remoteTxSource=remote?(st.rcMirrorSource==='PPM'&&Date.now()-st.receiverLastAt<900?'PPM':'MOBILE'):'NONE';window.__zebjusRcMirrorOnly=!!remote;
 }
 let controlSwitchBusy=false;
-function controlToggleUi(){const d=selected(),linked=selectedConnected(),on=ownsLock(),b=$('#topControlToggle');if(b){b.setAttribute('aria-checked',String(on));b.disabled=controlSwitchBusy||!linked||!!(d.locked&&!d.lockMine&&d.controlRole!=='MOBILE');b.title=on?'Release kit control':'Take kit control';}setText('topControlState',controlSwitchBusy?'WAIT':on?'ON':d?.controlRole==='MOBILE'?'APP':d?.locked?'IN USE':'OFF');}
+function controlToggleUi(){const d=selected(),linked=selectedConnected(),on=ownsLock(),b=$('#topControlToggle');if(b){b.setAttribute('aria-checked',String(on));b.disabled=exclusiveMobileSession()||window.ZfcSecurity?.get(client?.base)?.role==='COMPANION'||controlSwitchBusy||!linked||!!(d.locked&&!d.lockMine&&d.controlRole!=='MOBILE');b.title=on?'Release kit control':'Take kit control';}setText('topControlState',controlSwitchBusy?'WAIT':on?'ON':d?.controlRole==='MOBILE'?'APP':d?.locked?'IN USE':'OFF');}
 async function toggleKitControl(){if(controlSwitchBusy)return;controlSwitchBusy=true;controlToggleUi();try{if(ownsLock())await releaseLock(false);else await acquireLock(false);}catch(e){networkNotice(e.message)}finally{controlSwitchBusy=false;statusUi();}}
 function statusUi(){networkToggleUi();controlToggleUi();const current=selected(),mobileView=!!(selectedConnected()&&current?.controlRole==='MOBILE'&&!current.lockMine);const targetSelect=$('#webJoyTarget');if(mobileView&&!window.__zebjusMobileViewOnly){st.preMobileTarget=targetSelect?.value||'sim';if(targetSelect)targetSelect.value='device'}else if(!mobileView&&window.__zebjusMobileViewOnly&&targetSelect){targetSelect.value=st.preMobileTarget||'sim'}window.__zebjusMobileViewOnly=mobileView;updateRemoteTransmitter();updateTxIndicators();updateArmGuidance();if(targetSelect){if(targetSelect.disabled!==st.pythonRcActive)targetSelect.disabled=st.pythonRcActive;const title=st.pythonRcActive?'Stop Python before changing the control target':mobileView?'Choose the display target, or Take web control to use web sticks.':'Choose Simulator or Real kit';if(targetSelect.title!==title)targetSelect.title=title};
  for(const id of ['webTxPowerBtn','webJoyDisarmBtn','webJoyCenterBtn','webCh9','webLed','simRunBtn','simResetBtn','simFlightMode','simCalibrateLevelBtn','simDisturbBtn']){const el=$('#'+id);if(!el)continue;if(mobileView){el.disabled=true;el.dataset.mobileDisabled='1'}else if(el.dataset.mobileDisabled){el.disabled=false;delete el.dataset.mobileDisabled}}
- document.body?.classList.toggle('mobile-view-only',mobileView);const banner=$('#mobileMirrorBanner');if(banner)banner.hidden=!mobileView;const transfer=$('#mobileTakeWebControl');if(transfer){transfer.disabled=controlSwitchBusy;transfer.onclick=()=>acquireLock(false);}const take=$('#takeControlBtn');if(take){take.disabled=false;take.textContent=mobileView?'Take web control':'Take Control';take.title=mobileView?'Transfer the disarmed kit from app to web; sticks start neutral':'';}
+ document.body?.classList.toggle('mobile-view-only',mobileView);const banner=$('#mobileMirrorBanner');if(banner)banner.hidden=!mobileView;const transfer=$('#mobileTakeWebControl');if(transfer){transfer.disabled=controlSwitchBusy||exclusiveMobileSession();transfer.onclick=()=>acquireLock(false);}const take=$('#takeControlBtn');if(take){take.disabled=exclusiveMobileSession()||window.ZfcSecurity?.get(client?.base)?.role==='COMPANION';take.textContent=mobileView?'Take web control':'Take Control';take.title=mobileView?'Transfer the disarmed kit from app to web; sticks start neutral':'';}
  const b=$('#schoolCloudBadge');if(b){b.textContent=ready()?'LOCAL LINK':'UNAVAILABLE';b.className='status '+(ready()?'good':'')}
  const q=$('#kitSearchInput');if(q&&document.activeElement!==q)q.value=st.query;
  const ng=$('#networkGroupBadge');if(ng)ng.textContent='Same Wi-Fi • mDNS';
- const wr=$('#webJoyRoleBadge');if(wr){wr.textContent='OPEN ACCESS';wr.className='status good'}
+ const wr=$('#webJoyRoleBadge');if(wr){wr.textContent=selectedConnected()&&window.ZfcSecurity?.get(client?.base)?'PAIRED KIT':'PAIR KIT';wr.className='status good'}
  const ss=$('#shareStateBadge');if(ss){const d=selected();ss.textContent=d?.lockMine?'CONTROL':d?.online?'VIEW ONLY':ready()?'READY':'OFFLINE';ss.className='status '+(d?.lockMine?'good':'')}
  renderModules();renderSelected();serviceStatus();targetUi();updateTopKitStatus();updateHealthUi();
 }
@@ -169,7 +169,7 @@ function renderSelected(){
  const online=$('#selectedDeviceOnline');if(online){online.textContent=d?.online?'Online':'Offline';online.className='status '+(d?.online?'good':'')}
  const rename=$('#deviceRenameInput');if(rename&&d&&!rename.matches(':focus'))rename.value=d.deviceName||'';
  const ping=$('#pingSelectedDeviceBtn');if(ping)ping.disabled=!(d&&d.online);const renameBtn=$('#renameDeviceBtn');if(renameBtn)renameBtn.disabled=!canControl();
- const take=$('#takeControlBtn');if(take){take.disabled=!(d&&d.online&&!d.lockMine&&(!d.locked||d.controlRole==='MOBILE'));take.hidden=!!d?.lockMine;take.textContent=d?.controlRole==='MOBILE'?'Take web control':d?.locked?'Kit In Use':'Take Control'}
+ const take=$('#takeControlBtn');if(take){take.disabled=exclusiveMobileSession()||window.ZfcSecurity?.get(client?.base)?.role==='COMPANION'||!(d&&d.online&&!d.lockMine&&(!d.locked||d.controlRole==='MOBILE'));take.hidden=!!d?.lockMine;take.textContent=d?.controlRole==='MOBILE'?'Take web control':d?.locked?'Kit In Use':'Take Control'}
  const rel=$('#releaseControlBtn');if(rel){rel.hidden=!d?.lockMine;rel.disabled=!d?.lockMine}
  const jm=$('#joySelectedModule');if(jm)jm.textContent=d?.deviceName||'None';const jl=$('#joyLock');if(jl)jl.textContent=!d?'--':d.lockMine?'CONTROL':d.locked?'VIEW ONLY':'AVAILABLE';
  enforceJoystickLink();
@@ -192,7 +192,7 @@ async function requestModules(force=false){
 }
 function reconcileSelection(){if(st.selectedDeviceId&&!selected())st.selectedDeviceId='';if(st.manualDisconnect){st.selectedDeviceId='';savePrefs();return}if(!st.selectedDeviceId){let d=null;if(st.preferredDeviceId)d=st.devices.find(x=>window.ZebjusDroneKit.sameDeviceIdentity(x.deviceId,st.preferredDeviceId))||null;if(!d&&!st.preferredDeviceId&&st.preferredDeviceName){const matches=st.devices.filter(x=>x.online&&window.ZebjusDroneKit.normalizeKitName(x.deviceName)===window.ZebjusDroneKit.normalizeKitName(st.preferredDeviceName));if(matches.length===1)d=matches[0]}if(!d&&!st.preferredDeviceId&&st.devices.filter(x=>x.online).length===1)d=st.devices.find(x=>x.online)||null;if(d)st.selectedDeviceId=d.deviceId}savePrefs()}
 async function selectDevice(id,{take=true}={}){st.manualDisconnect=false;const d=st.devices.find(x=>x.deviceId===id);if(!d)return;try{window.zebjusStopPythonForSafety?.('Kit selection changed');if(ownsLock())await releaseLock(false);if(client?.deviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(client.deviceId,d.deviceId))client.disconnect({forgetIdentity:true});const s=await client.connect(d.deviceName,d.ip,d.deviceId);upsertStatus(s,client.base);st.selectedDeviceId=s.deviceId;st.preferredDeviceId=s.deviceId;st.preferredDeviceName=s.name;st.query=s.name;savePrefs();if(take)await acquireLock(true);statusUi()}catch(e){simpleError(e.message)}}
-async function acquireLock(auto=false){const d=selected();if(!d?.online||!client?.connected)return false;if(d.lockMine)return true;if(auto&&d.locked)return false;try{const r=await client.acquire(!auto&&d.controlRole==='MOBILE');if(!r.ok)return false;upsertStatus(client.status,client.base);st.lastLockGoodAt=Date.now();st.lastLockBeat=0;log('Control acquired for '+d.deviceName);clearError();statusUi();return true}catch(e){log(e.message||'Kit is in use. View-only mode active.');statusUi();return false}}
+async function acquireLock(auto=false){if(exclusiveMobileSession()){networkNotice('App owns the active session. Stop app control before taking web control.');return false;}const d=selected();if(!d?.online||!client?.connected)return false;if(d.lockMine)return true;if(auto&&d.locked)return false;try{const r=await client.acquire(!auto&&d.controlRole==='MOBILE');if(!r.ok)return false;upsertStatus(client.status,client.base);st.lastLockGoodAt=Date.now();st.lastLockBeat=0;log('Control acquired for '+d.deviceName);clearError();statusUi();return true}catch(e){log(e.message||'Kit is in use. View-only mode active.');statusUi();return false}}
 async function releaseLock(clearSelection=false){window.zebjusStopPythonForSafety?.('Control released');if(!st.pythonRcActive&&st.txOn&&$('#webJoyTarget')?.value==='device'){setTxSafe();st.txOn=false;await queueSafeJoystickFrame(true);api()?.setSimRunning?.(false);renderJoy()}try{if(client?.connected&&ownsLock())await client.release()}catch{}if(selected())selected().lockMine=false;if(clearSelection)st.selectedDeviceId='';statusUi()}
 async function renameDevice(){const d=selected(),name=$('#deviceRenameInput')?.value.trim();if(!d||!name)return log('Select a kit and enter a name.');if(!canControl())return log('VIEW ONLY • Take Control first.');try{const s=await client.rename(name);upsertStatus(s,client.base);st.query=s.name;st.preferredDeviceName=s.name;savePrefs();log('Kit renamed: '+s.name);statusUi()}catch(e){simpleError(e.message)}}
 async function i2cScan(){
@@ -208,15 +208,17 @@ async function imuRead(){
 }
 const READ_ONLY_DEVICE_COMMANDS=new Set(['ping','pid_get','receiver_read','ppm_read','attitude_read','calibration_get','bench_status','pinmap_get','gps_read','matrix_read','gpio_read','i2c_read']);
 function readOnlyDeviceCommand(command){if(['snapshot_get','flight_settings_get','diagnostics_get','sensor_status','sixface_get','setup_status','setup_end','receiver_setup_get','training_status','training_ping','training_end'].includes(command?.type))return true;return READ_ONLY_DEVICE_COMMANDS.has(String(command?.type||''))}
+function pairedPidWrite(command){const ch=window.ZfcSecurity?.get(client?.base);return command?.type==='pid_set'&&selectedConnected()&&selected()?.trainingActive&&selected()?.outputsBlocked&&String(selected()?.mode).startsWith('STA')&&ch?.info?.pidPermission;}
 function sendDeviceCommand(command){
- const d=selected();if(!d?.online||!client?.connected)return false;const readOnly=readOnlyDeviceCommand(command);if(!readOnly&&!d.lockMine){log('VIEW ONLY • Take Control before changing the real kit.');return false}
+ const d=selected();if(!d?.online||!client?.connected)return false;const readOnly=readOnlyDeviceCommand(command);if(!readOnly&&!d.lockMine&&!pairedPidWrite(command)){log('VIEW ONLY • Take Control before changing the real kit.');return false}
  const type=String(command?.type||''),sent=Date.now();st.lastCommandSentAt=sent;updateHealthUi();client.command(command).then(r=>{st.lastCommandAckAt=Date.now();if(r?.packet)api()?.receiveDevicePacket(r.packet);else if(r)api()?.receiveDevicePacket(r);if(r?.message)log(r.message);window.dispatchEvent(new CustomEvent('zebjus-device-command-result',{detail:{ok:true,type,response:r,sentAt:sent,ackAt:st.lastCommandAckAt}}));updateHealthUi()}).catch(e=>{st.lastCommandErrorAt=Date.now();simpleError(e.message);window.dispatchEvent(new CustomEvent('zebjus-device-command-result',{detail:{ok:false,type,error:e?.message||String(e),sentAt:sent}}));if(e.status===423||e.status===409)healthRefresh(true);updateHealthUi()});return true
 }
 async function commandDevice(command,{expectedDeviceId='',requireOwned=false}={}){
- const d=selected();if(expectedDeviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(d?.deviceId,expectedDeviceId))throw new Error('Python run belongs to another Device ID. Run again for the selected kit.');if(requireOwned&&!ownsLock())throw new Error('Python control lock lost. Take Control and Run again.');if(!d?.online||!client?.connected)throw Object.assign(new Error('Connect the selected ZEBJUS kit first.'),{code:'KIT_NOT_CONNECTED'});const readOnly=readOnlyDeviceCommand(command);if(!readOnly&&!d.lockMine){const ok=await acquireLock(true);if(!ok){const cur=selected();throw Object.assign(new Error(cur?.locked?'Another browser is controlling this kit. View-only mode is active.':'Could not acquire control for the selected Device ID.'),{status:423})}}if(expectedDeviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(selected()?.deviceId,expectedDeviceId))throw new Error('Selected Device ID changed.');const type=String(command?.type||''),sent=Date.now();st.lastCommandSentAt=sent;updateHealthUi();try{const r=await client.command(command);st.lastCommandAckAt=Date.now();if(r?.packet)api()?.receiveDevicePacket(r.packet);else if(r)api()?.receiveDevicePacket(r);if(r?.message)log(r.message);window.dispatchEvent(new CustomEvent('zebjus-device-command-result',{detail:{ok:true,type,response:r,sentAt:sent,ackAt:st.lastCommandAckAt}}));updateHealthUi();return r}catch(e){st.lastCommandErrorAt=Date.now();window.dispatchEvent(new CustomEvent('zebjus-device-command-result',{detail:{ok:false,type,error:e?.message||String(e),sentAt:sent}}));if(e.status===423||e.status===409)healthRefresh(true);updateHealthUi();throw e}
+ const d=selected();if(expectedDeviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(d?.deviceId,expectedDeviceId))throw new Error('Python run belongs to another Device ID. Run again for the selected kit.');if(requireOwned&&!ownsLock())throw new Error('Python control lock lost. Take Control and Run again.');if(!d?.online||!client?.connected)throw Object.assign(new Error('Connect the selected ZEBJUS kit first.'),{code:'KIT_NOT_CONNECTED'});const readOnly=readOnlyDeviceCommand(command);if(!readOnly&&!d.lockMine&&!pairedPidWrite(command)){const ok=await acquireLock(true);if(!ok){const cur=selected();throw Object.assign(new Error(cur?.locked?'Another browser is controlling this kit. View-only mode is active.':'Could not acquire control for the selected Device ID.'),{status:423})}}if(expectedDeviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(selected()?.deviceId,expectedDeviceId))throw new Error('Selected Device ID changed.');const type=String(command?.type||''),sent=Date.now();st.lastCommandSentAt=sent;updateHealthUi();try{const r=await client.command(command);st.lastCommandAckAt=Date.now();if(r?.packet)api()?.receiveDevicePacket(r.packet);else if(r)api()?.receiveDevicePacket(r);if(r?.message)log(r.message);window.dispatchEvent(new CustomEvent('zebjus-device-command-result',{detail:{ok:true,type,response:r,sentAt:sent,ackAt:st.lastCommandAckAt}}));updateHealthUi();return r}catch(e){st.lastCommandErrorAt=Date.now();window.dispatchEvent(new CustomEvent('zebjus-device-command-result',{detail:{ok:false,type,error:e?.message||String(e),sentAt:sent}}));if(e.status===423||e.status===409)healthRefresh(true);updateHealthUi();throw e}
 }
 
 async function healthRefresh(force=false){
+ if(exclusiveMobileSession())return;
  const d=selected();
  if(!d)return;
  const now=performance.now();
@@ -250,6 +252,7 @@ function seedPreferredDevice(){
  st.selectedDeviceId=d.deviceId;return d;
 }
 async function reconnectTick(force=false){
+ if(exclusiveMobileSession())return;
  if(st.manualDisconnect||st.reconnectBusy)return;
  const d=selected()||seedPreferredDevice();if(!d||selectedConnected())return;
  const now=performance.now();if(!force&&now-st.lastReconnectAt<RECONNECT_INTERVAL_MS)return;st.lastReconnectAt=now;
@@ -323,7 +326,7 @@ function receiveRcTelemetry(t,live=false){
  // describe the controller role, but cannot grant or revoke this browser's lease.
  if(typeof t.lockMine==='boolean'){d.lockMine=t.lockMine;d.locked=t.locked??!!t.controlRole;if(t.controlRole!==undefined)d.controlRole=t.controlRole;}
  else if(t.controlRole!==undefined&&!d.lockMine){d.controlRole=t.controlRole;d.locked=!!t.controlRole;}
- for(const key of ['armed','trainingSelection','trainingActive','trainingTarget','trainingController','trainingRunId'])if(t[key]!==undefined)d[key]=t[key];
+ for(const key of ['armed','trainingSelection','trainingActive','outputsBlocked','trainingTarget','trainingController','trainingRunId'])if(t[key]!==undefined)d[key]=t[key];
  if(t.trainingSelection&&(t.controlRole==='MOBILE'||t.trainingActive)&&(!t.trainingActive||t.trainingTarget!=='TRIPOD'))stopAppTripod();
  st.lastTelemetryGoodAt=Date.now();healthFromTelemetry(t);st.rcRates=t;updateRateUi();
  const rcLive=String(t.rcSource||'NONE').toUpperCase()!=='NONE'&&Array.isArray(t.rc)&&Number.isFinite(t.rcAgeMs)&&t.rcAgeMs<700;
@@ -331,10 +334,12 @@ function receiveRcTelemetry(t,live=false){
  window.dispatchEvent(new CustomEvent('aerion-telemetry',{detail:t}));api()?.receiveDevicePacket(t);api()?.setFcConnected(true);
  if(!live||before!==JSON.stringify([d.controlRole,d.armed,d.trainingActive,d.trainingTarget,d.trainingRunId]))statusUi();updateHealthUi();
 }
+function exclusiveMobileSession(){return selected()?.controlRole==='MOBILE'&&selectedConnected();}
 async function telemetryTick(now){
  const d=selected();if(!selectedConnected())return;
  rcMonitor?.update(client.base,d.deviceId,client.status);expireReceiverMirror();
- const period=rcMonitor?.live?2000:150;
+ if(exclusiveMobileSession())return;
+ const period=2000;
  if(st.telemetryBusy||now-st.lastTelemetryAt<period)return;
  st.lastTelemetryAt=now;st.telemetryBusy=true;
  try{
@@ -346,6 +351,7 @@ async function telemetryTick(now){
  finally{st.telemetryBusy=false}
 }
 async function lockTick(now){
+ if(exclusiveMobileSession())return;
  if(!ownsLock()||st.lockBusy||now-st.lastLockBeat<2500)return;
  // RC commands themselves renew the lease; telemetry/settings never delay RC.
  if((st.txOn||st.pythonRcActive)&&now-st.lastCommandAckAt<1000)return;
@@ -515,6 +521,6 @@ function initUi(){
  if(st.preferredDeviceId){seedPreferredDevice();reconnectTick(true).then(refreshSavedWifi)}else if(st.preferredDeviceName||st.query){connectExact(st.preferredDeviceName||st.query,st.autoAcquire).then(refreshSavedWifi).catch(e=>{log('Auto-connect: '+e.message);scanKitsUi()})}else scanKitsUi();
 }
 function loop(t){joystickTick(t);joystickWatchdogTick();telemetryTick(t);lockTick(t);updateHealthUi();requestAnimationFrame(loop)}
-function start(){if(st.booted)return;st.booted=true;window.__zebjusSchoolReady=true;initUi();requestAnimationFrame(loop);setInterval(()=>{refreshLastSeenText();healthRefresh();reconnectTick();requestModules(false);if(window.AerionWorkflow?.full?.active||window.AerionWorkflow?.individual?.active)lockTick(performance.now())},1000);document.addEventListener('visibilitychange',()=>{if(document.hidden)rcMonitor?.stop();else{healthRefresh(true);reconnectTick(true)}});window.addEventListener('online',()=>{healthRefresh(true);reconnectTick(true)});window.zebjusSchool={keepControlForSetup:()=>lockTick(performance.now()),prepareFcSetup:async()=>{window.zebjusStopPythonForSafety?.('FC setup');setPythonControlMode(false);setTxSafe();st.txOn=false;await queueSafeJoystickFrame(true);api()?.setSimRunning?.(false);renderJoy();},sendDeviceCommand,commandDevice,setPythonControlMode,mirrorPythonRc,i2cScan,imuRead,isViewOnly,isCloudActive:()=>selectedConnected(),isKitActive:()=>selectedConnected(),getSelectedDevice:selected,isSelectedConnected:selectedConnected,canControl,ownsLock,requestModules,acquireLock,releaseLock,state:st,client,rcMonitor,markOffline:markSelectedOffline,refreshNow:async()=>{await healthRefresh(true);return selected()},reconnectNow:async()=>{const d=selected();if(!d)return null;if(d.online&&client?.connected){await healthRefresh(true);return selected()}if(d.online)markSelectedOffline('Reconnect requested');await reconnectTick(true);return selected()},reconnectAfterFirmware} }
+function start(){if(st.booted)return;st.booted=true;window.__zebjusSchoolReady=true;initUi();requestAnimationFrame(loop);setInterval(()=>{refreshLastSeenText();healthRefresh();reconnectTick();requestModules(false);if(window.AerionWorkflow?.full?.active||window.AerionWorkflow?.individual?.active)lockTick(performance.now())},1000);document.addEventListener('visibilitychange',()=>{if(document.hidden)rcMonitor?.stop();else{healthRefresh(true);reconnectTick(true)}});window.addEventListener('online',()=>{healthRefresh(true);reconnectTick(true)});window.zebjusSchool={keepControlForSetup:()=>lockTick(performance.now()),prepareFcSetup:async()=>{window.zebjusStopPythonForSafety?.('FC setup');setPythonControlMode(false);setTxSafe();st.txOn=false;await queueSafeJoystickFrame(true);api()?.setSimRunning?.(false);renderJoy();},sendDeviceCommand,commandDevice,pairedPidWrite,exclusiveMobileSession,setPythonControlMode,mirrorPythonRc,i2cScan,imuRead,isViewOnly,isCloudActive:()=>selectedConnected(),isKitActive:()=>selectedConnected(),getSelectedDevice:selected,isSelectedConnected:selectedConnected,canControl,ownsLock,requestModules,acquireLock,releaseLock,state:st,client,rcMonitor,markOffline:markSelectedOffline,refreshNow:async()=>{await healthRefresh(true);return selected()},reconnectNow:async()=>{const d=selected();if(!d)return null;if(d.online&&client?.connected){await healthRefresh(true);return selected()}if(d.online)markSelectedOffline('Reconnect requested');await reconnectTick(true);return selected()},reconnectAfterFirmware} }
 window.addEventListener('zebjus-app-ready',start,{once:true});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{if(window.__zebjusAppLoaded)start()},0));else setTimeout(()=>{if(window.__zebjusAppLoaded)start()},0);
 })();

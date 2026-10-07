@@ -1,7 +1,6 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
 const root=path.join(__dirname,'..'),app=fs.readFileSync(path.join(root,'tools/flight_app_source.html'),'utf8');
-assert(app.includes('Number(nativeRc.inputAgeMs)<=900'),'Android tick must trust the bounded native input window');
 function section(text,start,end){const a=text.indexOf(start),b=text.indexOf(end,a);assert(a>=0&&b>a);return text.slice(a,b);}
 let now=100000,paints=0,interrupts=0,stops=0,paused=0,notifyCount=0,nextRequest=async()=>{throw Error('temporary timeout')},timer=null;
 const mode={base:'http://kit.test',id:'ZFC-001122334455',client:'app',token:'test-training',target:'TRIPOD',runId:3,good:1,failures:2};

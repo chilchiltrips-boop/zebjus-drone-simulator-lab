@@ -13,6 +13,7 @@ bool trainingActive=false,trainingAppOwned=false,setupAfterNeutral=false,armLowS
 struct{std::map<std::string,String>fields;String arg(const char*n){return fields[n];}}server;
 void invalidateRcUdp(){udpInvalidations++;}void resetArmGesture(){}void benchStop(){benchMode=0;}void disarmFlight(const char*){armed=false;physicalPulse=1000;}void sendJson(int c,const String&s){code=c;reply=s;}void sendMessage(int c,const char*s){code=c;reply=s;}bool requireControl(){if(server.arg("clientId")==controlOwner&&FlightSetupPolicy::live(millis(),controlExpiresAt))return true;sendMessage(423,"No grant");return false;}
 bool setupTokenValid(const String&t){return t.length()>=8&&t.length()<=96;}
+bool setupMode=false,trainingFcPid=false;void resetVirtualTraining(){}
 #include "../FlightCore_Firmware/FlightTraining.h"
 void command(const char*type,const char*token="TRAIN-SESSION-0001",const char*target="FLIGHT",const char*owner="PHONE-CLIENT",const char*confirm="PROPS_REMOVED",const char*id="ZFC-001122334455"){server.fields={{"session",token},{"target",target},{"clientId",owner},{"source","APP"},{"confirm",confirm},{"expectedDeviceId",id}};code=0;assert(trainingCommand(type));}
 int main(){

@@ -38,7 +38,7 @@ on:
       - 'kit-console.js'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: aerion-android-${{ github.ref }}
@@ -46,7 +46,6 @@ concurrency:
 
 jobs:
   build-apk:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     defaults:
@@ -85,52 +84,22 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build/core-tests
-          javac -d build/core-tests app/src/main/java/in/zebjus/aerion/LeaseGate.java app/src/main/java/in/zebjus/aerion/LocalPolicy.java app/src/main/java/in/zebjus/aerion/LaunchPolicy.java app/src/main/java/in/zebjus/aerion/NativeRcStream.java app/src/main/java/in/zebjus/aerion/RouterNetworkPolicy.java tests/LeaseGateTest.java tests/NativeRcStreamTest.java tests/RouterNetworkPolicyTest.java
+          javac -d build/core-tests app/src/main/java/in/zebjus/aerion/LeaseGate.java app/src/main/java/in/zebjus/aerion/LocalPolicy.java app/src/main/java/in/zebjus/aerion/LaunchPolicy.java app/src/main/java/in/zebjus/aerion/NativeRcStream.java app/src/main/java/in/zebjus/aerion/SecureTransport.java app/src/main/java/in/zebjus/aerion/RouterNetworkPolicy.java tests/LeaseGateTest.java tests/SimulationGapTest.java tests/NativeRcStreamTest.java tests/RouterNetworkPolicyTest.java
           java -cp build/core-tests in.zebjus.aerion.LeaseGateTest
+          java -cp build/core-tests in.zebjus.aerion.SimulationGapTest
           java -cp build/core-tests in.zebjus.aerion.NativeRcStreamTest
           java -cp build/core-tests in.zebjus.aerion.RouterNetworkPolicyTest
-      - name: Build and sign development APK
-        env:
-          AERION_DEVELOPMENT_STORE_PASSWORD: ${{ secrets.AERION_DEVELOPMENT_STORE_PASSWORD || 'aerion-development' }}
+      - name: Recompile and verify delivered development APK
         run: |
           set -euo pipefail
           aerion_sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
-          python3 tools/build_apk.py --build-tools "$aerion_sdk/build-tools/36.0.0" --android-jar "$aerion_sdk/platforms/android-36/android.jar"
-      - name: Refresh manifests and publish generated APK
-        working-directory: .
-        run: |
-          set -euo pipefail
-          PUB_DIR="$(mktemp -d)"
-          mkdir -p "$PUB_DIR/android-app/dist" "$PUB_DIR/android-app"
-          cp android-app/dist/ZEBJUS_Aerion_V18_3_75_Android.apk android-app/dist/BUILD_REPORT.json android-app/dist/APK_SIGNATURE.txt android-app/dist/APK_MANIFEST.txt "$PUB_DIR/android-app/dist/"
-          cp android-app/VERIFICATION.json "$PUB_DIR/android-app/"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for attempt in 1 2 3 4; do
-            git fetch origin main
-            if ! git diff --quiet "${GITHUB_SHA}" origin/main -- android-app/app android-app/tests tools/flight_app_source.html tools/test_connection_stability.js .github/workflows/build-aerion-android.yml; then
-              echo "Newer Android/control source is already on main; refusing to publish a stale APK."
-              exit 0
-            fi
-            git reset --hard origin/main
-            cp "$PUB_DIR/android-app/dist/"* android-app/dist/
-            cp "$PUB_DIR/android-app/VERIFICATION.json" android-app/VERIFICATION.json
-            python3 tools/make_offline_manifest.py
-            python3 -B tools/release_integrity.py --write
-            git add android-app/dist/ZEBJUS_Aerion_V18_3_75_Android.apk android-app/dist/BUILD_REPORT.json android-app/dist/APK_SIGNATURE.txt android-app/dist/APK_MANIFEST.txt android-app/VERIFICATION.json offline-manifest.json release-integrity.json
-            if git diff --cached --quiet; then exit 0; fi
-            git commit -m "Build Aerion Android 18.3.75-android.2 package"
-            if git push origin HEAD:main; then exit 0; fi
-            sleep $((attempt * 2))
-          done
-          echo "APK was built and uploaded as an Actions artifact, but repository publication could not complete after 4 attempts."
-          exit 1
+          python3 tools/build_apk.py --verify-only --build-tools "$aerion_sdk/build-tools/36.0.0" --android-jar "$aerion_sdk/platforms/android-36/android.jar"
       - uses: actions/upload-artifact@v4
         with:
           name: Aerion-Android-APK
           if-no-files-found: error
           path: |
-            android-app/dist/ZEBJUS_Aerion_V18_3_75_Android.apk
+            android-app/dist/ZEBJUS_Aerion_V18_3_78_Android.apk
             android-app/dist/BUILD_REPORT.json
             android-app/dist/APK_SIGNATURE.txt
             android-app/dist/APK_MANIFEST.txt

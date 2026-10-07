@@ -51,6 +51,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public final class MainActivity extends Activity {
+    private final ConcurrentHashMap<String,SecureTransport> secureTransports=new ConcurrentHashMap<>();
     private static final String ASSET_HOST="appassets.androidplatform.net";
     private ValueCallback<Uri[]> filePicker;
     private String exportText;
@@ -178,6 +179,10 @@ public final class MainActivity extends Activity {
         if(wifi==null)wifiMessage("wifiError","Join "+(routerSsid.isEmpty()?"the kit's saved router Wi-Fi":routerSsid)+" in Phone Wi-Fi settings, then return here. Waiting for router Wi-Fi.");
     }
     private void joinKitWifi(String id){
+        android.widget.EditText password=new android.widget.EditText(this);password.setInputType(129);password.setHint("Unique AP password from kit label");
+        new AlertDialog.Builder(this).setTitle("Kit Wi-Fi password").setView(password).setNegativeButton("Cancel",null).setPositiveButton("Connect",(d,w)->joinKitWifiWithPassword(id,password.getText().toString())).show();
+    }
+    private void joinKitWifiWithPassword(String id,String apPassword){
         preferRouterWifi=false;departingKitWifi=null;routerSsid="";
         if(!resumed || destroyed)return;
         try{LaunchPolicy.apSsid(id);}catch(Exception e){wifiMessage("wifiError",e.getMessage());return;}
@@ -189,7 +194,7 @@ public final class MainActivity extends Activity {
         if(kitRequest!=null)try{connectivity.unregisterNetworkCallback(kitRequest);}catch(RuntimeException ignored){}
         selectedKitWifi=null;
         try{
-            WifiNetworkSpecifier.Builder spec=new WifiNetworkSpecifier.Builder().setWpa2Passphrase("12345678");
+            WifiNetworkSpecifier.Builder spec=new WifiNetworkSpecifier.Builder().setWpa2Passphrase(apPassword);
             String ssid=LaunchPolicy.apSsid(id);
             if(ssid.isEmpty())spec.setSsidPattern(new PatternMatcher("ZEBJUS-FC-",PatternMatcher.PATTERN_PREFIX));else spec.setSsid(ssid);
             NetworkRequest request=new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET).setNetworkSpecifier(spec.build()).build();
@@ -203,7 +208,7 @@ public final class MainActivity extends Activity {
                 @Override public void onUnavailable(){runOnUiThread(()->{if(kitRequest!=this)return;kitRequest=null;selectedKitWifi=null;if(resumed && web.hasWindowFocus()){gate.resume();emit("resume");}wifiMessage("wifiError","Wi-Fi connection was cancelled or the kit was not found. Power on the kit and retry.");});}
                 @Override public void onLost(Network network){runOnUiThread(()->{if(kitRequest!=this || !network.equals(selectedKitWifi))return;selectedKitWifi=null;if(network.equals(wifi))wifi=null;emergency(gate.fence(false));emit("networkLost");wifiMessage("wifiError","Kit Wi-Fi disconnected. Connect again.");});}
             };
-            kitRequest=callback;wifiMessage("wifiProgress","Choose this kit in Android's Wi-Fi dialog. AP password: 12345678.");
+            kitRequest=callback;wifiMessage("wifiProgress","Choose this kit in Android's Wi-Fi dialog. Use its label password.");
             connectivity.requestNetwork(request,callback,45000);
         }catch(Exception e){kitRequest=null;selectedKitWifi=null;if(resumed && web.hasWindowFocus()){gate.resume();emit("resume");}wifiMessage("wifiError","Could not request kit Wi-Fi. Allow the Wi-Fi permission and retry, or use Phone Wi-Fi settings.");}
     }
@@ -252,6 +257,7 @@ public final class MainActivity extends Activity {
     private void configureRcStream(LeaseGate.Grant grant,String body)throws Exception{
         DatagramSocket socket=null;
         try{
+            SecureTransport secure=secureTransports.get(grant.origin);if(secure==null||!secure.device.equals(grant.deviceId))throw new IllegalStateException("Pair the matching kit before RC streaming.");
             JSONObject info=new JSONObject(body);int port=info.optInt("rcUdpPort",0);String nonce=info.optString("rcUdpToken","");
             if(port==0){rcStream.useHttp(gate.authorize(grant.origin,grant.deviceId,grant.clientId));return;}
             if(port!=4210||!nonce.matches("[0-9a-fA-F]{16}")||!grant.deviceId.matches("ZFC-[0-9a-fA-F]{12}"))throw new IllegalStateException("Controller UDP grant is invalid. Update matching firmware.");
@@ -262,12 +268,19 @@ public final class MainActivity extends Activity {
             socket=new DatagramSocket();((Network)grant.network).bindSocket(socket);
             URL url=new URL(grant.origin);
             InetSocketAddress target=new InetSocketAddress(((Network)grant.network).getAllByName(url.getHost())[0],port);
-            rcStream.configure(lease,socket,target,Long.parseUnsignedLong(grant.deviceId.substring(4),16),Long.parseUnsignedLong(nonce,16),simulation,simulation?info.optLong("trainingRunId",0):0);
+            rcStream.configure(lease,socket,target,Long.parseUnsignedLong(grant.deviceId.substring(4),16),Long.parseUnsignedLong(nonce,16),simulation,simulation?info.optLong("trainingRunId",0):0,secure);
         }catch(Exception error){if(socket!=null)socket.close();throw error;}
     }
     private static final class Result{final int code;final String body;Result(int code,String body){this.code=code;this.body=body;}}
     private Result http(Network network,URL url,String method,String body,int timeout,Job job)throws Exception{
         if(network==null)throw new IllegalStateException("Join the kit Wi-Fi in phone settings.");
+        SecureTransport secure=secureTransports.get(LocalPolicy.origin(url));long requestCounter=0;
+        if(secure!=null && !(url.getQuery()!=null&&url.getQuery().contains("discover=1")) && !url.getPath().startsWith("/api/security/hello") && !url.getPath().startsWith("/api/security/proof")){
+            String plain="path="+enc(url.getPath())+"&method="+method+(url.getQuery()==null?"":"&"+url.getQuery())+(body.isEmpty()?"":"&"+body);
+            Map<String,String> fields=LocalPolicy.form(plain);if(fields.containsKey("expectedDeviceId")&&!secure.device.equals(fields.get("expectedDeviceId")))throw new IllegalArgumentException("Request belongs to another paired kit");fields.put("clientId",secure.client);fields.put("expectedDeviceId",secure.device);
+            StringBuilder form=new StringBuilder();for(Map.Entry<String,String> entry:fields.entrySet()){if(form.length()>0)form.append('&');form.append(enc(entry.getKey())).append('=').append(enc(entry.getValue()));}
+            requestCounter=secure.nextHttp();body="sessionId="+secure.sid+"&seq="+requestCounter+"&cipher="+secure.sealHttp(requestCounter,form.toString());method="POST";url=new URL(LocalPolicy.origin(url)+"/api/security/request");
+        }
         HttpURLConnection connection=(HttpURLConnection)network.openConnection(url);
         if(job!=null){job.connection=connection;if(job.cancelled){connection.disconnect();throw new IllegalStateException("Request cancelled.");}}
         long deadline=now()+timeout;
@@ -284,7 +297,9 @@ public final class MainActivity extends Activity {
             if(stream==null)return new Result(code,"{}");
             ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] bytes=new byte[4096];
             try(InputStream in=stream){while(true){long left=deadline-now();if(left<=0)throw new java.net.SocketTimeoutException();connection.setReadTimeout((int)Math.max(1,left));int n=in.read(bytes);if(n<0)break;if(out.size()+n>65536)throw new IllegalStateException("Kit response is too large.");out.write(bytes,0,n);}}
-            return new Result(code,new String(out.toByteArray(),StandardCharsets.UTF_8));
+            String result=new String(out.toByteArray(),StandardCharsets.UTF_8);
+            if(requestCounter>0){if(code!=200){if(code==401)secureTransports.remove(LocalPolicy.origin(url),secure);throw new IllegalStateException("Paired session expired. Reconnect the kit.");}JSONObject env=new JSONObject(result);JSONObject decoded=new JSONObject(secure.openHttp(env.getString("sessionId"),env.getLong("seq"),env.getString("cipher")));if(!Long.toString(requestCounter).equals(decoded.getString("requestSeq")))throw new IllegalStateException("Secure response differs from request");return new Result(decoded.getInt("status"),decoded.getJSONObject("body").toString());}
+            return new Result(code,result);
         }finally{connection.disconnect();}
     }
     private final class Job implements Runnable{
@@ -298,7 +313,8 @@ public final class MainActivity extends Activity {
             if(method.equals("POST")){
                 LocalPolicy.identity(fields);
                 String base=LocalPolicy.origin(url),device=fields.get("expectedDeviceId"),client=fields.get("clientId");
-                if(path.equals("/api/control/acquire"))g=gate.beginGrant(base,device,client,network);
+                if(path.startsWith("/api/security/"))readonly=true;
+                else if(path.equals("/api/control/acquire"))g=gate.beginGrant(base,device,client,network);
                 else if(path.equals("/api/command")){
                     readonly=LocalPolicy.readCommand(fields);
                     if("rc_frame".equals(fields.get("type"))){safe=LocalPolicy.safe(LocalPolicy.channels(fields));if(!safe)l=gate.authorize(base,device,client);else if(gate.isForeground()){try{l=gate.authorize(base,device,client);}catch(IllegalStateException ignored){}}}
@@ -316,7 +332,7 @@ public final class MainActivity extends Activity {
                 if(!allowed())throw new IllegalStateException("Control stopped.");
                 Result result=http(network,url,method,body,timeout,this);
                 boolean ok=result.code>=200 && result.code<300 && new JSONObject(result.body).optBoolean("ok",true);
-                if(grant!=null){if(ok && !cancelled && gate.accept(grant,now(),new JSONObject(result.body).optLong("rcTimeoutMs",0),new JSONObject(result.body).optBoolean("simulationOutputsBlocked",false)&&"HTTP".equals(new JSONObject(result.body).optString("simulationRcTransport")))){configureRcStream(grant,result.body);}else{gate.cancel(grant);if(ok)releaseGrant(grant);if(ok)throw new IllegalStateException("Control request cancelled. Take control again.");}}
+                if(grant!=null){if(ok && !cancelled && gate.accept(grant,now(),new JSONObject(result.body).optLong("rcTimeoutMs",0),new JSONObject(result.body).optBoolean("simulationOutputsBlocked",false)&&new JSONObject(result.body).optLong("trainingRunId",0)>0)){configureRcStream(grant,result.body);}else{gate.cancel(grant);if(ok)releaseGrant(grant);if(ok)throw new IllegalStateException("Control request cancelled. Take control again.");}}
                 if(ok && lease!=null){if("rc_frame".equals(fields.get("type")))gate.rcAck(lease,now(),LocalPolicy.channels(fields));else gate.ack(lease,now());}
                 if(ok && url.getPath().equals("/api/control/release"))rcStream.stop(gate.release(LocalPolicy.origin(url),fields.get("expectedDeviceId"),fields.get("clientId")));
                 if(!cancelled){String body=result.body;if(ok&&url.getPath().equals("/api/telemetry"))body=new JSONObject(body).put("nativeRc",new JSONObject(rcStream.diagnostics())).toString();reply(id,result.code,body);}
@@ -332,6 +348,18 @@ public final class MainActivity extends Activity {
         if(request==SAVE_EXPORT){String value=exportText;exportText=null;if(result==RESULT_OK&&data!=null&&data.getData()!=null&&value!=null){try(OutputStream out=getContentResolver().openOutputStream(data.getData())){if(out!=null)out.write(value.getBytes(StandardCharsets.UTF_8));}catch(Exception e){emit("exportFailed");}}}
     }
     private final class NativeBridge{
+        @JavascriptInterface public void offerInput(String key,String base,String device,String client,String csv,long run){
+            if(!token.equals(key)||destroyed)return;try{LeaseGate.Lease lease=gate.authorize(base,device,client);Map<String,String> f=new java.util.HashMap<>();f.put("type","rc_frame");f.put("channels",csv);int[] ch=LocalPolicy.channels(f);if(rcStream.matchesRun(lease,run>0?Long.toString(run):null,ch))rcStream.offer(lease,ch);}catch(Exception ignored){}
+        }
+        @JavascriptInterface public boolean installSecure(String key,String base,String device,String client,String sid,String keys){
+            if(!token.equals(key)||destroyed)return false;try{URL u=LocalPolicy.api(base+"/api/status","GET");JSONObject k=new JSONObject(keys);SecureTransport transport=new SecureTransport(sid,device,client,k.getString("HTTP_C2S"),k.getString("HTTP_S2C"),k.getString("RC_C2S"),k.getString("ACK_S2C"));secureTransports.put(LocalPolicy.origin(u),transport);return true;}catch(Exception ignored){return false;}
+        }
+        @JavascriptInterface public String monitorTicket(String key,String base,String device){
+            if(!token.equals(key)||destroyed)return "";try{SecureTransport secure=secureTransports.get(LocalPolicy.origin(LocalPolicy.api(base+"/api/status","GET")));if(secure==null||!secure.device.equals(device))return "";long n=secure.nextHttp();String plain="path="+enc("/api/rc/live")+"&method=GET&clientId="+enc(secure.client)+"&expectedDeviceId="+enc(secure.device);return "sessionId="+secure.sid+"&seq="+n+"&cipher="+secure.sealHttp(n,plain);}catch(Exception ignored){return "";}
+        }
+        @JavascriptInterface public String pairCode(String key,String device){return token.equals(key)?new PairingStore(MainActivity.this).read(device):"";}
+        @JavascriptInterface public void savePairCode(String key,String device,String code){if(token.equals(key))try{new PairingStore(MainActivity.this).save(device,code);}catch(Exception ignored){}}
+
         @JavascriptInterface public void request(String key,String id,String address,String method,String form,int requestedTimeout){
             if(!token.equals(key) || destroyed || id==null || !id.matches("[A-Za-z0-9-]{1,96}"))return;
             Job job=null;

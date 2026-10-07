@@ -1144,3 +1144,6 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 @media(max-width:1120px){.topbar-main{grid-template-columns:auto auto auto minmax(140px,1fr) auto;grid-template-areas:"brand wifi control kit edit";gap:8px}}
 @media(max-width:760px){.topbar-main{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand wifi" "kit control" "edit edit"}.top-control-control{font-size:9px;gap:5px;justify-self:end}.top-control-control>b{width:52px}.topbar-edit{justify-self:end}}
 @media(max-width:440px){.topbar-main{grid-template-areas:"brand brand" "wifi control" "kit kit" "edit edit"}.topbar .top-network-control{justify-self:start}.top-control-control>b{width:36px}.topbar .brand{gap:8px}.topbar .brand b{font-size:15px!important}.topbar-edit{gap:5px}.topbar-edit .btn{padding:6px 7px}}
+
+/* Session notices must not obstruct navigation. */
+.top-network-notice{pointer-events:none}.top-network-notice button{pointer-events:auto}

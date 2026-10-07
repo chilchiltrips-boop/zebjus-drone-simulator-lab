@@ -3,8 +3,8 @@ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),asse
 const root=path.resolve(__dirname,'..'),storage=new Map(),session=new Map(),requests=[];
 const ID='ZFC-001122334455',OTHER='ZFC-FFEEDDCCBBAA';
 let network=new Map();
-function status(id=ID,ip='10.0.0.9'){return{ok:true,kit:'ZEBJUS_FLIGHTCORE',name:'zebjus_drone_1',deviceId:id,ip,armed:false,lockMine:false,webRc:true,flightReady:true}}
-const window={addEventListener(){},dispatchEvent(){}};
+function status(id=ID,ip='10.0.0.9'){return{ok:true,kit:'ZEBJUS_FLIGHTCORE',name:'zebjus_drone_1',deviceId:id,ip,armed:false,lockMine:false,webRc:true,flightReady:true,securityRequired:true}}
+const window={ZfcSecurity:{ensure:async()=>null,get:()=>null,clear(){}},addEventListener(){},dispatchEvent(){}};
 const sandbox={window,URLSearchParams,AbortController,setTimeout,clearTimeout,performance,Date,console,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},sessionStorage:{getItem:k=>session.get(k)||null,setItem:(k,v)=>session.set(k,v)},fetch:async(url,opt)=>{
  const u=new URL(url),st=network.get(u.origin);requests.push({url,data:Object.fromEntries(new URLSearchParams(opt?.body))});
  if(!st)throw new TypeError('unreachable');

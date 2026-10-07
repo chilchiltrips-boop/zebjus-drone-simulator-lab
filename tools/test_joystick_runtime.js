@@ -30,10 +30,12 @@ globalThis.simTest={state,claimSimInput,releaseSimInput,canMirrorReceiver,contro
 let stopCount=0;window.zebjusLabAPI={controlSim:sandbox.simTest.controlSimInput,claimSimInput:sandbox.simTest.claimSimInput,releaseSimInput:sandbox.simTest.releaseSimInput,canMirrorReceiver:sandbox.simTest.canMirrorReceiver,getSimInputOwner:sandbox.simTest.owner,getActiveTab:()=> 'joystick',setSimFlightMode:m=>{sandbox.simTest.state.sim.flightMode=m},setSimRunning:on=>{if(on)sandbox.simTest.startSimRuntime();else{stopCount++;sandbox.simTest.state.sim.running=false}},setActiveTab(){}};
 vm.runInContext(school.replace(/\}\)\(\);\s*$/,`window.controllerTest={st,targetUi,realKitAvailability,setTransmitter,tryToggleArm,joystickTick,enforceJoystickLink,switchJoystickTarget,applyPhysicalReceiver,telemetryTick,toggleNetworkMode,networkToggleUi};})();`),sandbox);
 const ctl=window.controllerTest,sim=sandbox.simTest;
+window.AerionFcTraining={kit:()=>client?.connected?{trainingActive:true,trainingTarget:'TRIPOD',outputsBlocked:true}:null};
 const kit={deviceId:'ZFC-001122334455',deviceName:'Kit 1',online:true,webRc:true,flightCoreIntegrated:true,flightReady:true,lockMine:true};
 function choose(d){ctl.st.devices=[d];ctl.st.selectedDeviceId=d.deviceId;client.deviceId=d.deviceId;client.connected=true;client.status=d;ctl.targetUi()}
 async function flush(){for(let i=0;i<8;i++)await Promise.resolve()}
 (async()=>{
+ assert.equal(sim.startSimRuntime(),false,'Tripod start requires the connected training kit');
  ctl.targetUi();assert.equal($('#webJoyTarget option[value="device"]').disabled,false,'Real kit must remain selectable without a connection');
  $('#webJoyTarget').value='device';ctl.setTransmitter(true);assert.equal(ctl.st.txOn,false,'disconnected real target cannot transmit');
  choose(kit);ctl.setTransmitter(true);ctl.tryToggleArm();assert.equal(ctl.st.joy[4],2000,'ready kit arms without popup');ctl.st.joy[2]=1450;ctl.joystickTick(2000);await flush();assert.equal(commands.at(-1).channels[4],2000,'real RC frame must reach the transport');assert.equal(sim.state.sim.running,true);

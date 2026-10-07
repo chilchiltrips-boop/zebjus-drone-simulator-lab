@@ -30,7 +30,7 @@ int wifiTestState=WT_RUNNING,reboots=0,safeStops=0;bool setupMode=true,mdnsStart
 struct Address{String toString(){return "10.0.0.20";}};struct Wifi{int state=WL_CONNECTED;bool dropped=false;int status(){return state;}Address localIP(){return {};}void disconnect(bool,bool){dropped=true;}void mode(int){}}WiFi;
 struct Mdns{int queryService(const char*,const char*){return nameConflict?1:0;}void end(){}}MDNS;struct SerialType{void println(const String&){}void println(const char*){}}Serial;struct Server{void handleClient(){}}server;struct Esp{void restart(){reboots++;}}ESP;
 bool startProbeMdns(){mdnsStarted=probeAvailable;return probeAvailable;}bool queryResultIsName(int,const String&,bool){return nameConflict;}String chooseFreeAutoNameFromCurrentQuery(int){return "zebjus_drone_2";}String shortId(){return "334455";}void saveKitName(const String& n){kitName=n;}void setPreferredApMode(bool v){preferAp=v;}void setForceSetupFlag(bool v){forceAp=v;}String optionalWebappUrl(){return "";}
-void delay(int){}void serviceUserLed(){}void pollGps(){}void updateControlRates(){}void serviceBattery(){}void expireLock(){}void serviceTraining(){}void checkRecoveryButton(){}void networkHealth(){}void motorsSafe(){safeStops++;}bool saveWiFi(String,String,bool=true);
+void servicePairing(){}void serviceSecureOta(){}void delay(int){}void serviceUserLed(){}void pollGps(){}void updateControlRates(){}void serviceBattery(){}void expireLock(){}void serviceTraining(){}void checkRecoveryButton(){}void networkHealth(){}void motorsSafe(){safeStops++;}bool saveWiFi(String,String,bool=true);
 '''
 checks=r'''
 void clearRam(){for(int i=0;i<MAX_WIFI;i++){savedSSID[i]="";savedPASS[i]="";}preferredSSID="";}

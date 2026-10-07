@@ -13,6 +13,10 @@
   try{native.request(token,id,String(address),method,options.body?String(options.body):'',timeout)}catch(e){pending.delete(id);clearTimeout(timer);remove();reject(e)}
  });
  navigator.sendBeacon=(address,body)=>{window.fetch(String(address),{method:'POST',body}).catch(()=>{});return true};
+ android.offerInput=(base,id,cid,ch,run)=>native.offerInput(token,base,id,cid,ch.join(','),run);
+ android.installSecure=(base,id,cid,sid,keys)=>native.installSecure(token,base,id,cid,sid,JSON.stringify(keys));
+ android.monitorTicket=(base,id)=>native.monitorTicket(token,base,id);
+ android.pairCode=id=>native.pairCode(token,id);android.savePairCode=(id,code)=>native.savePairCode(token,id,code);
  android.rcDiagnostics=()=>{try{return JSON.parse(native.rcDiagnostics?.(token)||'{}')}catch{return{}}};
  android.pauseStream=(base,id,client)=>native.pauseStream?.(token,base,id,client);
  android.saveFile=(name,body,mime)=>native.saveFile(token,name,body,mime);
@@ -28,7 +32,7 @@
   const button=document.createElement('button');button.id='androidWifi';button.className='primary';button.textContent='Connect kit Wi-Fi';button.onclick=android.joinWifi;
   document.querySelector('#connectDialog .dialog-head').after(button);
   const settings=document.createElement('button');settings.id='androidWifiSettings';settings.className='secondary';settings.textContent='Phone Wi-Fi settings (STA / Android 8–9)';settings.onclick=android.openWifi;button.after(settings);
-  document.getElementById('pairMessage').textContent='Connect kit Wi-Fi here; Android asks you to choose the kit. AP password: 12345678.';
+  document.getElementById('pairMessage').textContent='Connect kit Wi-Fi here; Android asks you to choose the kit. Use the unique AP password and pairing code from the kit label.';
   document.querySelector('#settingsDialog .links').hidden=true;
   document.getElementById('fullscreen').hidden=true;
  });
