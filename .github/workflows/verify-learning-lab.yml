@@ -1,4 +1,4 @@
-name: Verify and build Learning Lab V18.3.78
+name: Verify and build Learning Lab V18.3.79
 on:
   workflow_dispatch:
   push:
@@ -11,7 +11,7 @@ concurrency:
 jobs:
   learning-browser:
     needs: verify-build
-    if: always() && (needs.verify-build.result == 'success' || needs.verify-build.result == 'skipped')
+    if: ${{ !cancelled() && (needs.verify-build.result == 'success' || needs.verify-build.result == 'skipped') }}
     name: Verify learning workspace in the browser
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -60,7 +60,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Aerion-Learning-Lab-UI-V18.3.78
+          name: Aerion-Learning-Lab-UI-V18.3.79
           if-no-files-found: warn
           path: |
             ${{ runner.temp }}/learning-lab-screenshots
