@@ -92,15 +92,15 @@ jobs:
           node tools/test_webapp_binding.js
           node android-app/tests/browser_transport_test.js
           node android-app/tests/browser_modes_test.js
+          mkdir -p "$RUNNER_TEMP/android-browser-screenshots"
+          cp ../native_modes_mobile.png ../flight_recorder_app.png "$RUNNER_TEMP/android-browser-screenshots/"
       - name: Retain Android browser screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Aerion-Android-UI-V18.3.79
           if-no-files-found: warn
-          path: |
-            ${{ github.workspace }}/../native_modes_mobile.png
-            ${{ github.workspace }}/../flight_recorder_app.png
+          path: ${{ runner.temp }}/android-browser-screenshots
   verify-build:
     # Build a complete release branch before verifying its generated packages.
     # Main has dedicated Android and firmware build workflows.
