@@ -8,6 +8,8 @@ var ZfcCryptoBundle=(()=>{var C=(t,e)=>()=>(t&&(e=t(t=0)),e);var Le=(t,e)=>()=>(
 @noble/ciphers/utils.js:
   (*! noble-ciphers - MIT License (c) 2023 Paul Miller (paulmillr.com) *)
 */
+// CommonJS export for protocol interoperability tests; browser API is unchanged.
+if(typeof module!=='undefined')module.exports=ZfcCryptoBundle;
 
 /* ZFC3: SRP6a-3072/SHA512 authentication, independent AES-256-GCM channels. */
 (function(w){'use strict';
@@ -42,27 +44,29 @@ class Channel {
   this.sid=hello.sessionId;this.keys={};const hs=C.sha256(cat(A,Braw,salt));
   for(const ch of ['HTTP_C2S','HTTP_S2C','RC_C2S','ACK_S2C','MONITOR_S2C'])this.keys[ch]=C.hkdf256(K,hs,utf('ZFC3|'+this.id+'|'+user+'|'+this.sid+'|'+this.cid+'|'+this.role+'|'+ch),32);
   K.fill(0);registry.set(this.base,this);
-  if(w.AerionAndroid){w.AerionAndroid.installSecure(this.base,this.id,this.cid,this.sid,Object.fromEntries(Object.entries(this.keys).map(([k,v])=>[k,hex(v)])));this.native=true;}
+  if(w.AerionAndroid){if(w.AerionAndroid.installSecure(this.base,this.id,this.cid,this.sid,Object.fromEntries(Object.entries(this.keys).map(([k,v])=>[k,hex(v)])))===false)throw Error('Native secure session could not be installed.');this.native=true;}
   const info=await this.request('/api/security/info',{},raw);if(info.deviceId!==this.id||info.role!==this.role)throw Error('Authenticated kit scope differs.');
   this.info=info;return info;
  }
  envelope(plain){const seq=String(++this.sequence),aad=utf('ZFC3|'+this.sid+'|'+seq+'|HTTP_C2S');return{sessionId:this.sid,seq,cipher:hex(C.encryptGCM(this.keys.HTTP_C2S,nonce(seq),utf(plain),aad))};}
  decode(e,channel='HTTP_S2C'){
   if(e.sessionId!==this.sid||!/^\d{1,20}$/.test(String(e.seq)))throw Error('Wrong secure session.');const n=BigInt(e.seq);
-  const counterKey=channel+':'+n;if(!n||this.received.has(counterKey)||n+64n<=this.high&&channel==='HTTP_S2C')throw Error('Replayed secure message.');
+  this.windows ||= {};const win=this.windows[channel] ||= {high:0n,bits:0n};
+  if(!n||n<=win.high&&(win.high-n>=64n||(win.bits&(1n<<(win.high-n)))))throw Error('Replayed secure message.');
   const value=D.decode(C.decryptGCM(this.keys[channel],nonce(n),unhex(e.cipher),utf('ZFC3|'+this.sid+'|'+n+'|'+channel)));
-  this.received.add(counterKey);if(channel==='HTTP_S2C'&&n>this.high)this.high=n;
-  if(this.received.size>256)for(const k of this.received){if(BigInt(k.split(':')[1])+64n<n)this.received.delete(k)}return JSON.parse(value);
+  if(n>win.high){const delta=n-win.high;win.bits=delta>=64n?1n:((win.bits<<delta)|1n)&((1n<<64n)-1n);win.high=n;}else win.bits|=1n<<(win.high-n);
+  return JSON.parse(value);
  }
  async request(path,data,raw,timeout=2400,method=data?'POST':'GET'){
   if(this.info?.mode==='AP'&&/^\/api\/(wifi\/|setup\/test)/.test(path)&&Date.now()>(this.maintenanceAt||0)){await this.request('/api/security/maintenance',{clientId:this.cid},raw,2400,'POST');this.maintenanceAt=Date.now()+90000;}
+  if(data?.expectedDeviceId&&data.expectedDeviceId!==this.id)throw Error('Request belongs to another paired kit.');
   if(this.native){const r=await raw(path,data,timeout,method);this.lastReceive=Date.now();return r;}
   const u=new URL(path,this.base),p=new URLSearchParams(u.search);Object.entries(data||{}).forEach(([k,v])=>p.set(k,String(v)));
   p.set('path',u.pathname);p.set('method',method);p.set('clientId',this.cid);p.set('expectedDeviceId',this.id);
   const envelope=this.envelope(p.toString()),answer=await raw('/api/security/request',envelope,timeout,'POST'),result=this.decode(answer);this.lastReceive=Date.now();
   if(result.requestSeq!==envelope.seq)throw Error('Secure response does not match the request.');if(result.status>=400)throw Object.assign(Error(result.body.message||'Kit request rejected.'),{status:result.status,payload:result.body,reachable:true});return result.body;
  }
- monitorTicket(){return new URLSearchParams(this.envelope(new URLSearchParams({path:'/api/rc/live',method:'GET',clientId:this.cid,expectedDeviceId:this.id}).toString())).toString();}
+ monitorTicket(){if(this.native){const ticket=w.AerionAndroid.monitorTicket?.(this.base,this.id);if(!ticket)throw Error('Native monitor authentication unavailable.');return ticket;}return new URLSearchParams(this.envelope(new URLSearchParams({path:'/api/rc/live',method:'GET',clientId:this.cid,expectedDeviceId:this.id}).toString())).toString();}
 }
 async function promptCode(title){return new Promise((resolve,reject)=>{const box=document.createElement('dialog');box.innerHTML='<form method="dialog"><p></p><label>Pairing code <input autocomplete="off" spellcheck="false" maxlength="80" required></label><p><button value="cancel" formnovalidate>Cancel</button> <button value="pair">Pair kit</button></p></form>';box.querySelector('p').textContent=title;document.body.append(box);box.addEventListener('close',()=>{const code=box.querySelector('input').value.trim();box.remove();box.returnValue==='pair'?resolve(code):reject(Error('Pairing cancelled.'))},{once:true});box.showModal();});}
 async function ensure(base,st,cid,role,raw){

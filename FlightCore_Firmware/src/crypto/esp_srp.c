@@ -55,18 +55,8 @@ typedef struct esp_srp_handle {
     char *session_key;
 } esp_srp_handle;
 
-static void hexdump_mpi(const char *name, esp_mpi_t *bn)
-{
-    int len = 0;
-    char *str = esp_mpi_to_bin(bn, &len);
-    if (str) {
-        
-        
-        free(str);
-    }
-}
+static void hexdump_mpi(const char *name, esp_mpi_t *bn) { (void) name; (void) bn; }
 
-/************************* SRP Stuff *************************/
 static const char N_3072[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC9, 0x0F, 0xDA, 0xA2, 0x21, 0x68, 0xC2, 0x34,
     0xC4, 0xC6, 0x62, 0x8B, 0x80, 0xDC, 0x1C, 0xD1, 0x29, 0x02, 0x4E, 0x08, 0x8A, 0x67, 0xCC, 0x74,
@@ -272,7 +262,7 @@ static esp_err_t __esp_srp_srv_pubkey(esp_srp_handle_t *hd, char **bytes_B, int 
     if (!hd->b) {
         goto error;
     }
-    esp_mpi_get_rand(hd->b, 256, -1, 0);
+    if (esp_mpi_get_rand(hd->b, 256, -1, 0) != 0) goto error;
     hexdump_mpi("b", hd->b);
 
     /* B = kv + g^b */
@@ -282,9 +272,9 @@ static esp_err_t __esp_srp_srv_pubkey(esp_srp_handle_t *hd, char **bytes_B, int 
     if (!kv || !gb || ! hd->B) {
         goto error;
     }
-    esp_mpi_a_mul_b_mod_c(kv, k, hd->v, hd->n, hd->ctx);
-    esp_mpi_a_exp_b_mod_c(gb, hd->g, hd->b, hd->n, hd->ctx);
-    esp_mpi_a_add_b_mod_c(hd->B, kv, gb, hd->n, hd->ctx);
+    if (esp_mpi_a_mul_b_mod_c(kv, k, hd->v, hd->n, hd->ctx) != 0) goto error;
+    if (esp_mpi_a_exp_b_mod_c(gb, hd->g, hd->b, hd->n, hd->ctx) != 0) goto error;
+    if (esp_mpi_a_add_b_mod_c(hd->B, kv, gb, hd->n, hd->ctx) != 0) goto error;
     hd->bytes_B = esp_mpi_to_bin(hd->B, len_B);
     hd->len_B = *len_B;
     *bytes_B = hd->bytes_B;
@@ -326,7 +316,7 @@ static esp_err_t _esp_srp_gen_salt_verifier(esp_srp_handle_t *hd, const char *us
         goto error;
     }
 
-    esp_mpi_get_rand(hd->s, 8 * salt_len, -1, 0);
+    if (esp_mpi_get_rand(hd->s, 8 * salt_len, -1, 0) != 0) goto error;
     hd->bytes_s = esp_mpi_to_bin(hd->s, &str_salt_len);
     if (!hd->bytes_s) {
         ESP_LOGE(TAG, "Failed to generate salt of len %d", salt_len);
@@ -351,7 +341,7 @@ static esp_err_t _esp_srp_gen_salt_verifier(esp_srp_handle_t *hd, const char *us
         ESP_LOGE(TAG, "Failed to allocate bignum v");
         goto error;
     }
-    esp_mpi_a_exp_b_mod_c(hd->v, hd->g, x, hd->n, hd->ctx);
+    if (esp_mpi_a_exp_b_mod_c(hd->v, hd->g, x, hd->n, hd->ctx) != 0) goto error;
     hexdump_mpi("Verifier", hd->v);
 
     esp_mpi_free(x);
@@ -521,7 +511,7 @@ esp_err_t esp_srp_get_session_key(esp_srp_handle_t *hd, char *bytes_A, int len_A
         goto error;
     }
     u = calculate_u(hd, bytes_A, len_A);
-    if (! u) {
+    if (!u || mbedtls_mpi_cmp_int(u, 0) == 0) {
         goto error;
     }
     hexdump_mpi("u", u);
@@ -534,14 +524,14 @@ esp_err_t esp_srp_get_session_key(esp_srp_handle_t *hd, char *bytes_A, int len_A
         goto error;
     }
 
-    esp_mpi_a_exp_b_mod_c(vu, hd->v, u, hd->n, hd->ctx);
-    esp_mpi_a_mul_b_mod_c(avu, hd->A, vu, hd->n, hd->ctx);
-    esp_mpi_a_exp_b_mod_c(S, avu, hd->b, hd->n, hd->ctx);
+    if (esp_mpi_a_exp_b_mod_c(vu, hd->v, u, hd->n, hd->ctx) != 0) goto error;
+    if (esp_mpi_a_mul_b_mod_c(avu, hd->A, vu, hd->n, hd->ctx) != 0) goto error;
+    if (esp_mpi_a_exp_b_mod_c(S, avu, hd->b, hd->n, hd->ctx) != 0) goto error;
     hexdump_mpi("S", S);
 
     bytes_S = esp_mpi_to_bin(S, &len_S);
     hd->session_key = malloc(SHA512_HASH_SZ);
-    if (!hd->session_key || ! bytes_S) {
+    if (!hd->session_key || !bytes_S || len_S == 0) {
         goto error;
     }
 

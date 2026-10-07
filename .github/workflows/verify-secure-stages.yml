@@ -83,3 +83,41 @@ jobs:
             FlightCore_Firmware/latest.json
             firmware-catalog.json
             firmware-latest.json
+
+  secure-compatibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install protocol test dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libmbedtls-dev
+          npm install --no-save --package-lock=false playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Check secure pairing and permissions
+        run: |
+          cc -Wno-deprecated-declarations -I tools/security-host -I FlightCore_Firmware/src/crypto tools/security-host/srp_server.c FlightCore_Firmware/src/crypto/esp_srp.c FlightCore_Firmware/src/crypto/esp_srp_mpi.c -lmbedcrypto -o /tmp/zfc-srp-server
+          node tools/test_secure_pairing.js
+          node tools/test_secure_native.js
+          g++ -std=c++17 tools/test_secure_policy.cpp -o /tmp/zfc-secure-policy
+          /tmp/zfc-secure-policy
+          g++ -std=c++17 -I tools/security-host tools/test_virtual_pid.cpp -o /tmp/zfc-virtual-pid
+          /tmp/zfc-virtual-pid
+          npm run test:ownership
+          npm run test:stability
+          npm run test:training-core
+          npm run test:flight-math
+          npm run test:rc-link
+          node tools/test_usb_recovery.js
+          node tools/test_firmware_updater.js
+          npm run test:recorder
+      - name: Verify paired browser workflow
+        run: node tools/test_secure_browser.js

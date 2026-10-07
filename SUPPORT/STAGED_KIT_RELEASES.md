@@ -1,6 +1,6 @@
 # Staged kit releases
 
-## Stage 1 — 18.3.75
+## Stage 1 — 18.3.78
 
 Take Control accepts the verified FC grant immediately. Later telemetry reconciles ownership without allowing older replies or public monitor packets to overwrite a newer grant. Disconnect fences in-flight grants. Lease renewal and physical RC watchdogs remain separate.
 
@@ -10,11 +10,11 @@ Both connection screens show the unique Kit Name. An IP is a discovery hint; the
 
 Flash diagnostics include chip, stub state, flash ID, capacity and whether a write started. Invalid flash IDs still block every erase/write. A USB hardware fault cannot be repaired by suppressing this guard.
 
-18.3.75 app and web retain 18.3.74 controller compatibility. Flash matching 18.3.75 firmware to get the full-name factory default and previous idle HTTP connection recovery. The APK uses the existing development certificate. No phone or physical flight controller was available for hardware verification.
+18.3.78 app and web retain 18.3.74 controller compatibility. Flash matching 18.3.78 firmware to get the full-name factory default and previous idle HTTP connection recovery. The APK uses the existing development certificate. No phone or physical flight controller was available for hardware verification.
 
 ## Stage 2 — security and migration gate
 
-Before publishing security changes, build both A1/C3 and A2/C6 and record APP bytes, both OTA slot sizes and free heap. Verified 18.3.75 A2 APP is 1,308,672 bytes in a 1,310,720-byte OTA slot: 2,048 bytes of headroom. A1 APP is 1,223,488 bytes, with 87,232 bytes of headroom. A larger partition layout requires a verified USB factory migration, backup and restore of non-secret settings, and explicit refusal of oversized APP-only OTA. Keep Wi-Fi enrollment accessible through AP maintenance.
+Before publishing security changes, build both A1/C3 and A2/C6 and record APP bytes, both OTA slot sizes and free heap. Verified 18.3.78 A2 APP is 1,308,672 bytes in a 1,310,720-byte OTA slot: 2,048 bytes of headroom. A1 APP is 1,223,488 bytes, with 87,232 bytes of headroom. A larger partition layout requires a verified USB factory migration, backup and restore of non-secret settings, and explicit refusal of oversized APP-only OTA. Keep Wi-Fi enrollment accessible through AP maintenance.
 
 Use Espressif Security 2 (SRP6a and AES-GCM, patched IV counters) or another reviewed authenticated protocol. Use a unique enrollment credential per kit, never a shared product password. The kit's Device ID and Kit Name are included in authenticated session scope. A paired phone can issue an expiring companion invitation with telemetry/training/PID scopes. The companion cannot ARM, transmit joystick frames or take over the phone lease. Native UDP and ACKs need their own authenticated encryption, direction-specific nonces and replay checks; provisioning encryption alone does not secure RC.
 

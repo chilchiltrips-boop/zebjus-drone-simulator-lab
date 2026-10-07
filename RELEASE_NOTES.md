@@ -1,10 +1,10 @@
-# ZEBJUS Aerion V18.3.75 — Control ownership and unique kit names
+# ZEBJUS Aerion V18.3.78 — Control ownership and unique kit names
 
 The first stage fixes Take Control acknowledgements being discarded after status timeouts. Status and telemetry replies are fenced across grants and disconnects, public monitor packets cannot change browser ownership, and accepted grants start lease renewal immediately. USB boot/flash probing now appears in diagnostic exports. Partial telemetry no longer emits false safety state changes.
 
 App connection has a Kit Name field and verifies both the requested name and remembered Device ID. New automatic firmware names include all 48 MAC bits. Existing custom names remain. Name collisions are refused; the exact Device ID is always checked.
 
-18.3.75 app/web support matching 18.3.75 firmware and retain 18.3.74 control compatibility. This stage does not claim cryptographic pairing: names identify kits, while enrollment/encryption and companion permissions belong to the next stage.
+18.3.78 app/web support matching 18.3.78 firmware and retain 18.3.74 control compatibility. This stage does not claim cryptographic pairing: names identify kits, while enrollment/encryption and companion permissions belong to the next stage.
 
 # V18.3.74 connection stability and Tripod roll
 

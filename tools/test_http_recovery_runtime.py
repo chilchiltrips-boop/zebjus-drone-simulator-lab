@@ -10,12 +10,14 @@ header=r'''#pragma once
 #include <memory>
 #include <deque>
 #include <cstdint>
+#include <string>
+using String=std::string;
 uint32_t clockMs=0;unsigned long millis(){return clockMs;}
 struct Socket{bool open=true,hasBytes=false;};
 class NetworkClient{std::shared_ptr<Socket>s;public:NetworkClient(){}NetworkClient(std::shared_ptr<Socket>x):s(x){}bool available(){return s&&s->open&&s->hasBytes;}bool connected()const{return s&&s->open;}void stop(){if(s)s->open=false;}operator bool()const{return connected();}};
 class NetworkServer{public:std::deque<NetworkClient>queue;NetworkClient accept(){if(queue.empty())return {};auto c=queue.front();queue.pop_front();return c;}};
 enum HTTPClientStatus{HC_NONE,HC_WAIT_READ,HC_WAIT_CLOSE};
-class WebServer{protected:NetworkServer _server;NetworkClient _currentClient;HTTPClientStatus _currentStatus=HC_NONE;uint32_t _statusChange=0;std::unique_ptr<int>_currentUpload,_currentRaw;public:int handled=0;WebServer(int){}virtual void handleClient(){if(_currentStatus==HC_NONE){_currentClient=_server.accept();if(!_currentClient)return;_currentStatus=HC_WAIT_READ;_statusChange=millis();}if(_currentClient.available()){handled++;_currentClient.stop();_currentClient={};_currentStatus=HC_NONE;}}void enqueue(NetworkClient c){_server.queue.push_back(c);}};
+class WebServer{protected:NetworkServer _server;NetworkClient _currentClient;HTTPClientStatus _currentStatus=HC_NONE;uint32_t _statusChange=0;std::unique_ptr<int>_currentUpload,_currentRaw;public:String arg(const String&) const{return "";}String arg(int) const{return "";}bool hasArg(const String&) const{return false;}int handled=0;WebServer(int){}virtual void handleClient(){if(_currentStatus==HC_NONE){_currentClient=_server.accept();if(!_currentClient)return;_currentStatus=HC_WAIT_READ;_statusChange=millis();}if(_currentClient.available()){handled++;_currentClient.stop();_currentClient={};_currentStatus=HC_NONE;}}void enqueue(NetworkClient c){_server.queue.push_back(c);}};
 '''
 source=r'''#include <cassert>
 #include <algorithm>
@@ -23,11 +25,12 @@ source=r'''#include <cassert>
 #include "FlightHttpServer.h"
 uint32_t clockUs=0,flightLoopTimerUs=0,maxFlightLoopGapUs=0,flightLoopOverruns=0,flightWatchdogTrips=0;
 uint32_t micros(){return clockUs;}const uint32_t FLIGHT_LOOP_US=4000,ARMED_LOOP_GAP_LIMIT_US=30000;
+bool trainingFcPid=false,virtualArmed=false;void applyPendingPid(){}void runVirtualTraining(){}
 bool FLIGHT_CONTROL_ENABLED=true,flightReady=true,configurationBusy=false,armed=false,flightWatchdogTripped=false;int benchMode=0,BENCH_NONE=0,activeCalls=0;float flightDt=0;
 template<class T>T constrain(T value,T low,T high){return std::clamp(value,low,high);}
 '''+loop+r'''
 int main(){
- FlightHttpServer server(80);auto idle=std::make_shared<Socket>(),ready=std::make_shared<Socket>();ready->hasBytes=true;
+ FlightHttpServer server(80);server.secureContext=true;server.setSecureArg("clientId","paired-client");assert(server.hasArg("clientId")&&server.arg("clientId")=="paired-client");server.secureContext=false;assert(!server.hasArg("clientId"));auto idle=std::make_shared<Socket>(),ready=std::make_shared<Socket>();ready->hasBytes=true;
  server.enqueue(NetworkClient(idle));server.enqueue(NetworkClient(ready));server.handleClient();assert(server.handled==0);
  clockMs=250;server.handleClient();assert(idle->open&&server.handled==0);clockMs=251;server.handleClient();assert(!idle->open&&server.handled==1);
  auto later=std::make_shared<Socket>();server.enqueue(NetworkClient(later));clockMs=300;server.handleClient();later->hasBytes=true;clockMs=700;server.handleClient();assert(server.handled==2);

@@ -1,4 +1,4 @@
-ZEBJUS Aerion V18.3.75 validation
+ZEBJUS Aerion V18.3.78 validation
 
 Verified control-grant timeout handling, status/grant ordering, same-client telemetry reconciliation, disconnect/release cancellation, wrong Device ID and public monitor isolation. Partial telemetry does not create false safety state changes.
 
@@ -8,6 +8,6 @@ GitHub compatibility run 37588932289 passed on source f6ec0d1a6a2e793f1f72a296ff
 
 A1 APP: 1,223,488 bytes. A2 APP: 1,308,672 bytes. Both OTA slots: 1,310,720 bytes. Factory images: 4,194,304 bytes, application/factory equality and chip/version/slot/monitor-stack checks passed. A2 OTA headroom is 2,048 bytes; larger security firmware needs a migration gate.
 
-APK: 18.3.75-android.1 / 1837501. Original certificate retained; delivered manifest/DEX/ZIP/signature/alignment/assets and recompilation match. Project/offline/release hash checks passed after packaging.
+APK: 18.3.78-android.1 / 1837801. Original certificate retained; delivered manifest/DEX/ZIP/signature/alignment/assets and recompilation match. Project/offline/release hash checks passed after packaging.
 
 No physical controller flash, Android phone/emulator, router/radio, motor/ESC or flight test was performed. This is stage 1; encrypted pairing, scoped companion PID and kit-required/AP policy are later stages recorded in SUPPORT/STAGED_KIT_RELEASES.md.

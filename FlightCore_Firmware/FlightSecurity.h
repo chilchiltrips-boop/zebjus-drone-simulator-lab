@@ -52,8 +52,8 @@ void pairingProof(){
  if(!target){xSemaphoreGive(secureMutex);clearPairPending();sendMessage(423,"All pairing sessions are in use");return;}
  *target=SecureSession();target->id=pairPending.id;target->client=pairPending.client;target->role=pairPending.role;target->credential=pairPending.credential;target->expires=millis()+7200000;
  const char* channels[]={"HTTP_C2S","HTTP_S2C","RC_C2S","ACK_S2C","MONITOR_S2C"};
- for(int i=0;i<5;i++){String info="ZFC3|"+deviceId+"|"+user+"|"+secureId(target->id)+"|"+target->client+"|"+target->role+"|"+channels[i];mbedtls_hkdf(mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),pairPending.saltHash,32,pairPending.key,64,(const uint8_t*)info.c_str(),info.length(),target->keys[i],32);}
- String sid=secureId(target->id);xSemaphoreGive(secureMutex);
+ bool derived=true;for(int i=0;i<5;i++){String info="ZFC3|"+deviceId+"|"+user+"|"+secureId(target->id)+"|"+target->client+"|"+target->role+"|"+channels[i];if(mbedtls_hkdf(mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),pairPending.saltHash,32,pairPending.key,64,(const uint8_t*)info.c_str(),info.length(),target->keys[i],32)!=0)derived=false;}
+ if(!derived){target->id=0;memset(target->keys,0,sizeof(target->keys));xSemaphoreGive(secureMutex);clearPairPending();sendMessage(503,"Session key derivation failed");return;}String sid=secureId(target->id);xSemaphoreGive(secureMutex);
  for(auto& c:pairInvites)if(c.id==pairPending.credential)c.length=0;clearPairPending();sendJson(200,"{\"ok\":true,\"sessionId\":\""+sid+"\",\"M2\":\""+secureHex(answer,64)+"\"}");
 }
 String securePercent(const String& v){String s;for(size_t i=0;i<v.length();i++){if(v[i]=='+')s+=' ';else if(v[i]=='%'&&i+2<v.length()){uint8_t b;if(!secureUnhex(v.substring(i+1,i+3),&b,1)||!b)return String();s+=(char)b;i+=2;}else s+=v[i];}return s;}
@@ -72,16 +72,13 @@ void secureInvite(){
  String code,id="LAB-"+String(esp_random(),HEX);if(!makeCredential(*c,id,code)){sendMessage(503,"Invitation unavailable");return;}c->expires=millis()+60000;
  sendJson(200,"{\"ok\":true,\"deviceId\":\""+deviceId+"\",\"name\":\""+jsonEscape(kitName)+"\",\"invitation\":\""+id+":"+code+"\",\"expiresMs\":60000,\"permissions\":[\"observe\",\"training\",\"pid\"]}");
 }
+#include "SecurePolicy.h"
 bool securePermission(const String& path){
- if(!secureCurrent)return false;String type=server.arg("type");bool owner=secureOwner();
- if(!owner){bool read=path=="/api/status"||path=="/api/telemetry"||path=="/api/firmware/info"||path=="/api/security/info";
-  bool cmd=path=="/api/command"&&(type=="pid_get"||type=="pid_set"||type=="training_status"||type=="training_sensor"||type=="training_engine"||type=="receiver_read"||type=="flight_settings_get"||type=="diagnostics_get"||type=="snapshot_get");if(!read&&!cmd){sendMessage(403,"Laptop permission does not include control, ARM or administration");return false;}}
- if(setupMode){
-  bool flight=path.startsWith("/api/control/")||path=="/api/status"||path=="/api/telemetry"||path=="/api/security/info"||path=="/api/firmware/info"||path=="/api/security/maintenance"||path=="/api/command"&&(type=="rc_frame"||type=="flight_stop"||type=="ping"||type=="rc_source_set");
-  bool maintenance=owner&&!armed&&benchMode==BENCH_NONE&&(int32_t)(secureMaintenanceUntil[secureCurrent-secureSessions]-millis())>0&&(path.startsWith("/api/wifi/")||path.startsWith("/api/setup/test")||path=="/api/name"||path=="/api/reboot");
-  if(!flight&&!maintenance){sendMessage(403,"AP supports joystick and STOP; use STA for training and PID");return false;}
- }return true;
+ if(!secureCurrent)return false;bool maintenance=(int32_t)(secureMaintenanceUntil[secureCurrent-secureSessions]-millis())>0;
+ bool ok=ZfcSecure::permitted(secureOwner(),setupMode,maintenance,!armed&&benchMode==BENCH_NONE,path.c_str(),server.arg("type").c_str());
+ if(!ok)sendMessage(403,setupMode?"AP supports joystick and STOP; use STA for training/PID or open disarmed Wi-Fi maintenance":"Laptop permission does not include control, ARM or administration");return ok;
 }
+
 #include "SecureOta.h"
 void secureDispatch(const String& p){
  if(!securePermission(p))return;
@@ -105,4 +102,4 @@ void secureRequest(){
  if(!secureParse(String((char*)plain.get()))){sendMessage(400,"Invalid authenticated arguments");}else if(server.arg("expectedDeviceId")!=deviceId||server.arg("clientId")!=s->client){sendMessage(409,"Authenticated identity differs");}else{server.setSecureArg("clientId",s->client);server.setSecureArg("clientRole",s->role);secureDispatch(server.arg("path"));}
  server.secureContext=false;server.secureCount=0;secureCurrent=nullptr;memset(plain.get(),0,n);
 }
-void secureDiscovery(){sendJson(200,"{\"ok\":true,\"kit\":\"ZEBJUS_FLIGHTCORE\",\"deviceId\":\""+deviceId+"\",\"name\":\""+jsonEscape(kitName)+"\",\"ip\":\""+(setupMode?AP_IP.toString():WiFi.localIP().toString())+"\",\"mode\":\""+String(setupMode?"AP":"STA")+"\",\"firmware\":\""+String(FW_VERSION)+"\",\"boardId\":\""+String(BOARD_ID)+"\",\"securityRequired\":true,\"securityProtocol\":\"ZFC3\",\"partitionLayout\":\"ZFC_DUAL_1E0000\",\"rcMonitorProtocol\":\"SECURE_POLL\"}");}
+void secureDiscovery(){sendJson(200,"{\"ok\":true,\"kit\":\"ZEBJUS_FLIGHTCORE\",\"deviceId\":\""+deviceId+"\",\"name\":\""+jsonEscape(kitName)+"\",\"ip\":\""+(setupMode?AP_IP.toString():WiFi.localIP().toString())+"\",\"mode\":\""+String(setupMode?"AP":"STA")+"\",\"firmware\":\""+String(FW_VERSION)+"\",\"boardId\":\""+String(BOARD_ID)+"\",\"securityRequired\":true,\"securityProtocol\":\"ZFC3\",\"partitionLayout\":\"ZFC_DUAL_1E0000\",\"rcMonitorPort\":4211,\"rcMonitorProtocol\":\"ZFC3_NDJSON\"}");}

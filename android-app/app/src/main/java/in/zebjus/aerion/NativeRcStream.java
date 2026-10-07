@@ -19,7 +19,7 @@ public final class NativeRcStream {
         final LeaseGate.Lease lease;
         final DatagramSocket socket;
         final long device,token,runId;
-        final boolean simulation;
+        final boolean simulation;SecureTransport secure;
         final long[] sentAt=new long[64];
         final int[][] sentChannels=new int[64][];
         int[] acceptedChannels;
@@ -39,9 +39,12 @@ public final class NativeRcStream {
         configure(lease,socket,target,device,token,simulation,0);
     }
     public synchronized void configure(LeaseGate.Lease lease,DatagramSocket socket,InetSocketAddress target,long device,long token,boolean simulation,long runId)throws Exception{
+        configure(lease,socket,target,device,token,simulation,runId,null);
+    }
+    public synchronized void configure(LeaseGate.Lease lease,DatagramSocket socket,InetSocketAddress target,long device,long token,boolean simulation,long runId,SecureTransport secure)throws Exception{
         if(!gate.isCurrent(lease)||token==0){socket.close();throw new IllegalStateException("Control stopped.");}
         if(profile!=null)close(profile,false);
-        socket.connect(target);socket.setSoTimeout(1);profile=new Profile(lease,socket,device,token,simulation,runId);
+        socket.connect(target);socket.setSoTimeout(1);profile=new Profile(lease,socket,device,token,simulation,runId);profile.secure=secure;
     }
     public boolean nativeProfile(LeaseGate.Lease lease){Profile p=profile;return p!=null&&!p.closed&&p.lease==lease;}
     public boolean matchesRun(LeaseGate.Lease lease,String run,int[] channels){
@@ -69,11 +72,11 @@ public final class NativeRcStream {
             if(p.closed||!gate.isCurrent(p.lease))return;
             try{
                 int sequence=++p.sequence;p.sentAt[sequence&63]=now;p.sentChannels[sequence&63]=channels;
-                byte[] bytes=frame(p.device,p.token,sequence,channels,p.simulation);p.socket.send(new DatagramPacket(bytes,bytes.length));p.framesSent++;
+                byte[] bytes=frame(p.device,p.token,sequence,channels,p.simulation);if(p.secure!=null)bytes=p.secure.sealRc(bytes);p.socket.send(new DatagramPacket(bytes,bytes.length));p.framesSent++;
                 for(int i=0;i<8;i++){
-                    byte[] ack=new byte[ACK_BYTES+1];DatagramPacket packet=new DatagramPacket(ack,ack.length);
+                    byte[] ack=new byte[p.secure!=null?69:ACK_BYTES+1];DatagramPacket packet=new DatagramPacket(ack,ack.length);
                     try{p.socket.receive(packet);}catch(SocketTimeoutException timeout){break;}
-                    p.ackRejected++;if(packet.getLength()!=ACK_BYTES)continue;
+                    p.ackRejected++;if(p.secure!=null){try{ack=p.secure.openAck(ack,packet.getLength());}catch(Exception invalid){continue;}}else if(packet.getLength()!=ACK_BYTES)continue;
                     ByteBuffer b=ByteBuffer.wrap(ack).order(ByteOrder.LITTLE_ENDIAN);
                     if(b.getInt()!=0x3141525a||b.get()!=(p.simulation?2:1)||b.get()!=0)continue;int flags=b.get()&255;if(b.get()!=0||(flags&~7)!=0||((flags&4)!=0)!=p.simulation||p.simulation&&(flags&1)!=0)continue;
                     if(b.getLong()!=p.device||b.getLong()!=p.token)continue;int acknowledged=b.getInt();
@@ -85,7 +88,7 @@ public final class NativeRcStream {
             }catch(Exception ignored){p.sendErrors++;/* Next tick retries; watchdog bounds loss. */}
         }
     }
-    private java.util.Map<String,Object> profileDiagnostics(Profile p){java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("protocol",p.simulation?"ZRC2":"ZRC1");out.put("framesSent",p.framesSent);out.put("acksReceived",p.acksReceived);out.put("ackRejected",p.ackRejected);out.put("sendErrors",p.sendErrors);out.put("validatedControllerAck",p.ackSeen);out.put("outputsBlocked",p.simulation);out.put("trainingRunId",p.runId);out.put("virtualArmed",p.simulation&&p.acceptedChannels!=null&&p.acceptedChannels[4]>1500);out.put("lastAcceptedSequence",p.ackSeen?Integer.toUnsignedLong(p.lastAck):null);if(p.acceptedChannels!=null){java.util.List<Integer> channels=new java.util.ArrayList<>();for(int value:p.acceptedChannels)channels.add(value);out.put("acceptedChannels",channels);}return out;}
+    private java.util.Map<String,Object> profileDiagnostics(Profile p){java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("protocol",p.secure!=null?"ZRC3":p.simulation?"ZRC2":"ZRC1");out.put("framesSent",p.framesSent);out.put("acksReceived",p.acksReceived);out.put("ackRejected",p.ackRejected);out.put("sendErrors",p.sendErrors);out.put("validatedControllerAck",p.ackSeen);out.put("outputsBlocked",p.simulation);out.put("trainingRunId",p.runId);out.put("virtualArmed",p.simulation&&p.acceptedChannels!=null&&p.acceptedChannels[4]>1500);out.put("lastAcceptedSequence",p.ackSeen?Integer.toUnsignedLong(p.lastAck):null);if(p.acceptedChannels!=null){java.util.List<Integer> channels=new java.util.ArrayList<>();for(int value:p.acceptedChannels)channels.add(value);out.put("acceptedChannels",channels);}return out;}
     public java.util.Map<String,Object> acknowledgement(LeaseGate.Lease lease){Profile p=profile;if(p==null||p.lease!=lease)return new java.util.LinkedHashMap<>();synchronized(p){return profileDiagnostics(p);}}
     public java.util.Map<String,Object> diagnostics(){Profile p=profile;java.util.Map<String,Object> out=new java.util.LinkedHashMap<>(gate.diagnostics(clock.getAsLong()));if(p!=null){synchronized(p){out.putAll(profileDiagnostics(p));}}else{out.put("protocol","HTTP");out.put("previousUdp",new java.util.LinkedHashMap<>(archived));}return out;}
     public synchronized void stop(LeaseGate.Lease lease){Profile p=profile;if(p!=null&&p.lease==lease){profile=null;close(p,true);}}
@@ -93,7 +96,7 @@ public final class NativeRcStream {
         synchronized(p){
             if(p.closed)return;archived=profileDiagnostics(p);p.closed=true;
             if(sendSafe){try{String[] values=p.lease.safeChannels().split(",");int[] c=new int[10];for(int i=0;i<10;i++)c[i]=Integer.parseInt(values[i]);
-                for(int i=0;i<3;i++){byte[] safe=frame(p.device,p.token,++p.sequence,c,p.simulation);p.socket.send(new DatagramPacket(safe,safe.length));}
+                for(int i=0;i<3;i++){byte[] safe=frame(p.device,p.token,++p.sequence,c,p.simulation);if(p.secure!=null)safe=p.secure.sealRc(safe);p.socket.send(new DatagramPacket(safe,safe.length));}
             }catch(Exception ignored){}}
             p.socket.close();
         }

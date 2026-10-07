@@ -1,4 +1,4 @@
-package: name='in.zebjus.aerion' versionCode='1837501' versionName='18.3.75-android.1' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+package: name='in.zebjus.aerion' versionCode='1837801' versionName='18.3.78-android.1' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
 minSdkVersion:'26'
 targetSdkVersion:'36'
 uses-permission: name='android.permission.INTERNET'

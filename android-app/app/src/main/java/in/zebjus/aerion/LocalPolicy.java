@@ -15,7 +15,7 @@ public final class LocalPolicy {
         if (!"http".equals(uri.getScheme()) || uri.getUserInfo()!=null || uri.getFragment()!=null || !localHost(uri.getHost())) throw new IllegalArgumentException("Use the kit's local HTTP IP address or .local name.");
         String path=uri.getPath();
         boolean read=path.equals("/api/status") || path.equals("/api/telemetry") || path.equals("/api/wifi/saved") || path.equals("/api/wifi/scan") || path.equals("/api/setup/test/status");
-        boolean write=path.equals("/api/control/acquire") || path.equals("/api/control/ping") || path.equals("/api/control/release") || path.equals("/api/command") || path.equals("/api/wifi/use") || path.equals("/api/wifi/set") || path.equals("/api/setup/test");
+        boolean write=path.startsWith("/api/security/") || path.equals("/api/control/acquire") || path.equals("/api/control/ping") || path.equals("/api/control/release") || path.equals("/api/command") || path.equals("/api/wifi/use") || path.equals("/api/wifi/set") || path.equals("/api/setup/test");
         if (!(read && method.equals("GET") || write && method.equals("POST"))) throw new IllegalArgumentException("This request is not a flight API operation.");
         return uri.toURL();
     }

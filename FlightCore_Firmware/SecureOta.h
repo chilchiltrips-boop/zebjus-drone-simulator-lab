@@ -1,6 +1,6 @@
 #pragma once
 uint64_t otaSession=0;uint32_t otaExpected=0,otaAt=0;String otaDigest;mbedtls_sha256_context otaHash;
-bool secureLayoutReady(){const esp_partition_t* p=esp_ota_get_next_update_partition(nullptr);return p&&p->size==0x1e0000;}
+bool secureLayoutReady(){const esp_partition_t* running=esp_ota_get_running_partition();const esp_partition_t* next=esp_ota_get_next_update_partition(nullptr);return running&&next&&running->size==0x1e0000&&next->size==0x1e0000&&((running->address==0x10000&&next->address==0x1f0000)||(running->address==0x1f0000&&next->address==0x10000));}
 void abortSecureOta(){if(firmwareUploadActive){Update.abort();mbedtls_sha256_free(&otaHash);}firmwareUploadActive=false;otaSession=0;}
 void serviceSecureOta(){if(firmwareUploadActive&&millis()-otaAt>10000)abortSecureOta();}
 void secureOta(const String& p){

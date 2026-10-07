@@ -44,13 +44,18 @@ async function fetchLocal(url,options={},timeoutMs=2200){
     throw e;
   }finally{clearTimeout(timer)}
 }
-async function requestBase(base,path,{method='GET',data=null,body=null,timeout=2200,keepalive=false}={}){
+async function rawRequestBase(base,path,{method='GET',data=null,body=null,timeout=2200,keepalive=false}={}){
   const started=performance.now(),headers={'Accept':'application/json'},opts={method,headers,keepalive};
   if(body!==null)opts.body=body;else if(data!==null){headers['Content-Type']='application/x-www-form-urlencoded;charset=UTF-8';opts.body=formBody(data)}
   let res;try{res=await fetchLocal(base+path,opts,timeout)}catch(e){emit({kind:'http-fail',base,path,message:e?.message||String(e)});throw e}
   const text=await res.text();let payload={};try{payload=text?JSON.parse(text):{}}catch(_){payload={ok:res.ok,message:text}}
   if(!res.ok){const err=new Error(payload?.message||payload?.error||`Kit HTTP ${res.status}`);err.status=res.status;err.payload=payload;err.reachable=true;throw err}
   emit({kind:'http-ok',base,path,status:res.status,latencyMs:Math.round(performance.now()-started)});return payload||{};
+}
+async function requestBase(base,path,options={}){
+ const ch=global.ZfcSecurity?.get(base);if(!ch)return rawRequestBase(base,path,options);
+ if(options.body)throw Error('Encrypted firmware upload required.');
+ return ch.request(path,options.data||null,(p,d,t,m)=>rawRequestBase(base,p,{method:m||(d?'POST':'GET'),data:d,timeout:t}),options.timeout||2400,options.method||'GET');
 }
 function isDeviceId(value){return /^(?:ZJ-DRONE|ZFC)-[A-Z0-9-]+$/i.test(String(value||'').trim())}
 function deviceIdentityParts(value){
@@ -102,7 +107,7 @@ function candidateBases(name,knownList=[],ipHint='',includeAp=true){
 }
 async function probeBase(base,{expected='',name='',clientId=''}={}){
   const qs=clientId?`?clientId=${encodeURIComponent(clientId)}`:'';
-  const st=await requestBase(base,'/api/status'+qs,{timeout:2100});
+  const st=await rawRequestBase(base,'/api/status'+(qs?qs+'&discover=1':'?discover=1'),{timeout:2100});
   if(!isCompatibleKit(st))throw new Error('This device is not a compatible ZEBJUS FlightCore controller.');
   if(expected&&!sameDeviceIdentity(st.deviceId,expected))throw Object.assign(new Error('Device ID mismatch: this address belongs to another kit.'),{code:'DEVICE_ID_MISMATCH'});
   if(name&&normalizeKitName(st.name)!==normalizeKitName(name))throw Object.assign(new Error('Kit Name mismatch: this address belongs to another kit.'),{code:'KIT_NAME_MISMATCH'});
@@ -175,24 +180,26 @@ class LocalKitClient{
     return st;
   }
   _accept(st,base,seq=++this._requestSeq){st=this._ownership(st,seq);this.base=base;this.status=st;this.name=st?.name||this.name;this.deviceId=st?.deviceId||this.deviceId;this.ipHint=st?.ip||this.ipHint;this._lastGoodAt=Date.now();rememberKit(st,base);return st}
-  async connect(query='',ipHint='',expectedDeviceId=''){const generation=++this._generation,explicit=String(query||'').trim(),q=explicit||this.name||this.deviceId,expected=expectedDeviceId||(explicit?'':this.deviceId),r=await connect(q,ipHint||this.ipHint,expected,this.clientId);if(generation!==this._generation)throw new Error('Connection request cancelled.');return this._accept(r.status,r.base)}
+  async connect(query='',ipHint='',expectedDeviceId=''){const generation=++this._generation,explicit=String(query||'').trim(),q=explicit||this.name||this.deviceId,expected=expectedDeviceId||(explicit?'':this.deviceId),r=await connect(q,ipHint||this.ipHint,expected,this.clientId);if(generation!==this._generation)throw new Error('Connection request cancelled.');if(r.status.securityRequired){await global.ZfcSecurity.ensure(r.base,r.status,this.clientId,'WEB',(p,d,t)=>rawRequestBase(r.base,p,{method:'POST',data:d,timeout:t}));r.status=await requestBase(r.base,'/api/status?clientId='+encodeURIComponent(this.clientId));}return this._accept(r.status,r.base)}
   disconnect({forgetIdentity=false}={}){this._generation++;this._controlActionSeq++;this._ownershipSeq=++this._requestSeq;this._leaseExpiresAt=0;this.base='';this.status=null;this._lastGoodAt=0;if(forgetIdentity){this.name='';this.deviceId='';this.ipHint=''}}
   async refresh(timeout=2100){if(!this.base)throw new Error('Kit not connected.');const base=this.base,id=this.deviceId,generation=this._generation,seq=++this._requestSeq,st=await requestBase(base,`/api/status?clientId=${encodeURIComponent(this.clientId)}`,{timeout});if(generation!==this._generation)throw new Error('Status request cancelled.');if(id&&!sameDeviceIdentity(st.deviceId,id))throw new Error('Connected device identity changed.');return this._accept(st,base,seq)}
   async reconnect(retries=4){if(this._reconnectPromise)return this._reconnectPromise;this._reconnectPromise=(async()=>{let last;const waits=[0,350,800,1500,2500];for(let i=0;i<Math.max(1,retries);i++){if(waits[i])await new Promise(r=>setTimeout(r,waits[i]));try{return await this.connect(this.name||this.deviceId,this.ipHint,this.deviceId)}catch(e){last=e}}throw last||new Error('Kit reconnect failed.')})();try{return await this._reconnectPromise}finally{this._reconnectPromise=null}}
   async request(path,options={}){if(!this.base)throw Error('Kit not connected.');return requestBase(this.base,path,options)}
   async uploadFirmware(bytes,name,boardId){
     if(!this.base||!this.deviceId)throw Error('Connect and verify the kit first.');
-    const body=new FormData();body.append('firmware',new Blob([bytes],{type:'application/octet-stream'}),name);
-    const path='/api/firmware/update?'+new URLSearchParams({clientId:this.clientId,expectedDeviceId:this.deviceId,boardId});
-    return requestBase(this.base,path,{method:'POST',body,timeout:120000});
+    const ch=global.ZfcSecurity?.get(this.base);if(!ch)throw Error('Pair the kit before encrypted OTA. USB FACTORY is required for migration.');
+    const digest=global.ZfcSecurity.hex(global.ZfcCrypto.sha256(bytes));const data={clientId:this.clientId,expectedDeviceId:this.deviceId};
+    await this.request('/api/firmware/begin',{method:'POST',data:{...data,size:bytes.length,sha256:digest,boardId},timeout:5000});
+    for(let offset=0;offset<bytes.length;offset+=1024){const chunk=bytes.slice(offset,offset+1024);const r=await this.request('/api/firmware/chunk',{method:'POST',data:{...data,offset,data:global.ZfcSecurity.hex(chunk)},timeout:5000});if(r.offset!==offset+chunk.length)throw Error('Firmware offset not confirmed.');}
+    return this.request('/api/firmware/end',{method:'POST',data,timeout:10000});
   }
   async telemetry(compact=false){const generation=this._generation,id=this.deviceId,seq=++this._requestSeq,t=await requestBase(this.base,'/api/telemetry?'+(compact?'stream=rc&':'')+'clientId='+encodeURIComponent(this.clientId),{timeout:1400});if(generation!==this._generation)throw Error('Telemetry request cancelled.');if(t.deviceId&&!sameDeviceIdentity(id,t.deviceId))throw Error('Telemetry Device ID mismatch.');return this._ownership(t,seq)}
   async i2cScan(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/i2c/scan',{timeout:6500})}
   async imuRead(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/imu',{timeout:2200})}
-  async acquire(takeover=false){const generation=this._generation,id=this.deviceId,action=++this._controlActionSeq,r=await requestBase(this.base,'/api/control/acquire',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:id,clientRole:'WEB',...(takeover?{takeover:1}:{})},timeout:1800});if(generation!==this._generation||action!==this._controlActionSeq)throw new Error('Control request cancelled.');if(!r.ok||r.lockMine!==true||!sameDeviceIdentity(r.deviceId,id)||r.controlRole!=='WEB')throw Error('Kit did not return a valid control grant.');this._ownership({...r,locked:true,viewOnly:false},++this._requestSeq);return r}
+  async acquire(takeover=false){if(!this.status?.securityRequired)throw Error('Install matching secure firmware with USB FACTORY before taking control.');if(global.ZfcSecurity?.get(this.base)?.role==='COMPANION')throw Error('App keeps joystick control. Laptop has training and PID permission.');const generation=this._generation,id=this.deviceId,action=++this._controlActionSeq,r=await requestBase(this.base,'/api/control/acquire',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:id,clientRole:'WEB',...(takeover?{takeover:1}:{})},timeout:1800});if(generation!==this._generation||action!==this._controlActionSeq)throw new Error('Control request cancelled.');if(!r.ok||r.lockMine!==true||!sameDeviceIdentity(r.deviceId,id)||r.controlRole!=='WEB')throw Error('Kit did not return a valid control grant.');this._ownership({...r,locked:true,viewOnly:false},++this._requestSeq);return r}
   async heartbeat(){const generation=this._generation,action=this._controlActionSeq,seq=++this._requestSeq,r=await requestBase(this.base,'/api/control/ping',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:1500});if(generation!==this._generation||action!==this._controlActionSeq)throw Error('Heartbeat request cancelled.');if(r.ok)this._ownership({...r,lockMine:true,locked:true,viewOnly:false,controlRole:'WEB'},seq);return r}
   async release({keepalive=false}={}){if(!this.base)return{ok:true};const generation=this._generation,seq=++this._requestSeq;this._controlActionSeq++;try{return await requestBase(this.base,'/api/control/release',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:1200,keepalive})}finally{if(generation===this._generation){this._ownershipSeq=Math.max(seq,this._ownershipSeq);this._leaseExpiresAt=0;if(this.status)this.status.lockMine=false}}}
-  async command(command){if(!this.base)throw new Error('Kit not connected.');const c=command||{},data={clientId:this.clientId,type:String(c.type||''),expectedDeviceId:this.deviceId};Object.entries(c).forEach(([k,v])=>{if(k==='type'||k==='expectedDeviceId')return;data[k]=Array.isArray(v)?v.join(','):(typeof v==='object'&&v!==null?JSON.stringify(v):v)});return requestBase(this.base,'/api/command',{method:'POST',data,timeout:c.type==='rc_frame'?180:['calibrate_gyro','flight_settings_set','settings_restore'].includes(c.type)?6500:2200})}
+  async command(command){if(!this.base)throw new Error('Kit not connected.');const c=command||{},data={clientId:this.clientId,type:String(c.type||''),expectedDeviceId:this.deviceId};Object.entries(c).forEach(([k,v])=>{if(k==='type'||k==='expectedDeviceId')return;data[k]=Array.isArray(v)?v.join(','):(typeof v==='object'&&v!==null?JSON.stringify(v):v)});if(c.type==='pid_set'&&global.ZfcSecurity?.get(this.base)){if(data.pidRevision===undefined){const current=await this.command({type:'pid_get'});data.pidRevision=current.pidRevision;}const r=await requestBase(this.base,'/api/command',{method:'POST',data,timeout:3500});for(let i=0;i<35;i++){await new Promise(resolve=>setTimeout(resolve,80));const confirmed=await this.command({type:'pid_get'});if(confirmed.pidRevision===r.pidRevision&&confirmed.savedRevision===r.pidRevision)return {...confirmed,type:'ack',saved:true,command:'pid_set'};if(confirmed.pidRevision>r.pidRevision)throw Error('PID changed during save; read current kit values.');}throw Error('PID persistence not confirmed. Read kit values before retrying.');}return requestBase(this.base,'/api/command',{method:'POST',data,timeout:c.type==='rc_frame'?180:['calibrate_gyro','flight_settings_set','settings_restore'].includes(c.type)?6500:2200})}
   async rename(name){const r=await requestBase(this.base,'/api/name',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,name},timeout:3200});if(r?.status){const ip=r.status.ip||this.ipHint,base=ip?`http://${ip}`:this.base;return this._accept(r.status,base)}return this.refresh()}
   async resetName(){return requestBase(this.base,'/api/name/reset',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:4200})}
   async scanWifi(){let r;for(let i=0;i<40;i++){r=await requestBase(this.base,'/api/wifi/scan?clientId='+encodeURIComponent(this.clientId),{timeout:1800});if(!r.scanning)return r;await new Promise(resolve=>setTimeout(resolve,250))}throw Error('Wi-Fi scan timed out.')}

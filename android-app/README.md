@@ -1,6 +1,6 @@
-# Aerion Flight Android — 18.3.75-android.1
+# Aerion Flight Android — 18.3.78-android.1
 
-VersionCode 1837501. Install `dist/ZEBJUS_Aerion_V18_3_75_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.75 for A1 or A2.
+VersionCode 1837801. Install `dist/ZEBJUS_Aerion_V18_3_78_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.78 for A1 or A2.
 
 ## Connect and practise
 

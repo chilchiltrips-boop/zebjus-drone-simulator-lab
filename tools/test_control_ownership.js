@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-const ID='ZFC-001122334455',base='http://kit.test',status={ok:true,kit:'ZEBJUS_FLIGHTCORE',deviceId:ID,name:'Lab kit',locked:false,lockMine:false,controlRole:''};
+const ID='ZFC-001122334455',base='http://kit.test',status={ok:true,securityRequired:true,kit:'ZEBJUS_FLIGHTCORE',deviceId:ID,name:'Lab kit',locked:false,lockMine:false,controlRole:''};
 let route=async()=>new Response(JSON.stringify(status)),calls=[];
 const ctx={window:{dispatchEvent(){}},CustomEvent:function(){},localStorage:{getItem(){return null},setItem(){}},sessionStorage:{getItem(){return null},setItem(){}},URLSearchParams,AbortController,performance,setTimeout,clearTimeout,console,fetch:async(url,options)=>{calls.push(url);return route(url,options)}};
 vm.createContext(ctx);vm.runInContext(fs.readFileSync('kit-local.js','utf8'),ctx);
