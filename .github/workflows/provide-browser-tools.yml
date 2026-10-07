@@ -34,3 +34,7 @@ jobs:
         with:
           name: aerion-browser-part-ad
           path: /tmp/aerion-browser-tools/browser.part-ad
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aerion-browser-part-ae
+          path: /tmp/aerion-browser-tools/browser.part-ae
