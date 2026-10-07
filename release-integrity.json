@@ -694,8 +694,8 @@
     },
     {
       "path": "android-app/tests/NativeRcStreamTest.java",
-      "bytes": 10926,
-      "sha256": "4d4d0e9f73f7c65f389a87a06077987d1403b445a4e34acae0a94f4234f810ce"
+      "bytes": 11054,
+      "sha256": "45a021caa43b1c15ceb0cb8c4e30b1f2f6a87429ada6e4ae97b96666a4faac0c"
     },
     {
       "path": "android-app/tests/RouterNetworkPolicyTest.java",
