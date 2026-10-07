@@ -5,13 +5,14 @@ function kit(){const s=w.zebjusSchool,d=s?.getSelectedDevice?.();return s?.isSel
 function allowed(target){const d=kit();return !!d&&d.trainingActive&&d.outputsBlocked===true&&d.trainingTarget===target&&d.trainingController==='APP';}
 async function select(value,target){
  const d=kit();if(!allowed(target))throw Error('Connect and pair the STA kit; select '+target+' in the app first.');
+ if(value==='FC_PID'&&d.boardId!=='ZFC-A2')throw Error('This kit uses the laptop engine. Advanced Kit PID requires A2.');
  const g=++generation;output=null;at=0;sequence=0;acceptedSensorSeq=0;run=d.trainingRunId;binding=d.deviceId;source=target;
  const r=await w.zebjusSchool.client.command({type:'training_engine',engine:value,runId:run});
  if(g!==generation)return;if(!r.outputsBlocked||r.runId!==run||r.deviceId!==binding)throw Error('FC did not confirm virtual output inhibition.');engine=value;return r;
 }
 function stop(){generation++;engine='WEB';output=null;at=0;binding='';run=0;inFlight=false;}
 function tick(target,sensors){
- if(engine!=='FC_PID'||inFlight||performance.now()-lastSent<30)return;const d=kit();
+ if(engine!=='FC_PID'||inFlight||performance.now()-lastSent<100)return;const d=kit();
  if(!allowed(target)||d.deviceId!==binding||d.trainingRunId!==run){stop();return;}
  const g=generation,n=++sequence;lastSent=performance.now();inFlight=true;
  w.zebjusSchool.client.command({type:'training_sensor',runId:run,sensorSeq:n,...sensors}).then(r=>{

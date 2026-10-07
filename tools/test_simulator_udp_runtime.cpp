@@ -36,7 +36,7 @@ void rejected(bool simulation=true,uint64_t token=123,uint32_t sequence=2,uint64
 int main(){
  rcUdpToken=123;rcUdpSimulation=true;rcUdp.input.emplace_back(48,0);try{rcUdpTask(nullptr);}catch(IterationDone&){}assert(webRcFrames==0&&rcUdp.replies.empty());send(true,123,1);
  assert(webRcFrames==1&&webRcCh[0]==1800&&webRcCh[1]==1200&&webRcCh[2]==1700&&webRcCh[4]==2000&&!armed);
- assert(webRcLastMs==clockMs&&controlExpiresAt==clockMs+15000&&trainingExpires==clockMs+5000);
+ assert(webRcLastMs==clockMs&&controlExpiresAt==clockMs+15000&&trainingExpires==clockMs+10000);
  assert(rcUdp.replies.back()[28]==2&&rcUdp.replies.back()[30]==6); // virtual ARM is distinct from physical ARM
  rejected(false);rejected(true,124);rejected(true,123,1);rejected(true,123,2,0x11);
  trainingInput=2;rejected();trainingInput=1;trainingAppOwned=false;rejected();trainingAppOwned=true;

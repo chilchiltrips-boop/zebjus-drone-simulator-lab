@@ -1,10 +1,29 @@
-# ZEBJUS Aerion V18.3.78 — Control ownership and unique kit names
+# ZEBJUS Aerion V18.3.78 — secure paired-kit stages 2–4
 
-The first stage fixes Take Control acknowledgements being discarded after status timeouts. Status and telemetry replies are fenced across grants and disconnects, public monitor packets cannot change browser ownership, and accepted grants start lease renewal immediately. USB boot/flash probing now appears in diagnostic exports. Partial telemetry no longer emits false safety state changes.
+Ship matching app, web and firmware together. Per-kit SRP-6a pairing binds full
+Device ID, name and permissions; HTTP, native RC/ACK and monitor telemetry use
+separate AES-256-GCM keys/counters with replay rejection. Android stores owner
+codes with Keystore encryption. Single-use app invitations grant laptop training
+and PID permission while the app retains joystick ownership; companions cannot
+ARM, take control, run bench outputs or flash. Revoke permissions in app Settings.
 
-App connection has a Kit Name field and verifies both the requested name and remembered Device ID. New automatic firmware names include all 48 MAC bits. Existing custom names remain. Name collisions are refused; the exact Device ID is always checked.
+The first upgrade requires USB FACTORY migration to two 1,966,080-byte slots.
+AP passwords are random per kit. AP provides owner joystick/STOP and explicit
+disarmed Wi-Fi maintenance. STA on a shared router provides training/PID/admin;
+no public WAN physical RC relay is added.
 
-18.3.78 app/web support matching 18.3.78 firmware and retain 18.3.74 control compatibility. This stage does not claim cryptographic pairing: names identify kits, while enrollment/encryption and companion permissions belong to the next stage.
+Tripod/Flight Training require a live paired kit and active inhibited run. PID
+save uses revision checks, a staged FC apply and complete-record persistence with
+confirmed readback. A2 advanced training runs actual FC PID against laptop virtual
+sensors and returns virtual motor commands while every physical output is blocked.
+Native input reaches the UDP publisher independently of HTTP callbacks; validated
+ACKs prevent false stale stops. Frozen virtual outputs still expire.
+
+Install **18.3.78-android.2 / 1837802** and matching A1/A2 firmware. The development
+signing certificate is unchanged. Older clients cannot control secure firmware.
+See [installation, pairing and verification](SUPPORT/V18_3_78_SECURE_KIT_UPDATE.md).
+Automated checks and both board builds are required; physical phone/FC/flash/flight
+verification remains a field-test boundary.
 
 # V18.3.74 connection stability and Tripod roll
 

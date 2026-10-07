@@ -3,6 +3,13 @@
 // permission interoperability are exercised by test_secure_browser/frames/native.
 async function install(context){await context.addInitScript(()=>{
  const channels=new Map();
+ // Native publisher double: use latest input directly, independent of mocked HTTP refresh.
+ let nativeValue,lastAck=0,active=false,last={},sent=0;
+ Object.defineProperty(window,'NativeAerion',{configurable:true,get:()=>nativeValue,set(value){nativeValue=value;if(!value)return;
+  value.offerInput=(token,base,id,cid,csv,run)=>{active=true;sent++;const data=new URLSearchParams({clientId:cid,expectedDeviceId:id,type:'rc_frame',channels:csv,...(run?{simulationRunId:run}:{})});window.__api(base+'/api/command',data.toString()).then(reply=>{if(reply.code===200){last=JSON.parse(reply.body);lastAck=performance.now();}}).catch(()=>{});return true;};
+  value.rcDiagnostics=()=>JSON.stringify({streaming:active,validatedControllerAck:lastAck>0,ackAgeMs:lastAck?performance.now()-lastAck:0,inputAgeMs:0,framesSent:sent,acksReceived:sent,outputsBlocked:!!last.outputsBlocked,trainingRunId:last.trainingRunId||last.runId||0,virtualArmed:!!last.virtualArmed,controllerArmed:!!last.armed,controllerReady:true});
+  value.pauseStream=()=>{active=false;};
+ }});
  const security={
   get:base=>channels.get(base),clear:base=>channels.delete(base),
   async ensure(base,st,cid,role){

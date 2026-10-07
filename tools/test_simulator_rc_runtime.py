@@ -33,7 +33,7 @@ checks = r'''
 void frame(const char*run="42"){server.fields={{"channels","1600,1400,1700,1550,2000,1000,1000,1000,1500,1000"}};if(run)server.fields["simulationRunId"]=run;code=0;commandRc();}
 int main(){
  frame();assert(code==409&&webRcFrames==0);frame(nullptr);assert(code==403&&webRcFrames==0); // bridge cannot control real outputs
- trainingActive=true;frame();assert(code==200&&webRcFrames==1&&webRcCh[2]==1700&&webRcCh[4]==2000&&!armed&&!flightReady&&trainingExpires==clockMs+5000);
+ trainingActive=true;frame();assert(code==200&&webRcFrames==1&&webRcCh[2]==1700&&webRcCh[4]==2000&&!armed&&!flightReady&&trainingExpires==clockMs+10000);
  assert(reply.find("\"armed\":false")!=std::string::npos&&reply.find("\"virtualArmed\":true")!=std::string::npos&&reply.find("\"outputsBlocked\":true")!=std::string::npos);
  auto frames=webRcFrames;frame("41");assert(code==409&&webRcFrames==frames);trainingRunId++;frame();assert(code==409&&webRcFrames==frames); // late input cannot cross destinations
  trainingActive=false;FLIGHT_CONTROL_ENABLED=true;frame("43");assert(code==409&&webRcFrames==frames); // old simulator ARM cannot arm real flight

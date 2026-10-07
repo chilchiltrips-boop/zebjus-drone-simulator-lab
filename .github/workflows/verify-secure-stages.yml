@@ -114,6 +114,7 @@ jobs:
           /tmp/zfc-secure-policy
           g++ -std=c++17 -I tools/security-host tools/test_virtual_pid.cpp -o /tmp/zfc-virtual-pid
           /tmp/zfc-virtual-pid
+          node tools/test_exclusive_session.js
           npm run test:ownership
           npm run test:stability
           npm run test:training-core
@@ -132,15 +133,15 @@ jobs:
           npm run test:rc-monitor
           npm run test:fc-setup
           mkdir -p /tmp/aerion-java
-          javac -d /tmp/aerion-java android-app/app/src/main/java/in/zebjus/aerion/{LeaseGate,LocalPolicy,LaunchPolicy,NativeRcStream,SecureTransport,RouterNetworkPolicy}.java android-app/tests/{LeaseGateTest,NativeRcStreamTest,RouterNetworkPolicyTest}.java
+          javac -d /tmp/aerion-java android-app/app/src/main/java/in/zebjus/aerion/{LeaseGate,LocalPolicy,LaunchPolicy,NativeRcStream,SecureTransport,RouterNetworkPolicy}.java android-app/tests/{LeaseGateTest,NativeRcStreamTest,RouterNetworkPolicyTest,SimulationGapTest}.java
           java -cp /tmp/aerion-java in.zebjus.aerion.LeaseGateTest
+          java -cp /tmp/aerion-java in.zebjus.aerion.SimulationGapTest
           java -cp /tmp/aerion-java in.zebjus.aerion.NativeRcStreamTest
           java -cp /tmp/aerion-java in.zebjus.aerion.RouterNetworkPolicyTest
-          npm run test:network
-          npm run test:mobile-view
-          npm run test:wifi-browser
-          npm run test:setup-browser
-          npm run test:setup-session
-          npm run test:training-browser
-          npm run test:learning-browser
-          npm run test:wix
+          aerion_ui_failures=0
+          for aerion_ui in network mobile-view wifi-browser setup-browser setup-session training-browser learning-browser wix; do
+            echo "::group::$aerion_ui"
+            if ! npm run "test:$aerion_ui"; then aerion_ui_failures=$((aerion_ui_failures + 1)); fi
+            echo '::endgroup::'
+          done
+          test "$aerion_ui_failures" -eq 0

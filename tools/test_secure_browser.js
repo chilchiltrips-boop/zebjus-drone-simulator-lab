@@ -53,7 +53,7 @@ async function pair(page,kit,role,code){
 }
 (async()=>{
  const a=await makeKit('ZFC-001122334455','zebjus_drone_001122334455','0123456789ABCDEF0123456789ABCDEF'),b=await makeKit('ZFC-FFEEDDCCBBAA','zebjus_drone_001122334455','FEDCBA9876543210FEDCBA9876543210');
- browser=await chromium.launch({headless:true});const phone=await browser.newPage(),web=await browser.newPage();await pair(phone,a,'MOBILE',a.code);
+ browser=await chromium.launch({headless:true,executablePath:process.env.ZEBJUS_CHROMIUM});const phone=await browser.newPage(),web=await browser.newPage();await pair(phone,a,'MOBILE',a.code);
  // Avoid recursively wrapping a raw transport: public client acquire is WEB-only; native role is confirmed directly.
  await phone.evaluate(async()=>{const ch=ZfcSecurity.get(client.base);const raw=async(p,d)=>{const r=await fetch(client.base+p,{method:'POST',body:new URLSearchParams(d)});return r.json();};await ch.request('/api/control/acquire',{clientId:client.clientId,expectedDeviceId:client.deviceId},raw);});
  const invitation=await phone.evaluate(()=>client.request('/api/security/invite',{method:'POST',data:{clientId:client.clientId}}));await pair(web,a,'WEB',invitation.invitation);

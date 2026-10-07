@@ -183,6 +183,8 @@ if 'const FAILURE_LIMIT=5;' not in school or 'OFFLINE_AFTER_MS=10000' not in sch
 kit=read('kit-local.js')
 client_endpoints=set(re.findall(r"['\"`](/api/[A-Za-z0-9_./-]+)",kit))
 firmware_endpoints=set(re.findall(r'server\.on\(\"([^\"?]+)',ino))
+secure_routes=read('FlightCore_Firmware/FlightSecurity.h')
+firmware_endpoints.update(re.findall(r'p=="(/api/[^"]+)"',secure_routes))
 for ep in sorted(client_endpoints-firmware_endpoints): fail(f'kit-local.js endpoint missing in firmware: {ep}')
 
 # Build/update references must use stable firmware names and current supported core.
@@ -192,7 +194,7 @@ types_header=read('FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h')
 if 'ZEBJUS_FLIGHTCORE_TYPES.h' not in ino or 'ImuSample' not in types_header: fail('firmware ImuSample type is not safely declared in companion header')
 if 'enum ImuKind' not in types_header or 'IMU_MPU6050' not in types_header or 'IMU_LSM6DS3' not in types_header: fail('firmware ImuKind enum is not safely declared in companion header')
 if re.search(r'^\s*enum\s+ImuKind',ino,re.M): fail('ImuKind must not be declared inside the .ino because Arduino auto-prototype generation can place prototypes before it')
-if "('*.h','*.hpp','*.c','*.cpp')" not in build: fail('firmware build script does not copy companion headers/sources into temporary Arduino sketch')
+if "('*.h','*.hpp','*.c','*.cpp','partitions.csv')" not in build: fail('firmware build script does not copy companion headers/sources into temporary Arduino sketch')
 if 'ZEBJUS_FLIGHTCORE_A1_APP.bin' not in workflow or '_V18_' in workflow: fail('workflow still uses a versioned A1 application filename')
 if 'ZEBJUS_FLIGHTCORE_A2_APP.bin' not in workflow: fail('workflow does not require/publish the A2 application image')
 if 'concurrency:' not in workflow or 'cancel-in-progress: true' not in workflow: fail('workflow lacks firmware-build concurrency protection')

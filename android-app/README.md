@@ -1,6 +1,8 @@
-# Aerion Flight Android — 18.3.78-android.1
+# Aerion Flight Android — 18.3.78-android.2
 
-VersionCode 1837801. Install `dist/ZEBJUS_Aerion_V18_3_78_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.78 for A1 or A2.
+VersionCode 1837802. Install `dist/ZEBJUS_Aerion_V18_3_78_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.78 for A1 or A2.
+
+Read the [FACTORY migration and pairing guide](../SUPPORT/V18_3_78_SECURE_KIT_UPDATE.md) first. Old APKs cannot control secure firmware. Use the per-kit AP password and owner code from the physical label/USB serial output. Training requires STA and a live paired kit; app invitations pair permitted laptop companions.
 
 ## Connect and practise
 
@@ -8,7 +10,7 @@ Open Connect drone → Connect kit Wi-Fi. Choose the kit network using its label
 
 App home has **Tripod**, **Flight Training** and **Real Joystick** buttons. Tap a simulator to enable controls at throttle 0%, DISARMED. Open its web page on a computer connected to the same kit, then manually ARM the virtual drone in the app. No web Enable or simulator propeller checkbox is required. Both A1/C3 and A2/C6 support virtual practice without a ready IMU. Physical outputs remain DISARMED and blocked.
 
-Tripod and Flight Training use **native ZRC2 UDP at 50 Hz** with an exact Device ID/run grant and inhibited physical outputs. The web lab uses a separate **NDJSON1 monitor on port 4211 at 25 Hz**. HTTP does not pace either end. Real flight retains native ZRC1, the 300 ms input watchdog and 900 ms ACK deadline. Destination changes reset throttle and require manual ARM.
+Tripod and Flight Training use **ZFC3-wrapped native simulator UDP at 50 Hz** with an exact Device ID/run grant and inhibited physical outputs. The web lab uses a separate **encrypted ZFC3 NDJSON monitor on port 4211 at 25 Hz**. HTTP does not pace either end. Real flight also uses encrypted native UDP, the 300 ms input watchdog and 900 ms ACK deadline. Destination changes reset throttle and require manual ARM.
 
 Kit settings includes Flight recorder: capture received channels, selection/recovery events, native stop reasons and transport diagnostics; mark an issue and export JSON for ChatGPT or numerical CSV after a test. Opening settings and the Android export picker pauses control. Export the web Telemetry report as well to compare both observers by Device ID and UTC time.
 

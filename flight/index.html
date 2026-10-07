@@ -243,7 +243,7 @@ async function api(path,data,timeout){
  }
  return request(state.base,path,data,timeout,state.deviceId);
 }
-addEventListener('DOMContentLoaded',()=>{const b=document.createElement('button');b.className='secondary';b.textContent='Pair laptop for training / PID';b.onclick=async()=>{try{const r=await api('/api/security/invite',{clientId:cid},15000);notify('Laptop invitation ready · valid 60 seconds');const p=document.createElement('p');p.textContent=state.name+' · '+state.deviceId+' · '+r.invitation;b.after(p);setTimeout(()=>p.remove(),60000);}catch(e){notify(e.message)}};document.querySelector('#settingsDialog .links')?.before(b);});
+addEventListener('DOMContentLoaded',()=>{const b=document.createElement('button');b.className='secondary';b.textContent='Pair laptop for training / PID';b.onclick=async()=>{try{const r=await api('/api/security/invite',{clientId:cid},15000);notify('Laptop invitation ready · valid 60 seconds');const p=document.createElement('p');p.textContent=state.name+' · '+state.deviceId+' · '+r.invitation;b.after(p);setTimeout(()=>p.remove(),60000);}catch(e){notify(e.message)}};const revoke=document.createElement('button');revoke.className='secondary';revoke.textContent='Revoke laptop permissions';revoke.onclick=async()=>{try{await api('/api/security/revoke',{clientId:cid},2400);notify('Laptop permissions revoked.');}catch(e){notify(e.message)}};document.querySelector('#settingsDialog .links')?.before(b,revoke);});
 function validate(s){if(s.kit!=='ZEBJUS_FLIGHTCORE'||!s.deviceId)throw Error('This address is not a ZEBJUS controller.');if(state.deviceId&&s.deviceId!==state.deviceId)throw Error('Different Device ID. Connect to your paired kit.');if(state.lookupName&&kitHost(s.name)!==kitHost(state.lookupName))throw Error('Different Kit Name. Check the name on your kit label.');return s}
 function remember(s){state.deviceId=s.deviceId;state.name=s.name||state.name||'Aerion';Object.assign(saved,{deviceId:s.deviceId,name:state.name,ip:s.ip||new URL(state.base).hostname,base:state.base});if(String(s.mode).startsWith('STA'))saved.staBase=state.base;write(KNOWN,saved);$('expectedId').value=state.deviceId;$('kitName').value=state.name;}
 
@@ -259,7 +259,7 @@ function home(side){const b=$(side).querySelector('.base');b.style.left='50%';b.
 function draw(side){const s=sticks[side],knob=$(side).querySelector('.knob');$(side).classList.toggle('touching',s.pointer!==null);knob.style.left=(50+s.x*30)+'%';knob.style.top=(50+s.y*30)+'%'}
 function resetInputs(){held.clear();for(const side of ['left','right']){const s=sticks[side],pointer=s.pointer;s.pointer=null;s.anchor=null;s.x=s.y=0;try{if(pointer!==null)$(side).releasePointerCapture(pointer)}catch{}home(side);draw(side)}}
 function safeValues(){channels[0]=channels[1]=channels[3]=1500;channels[2]=channels[4]=1000;state.armAt=0;state.wasArmed=false;state.preciseThrottle=1000;resetInputs();render(true)}
-function stopControl(message='',offline=false){state.destinationIntent=(state.destinationIntent||0)+1;const had=state.own,hadRc=state.tx||!!state.pending,base=state.base,id=state.deviceId,client=cid,pending=state.pending,training=state.training,modePending=state.modePending;if(had)window.AerionAndroid?.pauseStream?.(base,id,client);state.training=null;state.modePending=null;state.txEpoch++;state.epoch++;state.busy=false;state.own=state.tx=false;state.resumeControl=false;state.resumeTarget=null;state.recovering=false;state.pending=null;state.fails=0;if(offline){state.online=false;$('battery').hidden=true}safeValues();const safe=channels.join(',');if(had)state.cleanup=Promise.allSettled([state.cleanup,pending,modePending]).then(async()=>{if(training)try{await request(training.base,'/api/command',{clientId:training.client,type:'training_end',session:training.token},600,training.id)}catch{}if(hadRc)try{await request(base,'/api/command',{clientId:client,type:'rc_frame',channels:safe},600,id)}catch{}try{await request(base,'/api/control/release',{clientId:client},600,id)}catch{}});if(message)notify(message)}
+function stopControl(message='',offline=false){state.destinationIntent=(state.destinationIntent||0)+1;const had=state.own,hadRc=state.tx||!!state.pending,base=state.base,id=state.deviceId,client=cid,pending=state.pending,training=state.training,modePending=state.modePending;if(had)window.AerionAndroid?.pauseStream?.(base,id,client);state.training=null;state.simLinkPaused=false;state.modePending=null;state.txEpoch++;state.epoch++;state.busy=false;state.own=state.tx=false;state.resumeControl=false;state.resumeTarget=null;state.recovering=false;state.pending=null;state.fails=0;if(offline){state.online=false;$('battery').hidden=true}safeValues();const safe=channels.join(',');if(had)state.cleanup=Promise.allSettled([state.cleanup,pending,modePending]).then(async()=>{if(training)try{await request(training.base,'/api/command',{clientId:training.client,type:'training_end',session:training.token},600,training.id)}catch{}if(hadRc)try{await request(base,'/api/command',{clientId:client,type:'rc_frame',channels:safe},600,id)}catch{}try{await request(base,'/api/control/release',{clientId:client},600,id)}catch{}});if(message)notify(message)}
 async function connect(take=false){if(state.busy)return;state.busy=true;state.manual=false;const epoch=++state.epoch;render();$('pairMessage').textContent='Checking your kit…';let found=false,error='Kit not found. Join its Wi-Fi and try again.';try{state.lookupName=take?$('kitName').value.trim():'';const typed=$('expectedId').value.trim();if(typed&&state.deviceId&&typed!==state.deviceId)throw Error('Paired Device ID differs. Disconnect before pairing another kit.');if(typed)state.deviceId=typed;const matches=[];for(const base of candidates()){try{const s=validate(await request(base,'/api/status?discover=1&clientId='+encodeURIComponent(cid),null,2400));if(epoch!==state.epoch)return;if(!matches.some(x=>x.status.deviceId===s.deviceId))matches.push({base,status:s});if(state.deviceId)break}catch(e){error=e.message}}if(matches.length>1)throw Error('Multiple kits match this name. Enter the exact Device ID from the kit label or rename one kit.');if(matches.length===1){const hit=matches[0];if(hit.status.securityRequired){await ZfcSecurity.ensure(hit.base,hit.status,cid,window.AerionAndroid?'MOBILE':'WEB',(p,d,t)=>rawRequest(hit.base,p,d,t,hit.status.deviceId));hit.status=validate(await request(hit.base,'/api/status?clientId='+encodeURIComponent(cid),null,2400,hit.status.deviceId));}state.base=hit.base;state.status=hit.status;if(String(hit.status.mode).startsWith('AP'))state.selectedTarget='REAL';state.online=true;state.lastStatus=performance.now();remember(hit.status);channels[5]=String(hit.status.flightMode).toUpperCase()==='RATE'?1500:1000;found=true;}if(!found)throw Error(error);$('pairMessage').textContent='Connected to '+state.name+' · '+state.deviceId;if($('connectDialog').open)$('connectDialog').close()}catch(e){if(epoch!==state.epoch)return;state.online=false;$('pairMessage').textContent=e.message;if(take)notify(e.message)}finally{if(epoch===state.epoch){state.busy=false;render()}}if(found&&take){if(window.AerionAndroid)await reserveMobile();else await takeControl()}return found}
 // A reconnect may restore an explicitly enabled transmitter at safe values.
 // Only a fresh manual ARM may start motors after a hard loss.
@@ -297,9 +297,9 @@ async function takeControl(recovery=false){
  }catch(e){if(epoch===state.epoch){if(recovery){state.resumeControl=true;notify(e.message)}else stopControl(e.message)}}
  finally{if(epoch===state.epoch){state.busy=false;render()}}
 }
-function ackDeadline(){if(state.training)return state.training.transport==='UDP2'?850:2600;return state.rcTimeoutMs?clamp(state.rcTimeoutMs-150,200,850):300}
+function ackDeadline(){if(state.training)return 8000;return state.rcTimeoutMs?clamp(state.rcTimeoutMs-150,200,850):300}
 function interrupted(message,offline=false){
- const target=state.training?.target||state.resumeTarget, retry=(state.tx||state.resumeControl)&&!!state.deviceId&&!state.manual&&!document.hidden;
+ const target=state.training?.target||state.resumeTarget, retry=!state.training&&(state.tx||state.resumeControl)&&!!state.deviceId&&!state.manual&&!document.hidden;
  stopControl(message,offline);state.resumeControl=retry;state.resumeTarget=retry?target:null;state.recoveryLastAt=performance.now();render();
 }
 async function retryControl(){
@@ -343,16 +343,23 @@ function tick(){
  const sampleNow=Date.now();if(sampleNow-controlRecordedAt>=200){controlRecordedAt=sampleNow;appRecorder.control({deviceId:state.deviceId,target:state.selectedTarget,runId:state.training?.runId,offeredChannels:[...channels],nativeRc:window.AerionAndroid?.rcDiagnostics?.(),recovering:state.recovering});}
  const native=window.AerionAndroid?.rcDiagnostics?.();
  if(native?.streaming&&native.validatedControllerAck&&Number(native.ackAgeMs)>=0&&Number(native.ackAgeMs)<ackDeadline()){state.lastAck=performance.now()-Number(native.ackAgeMs);state.recovering=Number(native.ackAgeMs)>150;}
+ if(native?.validatedControllerAck&&Number(native.ackAgeMs)<300){
+  if(state.training){if(Number(native.trainingRunId)!==state.training.runId||native.outputsBlocked!==true){stopControl('Native training identity changed.');return;}state.training.good=state.lastAck;state.status.virtualArmed=!!native.virtualArmed;}
+  else if(typeof native.controllerArmed==='boolean'){state.status.armed=native.controllerArmed;state.status.flightReady=native.controllerReady;if(native.controllerArmed)state.wasArmed=true;else if(state.wasArmed&&channels[4]>1500){safeValues();notify('Controller disarmed. ARM manually when ready.');}}
+ }
  const now=performance.now(),dt=clamp((now-state.lastFrame)/1000,0,.08);state.lastFrame=now;
  if(now-state.lastAck>ackDeadline()){interrupted('Control signal lost. Reconnecting at safe throttle.');return}
  if(now-state.lastAck>150)state.recovering=true;
+ if(state.training&&now-state.lastAck>300&&!state.simLinkPaused){state.simLinkPaused=true;safeValues();notify('Simulation paused. Keeping the same kit and run while the link returns.');}
+ if(state.simLinkPaused&&now-state.lastAck<=150){state.simLinkPaused=false;notify('Same training session restored. ARM the virtual drone manually.');}
  let rate=-AerionSticks.shape(sticks.left.y);if(sticks.left.pointer===null)rate=(held.has('w')?1:0)-(held.has('s')?1:0);
  // Prevent an unseen upward ramp during retries; pilot may still lower throttle.
  if(state.recovering&&rate>0)rate=0;
- state.preciseThrottle=clamp(state.preciseThrottle+rate*AerionSticks.settings().throttleSpeed*dt,1000,2000);channels[2]=Math.round(state.preciseThrottle);render();if(window.AerionAndroid)window.AerionAndroid.offerInput?.(state.base,state.deviceId,cid,channels,state.training?.runId||0);sendFrame();
+ state.preciseThrottle=clamp(state.preciseThrottle+rate*AerionSticks.settings().throttleSpeed*dt,1000,2000);channels[2]=Math.round(state.preciseThrottle);render();if(window.AerionAndroid)window.AerionAndroid.offerInput?.(state.base,state.deviceId,cid,channels,state.training?.runId||0);if(!window.AerionAndroid)sendFrame();
 }setInterval(tick,40);
 let refreshing=false;
 async function refresh(){
+ if(window.AerionAndroid&&state.own&&state.tx)return;
  if(refreshing||state.practiceBusy||state.busy||state.manual||document.hidden||$('connectDialog').open)return;if(!state.online){await connect(false);await retryControl();return}if(state.tx&&(state.recovering||performance.now()-state.lastStatus<1000))return;refreshing=true;const epoch=state.epoch,mode=state.training,txEpoch=state.txEpoch;
  try{const sent=performance.now();let t,s;
   if(state.tx){t=await api('/api/telemetry?stream=rc&clientId='+encodeURIComponent(cid),null,1000);s=t.kit&&typeof t.lockMine==='boolean'?validate(t):validate(await api('/api/status?clientId='+encodeURIComponent(cid),null,1000));}
@@ -397,7 +404,7 @@ async function selectDestination(target,recovery=false){
   // Stop the old publisher before waiting: a revoked old lease must not cancel
   // a fresh destination through a late RC error or native watchdog callback.
   if(state.own)window.AerionAndroid?.pauseStream?.(state.base,state.deviceId,cid);
-  state.tx=false;state.txEpoch++;state.resumeControl=false;state.recovering=false;safeValues();
+  state.tx=false;state.txEpoch++;state.resumeControl=false;state.recovering=false;state.simLinkPaused=false;safeValues();
   await Promise.resolve(state.pending).catch(()=>{});if(cancelled())return;
   if(state.own){
    const confirmed=validate(await api('/api/status?clientId='+encodeURIComponent(cid),null,2400));

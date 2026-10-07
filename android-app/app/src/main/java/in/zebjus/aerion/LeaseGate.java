@@ -11,6 +11,7 @@ public final class LeaseGate {
         private final long generation;
         private long ack;
         private final long ackTimeout;
+        private final boolean simulation;
         private long inputAt;
         private int[] input;
         private volatile boolean controllerAck, controllerArmed, controllerReady;
@@ -18,8 +19,8 @@ public final class LeaseGate {
         private boolean streaming=false;
         private volatile boolean hasRc=false;
         public boolean hasRc(){return hasRc;}
-        Lease(String origin, String id, String client, Object network, long now, long timeout, long generation) {
-            this.origin=origin; deviceId=id; clientId=client; this.network=network; ack=now; ackTimeout=timeout;this.generation=generation;
+        Lease(String origin, String id, String client, Object network, long now, long timeout, long generation,boolean simulation) {
+            this.origin=origin; deviceId=id; clientId=client; this.network=network; ack=now; ackTimeout=timeout;this.generation=generation;this.simulation=simulation;
         }
         public boolean matches(String base, String id, String client) {
             return origin.equals(base) && deviceId.equals(id) && clientId.equals(client);
@@ -65,8 +66,8 @@ public final class LeaseGate {
     }
     public synchronized boolean accept(Grant grant,long now,long controllerTimeout,boolean simulationOutputsBlocked) {
         if (pending!=grant || !foreground || grant.generation!=generation || current!=null) return false;
-        long timeout=simulationOutputsBlocked ? 2600 : controllerTimeout>0 ? Math.max(200,Math.min(MAX_ACK_TIMEOUT_MS,controllerTimeout-100)) : ACK_TIMEOUT_MS;
-        lastStopReason="";pending=null; current=new Lease(grant.origin,grant.deviceId,grant.clientId,grant.network,now,timeout,grant.generation); return true;
+        long timeout=simulationOutputsBlocked ? 8000 : controllerTimeout>0 ? Math.max(200,Math.min(MAX_ACK_TIMEOUT_MS,controllerTimeout-100)) : ACK_TIMEOUT_MS;
+        lastStopReason="";pending=null; current=new Lease(grant.origin,grant.deviceId,grant.clientId,grant.network,now,timeout,grant.generation,simulationOutputsBlocked); return true;
     }
     public synchronized Lease cancel(Grant grant) {
         if(pending==grant)pending=null;
@@ -89,7 +90,10 @@ public final class LeaseGate {
         lease.input=channels.clone();lease.inputAt=now;lease.hasRc=true;lease.mode=channels[5];lease.streaming=true;return true;
     }
     public synchronized int[] input(Lease lease,long now) {
-        return isCurrent(lease)&&lease.input!=null&&now-lease.inputAt<=INPUT_TIMEOUT_MS ? lease.input.clone() : null;
+        if(!isCurrent(lease)||lease.input==null)return null;
+        long age=now-lease.inputAt;if(age>(lease.simulation?900:INPUT_TIMEOUT_MS))return null;
+        if(lease.simulation&&(age>INPUT_TIMEOUT_MS||now-lease.ack>300))return new int[]{1500,1500,1000,1500,1000,lease.mode,1000,1000,1500,1000};
+        return lease.input.clone();
     }
     public synchronized void udpAck(Lease lease,long now,boolean armed,boolean ready) {
         if(isCurrent(lease)){lease.ack=now;lease.controllerAck=true;lease.controllerArmed=armed;lease.controllerReady=ready;}
@@ -106,11 +110,11 @@ public final class LeaseGate {
         Lease old=current; current=null; return old;
     }
     public synchronized java.util.Map<String,Object> diagnostics(long now) {
-        java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("foreground",foreground);out.put("reserved",current!=null);out.put("streaming",current!=null&&current.streaming);out.put("ackAgeMs",current==null?-1:Math.max(0,now-current.ack));out.put("inputAgeMs",current==null||current.input==null?-1:Math.max(0,now-current.inputAt));out.put("lastError",lastStopReason);return out;
+        java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("foreground",foreground);out.put("reserved",current!=null);out.put("streaming",current!=null&&current.streaming);out.put("ackAgeMs",current==null?-1:Math.max(0,now-current.ack));out.put("inputAgeMs",current==null||current.input==null?-1:Math.max(0,now-current.inputAt));out.put("outputsBlocked",current!=null&&current.simulation);out.put("inputSoftStaleMs",INPUT_TIMEOUT_MS);out.put("inputTimeoutMs",current!=null&&current.simulation?900:INPUT_TIMEOUT_MS);out.put("simulationLinkPaused",current!=null&&current.simulation&&now-current.ack>300);out.put("lastError",lastStopReason);return out;
     }
     public synchronized Lease watchdog(long now) {
         if(current==null)return null;
-        if(current.input!=null&&now-current.inputAt>INPUT_TIMEOUT_MS){lastStopReason="Native stick input stopped for more than 300 ms";return fence(false);}
+        if(current.input!=null&&now-current.inputAt>(current.simulation?900:INPUT_TIMEOUT_MS)){lastStopReason="Native stick input exceeded its safety deadline";return fence(false);}
         if(now-current.ack>(current.streaming?current.ackTimeout:5000)){lastStopReason=current.streaming?"Controller RC acknowledgements expired":"Configuration reservation heartbeat expired";return fence(false);}return null;
     }
 }

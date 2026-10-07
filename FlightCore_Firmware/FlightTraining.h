@@ -27,9 +27,9 @@ bool trainingCommand(const String& type){
   if(trainingActive&&!select){sendMessage(423,"A training session is already active");return true;}
   if(trainingSession.length())cancelTrainingToken(trainingSession);if(trainingActive)finishTraining();
   if(target=="REAL"){finishTraining();sendJson(200,trainingJson());return true;}
-  trainingOwner=owner;trainingSession=token;trainingInput=input=="PPM"?2:1;trainingTarget=target=="TRIPOD"?1:2;trainingAppOwned=controlRole=="MOBILE";trainingRunId++;trainingExpires=millis()+5000;trainingActive=true;setupAfterNeutral=true;invalidateRcUdp();webRcLastMs=0;benchStop();disarmFlight("Training: physical outputs blocked");sendJson(200,trainingJson());return true;
+  trainingOwner=owner;trainingSession=token;trainingInput=input=="PPM"?2:1;trainingTarget=target=="TRIPOD"?1:2;trainingAppOwned=controlRole=="MOBILE";trainingRunId++;trainingExpires=millis()+10000;trainingActive=true;setupAfterNeutral=true;invalidateRcUdp();webRcLastMs=0;benchStop();disarmFlight("Training: physical outputs blocked");sendJson(200,trainingJson());return true;
  }
  if(!trainingActive||token!=trainingSession||owner!=trainingOwner){sendMessage(409,"Training lease expired or belongs to another session");return true;}
- if(type=="training_ping"){trainingExpires=millis()+5000;sendJson(200,trainingJson());return true;}
+ if(type=="training_ping"){trainingExpires=millis()+10000;sendJson(200,trainingJson());return true;}
  sendMessage(400,"Unknown training command");return true;
 }

@@ -28,7 +28,7 @@ void rcUdpTask(void*){
    if((FLIGHT_CONTROL_ENABLED||trainingActive)&&rcUdpToken&&frame.token==rcUdpToken&&RcUdpProtocol::permitted(frame,rcUdpSimulation,trainingActive,trainingAppOwned&&trainingInput==1)&&(int32_t)(controlExpiresAt-now)>0&&benchMode==BENCH_NONE&&!fcSetupActive&&!configurationBusy&&!firmwareUploadActive&&(!rcUdpSequenceSeen||RcUdpProtocol::newer(frame.sequence,rcUdpLastSequence))){
     for(int i=0;i<10;i++)webRcCh[i]=frame.channels[i];
     webRcLastMs=now;webRcFrames++;controlExpiresAt=now+LOCK_TIMEOUT_MS;
-    if(trainingActive&&trainingAppOwned&&trainingInput==1)trainingExpires=now+5000;
+    if(trainingActive&&trainingAppOwned&&trainingInput==1)trainingExpires=now+10000;
     rcUdpLastSequence=frame.sequence;rcUdpSequenceSeen=true;accepted=true;rcUdpAccepted++;actualArmed=armed;ready=flightReady||trainingActive;
    }
    if(!accepted){rcUdpRejected++;rcUdpLastReject=!rcUdpToken||frame.token!=rcUdpToken?"Grant expired / changed":!RcUdpProtocol::permitted(frame,rcUdpSimulation,trainingActive,trainingAppOwned&&trainingInput==1)?"Wrong RC mode / simulation ended":(int32_t)(controlExpiresAt-now)<=0?"Control lease expired":benchMode!=BENCH_NONE||fcSetupActive||configurationBusy||firmwareUploadActive?"Setup / outputs inhibit RC":"Replayed sequence";}

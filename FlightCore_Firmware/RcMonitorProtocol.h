@@ -6,7 +6,7 @@
 // Read-only NDJSON1 subscription. No owner, token or command enters this port.
 namespace RcMonitorProtocol {
 constexpr uint16_t PORT=4211;
-constexpr uint32_t PERIOD_MS=40, CLIENT_TIMEOUT_MS=1200;
+constexpr uint32_t PERIOD_MS=100, CLIENT_TIMEOUT_MS=1200;
 constexpr size_t REQUEST_BYTES=1200, PACKET_BYTES=3072;
 inline int requestKind(const char* request,const char* device){
  char line[128];snprintf(line,sizeof(line),"GET /api/rc/live?deviceId=%s HTTP/1.1\r\n",device);
