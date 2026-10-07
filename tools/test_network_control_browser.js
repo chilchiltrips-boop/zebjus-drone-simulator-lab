@@ -14,7 +14,7 @@ async function api(address,form='',actor='phone'){
  else if(d.expectedDeviceId&&d.expectedDeviceId!==ID)fail(409,'Different Device ID');
  else if(u.pathname==='/api/status')body=status(cid);
  else if(u.pathname==='/api/telemetry')body={...status(cid),rc:[...rc],rcAgeMs:source==='NONE'?999999:10,ppmFrameHz:source==='PPM'?50:0,webRcFrameHz:0,flightLoopHz:250};
- else if(u.pathname==='/api/control/acquire'){if(owner&&owner!==cid)fail(423,'Kit owned by another session');else{owner=cid;role=d.clientRole||'WEB'}}
+ else if(u.pathname==='/api/control/acquire'){if(owner&&owner!==cid)fail(423,'Kit owned by another session');else{owner=cid;role=d.clientRole||'WEB';body={ok:true,deviceId:ID,lockMine:true,controlRole:role,lockTimeoutMs:10000}}}
  else if(u.pathname==='/api/control/ping'){if(owner!==cid)fail(423,'View only')}
  else if(u.pathname==='/api/control/release'){if(owner===cid)owner=role=''}
  else if(u.pathname==='/api/wifi/saved')body={ok:true,profiles:[{ssid:'School',preferred:true}]};

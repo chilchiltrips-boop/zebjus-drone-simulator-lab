@@ -17,7 +17,7 @@ async function api(address,form='',actor='browser'){
  else if(u.pathname==='/api/status')body=status(cid);
  else if(u.pathname==='/api/telemetry'&&failTelemetry>0){failTelemetry--;reject(503,'Transient telemetry failure');}
  else if(u.pathname==='/api/telemetry')body={...status(cid),rc:[...rc],rcAgeMs:10,roll:2,pitch:3,yaw:4,gyroX:5,gyroY:6,gyroZ:7,targetAngle:[10,20],targetRate:[30,40,50],motors:[1200,1201,1202,1203],flightLoopHz:250,loopPeriodUs:4000,maxLoopGapUs:4100,loopOverruns:0,webRcFrameHz:25,ppmFrameHz:50,lastDisarmReason:'CH5 low',batteryValid:true,battery:10.6,batteryLow:true};
- else if(u.pathname==='/api/control/acquire'){if(owner&&owner!==cid&&!(d.clientRole==='MOBILE'&&role!=='MOBILE'&&!armed))reject(423,'Mobile app owns this kit');else{owner=cid;role=d.clientRole||'WEB'}}
+ else if(u.pathname==='/api/control/acquire'){if(owner&&owner!==cid&&!(d.clientRole==='MOBILE'&&role!=='MOBILE'&&!armed))reject(423,'Mobile app owns this kit');else{owner=cid;role=d.clientRole||'WEB';body={ok:true,deviceId:ID,lockMine:true,controlRole:role,lockTimeoutMs:10000}}}
  else if(u.pathname==='/api/control/ping'){if(owner!==cid)reject(423,'View only')}
  else if(u.pathname==='/api/control/release'){if(owner===cid){owner=role='';armed=false}}
  else if(u.pathname==='/api/wifi/saved')body={ok:true,profiles:[{ssid:'School',preferred:true},{ssid:'Workshop'}]};

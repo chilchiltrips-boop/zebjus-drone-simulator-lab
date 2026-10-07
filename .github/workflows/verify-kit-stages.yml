@@ -21,38 +21,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Prepare official Android tools for reproducible local builds
+      - name: Verify delivered Android APK from source
         run: |
-          set -euo pipefail
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install 'platforms;android-36' 'build-tools;36.0.0'
-          mkdir -p /tmp/aerion-sdk/platforms /tmp/aerion-sdk/build-tools
-          mkdir -p /tmp/aerion-sdk/platforms/android-36 /tmp/aerion-sdk/build-tools/36.0.0/{lib,lib64}
-          cp "$ANDROID_HOME/platforms/android-36/android.jar" /tmp/aerion-sdk/platforms/android-36/
-          for file in aapt2 zipalign d8 apksigner core-lambda-stubs.jar; do cp "$ANDROID_HOME/build-tools/36.0.0/$file" /tmp/aerion-sdk/build-tools/36.0.0/; done
-          cp "$ANDROID_HOME/build-tools/36.0.0/lib/"*.jar /tmp/aerion-sdk/build-tools/36.0.0/lib/
-          cp "$ANDROID_HOME/build-tools/36.0.0/lib64/"*.so /tmp/aerion-sdk/build-tools/36.0.0/lib64/
-          tar -C /tmp/aerion-sdk -czf /tmp/aerion-sdk.tar.gz .
-          split -b 20000000 /tmp/aerion-sdk.tar.gz /tmp/aerion-sdk.part-
-          ls -l /tmp/aerion-sdk.part-*
-      - uses: actions/upload-artifact@v4
-        with:
-          name: official-android-tools-aa
-          path: /tmp/aerion-sdk.part-aa
-      - uses: actions/upload-artifact@v4
-        with:
-          name: official-android-tools-ab
-          path: /tmp/aerion-sdk.part-ab
-          if-no-files-found: ignore
-      - uses: actions/upload-artifact@v4
-        with:
-          name: official-android-tools-ac
-          path: /tmp/aerion-sdk.part-ac
-          if-no-files-found: ignore
-      - uses: actions/upload-artifact@v4
-        with:
-          name: official-android-tools-ad
-          path: /tmp/aerion-sdk.part-ad
-          if-no-files-found: ignore
+          python3 android-app/tools/build_apk.py --verify-only --build-tools "$ANDROID_HOME/build-tools/36.0.0" --android-jar "$ANDROID_HOME/platforms/android-36/android.jar"
       - name: Verify control and recorded evidence
         run: |
           npm run test:ownership
@@ -67,3 +39,48 @@ jobs:
           java -cp /tmp/aerion-native-tests in.zebjus.aerion.LeaseGateTest
           java -cp /tmp/aerion-native-tests in.zebjus.aerion.NativeRcStreamTest
           java -cp /tmp/aerion-native-tests in.zebjus.aerion.RouterNetworkPolicyTest
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Verify app and web together
+        run: |
+          npm run test:network
+          npm run test:mobile-view
+          npm run test:setup-session
+          npm run test:wifi-browser
+          node android-app/tests/browser_modes_test.js
+  firmware:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      ARDUINO_NETWORK_CONNECTION_TIMEOUT: 120s
+    steps:
+      - uses: actions/checkout@v5
+      - name: Configure Arduino cache
+        run: |
+          printf '%s\n' "ARDUINO_DIRECTORIES_DATA=$RUNNER_TEMP/zebjus-arduino/data" "ARDUINO_DIRECTORIES_DOWNLOADS=$RUNNER_TEMP/zebjus-arduino/downloads" >> "$GITHUB_ENV"
+      - uses: arduino/setup-arduino-cli@v2
+        with:
+          version: '1.5.1'
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/zebjus-arduino
+          key: ${{ runner.os }}-arduino-1.5.1-esp32-3.3.12-complete-v1
+      - name: Compile and verify both controllers
+        run: |
+          python3 -B tools/build_firmware.py --install-only
+          python3 tools/embed_ap_pages.py --check
+          python3 -B tools/build_firmware.py --board all --skip-core-install
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stage-firmware
+          if-no-files-found: error
+          path: |
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_APP.bin
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_*_FACTORY.bin
+            FlightCore_Firmware/catalog.json
+            FlightCore_Firmware/build-report.json
+            FlightCore_Firmware/latest.json
+            firmware-catalog.json
+            firmware-latest.json

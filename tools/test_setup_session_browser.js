@@ -19,7 +19,7 @@ function setup(){return {...status(),supported:true,active:fc.active,session:fc.
   if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'content-type'}});
   if(url.pathname==='/api/status')return reply(status(cid));
   if(url.pathname==='/api/telemetry')return reply({...status(cid),type:'telemetry',viewOnly:cid!==fc.owner,rcSource:'NONE',rcAgeMs:999999,roll:0,pitch:0,yaw:0,gyroX:0,gyroY:0,gyroZ:0,sensors:{imu:{fresh:true,usedInFlight:true}}});
-  if(url.pathname==='/api/control/acquire'){if(fc.owner&&fc.owner!==cid)return reply({message:'Another controller owns this kit'},423);fc.owner=cid;fc.ownerAt=Date.now();fc.acquires++;return reply({ok:true,lockMine:true,lockTimeoutMs:15000});}
+  if(url.pathname==='/api/control/acquire'){if(fc.owner&&fc.owner!==cid)return reply({message:'Another controller owns this kit'},423);fc.owner=cid;fc.ownerAt=Date.now();fc.acquires++;return reply({ok:true,deviceId:ID,controlRole:'WEB',lockMine:true,lockTimeoutMs:10000});}
   if(url.pathname==='/api/control/ping'){if(cid===fc.owner)fc.ownerAt=Date.now();return reply(cid===fc.owner?{ok:true}:{message:'Control lost'},cid===fc.owner?200:423);}
   if(url.pathname==='/api/control/release'){if(cid===fc.owner){fc.owner='';fc.active=false;}return reply({ok:true});}
   if(url.pathname==='/api/wifi/saved')return reply({ok:true,profiles:[]});

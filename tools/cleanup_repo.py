@@ -22,6 +22,7 @@ LEGACY_FILES = [
     'android-app/dist/ZEBJUS_Aerion_V18_3_71_Android.apk',
     'android-app/dist/ZEBJUS_Aerion_V18_3_72_Android.apk',
     'android-app/dist/ZEBJUS_Aerion_V18_3_73_Android.apk',
+    'android-app/dist/ZEBJUS_Aerion_V18_3_74_Android.apk',
     'drone3d.js',
     'wiring2d.js',
     'learning-lab.js',

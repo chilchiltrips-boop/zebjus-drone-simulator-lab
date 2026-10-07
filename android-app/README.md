@@ -1,6 +1,6 @@
-# Aerion Flight Android — 18.3.74-android.1
+# Aerion Flight Android — 18.3.75-android.1
 
-VersionCode 1837401. Install `dist/ZEBJUS_Aerion_V18_3_74_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.74 for A1 or A2.
+VersionCode 1837501. Install `dist/ZEBJUS_Aerion_V18_3_75_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.75 for A1 or A2.
 
 ## Connect and practise
 
@@ -22,4 +22,4 @@ With JDK 17 and official Android SDK 36 tools, set `ANDROID_SDK_ROOT` and the ex
 
 Java tests cover grant scope, cancellation, old replies, watchdogs, UDP ACK scope/replay/loss and STOP. Browser tests use the actual bundled UI/adapter and web lab against a simulated kit; firmware host tests execute actual simulator/PWM guards. No Android phone/emulator or physical drone was tested.
 
-See [update/test guide](../SUPPORT/V18_3_74_CONNECTION_AND_TRIPOD.md) for installation and exact test boundaries.
+See [update/test guide](../SUPPORT/V18_3_75_CONNECTION_AND_TRIPOD.md) for installation and exact test boundaries.
