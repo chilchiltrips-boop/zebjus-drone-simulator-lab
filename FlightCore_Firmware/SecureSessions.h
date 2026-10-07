@@ -9,7 +9,7 @@ bool secureMonitorAllowed(uint64_t);void secureMonitorSeen(uint64_t);
 #include <memory>
 #include "src/crypto/esp_srp.h"
 struct SecureSession {
- uint64_t id=0,send=0,ackSend=0,monitorSend=0;uint32_t expires=0;
+ uint64_t id=0,send=0,ackSend=0,monitorSend=0;uint32_t expires=0,lastActivity=0;
  String client,role,credential;uint8_t keys[5][32]={};ZfcSecure::ReplayWindow httpReplay,rcReplay;
 };
 SecureSession secureSessions[6];SemaphoreHandle_t secureMutex=nullptr;

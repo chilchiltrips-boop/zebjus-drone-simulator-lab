@@ -10,8 +10,9 @@
 #include "../FlightCore_Firmware/RcPriority.h"
 class String:public std::string{public:using std::string::string;String(const std::string&s):std::string(s){}String(uint32_t n):std::string(std::to_string(n)){}bool startsWith(const char*s)const{return rfind(s,0)==0;}bool equalsIgnoreCase(const String&s)const{String a=*this,b=s;std::transform(a.begin(),a.end(),a.begin(),::tolower);std::transform(b.begin(),b.end(),b.begin(),::tolower);return a==b;}};
 uint32_t now=100;uint32_t millis(){return now;}
-struct Session{uint64_t id=0;String role;uint32_t expires=0;}sessions[6],*secureCurrent=nullptr;
+struct Session{uint64_t id=0;String role;uint32_t expires=0;String client;uint32_t lastActivity=0;}sessions[6],*secureCurrent=nullptr;
 Session* secureFind(uint64_t id){for(auto& s:sessions)if(s.id==id&&(int32_t)(s.expires-now)>0)return &s;return nullptr;}
+using SecureSession=Session;
 int secureMutex=0,stateMux=0;const int portMAX_DELAY=0;
 void xSemaphoreTake(int,int){}void xSemaphoreGive(int){}void portENTER_CRITICAL(int*){}void portEXIT_CRITICAL(int*){}
 WebAppScope::Registry webAppRegistry;
@@ -46,6 +47,7 @@ int main(){
  secureCurrent=&sessions[1];webAppRegister(true);assert(trainingObserverAt==0);serviceTraining();assert(!trainingActive&&!trainingWebSession&&!armed);
  reg(1,"123457");select("123457","TRAIN-SESSION-THREE");assert(trainingActive);now+=10000;trainingExpires=now+10000;serviceTraining();assert(!trainingActive&&!armed); // observer vanished
  now=0xfffffff0;WebAppScope::Registry r;assert(r.add(99,999999,now)==999999);assert(r.add(100,999999,now)==100000);assert(r.find(99,now+9999));assert(!r.find(99,now+10000));assert(r.add(101,999999,now+10000)==999999);
+ now=20000;sessions[0].lastActivity=0;sessions[0].client="BROWSER-CLOSED";assert(secureBrowserRetired(sessions[0]));sessions[0].lastActivity=now;assert(!secureBrowserRetired(sessions[0]));sessions[0].lastActivity=0;sessions[0].client=controlOwner;assert(!secureBrowserRetired(sessions[0]));assert(!secureBrowserRetired(sessions[3]));
  using namespace RcPriority;assert(choose(false,0,true,true)==PPM);assert(choose(false,1,true,true)==PPM);assert(choose(false,1,false,true)==NETWORK);assert(choose(false,2,false,true)==NONE);assert(choose(false,0,false,false)==NONE);assert(choose(true,1,true,true)==NETWORK);assert(choose(true,2,true,true)==PPM);
  std::cout<<"PASS: production authenticated WebApp register/collision/binding, two browsers/phones, AP denial, same-run gap, switch neutral, stale observer expiry, wraparound; fresh PPM first in physical flight\n";
 }

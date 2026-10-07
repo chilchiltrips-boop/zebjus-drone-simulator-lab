@@ -48,9 +48,9 @@ void pairingHello(){
 void pairingProof(){
  uint8_t proof[64],answer[64];String user=deviceId+"/"+pairPending.credential;
  if(!pairPending.srp||(int32_t)(pairPending.expires-millis())<=0||server.arg("sessionId")!=secureId(pairPending.id)||!secureUnhex(server.arg("M1"),proof,64)||esp_srp_exchange_proofs(pairPending.srp,(char*)user.c_str(),user.length(),(char*)proof,(char*)answer)!=ESP_OK){clearPairPending();sendMessage(403,"Pairing code not accepted");return;}
- xSemaphoreTake(secureMutex,portMAX_DELAY);SecureSession* target=nullptr;for(auto& s:secureSessions)if(!s.id||(int32_t)(s.expires-millis())<=0){target=&s;break;}
+ xSemaphoreTake(secureMutex,portMAX_DELAY);SecureSession* target=nullptr;for(auto& s:secureSessions)if(!s.id||(int32_t)(s.expires-millis())<=0||secureBrowserRetired(s)){target=&s;break;}
  if(!target){xSemaphoreGive(secureMutex);clearPairPending();sendMessage(423,"All pairing sessions are in use");return;}
- *target=SecureSession();target->id=pairPending.id;target->client=pairPending.client;target->role=pairPending.role;target->credential=pairPending.credential;target->expires=millis()+7200000;
+ webAppRegistry.remove(target->id);*target=SecureSession();target->id=pairPending.id;target->client=pairPending.client;target->role=pairPending.role;target->credential=pairPending.credential;target->expires=millis()+7200000;target->lastActivity=millis();
  const char* channels[]={"HTTP_C2S","HTTP_S2C","RC_C2S","ACK_S2C","MONITOR_S2C"};
  bool derived=true;for(int i=0;i<5;i++){String info="ZFC3|"+deviceId+"|"+user+"|"+secureId(target->id)+"|"+target->client+"|"+target->role+"|"+channels[i];if(mbedtls_hkdf(mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),pairPending.saltHash,32,pairPending.key,64,(const uint8_t*)info.c_str(),info.length(),target->keys[i],32)!=0)derived=false;}
  if(!derived){target->id=0;memset(target->keys,0,sizeof(target->keys));xSemaphoreGive(secureMutex);clearPairPending();sendMessage(503,"Session key derivation failed");return;}String sid=secureId(target->id);xSemaphoreGive(secureMutex);
@@ -100,7 +100,7 @@ void secureRequest(){
  uint64_t id=strtoull(sid.c_str(),nullptr,16),seq=strtoull(counter.c_str(),nullptr,10);size_t n=encoded.length()/2;
  auto cipher=std::unique_ptr<uint8_t[]>(new uint8_t[n]);auto plain=std::unique_ptr<uint8_t[]>(new uint8_t[n]);if(!secureUnhex(encoded,cipher.get(),n)){sendMessage(400,"Invalid secure envelope");return;}
  String aad="ZFC3|"+sid+"|"+counter+"|HTTP_C2S";xSemaphoreTake(secureMutex,portMAX_DELAY);auto* s=secureFind(id);
- bool ok=s&&s->httpReplay.allowed(seq)&&ZfcSecure::open(s->keys[0],seq,(uint8_t*)aad.c_str(),aad.length(),cipher.get(),n,plain.get());if(ok)s->httpReplay.accept(seq);xSemaphoreGive(secureMutex);
+ bool ok=s&&s->httpReplay.allowed(seq)&&ZfcSecure::open(s->keys[0],seq,(uint8_t*)aad.c_str(),aad.length(),cipher.get(),n,plain.get());if(ok){s->httpReplay.accept(seq);s->lastActivity=millis();}xSemaphoreGive(secureMutex);
  if(!ok){sendMessage(401,"Pair this kit again; session or authentication expired");return;}plain[n-16]=0;
  secureCurrent=s;secureRequestSeq=seq;server.secureContext=true;
  if(!secureParse(String((char*)plain.get()))){sendMessage(400,"Invalid authenticated arguments");}else if(server.arg("expectedDeviceId")!=deviceId||server.arg("clientId")!=s->client){sendMessage(409,"Authenticated identity differs");}else{server.setSecureArg("clientId",s->client);server.setSecureArg("clientRole",s->role);secureDispatch(server.arg("path"));}

@@ -89,8 +89,8 @@
     },
     {
       "path": "FlightCore_Firmware/FlightSecurity.h",
-      "bytes": 15080,
-      "sha256": "310f575806df15d01851ae7dc5ab61e89693832d7030e7978539ec7b39a4155a"
+      "bytes": 15196,
+      "sha256": "002fea616374372afa050cc6365d7cc73ec5f627fb21f3cd6da228304efcc786"
     },
     {
       "path": "FlightCore_Firmware/FlightSetup.h",
@@ -114,8 +114,8 @@
     },
     {
       "path": "FlightCore_Firmware/FlightWebApp.h",
-      "bytes": 2796,
-      "sha256": "a1c1707ba17897e9e745597a5d1c22121a6c8ecc92e20d4ea0a994f620ddb7dd"
+      "bytes": 3353,
+      "sha256": "140845880c9a5b80ae49ca7ccdb2fb3bc4d2ae51597680484c44d9c27d01e6bc"
     },
     {
       "path": "FlightCore_Firmware/RcLinkPolicy.h",
@@ -154,8 +154,8 @@
     },
     {
       "path": "FlightCore_Firmware/SecureSessions.h",
-      "bytes": 5482,
-      "sha256": "351d248bb48e375db058fd7a16b1aee663cd4f3a0f015168c38ef878ef8577ac"
+      "bytes": 5497,
+      "sha256": "d037773707ca48689ec3037c7b8deba30ec807a4858703fed2d02ec534872cd1"
     },
     {
       "path": "FlightCore_Firmware/VirtualPid.h",
@@ -174,8 +174,8 @@
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino",
-      "bytes": 138802,
-      "sha256": "28049c5e557e6ce56979f4fe6c083abe37415c63bbb1bafe857c470b0a4e19d5"
+      "bytes": 138850,
+      "sha256": "0ac12c60d68896c395f74584bd06a39d668763a159d9d0d6e621226175c458cc"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -1060,7 +1060,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 43919,
-      "sha256": "2c193e9f98a50bf30fbf11351ac335cf233d88fb829c33e030e877544b07b294"
+      "sha256": "612fa6373da22458e68924bcdbdb16c2142353c606071734ecd5aec1b610be15"
     },
     {
       "path": "offline-support.js",
@@ -1309,8 +1309,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 83620,
-      "sha256": "5204a7388fe4cf68eabb5db81c417ce14719196eb7ce2be5de194400fc926f61"
+      "bytes": 83668,
+      "sha256": "d3a56df781e0cdb43caabb4cdd44592cd6c36fd6f0b9716687040dd98344ba36"
     },
     {
       "path": "server.js",
@@ -1794,8 +1794,8 @@
     },
     {
       "path": "tools/test_webapp_scope.cpp",
-      "bytes": 5478,
-      "sha256": "295e10efc4b72ea3aaf201f8e27f3148495f61e8c39213fffadfb4c53c3aabd5"
+      "bytes": 5879,
+      "sha256": "104ddd510fb45347f14811e0f940ea6e0e7bfbfc0e8a38be8d792d2473eb764f"
     },
     {
       "path": "tools/test_wifi_runtime.py",
