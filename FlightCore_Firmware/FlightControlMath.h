@@ -10,7 +10,13 @@ struct FlightSettings{
  bool modeSwitch=true,handover=true;
 };
 namespace FlightMath{
+inline float clamp(float v,float lo,float hi){return fmaxf(lo,fminf(hi,v));}
 inline float lowPass(float old,float sample,float hz,float dt){if(hz<=0)return sample;float a=dt/(dt+1.0f/(6.2831853f*hz));return old+a*(sample-old);}
+inline float pidStep(float error,float kp,float ki,float kd,float dt,float hz,float& previous,float& integral,float& derivative){
+ derivative=lowPass(derivative,(error-previous)/dt,hz,dt);
+ integral=clamp(integral+ki*(error+previous)*dt*.5f,-400,400);previous=error;
+ return clamp(kp*error+integral+kd*derivative,-400,400);
+}
 inline void orient(float& x,float& y,float& z,uint8_t orientation){
  // Four yaw rotations, optionally mounted upside-down. All matrices are right-handed.
  if(orientation>=4){y=-y;z=-z;}float a=x,b=y;

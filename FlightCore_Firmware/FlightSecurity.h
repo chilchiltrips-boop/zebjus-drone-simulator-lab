@@ -65,6 +65,7 @@ bool secureSendJson(int code,const String& body){
  cors();server.sendHeader("Cache-Control","no-store");server.send(200,"application/json","{\"sessionId\":\""+sid+"\",\"seq\":\""+counter+"\",\"cipher\":\""+secureHex(out.get(),plain.length()+16)+"\"}");return true;
 }
 bool secureOwner(){return secureCurrent&&secureCurrent->credential=="OWNER";}
+bool securePidPermission(){return secureCurrent&&(secureOwner()?controlAuthorized():trainingActive&&trainingAppOwned&&controlRole=="MOBILE");}
 void secureInvite(){
  if(!secureOwner()||armed||benchMode!=BENCH_NONE||setupMode||!lockMine(secureCurrent->client)){sendMessage(403,"Owner control on STA and disarmed kit required to invite a laptop");return;}
  PairCredential* c=nullptr;for(auto& x:pairInvites)if(!x.length||(int32_t)(x.expires-millis())<=0){c=&x;break;}if(!c){sendMessage(429,"Use or wait for existing invitations");return;}
@@ -81,9 +82,11 @@ bool securePermission(const String& path){
   if(!flight&&!maintenance){sendMessage(403,"AP supports joystick and STOP; use STA for training and PID");return false;}
  }return true;
 }
+#include "SecureOta.h"
 void secureDispatch(const String& p){
  if(!securePermission(p))return;
- if(p=="/api/security/info"){sendJson(200,"{\"ok\":true,\"deviceId\":\""+deviceId+"\",\"name\":\""+jsonEscape(kitName)+"\",\"role\":\""+secureCurrent->role+"\",\"protocol\":\"ZFC3\",\"pidPermission\":true,\"controlPermission\":"+String(secureOwner()?"true":"false")+"}");return;}
+ if(p=="/api/firmware/begin"||p=="/api/firmware/chunk"||p=="/api/firmware/end"){secureOta(p);return;}
+ if(p=="/api/security/info"){sendJson(200,"{\"ok\":true,\"deviceId\":\""+deviceId+"\",\"name\":\""+jsonEscape(kitName)+"\",\"role\":\""+secureCurrent->role+"\",\"mode\":\""+String(setupMode?"AP":"STA")+"\",\"protocol\":\"ZFC3\",\"pidPermission\":true,\"controlPermission\":"+String(secureOwner()?"true":"false")+"}");return;}
  if(p=="/api/security/maintenance"){if(!secureOwner()||armed||benchMode!=BENCH_NONE){sendMessage(423,"Disarm for Wi-Fi maintenance");return;}secureMaintenanceUntil[secureCurrent-secureSessions]=millis()+120000;sendMessage(200,"Wi-Fi maintenance available for two minutes");return;}
  if(p=="/api/security/invite"){secureInvite();return;}
  if(p=="/api/security/revoke"){if(!secureOwner()){sendMessage(403,"Owner required");return;}xSemaphoreTake(secureMutex,portMAX_DELAY);for(auto& s:secureSessions)if(s.role=="COMPANION")s.expires=0;xSemaphoreGive(secureMutex);for(auto& c:pairInvites)c.length=0;sendMessage(200,"Laptop permissions revoked");return;}
