@@ -1,0 +1,65 @@
+name: Verify staged kit compatibility
+on:
+  push:
+    branches: [codex/unique-kit-stages]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kit-stages-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  compatibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare official Android tools for reproducible local builds
+        run: |
+          set -euo pipefail
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install 'platforms;android-36' 'build-tools;36.0.0'
+          mkdir -p /tmp/aerion-sdk/platforms /tmp/aerion-sdk/build-tools
+          cp -a "$ANDROID_HOME/platforms/android-36" /tmp/aerion-sdk/platforms/
+          cp -a "$ANDROID_HOME/build-tools/36.0.0" /tmp/aerion-sdk/build-tools/
+          tar -C /tmp/aerion-sdk -czf /tmp/aerion-sdk.tar.gz .
+          split -b 20000000 /tmp/aerion-sdk.tar.gz /tmp/aerion-sdk.part-
+      - uses: actions/upload-artifact@v4
+        with:
+          name: official-android-tools-aa
+          path: /tmp/aerion-sdk.part-aa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: official-android-tools-ab
+          path: /tmp/aerion-sdk.part-ab
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: official-android-tools-ac
+          path: /tmp/aerion-sdk.part-ac
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: official-android-tools-ad
+          path: /tmp/aerion-sdk.part-ad
+          if-no-files-found: ignore
+      - name: Verify control and recorded evidence
+        run: |
+          npm run test:ownership
+          npm run test:stability
+          npm run test:control
+          npm run test:wifi
+          npm run test:recorder
+      - name: Verify native networking
+        run: |
+          mkdir -p /tmp/aerion-native-tests
+          javac -d /tmp/aerion-native-tests android-app/app/src/main/java/in/zebjus/aerion/{LeaseGate,NativeRcStream,LocalPolicy,LaunchPolicy,RouterNetworkPolicy}.java android-app/tests/{LeaseGateTest,NativeRcStreamTest,RouterNetworkPolicyTest}.java
+          java -cp /tmp/aerion-native-tests in.zebjus.aerion.LeaseGateTest
+          java -cp /tmp/aerion-native-tests in.zebjus.aerion.NativeRcStreamTest
+          java -cp /tmp/aerion-native-tests in.zebjus.aerion.RouterNetworkPolicyTest

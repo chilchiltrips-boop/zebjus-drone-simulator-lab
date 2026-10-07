@@ -4,16 +4,17 @@ const fields=['boot','deviceId','firmware','sampleMs','controllerMs','rcFrameCou
 const clean=v=>{if(Array.isArray(v))return v.map(clean);if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).filter(([k])=>!/(token|password|passphrase|clientId|session|authorization|wifiProfiles)/i.test(k)).map(([k,x])=>[k,clean(x)]));return v;};
 const copy=v=>JSON.parse(JSON.stringify(clean(v))),number=v=>typeof v==='number'&&Number.isFinite(v),fmt=(v,unit='')=>number(v)?v.toFixed(v%1?1:0)+unit:'—';
 function create(a={}){
- let samples=[],controlSamples=[],controlAt=0,events=[],recording=true,identity='',latest=null,lastAt=0,lastReceivedAt=0,startAt=Date.now(),dropped=0,previous='',config={},pageErrors=[];
+ let samples=[],controlSamples=[],controlAt=0,events=[],recording=true,identity='',latest=null,lastAt=0,lastReceivedAt=0,startAt=Date.now(),dropped=0,previous={},config={},pageErrors=[];
  function event(kind,message,data){if(!recording)return;events.push({at:new Date().toISOString(),kind,message:String(message).slice(0,600),...(data?{data:copy(data)}:{})});if(events.length>MAX_EVENTS){events.shift();dropped++;}}
- function reset(){samples=[];controlSamples=[];controlAt=0;events=[];config={};latest=null;lastAt=0;lastReceivedAt=0;startAt=Date.now();dropped=0;previous='';pageErrors=[];}
+ function reset(){samples=[];controlSamples=[];controlAt=0;events=[];config={};latest=null;lastAt=0;lastReceivedAt=0;startAt=Date.now();dropped=0;previous={};pageErrors=[];}
  function control(data){const now=Date.now();if(!recording||now-controlAt<200)return;controlAt=now;controlSamples.push({receivedAt:new Date(now).toISOString(),...copy(data)});if(controlSamples.length>1200){controlSamples.shift();dropped++;}}
  function ingest(t,context={}){
   if(!t?.deviceId)return;if(identity&&identity!==t.deviceId)reset();identity=t.deviceId;latest=copy(t);lastReceivedAt=Date.now();
   const now=Date.now();if(!recording)return;
   for(const key of ['pid','flightSettings','calibration','receiver','expansion','sensors','boardId','firmware','rcTimeoutMs','rcPreference'])if(t[key]!==undefined)config[key]=copy(t[key]);
-  const state=JSON.stringify([t.armed,t.rcSource,t.controlRole,t.trainingActive,t.trainingTarget,t.trainingRunId,t.lastDisarmReason,t.outputWatchdogTrips]);
-  if(previous&&state!==previous)event('state','Controller state changed',{armed:t.armed,rcSource:t.rcSource,controlRole:t.controlRole,target:t.trainingTarget,run:t.trainingRunId,active:t.trainingActive,reason:t.lastDisarmReason,watchdogTrips:t.outputWatchdogTrips});previous=state;
+  const keys=['armed','rcSource','controlRole','trainingActive','trainingTarget','trainingRunId','lastDisarmReason','outputWatchdogTrips'];
+  const changes={};for(const key of keys)if(key in t){if(key in previous&&previous[key]!==t[key])changes[key]={from:previous[key],to:t[key]};previous[key]=t[key];}
+  if(Object.keys(changes).length)event('state','Controller state changed',{changes});
   if(now-lastAt<100)return;lastAt=now;const row={receivedAt:new Date(now).toISOString(),elapsedMs:now-startAt,...Object.fromEntries(fields.filter(k=>t[k]!==undefined).map(k=>[k,copy(t[k])])),observer:copy(context)};
   samples.push(row);if(samples.length>MAX_SAMPLES){samples.shift();dropped++;}
  }

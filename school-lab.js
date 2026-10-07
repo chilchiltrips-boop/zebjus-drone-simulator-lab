@@ -192,7 +192,7 @@ async function requestModules(force=false){
 }
 function reconcileSelection(){if(st.selectedDeviceId&&!selected())st.selectedDeviceId='';if(st.manualDisconnect){st.selectedDeviceId='';savePrefs();return}if(!st.selectedDeviceId){let d=null;if(st.preferredDeviceId)d=st.devices.find(x=>window.ZebjusDroneKit.sameDeviceIdentity(x.deviceId,st.preferredDeviceId))||null;if(!d&&!st.preferredDeviceId&&st.preferredDeviceName){const matches=st.devices.filter(x=>x.online&&window.ZebjusDroneKit.normalizeKitName(x.deviceName)===window.ZebjusDroneKit.normalizeKitName(st.preferredDeviceName));if(matches.length===1)d=matches[0]}if(!d&&!st.preferredDeviceId&&st.devices.filter(x=>x.online).length===1)d=st.devices.find(x=>x.online)||null;if(d)st.selectedDeviceId=d.deviceId}savePrefs()}
 async function selectDevice(id,{take=true}={}){st.manualDisconnect=false;const d=st.devices.find(x=>x.deviceId===id);if(!d)return;try{window.zebjusStopPythonForSafety?.('Kit selection changed');if(ownsLock())await releaseLock(false);if(client?.deviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(client.deviceId,d.deviceId))client.disconnect({forgetIdentity:true});const s=await client.connect(d.deviceName,d.ip,d.deviceId);upsertStatus(s,client.base);st.selectedDeviceId=s.deviceId;st.preferredDeviceId=s.deviceId;st.preferredDeviceName=s.name;st.query=s.name;savePrefs();if(take)await acquireLock(true);statusUi()}catch(e){simpleError(e.message)}}
-async function acquireLock(auto=false){const d=selected();if(!d?.online||!client?.connected)return false;if(d.lockMine)return true;if(auto&&d.locked)return false;try{const r=await client.acquire(!auto&&d.controlRole==='MOBILE');const s=await client.refresh();upsertStatus(s,client.base);if(r.ok)st.lastLockGoodAt=Date.now();if(r.ok)log('Control acquired for '+(s.name||d.deviceName));clearError();statusUi();return !!r.ok}catch(e){log(e.message||'Kit is in use. View-only mode active.');try{upsertStatus(await client.refresh(),client.base)}catch{}statusUi();return false}}
+async function acquireLock(auto=false){const d=selected();if(!d?.online||!client?.connected)return false;if(d.lockMine)return true;if(auto&&d.locked)return false;try{const r=await client.acquire(!auto&&d.controlRole==='MOBILE');if(!r.ok)return false;upsertStatus(client.status,client.base);st.lastLockGoodAt=Date.now();st.lastLockBeat=0;log('Control acquired for '+d.deviceName);clearError();statusUi();return true}catch(e){log(e.message||'Kit is in use. View-only mode active.');statusUi();return false}}
 async function releaseLock(clearSelection=false){window.zebjusStopPythonForSafety?.('Control released');if(!st.pythonRcActive&&st.txOn&&$('#webJoyTarget')?.value==='device'){setTxSafe();st.txOn=false;await queueSafeJoystickFrame(true);api()?.setSimRunning?.(false);renderJoy()}try{if(client?.connected&&ownsLock())await client.release()}catch{}if(selected())selected().lockMine=false;if(clearSelection)st.selectedDeviceId='';statusUi()}
 async function renameDevice(){const d=selected(),name=$('#deviceRenameInput')?.value.trim();if(!d||!name)return log('Select a kit and enter a name.');if(!canControl())return log('VIEW ONLY • Take Control first.');try{const s=await client.rename(name);upsertStatus(s,client.base);st.query=s.name;st.preferredDeviceName=s.name;savePrefs();log('Kit renamed: '+s.name);statusUi()}catch(e){simpleError(e.message)}}
 async function i2cScan(){
@@ -319,7 +319,10 @@ function receiveRcTelemetry(t,live=false){
  const d=selected();if(!selectedConnected()||t.deviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(t.deviceId,d.deviceId))return;
  const before=JSON.stringify([d.controlRole,d.armed,d.trainingActive,d.trainingTarget,d.trainingRunId]);
  if(live){st.liveRc=t;st.liveRcAt=Date.now();d.lastSeen=Date.now();d.lastSeenText='Live RC';st.failures=0;t={...t,expansion:d.expansion||st.rcRates?.expansion,rcMonitor:rcMonitor.diagnostics()};}
- if(t.controlRole!==undefined){d.controlRole=t.controlRole;d.locked=!!t.controlRole;if(t.viewOnly!==undefined)d.lockMine=!t.viewOnly&&ownsLock();else if(t.controlRole==='MOBILE')d.lockMine=false;}
+ // Only client-scoped HTTP replies carry ownership. Public RC monitor packets
+ // describe the controller role, but cannot grant or revoke this browser's lease.
+ if(typeof t.lockMine==='boolean'){d.lockMine=t.lockMine;d.locked=t.locked??!!t.controlRole;if(t.controlRole!==undefined)d.controlRole=t.controlRole;}
+ else if(t.controlRole!==undefined&&!d.lockMine){d.controlRole=t.controlRole;d.locked=!!t.controlRole;}
  for(const key of ['armed','trainingSelection','trainingActive','trainingTarget','trainingController','trainingRunId'])if(t[key]!==undefined)d[key]=t[key];
  if(t.trainingSelection&&(t.controlRole==='MOBILE'||t.trainingActive)&&(!t.trainingActive||t.trainingTarget!=='TRIPOD'))stopAppTripod();
  st.lastTelemetryGoodAt=Date.now();healthFromTelemetry(t);st.rcRates=t;updateRateUi();
@@ -337,7 +340,7 @@ async function telemetryTick(now){
  try{
   const sent=performance.now(),startedAt=Date.now(),identity=d.deviceId,base=client.base;let t=await client.telemetry(!!((d.controlRole==='MOBILE'||d.trainingActive)&&api()?.getActiveTab?.()!=='telemetry'));t.requestLatencyMs=Math.round(performance.now()-sent);
   if(selected()?.deviceId!==identity||client.base!==base)return;if(t.deviceId&&!window.ZebjusDroneKit.sameDeviceIdentity(t.deviceId,identity))throw Error('Telemetry Device ID mismatch');
-  if(rcMonitor?.live&&st.liveRcAt>startedAt){delete t.lockMine;delete t.viewOnly;t={...t,...st.liveRc,rcMonitor:rcMonitor.diagnostics()};}
+  if(rcMonitor?.live&&st.liveRcAt>startedAt){const ownership={};for(const k of ['lockMine','viewOnly','locked','controlRole'])if(k in t)ownership[k]=t[k];t={...t,...st.liveRc,...ownership,rcMonitor:rcMonitor.diagnostics()};}
   receiveRcTelemetry(t);
  }catch(_){updateHealthUi()}
  finally{st.telemetryBusy=false}

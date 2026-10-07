@@ -9,7 +9,7 @@ const sandbox={window,URLSearchParams,AbortController,setTimeout,clearTimeout,pe
  const u=new URL(url),st=network.get(u.origin);requests.push({url,data:Object.fromEntries(new URLSearchParams(opt?.body))});
  if(!st)throw new TypeError('unreachable');
  if(u.pathname!=='/api/status')assert.equal(requests.at(-1).data.expectedDeviceId,ID,'mutation must carry physical ID');
- return{ok:true,status:200,text:async()=>JSON.stringify(u.pathname==='/api/status'?st:{ok:true})};
+ return{ok:true,status:200,text:async()=>JSON.stringify(u.pathname==='/api/status'?st:u.pathname==='/api/control/acquire'?{ok:true,deviceId:ID,lockMine:true,controlRole:'WEB',lockTimeoutMs:10000}:{ok:true})};
 }};
 vm.createContext(sandbox);vm.runInContext(fs.readFileSync(path.join(root,'kit-local.js'),'utf8'),sandbox);
 const kit=window.ZebjusDroneKit;
