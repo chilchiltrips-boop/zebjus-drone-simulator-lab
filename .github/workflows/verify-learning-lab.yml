@@ -2,7 +2,7 @@ name: Verify and build Learning Lab V18.3.75
 on:
   workflow_dispatch:
   push:
-    branches: ['main', 'release/v18.3.75', 'release/v18.3.75-ui', 'release/v18.3.75-wix']
+    branches: ['main', 'codex/unique-kit-stages', 'release/v18.3.75', 'release/v18.3.75-ui', 'release/v18.3.75-wix']
 permissions:
   contents: write
 concurrency:

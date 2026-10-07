@@ -12,7 +12,7 @@ Flash diagnostics include chip, stub state, flash ID, capacity and whether a wri
 
 ## Stage 2 — security and migration gate
 
-Before publishing security changes, build both A1/C3 and A2/C6 and record APP bytes, both OTA slot sizes and free heap. Current A2 18.3.74 has only 2,240 bytes of OTA headroom. A larger partition layout requires a verified USB factory migration, backup and restore of non-secret settings, and explicit refusal of oversized APP-only OTA. Keep Wi-Fi enrollment accessible through AP maintenance.
+Before publishing security changes, build both A1/C3 and A2/C6 and record APP bytes, both OTA slot sizes and free heap. Verified 18.3.75 A2 APP is 1,308,672 bytes in a 1,310,720-byte OTA slot: 2,048 bytes of headroom. A1 APP is 1,223,488 bytes, with 87,232 bytes of headroom. A larger partition layout requires a verified USB factory migration, backup and restore of non-secret settings, and explicit refusal of oversized APP-only OTA. Keep Wi-Fi enrollment accessible through AP maintenance.
 
 Use Espressif Security 2 (SRP6a and AES-GCM, patched IV counters) or another reviewed authenticated protocol. Use a unique enrollment credential per kit, never a shared product password. The kit's Device ID and Kit Name are included in authenticated session scope. A paired phone can issue an expiring companion invitation with telemetry/training/PID scopes. The companion cannot ARM, transmit joystick frames or take over the phone lease. Native UDP and ACKs need their own authenticated encryption, direction-specific nonces and replay checks; provisioning encryption alone does not secure RC.
 

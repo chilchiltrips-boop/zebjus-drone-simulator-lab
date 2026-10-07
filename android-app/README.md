@@ -22,4 +22,4 @@ With JDK 17 and official Android SDK 36 tools, set `ANDROID_SDK_ROOT` and the ex
 
 Java tests cover grant scope, cancellation, old replies, watchdogs, UDP ACK scope/replay/loss and STOP. Browser tests use the actual bundled UI/adapter and web lab against a simulated kit; firmware host tests execute actual simulator/PWM guards. No Android phone/emulator or physical drone was tested.
 
-See [update/test guide](../SUPPORT/V18_3_75_CONNECTION_AND_TRIPOD.md) for installation and exact test boundaries.
+See [update/test guide](../SUPPORT/STAGED_KIT_RELEASES.md) for installation and exact test boundaries.

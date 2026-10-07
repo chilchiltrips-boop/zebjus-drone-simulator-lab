@@ -80,6 +80,10 @@ def main():
     assert "package: name='in.zebjus.aerion'" in badging and "minSdkVersion:'26'" in badging and "targetSdkVersion:'36'" in badging
     report={'product':'ZEBJUS Aerion Flight','version':VERSION_NAME,'versionCode':VERSION_CODE,'package':'in.zebjus.aerion','minSdk':26,'targetSdk':36,'signing':'development key, included for development updates; not a private production key','apkBytes':apk.stat().st_size,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest(),'verification':['APK ZIP integrity','DEX compiled','manifest/package/minSDK/targetSDK','v2/v3 APK signature','4-byte ZIP alignment','bundled UI/transport exact byte equality'],'androidDeviceTested':False,'physicalDroneTested':False}
     (dist/'BUILD_REPORT.json').write_text(json.dumps(report,indent=2)+'\n')
+    certificate=re.search(r'Signer #1 certificate SHA-256 digest:\s*([0-9a-fA-F]{64})',verify)
+    if not certificate:raise RuntimeError('APK signing certificate fingerprint was not reported')
+    verification={'version':VERSION_NAME,'apk_sha256':report['sha256'],'certificate_sha256':certificate.group(1).lower(),'checks':report['verification'],'test_boundary':{'Android_phone_or_emulator_tested':False,'physical_drone_tested':False,'physical_USB_flash_tested':False}}
+    (ROOT/'VERIFICATION.json').write_text(json.dumps(verification,indent=2)+'\n')
     print(json.dumps(report,indent=2))
 
 if __name__=='__main__':main()

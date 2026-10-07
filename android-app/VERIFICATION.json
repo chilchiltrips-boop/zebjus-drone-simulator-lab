@@ -1,16 +1,15 @@
 {
-  "version": "18.3.74-android.1",
-  "apk_sha256": "2cb2b7779e31b9a15d5946ba85a85ffb8b186c8374468feb16096c33141a1cbe",
+  "version": "18.3.75-android.1",
+  "apk_sha256": "bc94c346ddaa9e142e8b6882af5fac9e05f43234a74ae365c09fe1c5c9533616",
   "certificate_sha256": "0286c9c3d51284e695cd900d87b6cc7a99ae47991c27cd42c0313fd9f1780f9c",
-  "checks": {
-    "SDK_36_DEX_manifest_signature_alignment_exact_assets": "passed; original certificate retained",
-    "native_control_scope_watchdog_UDP": "production Java tests passed",
-    "paused_training_and_STOP": "production ACK freshness, paused/resumed heartbeat fencing, genuine expiry, immediate native STOP and late callback isolation passed",
-    "observer_UI_and_Tripod": "bounded paints, reused DOM, NDJSON safety edges and Three.js geometry passed",
-    "HTTP_and_loop_clock": "production idle/ready socket and intentional pause/genuine armed-stall timing tests passed",
-    "browser_app_web_modes": "actual bundled app/web Flight/Tripod/Real with production native grant policy passed",
-    "app_transport_and_AP_STA": "actual app transport and AP/STA browser tests passed"
-  },
+  "checks": [
+    "APK ZIP integrity",
+    "DEX compiled",
+    "manifest/package/minSDK/targetSDK",
+    "v2/v3 APK signature",
+    "4-byte ZIP alignment",
+    "bundled UI/transport exact byte equality"
+  ],
   "test_boundary": {
     "Android_phone_or_emulator_tested": false,
     "physical_drone_tested": false,

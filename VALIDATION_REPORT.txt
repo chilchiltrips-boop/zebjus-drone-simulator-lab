@@ -1,9 +1,13 @@
 ZEBJUS Aerion V18.3.75 validation
 
-Production regressions pass for paused-training ACK freshness/epoch fencing, genuine expiry, immediate native STOP, late callback isolation, bounded paints, retained channel nodes and buffered NDJSON safety edges. Actual Three.js geometry verifies Tripod roll/pitch direction. Production firmware timing tests preserve genuine armed-stall watchdogs while excluding deliberate pauses and bounding unused HTTP preconnect waits.
+Verified control-grant timeout handling, status/grant ordering, same-client telemetry reconciliation, disconnect/release cancellation, wrong Device ID and public monitor isolation. Partial telemetry does not create false safety state changes.
 
-Existing control/reconnect, USB guards, Wi-Fi NVS/AP/STA, receiver/setup/output inhibition, simulator HTTP/ZRC2 and Java UDP/lease/router tests pass. Actual app/web browser flows pass for delayed HTTP, stale monitor recovery, Flight/Tripod/Real modes, AP/STA and native transport/lifecycle.
+Production regressions passed for control/reconnect, USB image and flash-ID guards, Wi-Fi NVS/AP/STA, receiver/setup/output inhibition, simulator HTTP/ZRC2, native Java UDP/lease/router policy, RC monitor framing and timing, Tripod geometry and deliberate-pause/genuine-stall watchdog handling.
 
-A1/A2 builds verify chip/version/OTA fit/factory equality/monitor stack. APK 18.3.75-android.1 (1837501) uses the original certificate and exact validated UI/transport. Bundled UI hashes were checked after workspace recovery and production regressions rerun; release CI rebuilds complete packages before checking the generated branch. Offline/project/release integrity checks verify packaged hashes.
+GitHub compatibility run 37588932289 passed on source f6ec0d1a6a2e793f1f72a296ffd3e439bb1cf2ae: rebuilt delivered APK from source, native networking, actual app/web network/mobile/FC setup/AP-STA/mode browser flows, and both pinned Arduino-ESP32 3.3.12 firmware profiles. Later packaging edits update only metadata, report generation and cancellation test coverage.
 
-No physical flash, phone/emulator Wi-Fi, router, motor/ESC or flight test is claimed. See SUPPORT/V18_3_75_CONNECTION_AND_TRIPOD.md.
+A1 APP: 1,223,488 bytes. A2 APP: 1,308,672 bytes. Both OTA slots: 1,310,720 bytes. Factory images: 4,194,304 bytes, application/factory equality and chip/version/slot/monitor-stack checks passed. A2 OTA headroom is 2,048 bytes; larger security firmware needs a migration gate.
+
+APK: 18.3.75-android.1 / 1837501. Original certificate retained; delivered manifest/DEX/ZIP/signature/alignment/assets and recompilation match. Project/offline/release hash checks passed after packaging.
+
+No physical controller flash, Android phone/emulator, router/radio, motor/ESC or flight test was performed. This is stage 1; encrypted pairing, scoped companion PID and kit-required/AP policy are later stages recorded in SUPPORT/STAGED_KIT_RELEASES.md.

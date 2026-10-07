@@ -19,8 +19,8 @@
     },
     {
       "path": ".github/workflows/verify-learning-lab.yml",
-      "bytes": 7030,
-      "sha256": "582ec13285317f0628944050fdd82cf006039e9c34163582067c845fbe0cf868"
+      "bytes": 7057,
+      "sha256": "73f7fcd35ea9f24a569ccb3204a3ccb2b0250c9b6b3c8cb9206b89d3f0778f6f"
     },
     {
       "path": ".gitignore",
@@ -119,23 +119,23 @@
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
-      "bytes": 1223312,
-      "sha256": "cd6c97439d63f5cc0a3d454711355202362f7ea986b9b616ac08d3dae6d6c377"
+      "bytes": 1223488,
+      "sha256": "57215e136ecb224b6c95f6125434517999e19a5c55c3a48958688472acc07ba2"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "dec2dbce5710f50ae5fe92343ad67508fa249ff23777ccb1a7d3fb975f793510"
+      "sha256": "15cff66eddf73a1e88d573ee3bcab1c7290197c8bf7523f79c8392b9e9d8a37d"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin",
-      "bytes": 1308480,
-      "sha256": "efa62ecc32e09b36a9d80fda4802a24a0d2b8ba37b14a7c40502261742ecc332"
+      "bytes": 1308672,
+      "sha256": "9e31f5fabccbd03f8a67cfeec60fa6ca241680ed87f7f158b3c86aa7bcfca348"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "a260568da981942396637ba8423434e0eb8b787a2b88ce568c496c2740c026bb"
+      "sha256": "da41fc95465b82309c563d2bd0318eb1831d50b1d716929175dfc16314bb186d"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h",
@@ -145,17 +145,17 @@
     {
       "path": "FlightCore_Firmware/build-report.json",
       "bytes": 1677,
-      "sha256": "be431673374d8ed4230b0e424ac13bb1b3bf558929230c5bb4dd65b730a33f1f"
+      "sha256": "a9bbac2753fc10c1d987a77031ab37aa7e4de1a8f4460ded1aeb8a83cab547cc"
     },
     {
       "path": "FlightCore_Firmware/catalog.json",
-      "bytes": 2313,
-      "sha256": "22e858d403168714fac98853e829f8923983328cac77d35981063665bd860bed"
+      "bytes": 2793,
+      "sha256": "7acbd61707c3408b2d07659adc2bf317efb4f9480880535602d421f236ba09cf"
     },
     {
       "path": "FlightCore_Firmware/latest.json",
       "bytes": 259,
-      "sha256": "fc4b579e83a32c33ae57d041d5ca888bd83799eb5b5343328625b979cbe71b8d"
+      "sha256": "6d7fa23c5cbbe0e90a099fe61f96033e7446575ff202b3fff4e61d82b69945f1"
     },
     {
       "path": "FlightCore_Firmware/src/DroneGPS.cpp",
@@ -174,8 +174,8 @@
     },
     {
       "path": "GITHUB_UPLOAD_README.md",
-      "bytes": 3092,
-      "sha256": "b9ed934a06598c15c1f9a5f2d9e2b30e35b38e5f4b18c321093c8fa568ea122d"
+      "bytes": 3081,
+      "sha256": "9f207d82d96a688862d2fc8b8958babe9636b134c5e4a318ecefd723c01b2336"
     },
     {
       "path": "OFFLINE_START_HERE.md",
@@ -184,8 +184,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 8446,
-      "sha256": "2056621ba8fa5ed915021b0d4d806c4e56100d8f9337e8b754aeefae2cf89f6c"
+      "bytes": 8435,
+      "sha256": "3f4a924edaf1b3ea51836c866b416814fd1b7202eada934d96d4c7e8ac64b42f"
     },
     {
       "path": "RELEASE_NOTES.md",
@@ -394,8 +394,8 @@
     },
     {
       "path": "SUPPORT/STAGED_KIT_RELEASES.md",
-      "bytes": 4512,
-      "sha256": "bfd67ea4dc012522f36f77efa38b86c2b079c1ba636870e2f6d0b31ebb302ab8"
+      "bytes": 4611,
+      "sha256": "f82b80459854ced46d75513833f117b17e70c85df492934317f50ad564b3f79d"
     },
     {
       "path": "SUPPORT/UPLOAD_BATCHES.md",
@@ -519,8 +519,8 @@
     },
     {
       "path": "VALIDATION_REPORT.txt",
-      "bytes": 1288,
-      "sha256": "adea06d2b58a301bec90f075b599f4ebe98c36187932fc7647e61a0f38589948"
+      "bytes": 1678,
+      "sha256": "d0958a3d74b7f45107e21299dd9b327921ef7267985f0b856c0b97460553dc6e"
     },
     {
       "path": "VERSION.txt",
@@ -549,8 +549,8 @@
     },
     {
       "path": "android-app/README.md",
-      "bytes": 2972,
-      "sha256": "9c35b257a00ad422e960d35337fcfa918944992303085cdb6fd20314a72f22da"
+      "bytes": 2961,
+      "sha256": "f3add8f1811fce4cef90f2743e9213fb3b9f0f42fa5d3d95ce305ce54fdad48a"
     },
     {
       "path": "android-app/THIRD_PARTY_NOTICES.md",
@@ -559,8 +559,8 @@
     },
     {
       "path": "android-app/VERIFICATION.json",
-      "bytes": 1157,
-      "sha256": "8bf31be8a567052afe84aa8f0339b204d027f7882efb6f86a98a5354cc808c1c"
+      "bytes": 568,
+      "sha256": "26994bac984ff6f3be74874c4dc084f77363064d06f34ab11f8ff3cb60bf4e8d"
     },
     {
       "path": "android-app/app/build.gradle",
@@ -714,8 +714,8 @@
     },
     {
       "path": "android-app/tools/build_apk.py",
-      "bytes": 6628,
-      "sha256": "f520cc8c203e2b3398a639e0227dbc5347c52e9ba50ef263314b33c672f2b440"
+      "bytes": 7180,
+      "sha256": "6d286f5747f8c62411890a09d6b690b29d46f94adc3836c39b48b5d5430b49be"
     },
     {
       "path": "app.js",
@@ -779,18 +779,18 @@
     },
     {
       "path": "firmware-catalog.json",
-      "bytes": 2313,
-      "sha256": "22e858d403168714fac98853e829f8923983328cac77d35981063665bd860bed"
+      "bytes": 2793,
+      "sha256": "7acbd61707c3408b2d07659adc2bf317efb4f9480880535602d421f236ba09cf"
     },
     {
       "path": "firmware-latest.json",
       "bytes": 268,
-      "sha256": "16cb57158a363f7690fddc5c63f73daee47c85027596ff1c68df3d588aed249f"
+      "sha256": "344ac2654b4742dea06b9304be2ca18ac3697bdc982fb207c5656f04c0910d98"
     },
     {
       "path": "firmware-updater.js",
-      "bytes": 36546,
-      "sha256": "6bb008cc8c6385808a975650582e704a6f07648395c854338d9313337c6cfbfb"
+      "bytes": 37026,
+      "sha256": "429c297cc535589c536204ed8de76b6d865423ba6f7a7451880abe07f2c97bbd"
     },
     {
       "path": "flight/app.webmanifest",
@@ -925,7 +925,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 42947,
-      "sha256": "3be22101b7db8007004540f496fe5fb15a4ab3f2d04008f8b0e7a366cb534a40"
+      "sha256": "f7fad63345608caa80c3d1048fd53a5263da4fea0e05ebd537bceef3f69cb029"
     },
     {
       "path": "offline-support.js",
@@ -1359,8 +1359,8 @@
     },
     {
       "path": "tools/test_control_ownership.js",
-      "bytes": 4009,
-      "sha256": "024e263e3d413b5adabcd6d24d7ea5afed8c0aeb345286fa6b7abf7ab6ed0450"
+      "bytes": 4932,
+      "sha256": "816b44e9efcf7019739ddf6df06fbb974ecb21717bcc7135f71afc827b0a998f"
     },
     {
       "path": "tools/test_control_recovery_browser.js",

@@ -1,4 +1,4 @@
-> **18.3.75 stability and Tripod fixes:** Faster app/web rendering, bounded HTTP preconnect waits, correct paused-training heartbeat and immediate native STOP. Tripod roll now follows the model's right/left direction. Install the matching [APK](android-app/dist/ZEBJUS_Aerion_V18_3_75_Android.apk) and controller firmware. [Diagnosis and update steps](SUPPORT/V18_3_75_CONNECTION_AND_TRIPOD.md).
+> **18.3.75 stability and Tripod fixes:** Faster app/web rendering, bounded HTTP preconnect waits, correct paused-training heartbeat and immediate native STOP. Tripod roll now follows the model's right/left direction. Install the matching [APK](android-app/dist/ZEBJUS_Aerion_V18_3_75_Android.apk) and controller firmware. [Diagnosis and update steps](SUPPORT/STAGED_KIT_RELEASES.md).
 
 # ZEBJUS Aerion V18.3.75
 
