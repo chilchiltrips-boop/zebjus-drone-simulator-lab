@@ -39,8 +39,8 @@
     },
     {
       "path": "DEVICE_PROTOCOL_V18.md",
-      "bytes": 24493,
-      "sha256": "051c61a763e7f88b1d5a9b5c7a1bada617d9dbb9aa5b7d88159f02caf0151dd8"
+      "bytes": 26788,
+      "sha256": "e88da8da57b469132c6dbd435aaf8d9e47f1f0db00c7e978c4f9f3075a755cf5"
     },
     {
       "path": "FILE_COUNT.txt",
@@ -174,8 +174,8 @@
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino",
-      "bytes": 138850,
-      "sha256": "0ac12c60d68896c395f74584bd06a39d668763a159d9d0d6e621226175c458cc"
+      "bytes": 138966,
+      "sha256": "afa43df6862ec64afb8f07810401e3bc7f4c9a0c32aaec13ec7728ddab687316"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -259,8 +259,8 @@
     },
     {
       "path": "GITHUB_UPLOAD_README.md",
-      "bytes": 3124,
-      "sha256": "62435c57810b8321f622049a923f37dbd702c0e1d26ba37088afb0cdbefc3c0e"
+      "bytes": 3130,
+      "sha256": "92b39ba151b4682b168ff6fdc5682765b697735b5d5deb2fa63513f464827f8b"
     },
     {
       "path": "OFFLINE_START_HERE.md",
@@ -269,8 +269,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 9555,
-      "sha256": "e50e94f2cbe407f2bff06caecead60600fc48c5f533ed6c89ef2e32b2c568405"
+      "bytes": 9550,
+      "sha256": "85af49cc84922c6d5789f544a481255c6be1a4decd70855cc361d7a7d1a58524"
     },
     {
       "path": "RELEASE_NOTES.md",
@@ -1009,8 +1009,8 @@
     },
     {
       "path": "kit-console.js",
-      "bytes": 24024,
-      "sha256": "2e3d512a72e5c5a38122defa9cb526db38bce50ca58e9760a380af56c4036993"
+      "bytes": 24088,
+      "sha256": "3bbbc658f843489b5318d676f86b46531965388b852b8d8015c89fc4c6fd20ab"
     },
     {
       "path": "kit-local.js",
@@ -1060,7 +1060,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 43919,
-      "sha256": "612fa6373da22458e68924bcdbdb16c2142353c606071734ecd5aec1b610be15"
+      "sha256": "4c2ce8eda572659cd5c70a753cace67d0014717f00f30ecf609237320fb5746b"
     },
     {
       "path": "offline-support.js",

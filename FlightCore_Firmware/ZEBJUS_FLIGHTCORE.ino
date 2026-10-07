@@ -127,7 +127,7 @@ static const uint32_t LOCK_TIMEOUT_MS=10000;
 static const uint32_t WIFI_LOST_TO_SETUP_MS=20000;
 static const uint32_t FORCE_AP_HOLD_MS=5000;
 static const uint32_t FACTORY_RESET_HOLD_MS=10000;
-static const bool ALLOW_WEB_RC=true; // Browser/AP/Python RC requires the control lock. Fresh web RC owns the source; PPM is automatic fallback.
+static const bool ALLOW_WEB_RC=true; // Browser/AP/Python RC requires the control lock. Fresh valid PPM is primary; authenticated network RC is standby.
 
 // Physical transmitter / PPM receiver mirror.
 // The board profile above owns the receiver pin so future FlightCore boards can route it differently.
@@ -995,7 +995,7 @@ void commandApi(){
   if(type=="rc_source_set"){
     if(!requireControl())return;String source=server.arg("source");source.toUpperCase();uint8_t next=source=="AUTO"?0:source=="WEB"?1:source=="PPM"?2:255;
     if(next==255){sendMessage(400,"Choose AUTO, WEB or PPM");return;}
-    RcSourceKind wanted=next==2?RC_PPM:next==1?(setupMode?RC_WEB_AP:RC_WEB_STA):(webRcFresh()?(setupMode?RC_WEB_AP:RC_WEB_STA):RC_PPM);
+    auto candidate=RcPriority::choose(trainingActive,trainingActive?trainingInput:next,receiverFresh(),webRcFresh());RcSourceKind wanted=candidate==RcPriority::PPM?RC_PPM:candidate==RcPriority::NETWORK?(setupMode?RC_WEB_AP:RC_WEB_STA):RC_NONE;
     if(armed&&wanted!=activeRcSource){uint16_t old[10],incoming[10];copyActiveRc(old,activeRcSource);copyActiveRc(incoming,wanted);bool fresh=wanted==RC_PPM?receiverFresh():webRcFresh();
       if(!flightSettings.handover||fabsf(kalmanRoll)>45||fabsf(kalmanPitch)>45||!FlightMath::canHandover(old,incoming,fresh)){sendMessage(409,"Handover rejected: match sticks/throttle, ARM channel and fresh standby first");return;}}
     rcPreference=next;sendMessage(200,"RC preference accepted; flight task validates the transition");return;

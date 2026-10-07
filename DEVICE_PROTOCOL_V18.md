@@ -1,3 +1,17 @@
+# V18.3.79 active secure routing
+
+Current kits require per-kit SRP owner/invitation pairing and AES-GCM authenticated requests/RC/ACK/observer frames (ZFC3). Earlier plaintext examples below describe legacy releases; they cannot bypass current authentication.
+
+On STA, a paired WEB/COMPANION registers with encrypted `POST /api/webapp/register` using `webAppId` (six digits, 100000–999999), `clientId` and exact `expectedDeviceId`. The returned ID is unique among live browser registrations on this kit; collisions are reassigned. `/api/webapp/unregister` removes only the authenticated caller's registration. The foreground observer renews its 10-second registration without HTTP polling. Registrations are volatile and scoped to the full Device ID and authenticated browser session, not global internet logins.
+
+MOBILE `training_select` includes the registered `webAppId` with the existing private training session/target/source. The controller binds the run to that exact browser auth session. Status, training ACK and encrypted `rc_live` expose `trainingWebAppId`; a six-digit value is a routing ID, not a credential. During app training only this browser may subscribe to RC or submit virtual sensor/engine commands. Other browsers cannot acquire the mobile lease. App ID replacement explicitly stops the previous session and requires a new safe virtual ARM.
+
+Native RC is 50 Hz; the selected encrypted observer is at most 10 Hz. Active control suspends background HTTP traffic. Monitor reconnect uses 1/2/4/8-second backoff; denied observers require explicit reconnect. Simulation gaps retain the same run within the 8-second app / 10-second kit bounds, neutralize input and require manual ARM on recovery. Observer loss for 10 seconds safely expires inhibition; old grants cannot become real-flight packets.
+
+Fresh valid PPM is first for physical flight, regardless of AUTO/WEB preference. PPM-only never falls back to network. Simulation still uses its explicit APP/PPM source and blocks real outputs. AP permits authenticated RC/STOP and explicit disarmed Wi-Fi maintenance; STA provides scoped training/configuration/OTA. There is no WAN flight command relay. See [installation and connection](SUPPORT/V18_3_79_WEBAPP_ID_UPDATE.md).
+
+---
+
 # ZEBJUS F450 V18.3.64 Local Device Protocol
 
 HTTP endpoints are local on the ESP32 (port 80). AP serves API only, with no browser/captive pages. V18.3.64 adds session-scoped Android RC on UDP port 4210. Older version sections describe historical capabilities where superseded.
@@ -34,7 +48,7 @@ During a controller gap, roll/pitch/yaw centre at 300 ms while throttle/ARM/sour
 
 Form fields: `clientId`, `type`, plus command-specific values.
 
-Non-read-only hardware commands require the local control lock. PID/calibration changes are rejected while armed. On the A2 flight profile, a fresh verified Web/AP/Python RC frame takes priority; PPM is fallback after the web frame expires. A source change while armed disarms. A1 remains bridge-only.
+Non-read-only hardware commands require the local control lock. PID/calibration changes are rejected while armed. On the A2 flight profile, fresh valid PPM takes priority over Web/AP/Python RC; network input is standby when PPM is absent. A source change while armed disarms. A1 remains bridge-only.
 
 ## V18.3.48 expansion commands
 
@@ -142,7 +156,7 @@ A2 / XIAO ESP32-C6 exposes the following `POST /api/command` types. Read-only co
 - `level_calibrate` / `calibrate_level` — while level/still, averages 100–1000 MPU6050 samples, calculates X=0 g / Y=0 g / Z=+1 g offsets, refreshes gyro bias and saves the offsets to NVS.
 - `calibration_defaults` — restores factory offsets `-0.10`, `+0.03`, `+0.12` g and zero Roll/Pitch trim.
 - `calibrate_gyro` — reruns the real A2 gyro-zero routine while disarmed and still.
-- `rc_frame` — accepts 6–10 decimal channel values, each 1000–2000 µs, in `channels`. Fresh verified Web/AP/Python RC takes priority; PPM is fallback.
+- `rc_frame` — accepts 6–10 decimal channel values, each 1000–2000 µs, in `channels`. Fresh valid PPM takes priority; authenticated network RC is standby.
 - `motor_test` — guarded single-motor low-pulse bench test. Requires `confirm=PROPS_REMOVED`.
 - `motor_order_test` — M1→M4 bench sequence. Requires `confirm=PROPS_REMOVED`.
 - `esc_calibrate` — guarded 3 s high + 3 s low calibration sequence. Requires `confirm=PROPS_REMOVED`.
@@ -164,7 +178,7 @@ The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `
 ## V18.3.64 unified RC arbitration
 
 - `WEB_STA` / `WEB_AP` frames are authoritative while fresh (`<1000 ms`) and require the control lock. Directional channels centre after 300 ms without RC.
-- Physical `PPM` is automatic fallback when no fresh Web/AP/Python frame exists.
+- Fresh valid physical `PPM` is primary; network input is eligible only when PPM is absent and preference is not PPM-only.
 - A source transition while armed disarms unless existing guarded handover checks accept a fresh matched standby source.
 - `/api/telemetry` exposes active `rcSource`, `rcAgeMs` and all ten `rc` channels so the browser can mirror PPM/AP/Python control into Tripod Simulator.
 - Tripod real mirror and Python real target use the same guarded `rc_frame` endpoint.
