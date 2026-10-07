@@ -1,6 +1,6 @@
 {
   "version": "18.3.79-android.1",
-  "apk_sha256": "909fdf30d4f94d3fdb3f2d536efe8096465b73df63dd38683ad9cc3ae1182b6a",
+  "apk_sha256": "3bd9711be99754d1279722542c172e2d15bb380092e676fb7a917af34703c914",
   "certificate_sha256": "0286c9c3d51284e695cd900d87b6cc7a99ae47991c27cd42c0313fd9f1780f9c",
   "checks": [
     "APK ZIP integrity",
