@@ -31,7 +31,8 @@ jobs:
           if(typeof module!=='undefined')module.exports=api;
           JS
           ./node_modules/.bin/esbuild entry.js --bundle --format=iife --global-name=ZfcCryptoBundle --minify --outfile=zfc-crypto.js
-          cp node_modules/@noble/{hashes,ciphers}/LICENSE .
+          cp node_modules/@noble/hashes/LICENSE noble-hashes-LICENSE
+          cp node_modules/@noble/ciphers/LICENSE noble-ciphers-LICENSE
           sha256sum zfc-crypto.js > SHA256.txt
           dpkg-query -W libc6
       - name: Mirror host mbedTLS test dependency
@@ -49,4 +50,5 @@ jobs:
           path: |
             /tmp/zfc-crypto-build/zfc-crypto.js
             /tmp/zfc-crypto-build/SHA256.txt
+            /tmp/zfc-crypto-build/*LICENSE
             /tmp/zfc-crypto-build/host
