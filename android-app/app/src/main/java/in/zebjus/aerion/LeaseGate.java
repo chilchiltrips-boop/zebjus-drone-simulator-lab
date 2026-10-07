@@ -4,7 +4,8 @@ package in.zebjus.aerion;
 public final class LeaseGate {
     public static final long ACK_TIMEOUT_MS = 300;
     public static final long MAX_ACK_TIMEOUT_MS = 900;
-    public static final long INPUT_TIMEOUT_MS = 300;
+    public static final long INPUT_SOFT_STALE_MS = 300;
+    public static final long INPUT_TIMEOUT_MS = 900;
     public static final class Lease {
         public final String origin, deviceId, clientId;
         public final Object network;
@@ -89,7 +90,14 @@ public final class LeaseGate {
         lease.input=channels.clone();lease.inputAt=now;lease.hasRc=true;lease.mode=channels[5];lease.streaming=true;return true;
     }
     public synchronized int[] input(Lease lease,long now) {
-        return isCurrent(lease)&&lease.input!=null&&now-lease.inputAt<=INPUT_TIMEOUT_MS ? lease.input.clone() : null;
+        if(!isCurrent(lease)||lease.input==null)return null;
+        long age=Math.max(0,now-lease.inputAt);if(age>INPUT_TIMEOUT_MS)return null;
+        int[] channels=lease.input.clone();
+        // Short WebView/UI stalls must not destroy Take Control. Match the FC's
+        // bounded stale-input policy: centre directional axes after 300 ms,
+        // retain throttle/ARM briefly, then let the 900 ms hard watchdog fence.
+        if(age>INPUT_SOFT_STALE_MS){channels[0]=1500;channels[1]=1500;channels[3]=1500;}
+        return channels;
     }
     public synchronized void udpAck(Lease lease,long now,boolean armed,boolean ready) {
         if(isCurrent(lease)){lease.ack=now;lease.controllerAck=true;lease.controllerArmed=armed;lease.controllerReady=ready;}
@@ -106,11 +114,11 @@ public final class LeaseGate {
         Lease old=current; current=null; return old;
     }
     public synchronized java.util.Map<String,Object> diagnostics(long now) {
-        java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("foreground",foreground);out.put("reserved",current!=null);out.put("streaming",current!=null&&current.streaming);out.put("ackAgeMs",current==null?-1:Math.max(0,now-current.ack));out.put("inputAgeMs",current==null||current.input==null?-1:Math.max(0,now-current.inputAt));out.put("lastError",lastStopReason);return out;
+        java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("foreground",foreground);out.put("reserved",current!=null);out.put("streaming",current!=null&&current.streaming);out.put("ackAgeMs",current==null?-1:Math.max(0,now-current.ack));out.put("inputAgeMs",current==null||current.input==null?-1:Math.max(0,now-current.inputAt));out.put("inputSoftStale",current!=null&&current.input!=null&&now-current.inputAt>INPUT_SOFT_STALE_MS);out.put("inputSoftStaleMs",INPUT_SOFT_STALE_MS);out.put("inputTimeoutMs",INPUT_TIMEOUT_MS);out.put("lastError",lastStopReason);return out;
     }
     public synchronized Lease watchdog(long now) {
         if(current==null)return null;
-        if(current.input!=null&&now-current.inputAt>INPUT_TIMEOUT_MS){lastStopReason="Native stick input stopped for more than 300 ms";return fence(false);}
+        if(current.input!=null&&now-current.inputAt>INPUT_TIMEOUT_MS){lastStopReason="Native stick input stopped for more than 900 ms";return fence(false);}
         if(now-current.ack>(current.streaming?current.ackTimeout:5000)){lastStopReason=current.streaming?"Controller RC acknowledgements expired":"Configuration reservation heartbeat expired";return fence(false);}return null;
     }
 }

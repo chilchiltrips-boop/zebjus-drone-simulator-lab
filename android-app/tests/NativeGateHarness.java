@@ -23,7 +23,7 @@ public final class NativeGateHarness {
             System.out.println("RC\t"+lease.clientId+"\t"+Long.toUnsignedString(scope.token,16)+"\t"+channels);
             ByteBuffer ack=ByteBuffer.allocate(28).order(ByteOrder.LITTLE_ENDIAN);ack.putInt(0x3141525a).put((byte)2).put((byte)0).put((byte)6).put((byte)0).putLong(device).putLong(scope.token).putInt(frame.getInt(24));controller.send(new DatagramPacket(ack.array(),28,packet.getSocketAddress()));
         }catch(Exception error){if(!controller.isClosed())error.printStackTrace();}});radio.setDaemon(true);radio.start();
-        ScheduledExecutorService publisher=Executors.newSingleThreadScheduledExecutor();publisher.scheduleAtFixedRate(stream::tick,0,20,TimeUnit.MILLISECONDS);
+        ScheduledExecutorService publisher=Executors.newScheduledThreadPool(2);publisher.scheduleAtFixedRate(stream::tick,0,20,TimeUnit.MILLISECONDS);publisher.scheduleAtFixedRate(()->{LeaseGate.Lease old=gate.watchdog(System.nanoTime()/1000000L);if(old!=null){stream.stop(old);System.out.println("STOP\t"+old.clientId);}},75,75,TimeUnit.MILLISECONDS);
         BufferedReader input=new BufferedReader(new InputStreamReader(System.in));String line;
         while((line=input.readLine())!=null){String[] f=line.split("\t",-1);long now=System.nanoTime()/1000000L;
             try{

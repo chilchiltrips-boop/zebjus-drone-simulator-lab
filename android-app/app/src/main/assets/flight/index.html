@@ -252,8 +252,11 @@ function tick(){
  if(!state.own||!state.tx||state.practiceBusy)return;
  const sampleNow=Date.now();if(sampleNow-controlRecordedAt>=200){controlRecordedAt=sampleNow;appRecorder.control({deviceId:state.deviceId,target:state.selectedTarget,runId:state.training?.runId,offeredChannels:[...channels],nativeRc:window.AerionAndroid?.rcDiagnostics?.(),recovering:state.recovering});}
  const now=performance.now(),dt=clamp((now-state.lastFrame)/1000,0,.08);state.lastFrame=now;
- if(now-state.lastAck>ackDeadline()){interrupted('Control signal lost. Reconnecting at safe throttle.');return}
- if(now-state.lastAck>150)state.recovering=true;
+ const nativeRc=window.AerionAndroid?.rcDiagnostics?.()||null,nativeLive=!!(nativeRc&&state.tx&&nativeRc.reserved&&nativeRc.streaming&&/^ZRC[12]$/.test(String(nativeRc.protocol||''))&&Number(nativeRc.inputAgeMs)>=0&&Number(nativeRc.inputAgeMs)<=900);
+ // On Android, native UDP publication and controller ACKs are the control-health
+ // authority. A delayed WebView callback must not tear down a healthy grant.
+ if(!nativeLive&&now-state.lastAck>ackDeadline()){interrupted('Control signal lost. Reconnecting at safe throttle.');return}
+ if(nativeLive?Number(nativeRc.ackAgeMs)>150:now-state.lastAck>150)state.recovering=true;
  let rate=-AerionSticks.shape(sticks.left.y);if(sticks.left.pointer===null)rate=(held.has('w')?1:0)-(held.has('s')?1:0);
  // Prevent an unseen upward ramp during retries; pilot may still lower throttle.
  if(state.recovering&&rate>0)rate=0;

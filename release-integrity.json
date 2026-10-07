@@ -4,8 +4,8 @@
   "files": [
     {
       "path": ".github/workflows/build-aerion-android.yml",
-      "bytes": 4249,
-      "sha256": "304a34ea3b6d8e0b512b8716793e272b3392d4c4c18e2a5319dd18fc75b3ea00"
+      "bytes": 6398,
+      "sha256": "0ce749af3ef4b1ec28ae773dd18b423211a93c19705d1ce76ca0562fec96f6d8"
     },
     {
       "path": ".github/workflows/build-flightcore-a1.yml",
@@ -29,8 +29,8 @@
     },
     {
       "path": "00_READ_ME_FIRST.txt",
-      "bytes": 792,
-      "sha256": "087479a802a3f0b2e0b117b4a3ad684bab3c63dff0e930a432d0c2979803d462"
+      "bytes": 781,
+      "sha256": "fc8b590668643b6057be1333097095cf0064480a71ae6ca2c7b32f98b1725dac"
     },
     {
       "path": "DEVICE_PROTOCOL_V18.md",
@@ -174,8 +174,8 @@
     },
     {
       "path": "GITHUB_UPLOAD_README.md",
-      "bytes": 3081,
-      "sha256": "9f207d82d96a688862d2fc8b8958babe9636b134c5e4a318ecefd723c01b2336"
+      "bytes": 3108,
+      "sha256": "56a116ab86fe81a39e8e055dcc265434e0453ccd96b066207c910baeb97174fa"
     },
     {
       "path": "OFFLINE_START_HERE.md",
@@ -184,13 +184,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 8505,
-      "sha256": "510b185c7063b753c4439cdab66205d502c156d7d9beb3b223abb628d6de24ae"
+      "bytes": 8639,
+      "sha256": "8f90905716b0b2b38db9fa14d6bfd1788e06e5d08348a39e4e099e7f93c378a6"
     },
     {
       "path": "RELEASE_NOTES.md",
-      "bytes": 4986,
-      "sha256": "a9780ba5a1bb677e215c37a37a3227305a0d33891bf8831f2281826b1af6fc09"
+      "bytes": 6028,
+      "sha256": "170f433715dc084836ffd244669eaf9e534b6761bbc3f4db9202296a6ba18d95"
     },
     {
       "path": "RELEASE_NOTES_V18_3_23.md",
@@ -394,8 +394,8 @@
     },
     {
       "path": "SUPPORT/STAGED_KIT_RELEASES.md",
-      "bytes": 4967,
-      "sha256": "d01914199565e052a5ebbc4615b401cb8810045076eb571ac915c60396237c64"
+      "bytes": 5417,
+      "sha256": "26018f052720dc6549c20acf34a3cb9a6e6da059b41b192511f2b3dcb42a0964"
     },
     {
       "path": "SUPPORT/UPLOAD_BATCHES.md",
@@ -519,8 +519,8 @@
     },
     {
       "path": "VALIDATION_REPORT.txt",
-      "bytes": 2122,
-      "sha256": "06ff175252afa2b51339aa82ab39a95e33a9d62c2ecdf6271ad8aad313c1b440"
+      "bytes": 2425,
+      "sha256": "1d6db4eb91af9067a6ebe38798538e1a696e945cdeacf2a8507356ffbd6ba3a0"
     },
     {
       "path": "VERSION.txt",
@@ -549,8 +549,8 @@
     },
     {
       "path": "android-app/README.md",
-      "bytes": 2961,
-      "sha256": "f3add8f1811fce4cef90f2743e9213fb3b9f0f42fa5d3d95ce305ce54fdad48a"
+      "bytes": 3154,
+      "sha256": "72c6f14fffc698a5db6a4e338da37dcd24c5ed80ed94efe7c03fe7650e885a21"
     },
     {
       "path": "android-app/THIRD_PARTY_NOTICES.md",
@@ -565,7 +565,7 @@
     {
       "path": "android-app/app/build.gradle",
       "bytes": 775,
-      "sha256": "5528165b8fcd5604a1bcbc68968097438b266ccd40beefc9fc199339fa89d8e5"
+      "sha256": "878f6a47efbe0c2b79143dbf49721bd73d896f020742ef8106dba0eef10242aa"
     },
     {
       "path": "android-app/app/src/main/AndroidManifest.xml",
@@ -579,8 +579,8 @@
     },
     {
       "path": "android-app/app/src/main/assets/flight/index.html",
-      "bytes": 97903,
-      "sha256": "47ca2280d13aa8c48f38c59b83c870673da5883817c544d7eabb96859d89b62f"
+      "bytes": 98368,
+      "sha256": "470adc60acb9cb29efcd92824d0b6cd192b696b2aa4d0cd639680710db057435"
     },
     {
       "path": "android-app/app/src/main/java/in/zebjus/aerion/LaunchPolicy.java",
@@ -589,8 +589,8 @@
     },
     {
       "path": "android-app/app/src/main/java/in/zebjus/aerion/LeaseGate.java",
-      "bytes": 7726,
-      "sha256": "f1d6b6cad2bebd30d6ecbb13fdfe471b96f2fff6cffc1981271d8b8723a618e9"
+      "bytes": 8399,
+      "sha256": "88e42e3085133050946aa7830785695d73a37b7bcb173b83b5d3e4952359611f"
     },
     {
       "path": "android-app/app/src/main/java/in/zebjus/aerion/LocalPolicy.java",
@@ -684,18 +684,18 @@
     },
     {
       "path": "android-app/tests/LeaseGateTest.java",
-      "bytes": 8617,
-      "sha256": "022bb3c8b176097c24a4b0eb7bc9eb9262c49468e4020625b75c741214383977"
+      "bytes": 8996,
+      "sha256": "f6f998eba879d8271725373e14b6f68d9b1a55f2c7680a07f252fc845f47f63d"
     },
     {
       "path": "android-app/tests/NativeGateHarness.java",
-      "bytes": 4201,
-      "sha256": "4b5a8763733f46b6cced1f226a03e10d1a1274ad206f2cf530f242ee86030b02"
+      "bytes": 4394,
+      "sha256": "0af53ba43d4999e27546794d35aa58d37bc13be81c4f29c5be2b006f015a9b7f"
     },
     {
       "path": "android-app/tests/NativeRcStreamTest.java",
-      "bytes": 10315,
-      "sha256": "a813f98404d98d6d8694fec5d26c33b112af3710b8ce0de4dc198c7bd0e90d53"
+      "bytes": 10926,
+      "sha256": "4d4d0e9f73f7c65f389a87a06077987d1403b445a4e34acae0a94f4234f810ce"
     },
     {
       "path": "android-app/tests/RouterNetworkPolicyTest.java",
@@ -704,8 +704,8 @@
     },
     {
       "path": "android-app/tests/browser_modes_test.js",
-      "bytes": 27453,
-      "sha256": "07437c6e332e711d99e0e2e8cdc3f01314683337689917b95eef5805ae09720c"
+      "bytes": 27787,
+      "sha256": "5a0b0e1182707231835fc9d3e186778d9f0b520f79a7389d78328d13d4764bb0"
     },
     {
       "path": "android-app/tests/browser_transport_test.js",
@@ -799,8 +799,8 @@
     },
     {
       "path": "flight/index.html",
-      "bytes": 97855,
-      "sha256": "b4d448cd66d0beecb4005546311b098c0f916edb7867772f83e5f91332b211a1"
+      "bytes": 98320,
+      "sha256": "3256be01810cd9499ff2f9e2a9a23e65791e18b15f342a9af5a0965a1a60a6b3"
     },
     {
       "path": "flight/service-worker.js",
@@ -925,7 +925,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 42947,
-      "sha256": "3951a46c6b2b148435e6173807b998c5d487188c19e70690c1763cfc1ce626d4"
+      "sha256": "1809d4de011972bd264aba702ba474dd0930346b4c3da198b6113e1dfe154d02"
     },
     {
       "path": "offline-support.js",
@@ -1304,8 +1304,8 @@
     },
     {
       "path": "tools/flight_app_source.html",
-      "bytes": 97855,
-      "sha256": "b4d448cd66d0beecb4005546311b098c0f916edb7867772f83e5f91332b211a1"
+      "bytes": 98320,
+      "sha256": "3256be01810cd9499ff2f9e2a9a23e65791e18b15f342a9af5a0965a1a60a6b3"
     },
     {
       "path": "tools/make_offline_manifest.py",
@@ -1354,8 +1354,8 @@
     },
     {
       "path": "tools/test_connection_stability.js",
-      "bytes": 5523,
-      "sha256": "8001d9333c0bece587ad6526ca84660e4fd68a236c92d26fa9053910a6978002"
+      "bytes": 5639,
+      "sha256": "513cde0d577eff162395706d5a904e8a8d6f077e25ff00862f284285f90f99de"
     },
     {
       "path": "tools/test_control_ownership.js",

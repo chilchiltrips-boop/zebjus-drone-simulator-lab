@@ -1,6 +1,6 @@
-# Aerion Flight Android — 18.3.75-android.1
+# Aerion Flight Android — 18.3.75-android.2
 
-VersionCode 1837501. Install `dist/ZEBJUS_Aerion_V18_3_75_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.75 for A1 or A2.
+VersionCode 1837502. This hotfix keeps native UDP alive through short Android/WebView scheduling stalls: directional axes centre after 300 ms and the control lease is fenced only after 900 ms of missing app input. Install `dist/ZEBJUS_Aerion_V18_3_75_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.75 for A1 or A2.
 
 ## Connect and practise
 

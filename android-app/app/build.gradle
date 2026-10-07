@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'in.zebjus.aerion'
     compileSdk 36
-    defaultConfig { applicationId 'in.zebjus.aerion'; minSdk 26; targetSdk 36; versionCode 1837501; versionName '18.3.75-android.1' }
+    defaultConfig { applicationId 'in.zebjus.aerion'; minSdk 26; targetSdk 36; versionCode 1837502; versionName '18.3.75-android.2' }
     compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
     signingConfigs { development { storeFile rootProject.file('signing/aerion-development.p12'); storePassword System.getenv('AERION_DEVELOPMENT_STORE_PASSWORD'); keyAlias 'aerion-development'; keyPassword System.getenv('AERION_DEVELOPMENT_STORE_PASSWORD') } }
     buildTypes {

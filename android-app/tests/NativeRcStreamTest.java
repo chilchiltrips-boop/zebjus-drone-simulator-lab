@@ -40,9 +40,14 @@ public final class NativeRcStreamTest {
    now.addAndGet(20);stream.offer(lease,channels);stream.tick();latest=new DatagramPacket(buffer,buffer.length);controller.receive(latest);
    check(gate.ackAge(lease,now.get())==ackAge+20*(bad+1),"wrong token/device, replay and unsent ACK cannot keep lease alive");
   }
-  now.addAndGet(301);stream.tick();controller.setSoTimeout(20);
-  try{controller.receive(new DatagramPacket(buffer,buffer.length));throw new AssertionError("stale ARM replayed");}catch(SocketTimeoutException expected){}
-  check(gate.watchdog(now.get())==lease,"WebView input loss must fence at 300 ms");check(!stream.offer(lease,channels),"old input cannot restore fenced session");
+  now.addAndGet(301);stream.tick();controller.setSoTimeout(500);
+  DatagramPacket softened=new DatagramPacket(buffer,buffer.length);controller.receive(softened);ByteBuffer soft=ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN);
+  check((soft.getShort(28)&65535)==1500&&(soft.getShort(30)&65535)==1500&&(soft.getShort(34)&65535)==1500,"301 ms stall must centre roll/pitch/yaw");
+  check((soft.getShort(32)&65535)==1430&&(soft.getShort(36)&65535)==2000,"short UI stall keeps bounded throttle/ARM");
+  check(gate.watchdog(now.get())==null,"301 ms WebView pause must not revoke control");
+  now.addAndGet(600);stream.tick();controller.setSoTimeout(20);
+  try{controller.receive(new DatagramPacket(buffer,buffer.length));throw new AssertionError("input older than 900 ms was replayed");}catch(SocketTimeoutException expected){}
+  check(gate.watchdog(now.get())==lease,"WebView input loss must fence after 900 ms");check(!stream.offer(lease,channels),"old input cannot restore fenced session");
   stream.stop(lease);controller.setSoTimeout(500);
   for(int i=0;i<3;i++){DatagramPacket safe=new DatagramPacket(buffer,buffer.length);controller.receive(safe);ByteBuffer frame=ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN);check((frame.getShort(32)&65535)==1000&&(frame.getShort(36)&65535)==1000,"captured stop must be safe");}
   controller.close();

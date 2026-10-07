@@ -2,6 +2,9 @@
 
 ## Stage 1 — 18.3.75
 
+Android hotfix **18.3.75-android.2** separates short WebView scheduling stalls from true control loss. At 300 ms without a fresh app input, native RC centres roll/pitch/yaw but keeps the bounded throttle/ARM state; only input older than 900 ms fences the mobile lease. The bundled mode regression runs the production watchdog during a 500 ms phone UI stall and requires the same control grant/training run to remain active. Firmware stays 18.3.75.
+
+
 Take Control accepts the verified FC grant immediately. Later telemetry reconciles ownership without allowing older replies or public monitor packets to overwrite a newer grant. Disconnect fences in-flight grants. Lease renewal and physical RC watchdogs remain separate.
 
 After a web takeover, the phone pauses the old publisher, checks current scoped ownership and reacquires a revoked reservation before selecting a simulator. Replies from the old stream cannot cancel the new selection. STOP or backgrounding cancels a pending selection and its recovery intent; recovery always returns with neutral throttle and manual ARM.

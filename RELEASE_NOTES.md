@@ -1,3 +1,9 @@
+# ZEBJUS Aerion V18.3.75 — Android control-stability hotfix r2
+
+APK **18.3.75-android.2** fixes the field regression where a short Android/WebView scheduling stall could trigger the native 300 ms input watchdog, drop Take Control, disarm Tripod/Flight Training and recreate the training run. Native input now uses a 300 ms soft-stale stage that centres roll/pitch/yaw while boundedly retaining throttle/ARM, with a 900 ms hard fence. The Flight App treats a still-reserved ZRC1/ZRC2 native publisher as the control-health authority instead of tearing down a healthy grant because a JavaScript ACK callback is late.
+
+Regression coverage runs the production native gate watchdog during the bundled app/browser mode test and inserts a 500 ms phone main-thread stall; the same Take Control grant and training run must survive. Genuine prolonged loss still fences the lease and requires safe/manual re-arm. Firmware remains **18.3.75**; this is an Android/web-source hotfix and does not require a new controller binary beyond matching 18.3.75.
+
 # ZEBJUS Aerion V18.3.75 — Control ownership and unique kit names
 
 The first stage fixes Take Control acknowledgements being discarded after status timeouts. Status and telemetry replies are fenced across grants and disconnects, public monitor packets cannot change browser ownership, and accepted grants start lease renewal immediately. USB boot/flash probing now appears in diagnostic exports. Partial telemetry no longer emits false safety state changes.

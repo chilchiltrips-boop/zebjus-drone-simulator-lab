@@ -1,8 +1,8 @@
-# ZEBJUS Aerion V18.3.75 — GitHub upload
+# ZEBJUS Aerion V18.3.75 — GitHub upload / Android r2 hotfix
 
 Batch upload ചെയ്യാൻ സമയം എടുക്കുന്നത് files corrupt ചെയ്യില്ല. Partial files live main-ൽ mix ആകാതിരിക്കാൻ:
 
-1. main-ൽ നിന്ന് **upload-v18-3-74** branch create ചെയ്യുക. Pages source main ആയി നിലനിർത്തുക.
+1. main-ൽ നിന്ന് **upload-v18-3-75-hotfix** branch create ചെയ്യുക. Pages source main ആയി നിലനിർത്തുക.
 2. ഓരോ UPLOAD batch-ന്റെയും **ഉള്ളിലെ files/folders** അതേ branch-ന്റെ repository root-ൽ upload ചെയ്യുക. Batch folder/ZIP തന്നെ upload ചെയ്യരുത്. Folder paths നിലനിർത്തുക; vendor/vendor ഉണ്ടാകരുത്.
 3. macOS: Cmd+Shift+. ഉപയോഗിച്ച് `.github`, `.gitignore` കാണിക്കുക.
 4. Final batch includes **tools/cleanup_repo.py, tools/project_files.py, tools/release_integrity.py, release-integrity.json** with workflows, firmware and APK. ഇവ ഒരുമിച്ച് upload ചെയ്യണം. Outer wrapper README/inventory/assembly helper upload ചെയ്യരുത്.
