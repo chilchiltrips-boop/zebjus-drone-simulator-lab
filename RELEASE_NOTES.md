@@ -1,3 +1,12 @@
+# ZEBJUS Aerion V18.3.79 — six-digit WebApp binding and PPM priority
+
+- Android 18.3.79-android.1 / 1837901 saves and replaces a training WebApp ID per exact kit.
+- STA WebApps register separate authenticated six-digit IDs; firmware resolves collisions and binds a mobile training run to one browser session. Other browsers cannot receive its live training RC, inject virtual sensors, or take its mobile lease.
+- Physical flight chooses fresh valid PPM before network RC. Simulation retains its explicitly selected APP/PPM input and physical output inhibition.
+- Retains native UDP 50 Hz, selected observer 10 Hz, background HTTP suspension and bounded same-run simulation ACK recovery.
+- Rejected Android saved pairing codes prompt once after PAIR RESET; only SRP hello/proof allow 15-second HTTP waits.
+- Install matching APK and A1/A2 firmware. [Connection and installation guide](SUPPORT/V18_3_79_WEBAPP_ID_UPDATE.md). Automated checks do not imply physical phone, USB, RF-stall or drone flight testing.
+
 ## V18.3.78 web.2 / android.2 — exclusive mobile session
 
 - Native RC remains 50 Hz; the laptop observer is limited to 10 Hz.

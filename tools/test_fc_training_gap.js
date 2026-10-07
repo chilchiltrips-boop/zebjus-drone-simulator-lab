@@ -3,7 +3,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 let now=1000,requests=[],reply;
 const device={deviceId:'ZFC-001122334455',boardId:'ZFC-A2',mode:'STA',trainingActive:true,outputsBlocked:true,trainingTarget:'TRIPOD',trainingController:'APP',trainingRunId:11};
 const secure={lastReceive:1000};
-const window={zebjusSchool:{client:{base:'http://kit',command:async data=>{requests.push(data);return data.type==='training_engine'?{deviceId:device.deviceId,outputsBlocked:true,runId:11}:await new Promise(r=>reply=r);}},getSelectedDevice:()=>device,isSelectedConnected:()=>true},ZfcSecurity:{get:()=>secure},dispatchEvent(){},addEventListener(){}};
+const window={zebjusSchool:{webAppMatches:()=>true,client:{base:'http://kit',command:async data=>{requests.push(data);return data.type==='training_engine'?{deviceId:device.deviceId,outputsBlocked:true,runId:11}:await new Promise(r=>reply=r);}},getSelectedDevice:()=>device,isSelectedConnected:()=>true},ZfcSecurity:{get:()=>secure},dispatchEvent(){},addEventListener(){}};
 const context={window,Date:{now:()=>now},performance:{now:()=>now},setInterval(){},CustomEvent:class{},document:{}};vm.createContext(context);vm.runInContext(fs.readFileSync('fc-training-bridge.js','utf8'),context);
 (async()=>{
  const bridge=window.AerionFcTraining;await bridge.select('FC_PID','TRIPOD');bridge.tick('TRIPOD',{roll:0});bridge.tick('TRIPOD',{roll:1});assert.equal(requests.length,2,'one virtual sensor request in flight');

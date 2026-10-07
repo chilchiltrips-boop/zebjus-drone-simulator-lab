@@ -9,7 +9,8 @@
   if(signal?.aborted){reject(new DOMException('Request cancelled.','AbortError'));return}
   const abort=()=>{const item=pending.get(id);if(!item)return;pending.delete(id);clearTimeout(item.timer);item.remove();native.cancel(token,id);reject(new DOMException('Request cancelled.','AbortError'));};
   const remove=()=>signal?.removeEventListener('abort',abort);
-  const timeout=Math.max(150,Math.min(8000,Number(options.aerionTimeout)||1500)),timer=setTimeout(abort,timeout+100);pending.set(id,{resolve,reject,timer,remove});signal?.addEventListener('abort',abort,{once:true});
+  const pairing=/^\/api\/security\/(hello|proof)$/.test(new URL(String(address),location.href).pathname),limit=pairing?15000:8000;
+  const timeout=Math.max(150,Math.min(limit,Number(options.aerionTimeout)||1500)),timer=setTimeout(abort,timeout+100);pending.set(id,{resolve,reject,timer,remove});signal?.addEventListener('abort',abort,{once:true});
   try{native.request(token,id,String(address),method,options.body?String(options.body):'',timeout)}catch(e){pending.delete(id);clearTimeout(timer);remove();reject(e)}
  });
  navigator.sendBeacon=(address,body)=>{window.fetch(String(address),{method:'POST',body}).catch(()=>{});return true};

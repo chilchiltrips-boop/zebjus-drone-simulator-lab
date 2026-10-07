@@ -1,3 +1,5 @@
+> **Current release: 18.3.79.** Install the matching [Android APK](android-app/dist/ZEBJUS_Aerion_V18_3_79_Android.apk) and A1/A2 firmware. The app saves a six-digit WebApp ID for local STA training; the kit binds commands to that paired browser session. Fresh valid PPM has first priority for real outputs. [Setup and update instructions](SUPPORT/V18_3_79_WEBAPP_ID_UPDATE.md).
+
 > **18.3.78 — release stage 1:** Take Control/ownership ordering, simulator recovery after web transfer, stale handling and flash probe diagnostics. App and web verify the unique Kit Name and full Device ID. Previous connection and Tripod direction fixes are retained. Install the matching [APK](android-app/dist/ZEBJUS_Aerion_V18_3_78_Android.apk) and controller firmware. [Remaining stages and migration requirements](SUPPORT/STAGED_KIT_RELEASES.md).
 
 # ZEBJUS Aerion V18.3.78

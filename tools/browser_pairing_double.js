@@ -3,6 +3,7 @@
 // permission interoperability are exercised by test_secure_browser/frames/native.
 async function install(context,{native=true}={}){await context.addInitScript(({native})=>{
  const channels=new Map();
+ const random=window.crypto.getRandomValues.bind(window.crypto);window.crypto.getRandomValues=a=>{if(a instanceof Uint32Array&&a.length===1){a[0]=23456;return a;}return random(a);};
  // Native publisher double: use latest input directly, independent of mocked HTTP refresh.
  let nativeValue,lastAck=0,active=false,last={},sent=0;
  if(native)Object.defineProperty(window,'NativeAerion',{configurable:true,get:()=>nativeValue,set(value){nativeValue=value;if(!value)return;
@@ -15,9 +16,10 @@ async function install(context,{native=true}={}){await context.addInitScript(({n
   get:base=>channels.get(base),clear:base=>channels.delete(base),
   async ensure(base,st,cid,role){
    const existing=channels.get(base);if(existing?.id===st.deviceId&&existing.cid===cid&&existing.role===role)return existing;
+   if(window.NativeAerion)localStorage.setItem('zebjus-training-webapp-'+st.deviceId,JSON.stringify('123456'));
    const channel={id:st.deviceId,cid,role,info:{deviceId:st.deviceId,name:st.name,role,mode:String(st.mode).startsWith('AP')?'AP':'STA',pidPermission:true},lastReceive:Date.now(),
-    monitorTicket:()=>'',decode:packet=>packet,
-    async request(path,data,raw,timeout,method){if(data?.expectedDeviceId&&data.expectedDeviceId!==this.id)throw Error('Request belongs to another paired kit.');const answer=await raw(path,data,timeout,method);this.lastReceive=Date.now();return answer;}};
+    monitorTicket:()=>'',decode:packet=>({...packet,trainingWebAppId:'123456',webAppRouting:true}),
+    async request(path,data,raw,timeout,method){if(data?.expectedDeviceId&&data.expectedDeviceId!==this.id)throw Error('Request belongs to another paired kit.');if(path==='/api/webapp/register')return {ok:true,deviceId:this.id,webAppId:data.webAppId,webAppRouting:true};const answer=await raw(path,data,timeout,method);this.lastReceive=Date.now();if(path.startsWith('/api/status')||path.startsWith('/api/telemetry')||['training_status','training_select'].includes(data?.type)){answer.webAppRouting=true;answer.trainingWebAppId=data?.webAppId||'123456';}return answer;}};
    channels.set(base,channel);return channel;
   },hex:bytes=>Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('')
  };

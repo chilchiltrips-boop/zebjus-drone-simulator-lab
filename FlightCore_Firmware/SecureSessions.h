@@ -1,5 +1,8 @@
 #pragma once
 #include "SecureFrames.h"
+#include "WebAppScope.h"
+WebAppScope::Registry webAppRegistry;
+bool secureMonitorAllowed(uint64_t);void secureMonitorSeen(uint64_t);
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 #include <mbedtls/bignum.h>
@@ -38,11 +41,11 @@ uint64_t secureMonitorSubscribe(const char* request,const String& device){
  auto cipher=std::unique_ptr<uint8_t[]>(new uint8_t[n]);auto plain=std::unique_ptr<uint8_t[]>(new uint8_t[n]);if(!secureUnhex(encoded,cipher.get(),n))return 0;
  String aad="ZFC3|"+sid+"|"+counter+"|HTTP_C2S";if(xSemaphoreTake(secureMutex,pdMS_TO_TICKS(5))!=pdTRUE)return 0;auto* s=secureFind(id);
  bool ok=s&&s->httpReplay.allowed(seq)&&ZfcSecure::open(s->keys[0],seq,(uint8_t*)aad.c_str(),aad.length(),cipher.get(),n,plain.get());
- if(ok){plain[n-16]=0;String p((char*)plain.get());ok=secureParam(p,"path")=="/api/rc/live"&&secureParam(p,"method")=="GET"&&secureParam(p,"expectedDeviceId")==device&&secureParam(p,"clientId")==s->client;if(ok)s->httpReplay.accept(seq);}
+ if(ok){plain[n-16]=0;String p((char*)plain.get());ok=secureParam(p,"path")=="/api/rc/live"&&secureParam(p,"method")=="GET"&&secureParam(p,"expectedDeviceId")==device&&secureParam(p,"clientId")==s->client;if(ok)ok=secureMonitorAllowed(id);if(ok)s->httpReplay.accept(seq);}
  xSemaphoreGive(secureMutex);memset(plain.get(),0,n);return ok?id:0;
 }
 bool secureMonitorSeal(uint64_t sid,const char* plain,char* out,size_t capacity){
- if(xSemaphoreTake(secureMutex,pdMS_TO_TICKS(5))!=pdTRUE)return false;auto* s=secureFind(sid);if(!s){xSemaphoreGive(secureMutex);return false;}
+ if(xSemaphoreTake(secureMutex,pdMS_TO_TICKS(5))!=pdTRUE)return false;auto* s=secureFind(sid);if(!s||!secureMonitorAllowed(sid)){xSemaphoreGive(secureMutex);return false;}secureMonitorSeen(sid);
  uint64_t seq=++s->monitorSend;uint8_t key[32];memcpy(key,s->keys[4],32);xSemaphoreGive(secureMutex);size_t n=strlen(plain);auto cipher=std::unique_ptr<uint8_t[]>(new uint8_t[n+16]);String id=secureId(sid),counter=String((unsigned long long)seq),aad="ZFC3|"+id+"|"+counter+"|MONITOR_S2C";
  bool ok=ZfcSecure::seal(key,seq,(uint8_t*)aad.c_str(),aad.length(),(uint8_t*)plain,n,cipher.get());memset(key,0,32);if(!ok)return false;
  String envelope="{\"sessionId\":\""+id+"\",\"seq\":\""+counter+"\",\"cipher\":\""+secureHex(cipher.get(),n+16)+"\"}\n";

@@ -65,7 +65,8 @@ bool secureSendJson(int code,const String& body){
  cors();server.sendHeader("Cache-Control","no-store");server.send(200,"application/json","{\"sessionId\":\""+sid+"\",\"seq\":\""+counter+"\",\"cipher\":\""+secureHex(out.get(),plain.length()+16)+"\"}");return true;
 }
 bool secureOwner(){return secureCurrent&&secureCurrent->credential=="OWNER";}
-bool securePidPermission(){return secureCurrent&&(secureOwner()?controlAuthorized():trainingActive&&trainingAppOwned&&controlRole=="MOBILE");}
+#include "FlightWebApp.h"
+bool securePidPermission(){return secureCurrent&&(secureOwner()?controlAuthorized()||scopedTrainingBrowser():trainingActive&&trainingAppOwned&&controlRole=="MOBILE"&&scopedTrainingBrowser());}
 void secureInvite(){
  if(!secureOwner()||armed||benchMode!=BENCH_NONE||setupMode||!lockMine(secureCurrent->client)){sendMessage(403,"Owner control on STA and disarmed kit required to invite a laptop");return;}
  PairCredential* c=nullptr;for(auto& x:pairInvites)if(!x.length||(int32_t)(x.expires-millis())<=0){c=&x;break;}if(!c){sendMessage(429,"Use or wait for existing invitations");return;}
@@ -83,6 +84,9 @@ bool securePermission(const String& path){
 void secureDispatch(const String& p){
  if(!securePermission(p))return;
  if(p=="/api/firmware/begin"||p=="/api/firmware/chunk"||p=="/api/firmware/end"){secureOta(p);return;}
+ if(trainingActive&&trainingAppOwned&&secureCurrent->client!=controlOwner&&!scopedTrainingBrowser()&&(p=="/api/telemetry"||p=="/api/command"&&server.arg("type")!="training_status"&&server.arg("type")!="pid_get")){sendMessage(403,"This training run is bound to another WebApp");return;}
+ if(p=="/api/webapp/register"||p=="/api/webapp/unregister"){webAppRegister(p.endsWith("unregister"));return;}
+ if(p=="/api/command"&&(server.arg("type")=="training_engine"||server.arg("type")=="training_sensor")&&!scopedTrainingBrowser()){sendMessage(403,"Only the WebApp selected by the app can send virtual sensors");return;}
  if(p=="/api/security/info"){sendJson(200,"{\"ok\":true,\"deviceId\":\""+deviceId+"\",\"name\":\""+jsonEscape(kitName)+"\",\"role\":\""+secureCurrent->role+"\",\"mode\":\""+String(setupMode?"AP":"STA")+"\",\"protocol\":\"ZFC3\",\"pidPermission\":true,\"controlPermission\":"+String(secureOwner()?"true":"false")+"}");return;}
  if(p=="/api/security/maintenance"){if(!secureOwner()||armed||benchMode!=BENCH_NONE){sendMessage(423,"Disarm for Wi-Fi maintenance");return;}secureMaintenanceUntil[secureCurrent-secureSessions]=millis()+120000;sendMessage(200,"Wi-Fi maintenance available for two minutes");return;}
  if(p=="/api/security/invite"){secureInvite();return;}

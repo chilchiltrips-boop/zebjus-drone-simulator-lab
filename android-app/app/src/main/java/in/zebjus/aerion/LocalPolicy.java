@@ -9,6 +9,10 @@ import java.util.Map;
 /** The native bridge can reach only the controller API on local Wi-Fi addresses. */
 public final class LocalPolicy {
     private LocalPolicy() {}
+    public static int requestTimeout(String path,boolean rc,int requested) {
+        boolean pairing=path.equals("/api/security/hello") || path.equals("/api/security/proof");
+        return Math.max(150,Math.min(rc?1500:pairing?15000:8000,requested));
+    }
     public static URL api(String value, String method) throws Exception {
         if (value.length()>2048) throw new IllegalArgumentException("Kit address is too long.");
         URI uri=new URI(value);

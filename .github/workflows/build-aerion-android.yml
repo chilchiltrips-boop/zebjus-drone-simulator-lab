@@ -3,7 +3,7 @@ name: Build Aerion Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [codex/webapp-id-routing, main]
     paths:
       - 'android-app/app/**'
       - 'VERSION.txt'
@@ -99,7 +99,7 @@ jobs:
           name: Aerion-Android-APK
           if-no-files-found: error
           path: |
-            android-app/dist/ZEBJUS_Aerion_V18_3_78_Android.apk
+            android-app/dist/ZEBJUS_Aerion_V18_3_79_Android.apk
             android-app/dist/BUILD_REPORT.json
             android-app/dist/APK_SIGNATURE.txt
             android-app/dist/APK_MANIFEST.txt

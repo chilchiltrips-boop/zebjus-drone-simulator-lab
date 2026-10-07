@@ -1,13 +1,13 @@
 {
   "product": "ZEBJUS Aerion Flight",
-  "version": "18.3.78-android.2",
-  "versionCode": 1837802,
+  "version": "18.3.79-android.1",
+  "versionCode": 1837901,
   "package": "in.zebjus.aerion",
   "minSdk": 26,
   "targetSdk": 36,
   "signing": "development key, included for development updates; not a private production key",
   "apkBytes": 94828,
-  "sha256": "2c28e9c94663d7def03899f7ca56f07d60e27975f3c79740dce18539711bcb90",
+  "sha256": "1715ce2c31b145682f526bea5577fd1fd0b0eecfcb394424861cc991da4e0970",
   "verification": [
     "APK ZIP integrity",
     "DEX compiled",

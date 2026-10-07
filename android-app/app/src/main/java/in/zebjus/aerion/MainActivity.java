@@ -363,7 +363,7 @@ public final class MainActivity extends Activity {
         @JavascriptInterface public void request(String key,String id,String address,String method,String form,int requestedTimeout){
             if(!token.equals(key) || destroyed || id==null || !id.matches("[A-Za-z0-9-]{1,96}"))return;
             Job job=null;
-            try{URL url=LocalPolicy.api(address,method);if(url.getPath().equals("/api/control/acquire"))form=form.replaceAll("(?:^|&)clientRole=[^&]*","")+"&clientRole=MOBILE";boolean rc="rc_frame".equals(LocalPolicy.form(form).get("type"));job=new Job(id,url,method,form,Math.max(150,Math.min(rc?1500:8000,requestedTimeout)),wifi);
+            try{URL url=LocalPolicy.api(address,method);if(url.getPath().equals("/api/control/acquire"))form=form.replaceAll("(?:^|&)clientRole=[^&]*","")+"&clientRole=MOBILE";boolean rc="rc_frame".equals(LocalPolicy.form(form).get("type"));job=new Job(id,url,method,form,LocalPolicy.requestTimeout(url.getPath(),rc,requestedTimeout),wifi);
                 if(rc&&job.lease!=null&&rcStream.nativeProfile(job.lease)){
                     int[] channels=LocalPolicy.channels(job.fields);
                     if(!rcStream.matchesRun(job.lease,job.fields.get("simulationRunId"),channels)){reply(id,409,new JSONObject().put("ok",false).put("message","RC frame belongs to another destination / run. Select it again.").toString());return;}

@@ -3,15 +3,15 @@
  const MAX_LINE=2600,STALE_MS=1400;
  function validPacket(t,id){return t?.type==='rc_live'&&String(t.deviceId).toUpperCase()===String(id).toUpperCase()&&Number.isInteger(t.controllerMs)&&t.controllerMs>=0&&Number.isInteger(t.trainingRunId)&&t.trainingRunId>=0&&typeof t.trainingActive==='boolean'&&t.outputsBlocked===t.trainingActive&&['NONE','TRIPOD','FLIGHT'].includes(t.trainingTarget)&&(!t.trainingActive||t.trainingTarget!=='NONE')&&['NONE','PPM','WEB_AP','WEB_STA'].includes(t.rcSource)&&Number.isFinite(t.rcAgeMs)&&t.rcAgeMs>=0&&Array.isArray(t.rc)&&t.rc.length===10&&t.rc.every(v=>Number.isInteger(v)&&v>=1000&&v<=2000);}
  class RcLiveStream{
-  constructor({packet=()=>{},event=()=>{}}={}){this.packet=packet;this.event=event;this.binding='';this.latest=null;this.receivedAt=0;this.generation=0;this.retry=null;this.retryDelay=1000;this.abort=null;this.state='off';this.stats={protocol:'NDJSON1',frames:0,reconnects:0,invalidFrames:0,lastError:''};}
+  constructor({packet=()=>{},event=()=>{}}={}){this.packet=packet;this.event=event;this.binding='';this.blockedBinding='';this.latest=null;this.receivedAt=0;this.generation=0;this.retry=null;this.retryDelay=1000;this.abort=null;this.state='off';this.stats={protocol:'NDJSON1',frames:0,reconnects:0,invalidFrames:0,lastError:''};}
   get live(){return this.state==='live'&&Date.now()-this.receivedAt<STALE_MS;}
   setState(state,message){if(this.state===state)return;this.state=state;this.event({kind:'rc-monitor',state,message,deviceId:this.deviceId,transport:this.protocol||'NDJSON1'});}
   update(base,id,info){
    const next=base&&id&&['NDJSON1','ZFC3_NDJSON'].includes(info?.rcMonitorProtocol)&&Number(info.rcMonitorPort)===4211?base+'|'+id:'';
-   if(next===this.binding)return;this.stop();if(!next)return;
+   if(next===this.binding||next===this.blockedBinding)return;this.stop();if(!next)return;
    this.binding=next;this.base=base;this.deviceId=id;this.protocol=info.rcMonitorProtocol;this.stats={protocol:this.protocol,frames:0,reconnects:0,invalidFrames:0,lastError:''};this.connect();
   }
-  stop(){this.generation++;clearTimeout(this.retry);this.retry=null;this.abort?.abort();this.abort=null;this.binding='';this.latest=null;this.receivedAt=0;this.state='off';}
+  stop(){this.blockedBinding='';this.generation++;clearTimeout(this.retry);this.retry=null;this.abort?.abort();this.abort=null;this.binding='';this.latest=null;this.receivedAt=0;this.state='off';}
   async connect(){
    if(!this.binding||this.abort)return;const generation=this.generation,ctl=new AbortController();this.abort=ctl;
    const url=new URL('/api/rc/live',this.base);url.port='4211';const secure=scope.ZfcSecurity?.get(this.base);url.search=secure?new URLSearchParams({deviceId:this.deviceId,...Object.fromEntries(new URLSearchParams(secure.monitorTicket()))}):new URLSearchParams({deviceId:this.deviceId});
@@ -19,6 +19,7 @@
    try{
     timer=setTimeout(()=>ctl.abort(),5000);
     const response=await fetch(url.href,{signal:ctl.signal,cache:'no-store',targetAddressSpace:'local'});
+    if([403,404,409].includes(response.status)){this.blockedBinding=this.binding;this.binding='';throw Error('This WebApp is not the selected training observer. Connect again after ending app training.');}
     if(!response.ok||!response.body?.getReader)throw Error('Live RC monitor unavailable; waiting with backoff.');
     clearTimeout(timer);let lastRead=Date.now();timer=setInterval(()=>{if(Date.now()-lastRead>STALE_MS)ctl.abort();},200);
     reader=response.body.getReader();const decoder=new TextDecoder();
