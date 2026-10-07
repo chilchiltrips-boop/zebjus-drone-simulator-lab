@@ -19,8 +19,8 @@
     },
     {
       "path": ".github/workflows/verify-learning-lab.yml",
-      "bytes": 7073,
-      "sha256": "a5a401062934728d2b1b3c022b1e710f5b9e09d652be2dae396c856ec3af85a8"
+      "bytes": 7087,
+      "sha256": "dc94711afe2009f4d1348db5229fa73894b4af31eff32c209b4967b5fc0bcb02"
     },
     {
       "path": ".github/workflows/verify-secure-stages.yml",

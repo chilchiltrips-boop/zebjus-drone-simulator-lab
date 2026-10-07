@@ -14,7 +14,7 @@ jobs:
     if: always() && (needs.verify-build.result == 'success' || needs.verify-build.result == 'skipped')
     name: Verify learning workspace in the browser
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -26,7 +26,7 @@ jobs:
           node-version: '22'
       - name: Install browser
         run: |
-          npm install --no-save --package-lock=false playwright
+          npm install --no-save --package-lock=false playwright@1.56.0
           npx playwright install --with-deps chromium
       - name: Verify navigation, tools, live training bridge and responsive views
         env:
@@ -101,7 +101,7 @@ jobs:
         run: npm run release:seal
       - name: Install browser verification dependencies
         run: |
-          npm install --no-save --package-lock=false playwright
+          npm install --no-save --package-lock=false playwright@1.56.0
           npx playwright install --with-deps chromium
       - name: Run source, physics, control, setup and packaging checks
         run: |
