@@ -1,7 +1,7 @@
 {
   "schema": 2,
   "product": "ZEBJUS_FLIGHTCORE",
-  "version": "18.3.73",
+  "version": "18.3.74",
   "defaultBoardId": "ZFC-A1",
   "boards": [
     {
@@ -12,14 +12,14 @@
       "flashFreq": "80m",
       "flashSize": "4MB",
       "latest": {
-        "version": "18.3.73",
+        "version": "18.3.74",
         "app": {
           "available": true,
           "file": "ZEBJUS_FLIGHTCORE_A1_APP.bin",
           "sha256": "cd428ad509816e4491e44354f01f515ecd0328b6c8fb02c195b9e43c9ab0dbe4",
           "size": 1222944,
           "builtAt": "2026-10-06T16:44:58Z",
-          "buildId": "18.3.73-ZFC-A1-cd428ad50981"
+          "buildId": "18.3.74-ZFC-A1-cd428ad50981"
         },
         "factory": {
           "available": true,
@@ -27,7 +27,7 @@
           "sha256": "71ec4e7d0284c2f3949c895a6eadae593e7c14c720132bef6be7fff481c3245a",
           "size": 4194304,
           "builtAt": "2026-10-06T16:44:58Z",
-          "buildId": "18.3.73-ZFC-A1-FACTORY-71ec4e7d0284"
+          "buildId": "18.3.74-ZFC-A1-FACTORY-71ec4e7d0284"
         },
         "builtAt": "2026-10-06T16:44:58Z"
       },
@@ -57,14 +57,14 @@
       "flashFreq": "80m",
       "flashSize": "4MB",
       "latest": {
-        "version": "18.3.73",
+        "version": "18.3.74",
         "app": {
           "available": true,
           "file": "ZEBJUS_FLIGHTCORE_A2_APP.bin",
           "sha256": "248818def79cec21bffd87e3b7b124b3ff25d7917d7c187258b9ab6962c1b05c",
           "size": 1308128,
           "builtAt": "2026-10-06T16:44:58Z",
-          "buildId": "18.3.73-ZFC-A2-248818def79c"
+          "buildId": "18.3.74-ZFC-A2-248818def79c"
         },
         "factory": {
           "available": true,
@@ -72,7 +72,7 @@
           "sha256": "a1165bb4ff1d29766077a3467e6f7c78ab3d8a370d25569585faf4fc16b2b20e",
           "size": 4194304,
           "builtAt": "2026-10-06T16:44:58Z",
-          "buildId": "18.3.73-ZFC-A2-FACTORY-a1165bb4ff1d"
+          "buildId": "18.3.74-ZFC-A2-FACTORY-a1165bb4ff1d"
         },
         "builtAt": "2026-10-06T16:44:58Z"
       },

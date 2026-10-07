@@ -383,7 +383,10 @@ function renderJoy(){
  const l=$('#webLeftRead'),r=$('#webRightRead');if(l)l.textContent=`T ${c[2]} • Y ${Math.round((c[3]-1500)/5)}%`;if(r)r.textContent=`P ${Math.round((c[1]-1500)/5)}% • R ${Math.round((c[0]-1500)/5)}%`;
  const m=$('#webMode');if(m&&document.activeElement!==m&&m.value!==String(c[5]))m.value=String(c[5]);const ch9=$('#webCh9');if(ch9)ch9.value=c[8];const o=$('#webCh9Out');if(o)o.textContent=c[8];const led=$('#webLed');if(led)led.checked=c[9]>1500;
  const basic=$('#basicFlightMode');if(basic&&document.activeElement!==basic&&basic.value!==String(c[5]>=1500?1500:1000))basic.value=String(c[5]>=1500?1500:1000);
- const labels=['ROLL','PITCH','THROTTLE','YAW','ARM','MODE','ALT','AUX','CAM/AUX','LED'];const g=$('#webChannelGrid');if(g)g.innerHTML=c.map((v,i)=>`<div><span>CH${i+1} • ${labels[i]}</span><b>${v}</b><i style="--p:${(v-1000)/10}%"></i></div>`).join('');
+ const labels=['ROLL','PITCH','THROTTLE','YAW','ARM','MODE','ALT','AUX','CAM/AUX','LED'];const g=$('#webChannelGrid');if(g){
+  if(g.children.length!==10)g.innerHTML=labels.map((label,i)=>`<div><span>CH${i+1} • ${label}</span><b></b><i></i></div>`).join('');
+  c.forEach((v,i)=>{const row=g.children[i],b=row.querySelector('b'),bar=row.querySelector('i');if(b.textContent!==String(v)){b.textContent=v;bar.style.setProperty('--p',(v-1000)/10+'%');}});
+ }
  updateArmGuidance();updateTxIndicators();targetUi();
 }
 function setTransmitter(on){

@@ -1,7 +1,9 @@
-ZEBJUS Aerion V18.3.73 validation
+ZEBJUS Aerion V18.3.74 validation
 
-C6 SPI1 flash-ID probe and cached-target patch, AP discovery before naming, verified credential/preferred-profile storage, actual scheduled STA restart, mDNS fallback, AP setup form, mobile password retry and native router selection are covered by production runtime/browser/native tests.
+Production regressions pass for paused-training ACK freshness/epoch fencing, genuine expiry, immediate native STOP, late callback isolation, bounded paints, retained channel nodes and buffered NDJSON safety edges. Actual Three.js geometry verifies Tripod roll/pitch direction. Production firmware timing tests preserve genuine armed-stall watchdogs while excluding deliberate pauses and bounding unused HTTP preconnect waits.
 
-A1/A2 build checks verify chip/version/OTA size/factory equality/monitor stack. APK 18.3.73-android.1 (1837301) retains the previous certificate and exact validated source/transport. Offline/project/release integrity checks verify the complete version and file hashes.
+Existing control/reconnect, USB guards, Wi-Fi NVS/AP/STA, receiver/setup/output inhibition, simulator HTTP/ZRC2 and Java UDP/lease/router tests pass. Actual app/web browser flows pass for delayed HTTP, stale monitor recovery, Flight/Tripod/Real modes, AP/STA and native transport/lifecycle.
 
-Boundary: host radio/NVS doubles and simulated controller/native Wi-Fi APIs are used. Production handlers and Java UDP loopback are executed. No physical flash, phone/emulator Wi-Fi, router association, motor/ESC or flight test is claimed. See SUPPORT/V18_3_73_UPDATE_AND_TEST.md.
+A1/A2 builds verify chip/version/OTA fit/factory equality/monitor stack. APK 18.3.74-android.1 (1837401) uses the original certificate and exact validated UI/transport. Bundled UI hashes were checked after workspace recovery and production regressions rerun; release CI rebuilds complete packages before checking the generated branch. Offline/project/release integrity checks verify packaged hashes.
+
+No physical flash, phone/emulator Wi-Fi, router, motor/ESC or flight test is claimed. See SUPPORT/V18_3_74_CONNECTION_AND_TRIPOD.md.

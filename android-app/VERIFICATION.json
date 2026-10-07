@@ -1,13 +1,15 @@
 {
-  "version": "18.3.73-android.1",
-  "apk_sha256": "1a1ee10d943c48bd02b8eba280432b9bfab21e6e981ae052104ea96984f39526",
+  "version": "18.3.74-android.1",
+  "apk_sha256": "2cb2b7779e31b9a15d5946ba85a85ffb8b186c8374468feb16096c33141a1cbe",
+  "certificate_sha256": "0286c9c3d51284e695cd900d87b6cc7a99ae47991c27cd42c0313fd9f1780f9c",
   "checks": {
     "SDK_36_DEX_manifest_signature_alignment_exact_assets": "passed; original certificate retained",
     "native_control_scope_watchdog_UDP": "production Java tests passed",
-    "router_policy": "old AP/cellular/wrong SSID rejected; offline/redacted router accepted",
-    "WiFi_NVS_test_restart": "production host runtime passed",
-    "app_WebApp_AP_STA_and_password": "browser and production VM regressions passed",
-    "recovery_sources": "product firmware, Java and bundled UI restored byte-for-byte from previously verified hashes"
+    "paused_training_and_STOP": "production ACK freshness, paused/resumed heartbeat fencing, genuine expiry, immediate native STOP and late callback isolation passed",
+    "observer_UI_and_Tripod": "bounded paints, reused DOM, NDJSON safety edges and Three.js geometry passed",
+    "HTTP_and_loop_clock": "production idle/ready socket and intentional pause/genuine armed-stall timing tests passed",
+    "browser_app_web_modes": "actual bundled app/web Flight/Tripod/Real with production native grant policy passed",
+    "app_transport_and_AP_STA": "actual app transport and AP/STA browser tests passed"
   },
   "test_boundary": {
     "Android_phone_or_emulator_tested": false,

@@ -24,12 +24,17 @@
     reader=response.body.getReader();const decoder=new TextDecoder();
     while(generation===this.generation){
      const result=await reader.read();if(result.done)throw Error('Live RC monitor closed.');buffer+=decoder.decode(result.value,{stream:true});
-     let newline,count=0;while((newline=buffer.indexOf('\n'))>=0){
+     let newline,count=0,pending=null;while((newline=buffer.indexOf('\n'))>=0){
       const line=buffer.slice(0,newline);buffer=buffer.slice(newline+1);if(line.length>MAX_LINE||++count>64)throw Error('Live RC packet exceeds its limit.');if(!line.trim())continue;
       let t;try{t=JSON.parse(line);}catch{this.stats.invalidFrames++;continue;}
       if(!validPacket(t,this.deviceId)||lastClock!==null&&((t.controllerMs-lastClock)|0)<=0){this.stats.invalidFrames++;continue;}
-      if(generation!==this.generation)return;lastClock=t.controllerMs;lastRead=this.receivedAt=Date.now();this.latest=t;this.stats.frames++;this.stats.lastError='';this.setState('live','Live RC monitor connected (NDJSON1).');this.packet(t);
+      if(generation!==this.generation)return;lastClock=t.controllerMs;lastRead=this.receivedAt=Date.now();this.latest=t;this.stats.frames++;this.stats.lastError='';this.setState('live','Live RC monitor connected (NDJSON1).');
+      // TCP can deliver a backlog in one read. Preserve safety/mode edges,
+      // then apply its newest stick values without redrawing every old frame.
+      if(pending&&[pending.trainingRunId,pending.trainingTarget,pending.trainingActive,pending.controlRole,pending.rcSource,pending.rc[4]>=1500].some((v,i)=>v!==[t.trainingRunId,t.trainingTarget,t.trainingActive,t.controlRole,t.rcSource,t.rc[4]>=1500][i]))this.packet(pending);
+      pending=t;
      }
+     if(pending)this.packet(pending);
      if(buffer.length>MAX_LINE)throw Error('Incomplete live RC packet exceeds its limit.');
     }
    }catch(error){if(generation===this.generation){this.stats.lastError=error.name==='AbortError'?'Live RC monitor timed out.':error.message;this.setState('retrying',this.stats.lastError+' Retrying; telemetry polling remains available.');}}

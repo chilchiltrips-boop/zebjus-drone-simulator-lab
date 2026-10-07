@@ -69,6 +69,7 @@ jobs:
       - name: Check input routing, reconnect, camera cleanup and upload guards
         run: |
           npm run test:control
+          npm run test:stability
           npm run test:setup
           npm run test:wifi
           python3 -B tools/test_upload_integrity.py

@@ -1,3 +1,11 @@
+# V18.3.74 connection stability and Tripod roll
+
+Tripod renders positive roll by lowering the model's right side; channel values and physical flight mixing are unchanged. App ACKs now renew paused-training freshness, and late paused-heartbeat errors are ignored after transmission resumes. STOP immediately pauses the native publisher; late callbacks after an intentional STOP cannot start recovery.
+
+Ordinary app status paints are capped at 10 Hz, with immediate safety updates. Web channel rows retain their DOM nodes, and buffered monitor stick frames are coalesced while ARM/destination/ownership edges are preserved. The firmware releases unused HTTP preconnect sockets after 250 ms instead of waiting 5 seconds. Deliberate bench/configuration pauses reset the flight-loop measurement clock without clearing a genuine watchdog trip. App diagnostic exports now record failed telemetry requests.
+
+Install APK **18.3.74-android.1** (1837401) with matching A1/A2 firmware and reload the web lab. Signing certificate and OTA partition layout are unchanged. See [diagnosis, verification and field checks](SUPPORT/V18_3_74_CONNECTION_AND_TRIPOD.md). Real kit testing is still required to assess any remaining radio, power or scheduling loss.
+
 # V18.3.73 USB and AP/STA connection recovery
 
 Correct the bundled ESP32-C6 SPI1 flash register base to 0x60003000 and patch cached target objects before probing. Discover unnamed valid kits, use stable temporary AP names, verify Wi-Fi credential/preferred-profile storage, and schedule the restart consumed by the main loop after a successful AP test. mDNS failure no longer rejects working credentials; setup status reports STA IP and restart delay.

@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.73 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
+  ZEBJUS FlightCore V18.3.74 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -40,6 +40,7 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <WebServer.h>
+#include "FlightHttpServer.h"
 #include <ESPmDNS.h>
 #include <Preferences.h>
 #include <esp_random.h>
@@ -61,7 +62,7 @@
 #endif
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.73";
+static const char* FW_VERSION="18.3.74";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -132,7 +133,7 @@ static const uint32_t IDLE_AUTO_DISARM_MS=15000; // Only at minimum throttle; ce
 static const char* WEBAPP_URL="";
 
 IPAddress AP_IP(192,168,4,1),AP_GATEWAY(192,168,4,1),AP_SUBNET(255,255,255,0);
-WebServer server(80);
+FlightHttpServer server(80);
 Preferences prefs;
 
 // ---------------- Identity / Wi-Fi ----------------
@@ -684,7 +685,7 @@ void setupFlightCore(){
   Serial.printf("FlightCore READY • gyro bias R %.3f P %.3f Y %.3f dps • 250 Hz ESC pulses in microseconds\n",gyroBiasRoll,gyroBiasPitch,gyroBiasYaw);
 }
 void runFlightLoop(){
-  if(!FLIGHT_CONTROL_ENABLED||!flightReady||benchMode!=BENCH_NONE||configurationBusy)return;uint32_t now=micros(),gap=(uint32_t)(now-flightLoopTimerUs);if(gap<2000)return;flightDt=constrain(gap*.000001f,.002f,.012f);if(gap>maxFlightLoopGapUs)maxFlightLoopGapUs=gap;if(gap>FLIGHT_LOOP_US*2)flightLoopOverruns++;if(armed&&gap>ARMED_LOOP_GAP_LIMIT_US&&!flightWatchdogTripped){flightWatchdogTripped=true;flightWatchdogTrips++;}flightLoopTimerUs=now;
+  if(!FLIGHT_CONTROL_ENABLED||!flightReady||benchMode!=BENCH_NONE||configurationBusy){flightLoopTimerUs=micros();return;}uint32_t now=micros(),gap=(uint32_t)(now-flightLoopTimerUs);if(gap<2000)return;flightDt=constrain(gap*.000001f,.002f,.012f);if(gap>maxFlightLoopGapUs)maxFlightLoopGapUs=gap;if(gap>FLIGHT_LOOP_US*2)flightLoopOverruns++;if(armed&&gap>ARMED_LOOP_GAP_LIMIT_US&&!flightWatchdogTripped){flightWatchdogTripped=true;flightWatchdogTrips++;}flightLoopTimerUs=now;
   uint16_t rc[10];activeRcSource=chooseRcSource();copyActiveRc(rc,activeRcSource);
   if(forceDisarmRequested){disarmFlight("control released");forceDisarmRequested=false;armLowSeen=false;resetArmGesture();}
   if(flightWatchdogTripped){disarmFlight("output supervisor: loop stalled");armLowSeen=false;resetArmGesture();if(activeRcSource!=RC_NONE&&rc[2]<=1050&&abs((int)rc[3]-1500)<=80&&((activeRcSource==RC_PPM&&ppmYawStickArm)||rc[4]<1500))flightWatchdogTripped=false;return;}
@@ -1213,7 +1214,7 @@ void setupRoutes(){
 }
 void startNormalServer(){
   setupMode=false;WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();startRcUdp();startRcMonitor();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.73 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.74 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
   invalidateRcUdp();setupMode=true;if(!preferredApMode())setPreferredApMode(true);controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();serviceTraining();if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());server.begin();startRcUdp();startRcMonitor();wifiTestState=WT_IDLE;
@@ -1236,7 +1237,7 @@ void setup(){
   if(USER_LED_PIN>=0){pinMode(USER_LED_PIN,OUTPUT);digitalWrite(USER_LED_PIN,HIGH);}
   Serial.begin(115200);delay(300);Serial.printf("Boot: reset reason %u, free heap %u bytes\n",(unsigned)esp_reset_reason(),(unsigned)ESP.getFreeHeap());WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);loadExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}
   busMutex=xSemaphoreCreateRecursiveMutex();deviceId=getDeviceId();loadFlightSettings();loadFcSetup();loadKitName();updateApName();loadApPassword();loadSavedWiFi();loadPidSettings();loadCalibrationSettings();probeImuAtBoot();setupFlightCore();flightHeartbeatUs=micros();if(FLIGHT_CONTROL_ENABLED&&xTaskCreate(flightOutputSupervisor,"fc-output-guard",3072,nullptr,21,nullptr)!=pdPASS){flightReady=false;motorsSafe();Serial.println("Output supervisor unavailable: arming disabled");}setupExpansionPeripherals();setupRoutes();startFlightTask();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.73 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.74 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
   bool forceApOnce=consumeForceSetupFlag();if(forceApOnce||preferredApMode()){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }
