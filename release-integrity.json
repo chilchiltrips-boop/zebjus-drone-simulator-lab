@@ -19,8 +19,8 @@
     },
     {
       "path": ".github/workflows/verify-learning-lab.yml",
-      "bytes": 7125,
-      "sha256": "16ddc135c805e4455df0f11de4ff21584fa84ef69ff077e7e85e181ba821e5cc"
+      "bytes": 8349,
+      "sha256": "dc15cf20fb809ce7860f66e56f54e8c583ebcbd602b3e935c8b31e57ff583a57"
     },
     {
       "path": ".github/workflows/verify-secure-stages.yml",
@@ -824,13 +824,13 @@
     },
     {
       "path": "android-app/tests/browser_modes_test.js",
-      "bytes": 28960,
-      "sha256": "a3129577e74d30fe34724f057b8f290a19ec0152f4f67ad9c7ff7d9420a7b596"
+      "bytes": 29574,
+      "sha256": "c50c125aae9609ffcf5aa0fd37aa1e537ba08c82f284b09f2d3adbeb565afdcc"
     },
     {
       "path": "android-app/tests/browser_transport_test.js",
-      "bytes": 9356,
-      "sha256": "e6939fd53345dc7f49e6eb35e74a958640ed51665d059015cd0b3ccd11302920"
+      "bytes": 9668,
+      "sha256": "a97386ce0169d76dd9b6aa39de1934c50e4dc5f43238e5d188a7ad228c2dc777"
     },
     {
       "path": "android-app/tools/build_apk.py",
