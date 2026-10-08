@@ -14,29 +14,56 @@ public final class NativeRcStream {
     private final LeaseGate gate;
     private final LongSupplier clock;
     private volatile Profile profile;
+    private volatile java.util.Map<String,Object> archived=new java.util.LinkedHashMap<>();
     private static final class Profile {
         final LeaseGate.Lease lease;
         final DatagramSocket socket;
-        final long device,token;
+        final long device,token,runId;
+        final boolean simulation;SecureTransport secure;
         final long[] sentAt=new long[64];
-        int sequence,lastAck;
+        final int[][] sentChannels=new int[64][];
+        int[] acceptedChannels;
+        int sequence,lastAck;long framesSent,acksReceived,sendErrors,ackRejected;
         boolean ackSeen,closed;
-        Profile(LeaseGate.Lease lease,DatagramSocket socket,long device,long token){this.lease=lease;this.socket=socket;this.device=device;this.token=token;}
+        Profile(LeaseGate.Lease lease,DatagramSocket socket,long device,long token,boolean simulation,long runId){this.lease=lease;this.socket=socket;this.device=device;this.token=token;this.simulation=simulation;this.runId=runId;}
     }
     public NativeRcStream(LeaseGate gate,LongSupplier clock){this.gate=gate;this.clock=clock;}
+    public synchronized void useHttp(LeaseGate.Lease lease){
+        if(!gate.isCurrent(lease))throw new IllegalStateException("Control stopped.");
+        if(profile!=null){close(profile,false);profile=null;}
+    }
     public synchronized void configure(LeaseGate.Lease lease,DatagramSocket socket,InetSocketAddress target,long device,long token)throws Exception{
+        configure(lease,socket,target,device,token,false);
+    }
+    public synchronized void configure(LeaseGate.Lease lease,DatagramSocket socket,InetSocketAddress target,long device,long token,boolean simulation)throws Exception{
+        configure(lease,socket,target,device,token,simulation,0);
+    }
+    public synchronized void configure(LeaseGate.Lease lease,DatagramSocket socket,InetSocketAddress target,long device,long token,boolean simulation,long runId)throws Exception{
+        configure(lease,socket,target,device,token,simulation,runId,null);
+    }
+    public synchronized void configure(LeaseGate.Lease lease,DatagramSocket socket,InetSocketAddress target,long device,long token,boolean simulation,long runId,SecureTransport secure)throws Exception{
         if(!gate.isCurrent(lease)||token==0){socket.close();throw new IllegalStateException("Control stopped.");}
         if(profile!=null)close(profile,false);
-        socket.connect(target);socket.setSoTimeout(1);profile=new Profile(lease,socket,device,token);
+        socket.connect(target);socket.setSoTimeout(1);profile=new Profile(lease,socket,device,token,simulation,runId);profile.secure=secure;
+    }
+    public boolean nativeProfile(LeaseGate.Lease lease){Profile p=profile;return p!=null&&!p.closed&&p.lease==lease;}
+    public boolean matchesRun(LeaseGate.Lease lease,String run,int[] channels){
+        Profile p=profile;if(p==null||p.closed||p.lease!=lease)return false;
+        if(!p.simulation)return run==null;
+        if(run==null)return LocalPolicy.safe(channels);
+        try{return Long.parseLong(run)==p.runId&&p.runId>0;}catch(NumberFormatException error){return false;}
     }
     public boolean offer(LeaseGate.Lease lease,int[] channels){
         Profile p=profile;return p!=null&&!p.closed&&p.lease==lease&&gate.input(lease,clock.getAsLong(),channels);
     }
     public void pause(LeaseGate.Lease lease){gate.pauseStream(lease,clock.getAsLong());}
     public static byte[] frame(long device,long token,int sequence,int[] channels){
+        return frame(device,token,sequence,channels,false);
+    }
+    public static byte[] frame(long device,long token,int sequence,int[] channels,boolean simulation){
         if(channels.length!=10)throw new IllegalArgumentException("A complete RC frame is required.");
         ByteBuffer b=ByteBuffer.allocate(FRAME_BYTES).order(ByteOrder.LITTLE_ENDIAN);
-        b.putInt(0x3143525a).put((byte)1).put((byte)1).putShort((short)0).putLong(device).putLong(token).putInt(sequence);
+        b.putInt(0x3143525a).put((byte)(simulation?2:1)).put((byte)(simulation?2:1)).putShort((short)0).putLong(device).putLong(token).putInt(sequence);
         for(int value:channels){if(value<1000||value>2000)throw new IllegalArgumentException("Invalid RC value.");b.putShort((short)value);}return b.array();
     }
     public void tick(){
@@ -44,28 +71,32 @@ public final class NativeRcStream {
         synchronized(p){
             if(p.closed||!gate.isCurrent(p.lease))return;
             try{
-                int sequence=++p.sequence;p.sentAt[sequence&63]=now;
-                byte[] bytes=frame(p.device,p.token,sequence,channels);p.socket.send(new DatagramPacket(bytes,bytes.length));
+                int sequence=++p.sequence;p.sentAt[sequence&63]=now;p.sentChannels[sequence&63]=channels;
+                byte[] bytes=frame(p.device,p.token,sequence,channels,p.simulation);if(p.secure!=null)bytes=p.secure.sealRc(bytes);p.socket.send(new DatagramPacket(bytes,bytes.length));p.framesSent++;
                 for(int i=0;i<8;i++){
-                    byte[] ack=new byte[ACK_BYTES+1];DatagramPacket packet=new DatagramPacket(ack,ack.length);
+                    byte[] ack=new byte[p.secure!=null?69:ACK_BYTES+1];DatagramPacket packet=new DatagramPacket(ack,ack.length);
                     try{p.socket.receive(packet);}catch(SocketTimeoutException timeout){break;}
-                    if(packet.getLength()!=ACK_BYTES)continue;
+                    p.ackRejected++;if(p.secure!=null){try{ack=p.secure.openAck(ack,packet.getLength());}catch(Exception invalid){continue;}}else if(packet.getLength()!=ACK_BYTES)continue;
                     ByteBuffer b=ByteBuffer.wrap(ack).order(ByteOrder.LITTLE_ENDIAN);
-                    if(b.getInt()!=0x3141525a||b.get()!=1||b.get()!=0)continue;int flags=b.get()&255;if(b.get()!=0||(flags&~3)!=0)continue;
+                    if(b.getInt()!=0x3141525a||b.get()!=(p.simulation?2:1)||b.get()!=0)continue;int flags=b.get()&255;if(b.get()!=0||(flags&~7)!=0||((flags&4)!=0)!=p.simulation||p.simulation&&(flags&1)!=0)continue;
                     if(b.getLong()!=p.device||b.getLong()!=p.token)continue;int acknowledged=b.getInt();
                     if(acknowledged-p.sequence>0||p.ackSeen&&acknowledged-p.lastAck<=0||p.sequence-acknowledged>=64)continue;
                     long age=clock.getAsLong()-p.sentAt[acknowledged&63];if(age<0||age>250)continue;
-                    p.lastAck=acknowledged;p.ackSeen=true;gate.udpAck(p.lease,clock.getAsLong(),(flags&1)!=0,(flags&2)!=0);
+                    if(p.sentChannels[acknowledged&63]==null)continue;
+                    p.lastAck=acknowledged;p.acceptedChannels=p.sentChannels[acknowledged&63].clone();p.ackSeen=true;p.acksReceived++;p.ackRejected--;gate.udpAck(p.lease,clock.getAsLong(),(flags&1)!=0,(flags&2)!=0);
                 }
-            }catch(Exception ignored){/* Next 20 ms tick retries latest values; watchdog bounds loss. */}
+            }catch(Exception ignored){p.sendErrors++;/* Next tick retries; watchdog bounds loss. */}
         }
     }
+    private java.util.Map<String,Object> profileDiagnostics(Profile p){java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("protocol",p.secure!=null?"ZRC3":p.simulation?"ZRC2":"ZRC1");out.put("framesSent",p.framesSent);out.put("acksReceived",p.acksReceived);out.put("ackRejected",p.ackRejected);out.put("sendErrors",p.sendErrors);out.put("validatedControllerAck",p.ackSeen);out.put("outputsBlocked",p.simulation);out.put("controllerArmed",p.lease.controllerArmed());out.put("controllerReady",p.lease.controllerReady());out.put("trainingRunId",p.runId);out.put("virtualArmed",p.simulation&&p.acceptedChannels!=null&&p.acceptedChannels[4]>1500);out.put("lastAcceptedSequence",p.ackSeen?Integer.toUnsignedLong(p.lastAck):null);if(p.acceptedChannels!=null){java.util.List<Integer> channels=new java.util.ArrayList<>();for(int value:p.acceptedChannels)channels.add(value);out.put("acceptedChannels",channels);}return out;}
+    public java.util.Map<String,Object> acknowledgement(LeaseGate.Lease lease){Profile p=profile;if(p==null||p.lease!=lease)return new java.util.LinkedHashMap<>();synchronized(p){return profileDiagnostics(p);}}
+    public java.util.Map<String,Object> diagnostics(){Profile p=profile;java.util.Map<String,Object> out=new java.util.LinkedHashMap<>(gate.diagnostics(clock.getAsLong()));if(p!=null){synchronized(p){out.putAll(profileDiagnostics(p));}}else{out.put("protocol","HTTP");out.put("previousUdp",new java.util.LinkedHashMap<>(archived));}return out;}
     public synchronized void stop(LeaseGate.Lease lease){Profile p=profile;if(p!=null&&p.lease==lease){profile=null;close(p,true);}}
     private void close(Profile p,boolean sendSafe){
         synchronized(p){
-            if(p.closed)return;p.closed=true;
+            if(p.closed)return;archived=profileDiagnostics(p);p.closed=true;
             if(sendSafe){try{String[] values=p.lease.safeChannels().split(",");int[] c=new int[10];for(int i=0;i<10;i++)c[i]=Integer.parseInt(values[i]);
-                for(int i=0;i<3;i++){byte[] safe=frame(p.device,p.token,++p.sequence,c);p.socket.send(new DatagramPacket(safe,safe.length));}
+                for(int i=0;i<3;i++){byte[] safe=frame(p.device,p.token,++p.sequence,c,p.simulation);if(p.secure!=null)safe=p.secure.sealRc(safe);p.socket.send(new DatagramPacket(safe,safe.length));}
             }catch(Exception ignored){}}
             p.socket.close();
         }

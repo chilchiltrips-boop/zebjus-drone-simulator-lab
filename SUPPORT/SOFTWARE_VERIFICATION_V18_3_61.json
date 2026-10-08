@@ -1,0 +1,116 @@
+{
+  "version": "18.3.61",
+  "firmwareBuild": {
+    "version": "18.3.61",
+    "builtAt": "2026-10-01T20:31:26Z",
+    "arduinoEsp32": "3.3.12",
+    "hardwareFlashingTested": false,
+    "boards": [
+      {
+        "boardId": "ZFC-A1",
+        "fqbn": "esp32:esp32:esp32c3",
+        "chipId": 5,
+        "appBytes": 1226464,
+        "otaSlots": [
+          {
+            "address": 65536,
+            "bytes": 1310720
+          },
+          {
+            "address": 1376256,
+            "bytes": 1310720
+          }
+        ],
+        "factoryBytes": 4194304,
+        "factoryAddress": "0x0",
+        "checks": [
+          "image magic",
+          "profile chip ID",
+          "release version",
+          "dual OTA slots",
+          "slot size",
+          "factory bootloader at 0x0",
+          "factory/APP identical"
+        ]
+      },
+      {
+        "boardId": "ZFC-A2",
+        "fqbn": "esp32:esp32:XIAO_ESP32C6",
+        "chipId": 13,
+        "appBytes": 1303088,
+        "otaSlots": [
+          {
+            "address": 65536,
+            "bytes": 1310720
+          },
+          {
+            "address": 1376256,
+            "bytes": 1310720
+          }
+        ],
+        "factoryBytes": 4194304,
+        "factoryAddress": "0x0",
+        "checks": [
+          "image magic",
+          "profile chip ID",
+          "release version",
+          "dual OTA slots",
+          "slot size",
+          "factory bootloader at 0x0",
+          "factory/APP identical"
+        ]
+      }
+    ]
+  },
+  "androidBuild": {
+    "product": "ZEBJUS Aerion Flight",
+    "version": "18.3.61-android.1",
+    "versionCode": 1836101,
+    "package": "in.zebjus.aerion",
+    "minSdk": 26,
+    "targetSdk": 36,
+    "signing": "development key, included for development updates; not a private production key",
+    "apkBytes": 57964,
+    "sha256": "39dc2d0fa7eb3fd344c13f156b17754df06a2291cd8369dd9da9886dc02d4910",
+    "verification": [
+      "APK ZIP integrity",
+      "DEX compiled",
+      "manifest/package/minSDK/targetSDK",
+      "v2/v3 APK signature",
+      "4-byte ZIP alignment",
+      "bundled UI/transport exact byte equality"
+    ],
+    "androidDeviceTested": false,
+    "physicalDroneTested": false
+  },
+  "automatedChecks": {
+    "projectSourceAndCompiledPackageValidation": "passed",
+    "offlineInventoryAndDependencyClosure": "passed",
+    "standaloneAndEmbeddedFlightBrowser": "passed",
+    "nativeJavaLeaseAndPolicy": "passed",
+    "nativeBundledBrowserAdapter": "passed",
+    "mobileOwnershipLaptopMirrorAndSettings": "passed",
+    "sharedWebAppFloatingStickRamp": "passed",
+    "flightMathMountingCalibrationFilterHandover": "passed",
+    "PythonCameraHandRPCReconnect": "passed with synthetic camera/hands/kit",
+    "completeOfflinePythonPlotsHandModel": "passed with bundled runtimes and synthetic camera",
+    "offlineCacheEvictionDetection": "passed",
+    "joystickReconnectFirmwareUpdaterCameraOutputRegression": "passed"
+  },
+  "physicalChecksPerformed": false,
+  "physicalChecksPending": [
+    "Android screen lock/call/radio/lifecycle/SAF",
+    "USB and OTA",
+    "loaded flight timing at 250 Hz",
+    "IMU mounting/calibration on actual kit",
+    "battery meter calibration",
+    "Rate/Angle transitions and bidirectional receiver handover",
+    "motor outputs and failsafe tests"
+  ],
+  "notes": [
+    "Browsers execute real application source but use simulated controller transport.",
+    "No automatic landing, altitude/position/navigation control, current or consumed capacity is claimed.",
+    "APP/FACTORY images fit the dual OTA partition layout. A2 APP leaves about 7 KiB of flash slot capacity.",
+    "Battery requires an external correctly rated INA219/INA226 monitor."
+  ]
+}

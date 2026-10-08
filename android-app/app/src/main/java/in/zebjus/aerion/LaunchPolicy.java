@@ -24,10 +24,10 @@ public final class LaunchPolicy {
         URL api=LocalPolicy.api("http://"+host+"/api/status","GET");
         return new Target(id.toUpperCase(java.util.Locale.ROOT),LocalPolicy.origin(api));
     }
-    public static String apSsid(String id) {
-        if(id==null || id.trim().isEmpty())return "";
-        id=id.trim();
-        if(!id.matches("ZFC-[A-Fa-f0-9]{12}"))throw new IllegalArgumentException("Enter the complete Device ID from the kit case.");
-        return "ZEBJUS-FC-"+id.substring(4).toUpperCase(java.util.Locale.ROOT);
+    public static String apSsid(String name) {
+        if(name==null || name.trim().isEmpty())return "";
+        name=name.trim();
+        if(name.getBytes(java.nio.charset.StandardCharsets.UTF_8).length>32 || name.matches(".*[\\x00-\\x1F\\x7F].*"))throw new IllegalArgumentException("Enter the Kit Name shown in the controller Wi-Fi list (up to 32 bytes).");
+        return name;
     }
 }

@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "webVersion": "18.3.67-web.4",
+  "verifiedAtUTC": "2026-10-05T19:35:09.582336+00:00",
+  "rootCause": [
+    "Anonymous discovery could overwrite verified browser ownership.",
+    "Polling began before a delayed setup_begin grant returned.",
+    "Passive status requests did not consistently renew the setup lease."
+  ],
+  "passed": [
+    "Actual Lab discovery preserves the same nonce and ownership.",
+    "Delayed begin returns matching Device ID/session before polling; every poll renews the existing lease.",
+    "Actual expiration, owner change, page exit and STOP end outputs without reacquisition.",
+    "Completed Back/Next and unchanged limits readback retain later checks.",
+    "ESC HIGH expiration is recorded as error; successful Stop/LOW retains connected battery and repeat is available.",
+    "Bounded two-second real-PWM motor requests and Stop through a delayed reply.",
+    "PPM modes 1\u20134, any-channel sequential detection, mixed-control recovery, four mandatory / four optional roles.",
+    "Stable centres and minimum throttle gates, measured endpoints and live stick movement; mode/reverse/ARM/travel readback.",
+    "Production decoder accepts four-channel frames and clears missing optional values; production NVS migrates six-role calibration and rejects corrupt data.",
+    "Actual Lab skipped/failed checks render red in Telemetry, while verified checks render green.",
+    "Normal setup retains current/default PID; tuning remains an individual tool.",
+    "Production MAX7219 clock/latch, rows and pin conflicts; all Python examples/preludes parse.",
+    "Native real-flight ACK/input limits and controller-verified slower simulator HTTP ACK; STOP/background/late reply fencing."
+  ],
+  "preservedSafety": [
+    "Device ID verification",
+    "control-owner and setup-session checks",
+    "STOP on actual ownership/page/visibility/connection loss",
+    "propeller-removal confirmation for real motor/ESC setup",
+    "no automatic motor ARM or expired-session reacquisition"
+  ],
+  "testBoundary": {
+    "controllerAPI": "simulated in browser tests",
+    "physicalControllerTested": false,
+    "physicalEscReceiverTested": false,
+    "androidPhoneOrEmulatorTested": false
+  },
+  "androidVersion": "18.3.67-android.2",
+  "firmwareVersion": "18.3.67; locally compiled A1/A2 with Arduino-ESP32 3.3.12"
+}

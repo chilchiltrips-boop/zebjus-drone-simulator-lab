@@ -1,0 +1,220 @@
+(function(global){
+'use strict';
+
+const KNOWN_KEY='zebjus.drone.knownKits.v183';
+const SESSION_KEY='zebjus.drone.controlSession.v183';
+
+function normalizeKitName(value){
+  let s=String(value||'').trim().toLowerCase();
+  s=s.replace(/\s+/g,'-').replace(/_/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-');
+  return s.replace(/^-+|-+$/g,'').slice(0,32);
+}
+function hostFromName(name){return normalizeKitName(name)}
+function baseFromName(name){const h=hostFromName(name);return h?`http://${h}.local`:''}
+function loadKnown(){try{const a=JSON.parse(localStorage.getItem(KNOWN_KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&x.name&&x.deviceId):[]}catch(_){return []}}
+function saveKnown(list){try{localStorage.setItem(KNOWN_KEY,JSON.stringify(list.slice(0,40)))}catch(_){}}
+function rememberKit(status,base){
+  if(!status?.deviceId)return;
+  const id=String(status.deviceId), now=Date.now();
+  // Device ID is the physical identity. Never delete another board only because it
+  // currently uses the same human-readable Kit Name; multi-kit labs may temporarily
+  // contain duplicate names during replacement/provisioning.
+  const old=loadKnown().filter(x=>!sameDeviceIdentity(x.deviceId,id));
+  const name=status.name||status.deviceName||id;
+  old.unshift({deviceId:id,name,ip:status.ip||'',base:base||baseFromName(name),ssid:status.ssid||'',lastSeen:now});
+  saveKnown(old);
+}
+// A page instance has a private identity even when a browser duplicates a tab.
+const WEB_INSTANCE='WEB-'+(global.crypto?.randomUUID?.()||Math.random().toString(36).slice(2)+'-'+Date.now().toString(36));
+function sessionId(){return WEB_INSTANCE}
+function newWebAppId(){const n=new Uint32Array(1);if(global.crypto?.getRandomValues)global.crypto.getRandomValues(n);else n[0]=Math.random()*4294967296;return String(100000+n[0]%900000)}
+
+function formBody(data){const p=new URLSearchParams();Object.entries(data||{}).forEach(([k,v])=>{if(v!==undefined&&v!==null)p.set(k,String(v))});return p.toString()}
+let localAddressSpaceMode=null;
+function emit(detail){try{global.dispatchEvent(new CustomEvent('zebjus-drone-diagnostic',{detail:{ts:new Date().toISOString(),...(detail||{})}}))}catch(_){}}
+async function fetchLocal(url,options={},timeoutMs=2200){
+  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeoutMs),base={cache:'no-store',...options,signal:ctrl.signal};
+  try{
+    if(localAddressSpaceMode===true)return await fetch(url,{...base,targetAddressSpace:'local'});
+    if(localAddressSpaceMode===false)return await fetch(url,base);
+    try{const r=await fetch(url,{...base,targetAddressSpace:'local'});localAddressSpaceMode=true;return r}
+    catch(first){if(first?.name==='AbortError')throw first;const r=await fetch(url,base);localAddressSpaceMode=false;return r}
+  }catch(e){
+    if(e?.name==='AbortError'||e?.name==='TimeoutError'||/aborted|abort/i.test(String(e?.message||''))){
+      const err=new Error('Local kit request timed out.');err.code='LOCAL_TIMEOUT';err.timeout=true;throw err;
+    }
+    throw e;
+  }finally{clearTimeout(timer)}
+}
+async function rawRequestBase(base,path,{method='GET',data=null,body=null,timeout=2200,keepalive=false}={}){
+  const started=performance.now(),headers={'Accept':'application/json'},opts={method,headers,keepalive};
+  if(body!==null)opts.body=body;else if(data!==null){headers['Content-Type']='application/x-www-form-urlencoded;charset=UTF-8';opts.body=formBody(data)}
+  let res;try{res=await fetchLocal(base+path,opts,timeout)}catch(e){emit({kind:'http-fail',base,path,message:e?.message||String(e)});throw e}
+  const text=await res.text();let payload={};try{payload=text?JSON.parse(text):{}}catch(_){payload={ok:res.ok,message:text}}
+  if(!res.ok){const err=new Error(payload?.message||payload?.error||`Kit HTTP ${res.status}`);err.status=res.status;err.payload=payload;err.reachable=true;throw err}
+  emit({kind:'http-ok',base,path,status:res.status,latencyMs:Math.round(performance.now()-started)});return payload||{};
+}
+async function requestBase(base,path,options={}){
+ const ch=global.ZfcSecurity?.get(base);if(!ch)return rawRequestBase(base,path,options);
+ if(options.body)throw Error('Encrypted firmware upload required.');
+ return ch.request(path,options.data||null,(p,d,t,m)=>rawRequestBase(base,p,{method:m||(d?'POST':'GET'),data:d,timeout:t}),options.timeout||2400,options.method||'GET');
+}
+function isDeviceId(value){return /^(?:ZJ-DRONE|ZFC)-[A-Z0-9-]+$/i.test(String(value||'').trim())}
+function deviceIdentityParts(value){
+  const s=String(value||'').trim().toUpperCase();
+  let m=s.match(/^ZJ-DRONE-([A-Z0-9]{6,})$/);if(m)return{family:'LEGACY',suffix:m[1]};
+  m=s.match(/^ZFC-([A-Z0-9]{6,})$/);if(m)return{family:'FLIGHTCORE',suffix:m[1]};
+  return null;
+}
+function sameDeviceIdentity(a,b){
+  const aa=String(a||'').trim().toUpperCase(),bb=String(b||'').trim().toUpperCase();
+  if(!aa||!bb)return false;if(aa===bb)return true;
+  const pa=deviceIdentityParts(aa),pb=deviceIdentityParts(bb);if(!pa||!pb)return false;
+  if(pa.suffix===pb.suffix)return true;
+  // Migration compatibility: old firmware exposed only the last 24 MAC bits.
+  // New firmware uses the complete 48-bit MAC to avoid collisions.
+  const shorter=pa.suffix.length<=pb.suffix.length?pa.suffix:pb.suffix,longer=pa.suffix.length<=pb.suffix.length?pb.suffix:pa.suffix;
+  return shorter.length===6&&longer.length>=12&&longer.endsWith(shorter);
+}
+function isCompatibleKit(status){
+  if(!status||status.ok===false||!isDeviceId(status.deviceId))return false;
+  const kit=String(status.kit||'').trim().toUpperCase();
+  const boardId=String(status.boardId||'').trim().toUpperCase();
+  if(['ZEBJUS_F450','ZEBJUS_FLIGHTCORE','ZEBJUS_FLIGHTCORE_BOOTSTRAP'].includes(kit))return true;
+  return kit.startsWith('ZEBJUS_FLIGHTCORE_')&&/^ZFC-[A-Z0-9-]+$/.test(boardId);
+}
+
+function clearKnownAddress(identity=''){
+  const key=String(identity||'').trim().toLowerCase();if(!key)return;
+  const list=loadKnown().map(x=>{
+    const match=String(x.deviceId||'').toLowerCase()===key||normalizeKitName(x.name)===normalizeKitName(identity);
+    return match?{...x,ip:'',base:baseFromName(x.name)}:x;
+  });
+  saveKnown(list);
+}
+function knownMatches(query){
+  const q=String(query||'').trim();if(!q)return[];
+  const list=loadKnown();
+  if(isDeviceId(q))return list.filter(x=>sameDeviceIdentity(x.deviceId,q));
+  const n=normalizeKitName(q);return list.filter(x=>normalizeKitName(x.name)===n).sort((a,b)=>(+b.lastSeen||0)-(+a.lastSeen||0));
+}
+function candidateBases(name,knownList=[],ipHint='',includeAp=true){
+  const bases=[];
+  if(ipHint&&/^\d{1,3}(?:\.\d{1,3}){3}$/.test(ipHint))bases.push(`http://${ipHint}`);
+  knownList.forEach(k=>{if(k?.ip)bases.push(`http://${k.ip}`);if(k?.base)bases.push(k.base)});
+  if(name)bases.push(baseFromName(name));
+  // AP has no mDNS. Every candidate is still verified against the requested ID/name.
+  if(includeAp)bases.push('http://192.168.4.1');
+  return [...new Set(bases.filter(Boolean))];
+}
+async function probeBase(base,{expected='',name='',clientId=''}={}){
+  const qs=clientId?`?clientId=${encodeURIComponent(clientId)}`:'';
+  const st=await rawRequestBase(base,'/api/status'+(qs?qs+'&discover=1':'?discover=1'),{timeout:2100});
+  if(!isCompatibleKit(st))throw new Error('This device is not a compatible ZEBJUS FlightCore controller.');
+  if(expected&&!sameDeviceIdentity(st.deviceId,expected))throw Object.assign(new Error('Device ID mismatch: this address belongs to another kit.'),{code:'DEVICE_ID_MISMATCH'});
+  if(name&&normalizeKitName(st.name)!==normalizeKitName(name))throw Object.assign(new Error('Kit Name mismatch: this address belongs to another kit.'),{code:'KIT_NAME_MISMATCH'});
+  if(expected&&String(st.deviceId).toUpperCase()!==String(expected).toUpperCase())emit({kind:'identity-migrated',from:expected,to:st.deviceId,name:st.name});
+  return {status:st,base};
+}
+function uniqueResults(results){
+  const out=[];for(const r of results){if(!r?.status?.deviceId)continue;const i=out.findIndex(x=>sameDeviceIdentity(x.status.deviceId,r.status.deviceId));if(i<0)out.push(r);else if((+r.status.rssi||-999)>(+out[i].status.rssi||-999))out[i]=r}return out;
+}
+async function discoverName(name,clientId=''){
+  name=String(name||'').trim();if(!name||isDeviceId(name))return[];
+  const bases=candidateBases(name,knownMatches(name),'',false);if(!bases.length)return[];
+  const settled=await Promise.allSettled(bases.map(base=>probeBase(base,{name,clientId})));
+  const ok=uniqueResults(settled.filter(x=>x.status==='fulfilled').map(x=>x.value));ok.forEach(r=>rememberKit(r.status,r.base));return ok;
+}
+async function connect(query,ipHint='',expectedDeviceId='',clientId=''){
+  query=String(query||'').trim();
+  const queryIsId=isDeviceId(query),expected=String(expectedDeviceId||(queryIsId?query:'')||'');
+  const identityKnown=expected?knownMatches(expected):(queryIsId?knownMatches(query):[]);
+  const name=queryIsId?(identityKnown[0]?.name||''):query;
+  const nameKnown=!queryIsId&&name?knownMatches(name):[];
+  const known=[...identityKnown,...nameKnown];
+  const bases=candidateBases(name,known,ipHint);
+  if(!bases.length)throw new Error('For a new browser, enter the Kit Name once. Device ID lookup works after the kit has been seen on this browser.');
+
+  // IP hints are only candidates; a stale browser IP must never silently choose a same-name
+  // board. Device-ID selection below remains strict and verifies identity before binding.
+
+  // Device-ID selection is always strict: cached IP/mDNS may move, identity may not.
+  if(expected){
+    let last=null;for(const base of bases){try{const r=await probeBase(base,{expected,clientId});rememberKit(r.status,r.base);return r}catch(e){last=e}}
+    throw last||new Error('Selected Device ID was not found on this Wi-Fi.');
+  }
+
+  // Name-based connection intentionally does NOT inherit an old cached Device ID. This lets a
+  // replacement controller reuse a kit name. If two live boards really share that name, refuse
+  // to guess and require the user to select the Device ID discovered for each board.
+  const settled=await Promise.allSettled(bases.map(base=>probeBase(base,{name,clientId})));
+  const results=uniqueResults(settled.filter(x=>x.status==='fulfilled').map(x=>x.value));
+  if(results.length===1){rememberKit(results[0].status,results[0].base);return results[0]}
+  if(results.length>1){
+    results.forEach(r=>rememberKit(r.status,r.base));const err=new Error(`Multiple live kits use the name “${name}”. Select the required Device ID from Kits found on this Wi-Fi, or rename one kit.`);err.code='DUPLICATE_KIT_NAME';err.devices=results.map(r=>({deviceId:r.status.deviceId,name:r.status.name,ip:r.status.ip||'',base:r.base}));throw err;
+  }
+  const rejected=settled.find(x=>x.status==='rejected')?.reason;
+  throw new Error(rejected?.name==='AbortError'?'Kit connection timed out. Confirm the kit is powered and this computer is on the same Wi-Fi.':(rejected instanceof TypeError?'Kit not reachable. Allow Local Network Access for this site in Chrome/Edge, confirm both devices are on the same Wi-Fi, then Rescan.':(rejected?.message||'Kit not found on this Wi-Fi.')));
+}
+async function scanDefaultKits({max=30,extraNames=[],onProgress=null}={}){
+  max=Math.max(1,Math.min(80,Number(max)||30));
+  const candidates=[];for(let i=1;i<=max;i++)candidates.push(`zebjus_drone_${i}`);loadKnown().forEach(k=>candidates.push(k.name));extraNames.forEach(n=>candidates.push(n));
+  const names=[...new Set(candidates.map(n=>String(n||'').trim()).filter(Boolean))],found=[];let cursor=0,done=0;
+  async function worker(){
+    while(cursor<names.length){const name=names[cursor++];try{const rs=await discoverName(name);for(const r of rs)if(!found.some(x=>sameDeviceIdentity(x.status.deviceId,r.status.deviceId)))found.push(r)}catch(_){}done++;if(onProgress)onProgress(done,names.length,found.length)}
+  }
+  // AP mode has no mDNS responder: discover its local HTTP API alongside STA names.
+  async function scanAp(){try{const r=await probeBase('http://192.168.4.1');if(!found.some(x=>sameDeviceIdentity(x.status.deviceId,r.status.deviceId))){found.push(r);rememberKit(r.status,r.base)}}catch(_){}}
+  await Promise.all([...Array.from({length:Math.min(8,names.length)},worker),scanAp()]);
+  return found.sort((a,b)=>{const n=String(a.status.name).localeCompare(String(b.status.name),undefined,{numeric:true});return n||String(a.status.deviceId).localeCompare(String(b.status.deviceId))});
+}
+
+class LocalKitClient{
+  constructor(){this.base='';this.status=null;this.name='';this.deviceId='';this.ipHint='';this.clientId=sessionId();this._reconnectPromise=null;this._lastGoodAt=0;this._generation=0;this._controlActionSeq=0;this._requestSeq=0;this._ownershipSeq=0;this._leaseExpiresAt=0}
+  get connected(){return !!this.base&&!!this.status}
+  get lastGoodAgeMs(){return this._lastGoodAt?Date.now()-this._lastGoodAt:Infinity}
+  _ownership(st,seq){
+    if(typeof st?.lockMine!=='boolean')return st;
+    if(seq<this._ownershipSeq){const fenced={...st};for(const k of ['lockMine','locked','viewOnly','controlRole']){if(this.status&&k in this.status)fenced[k]=this.status[k];else delete fenced[k]}return fenced}
+    this._ownershipSeq=seq;
+    this._leaseExpiresAt=st.lockMine?Date.now()+Math.min(10000,Math.max(0,Number(st.lockTimeoutMs)||10000)):0;
+    if(this.status)for(const k of ['lockMine','locked','viewOnly','controlRole'])if(k in st)this.status[k]=st[k];
+    return st;
+  }
+  _accept(st,base,seq=++this._requestSeq){st=this._ownership(st,seq);this.base=base;this.status=st;this.name=st?.name||this.name;this.deviceId=st?.deviceId||this.deviceId;this.ipHint=st?.ip||this.ipHint;this._lastGoodAt=Date.now();rememberKit(st,base);return st}
+  async connect(query='',ipHint='',expectedDeviceId=''){const generation=++this._generation,explicit=String(query||'').trim(),q=explicit||this.name||this.deviceId,expected=expectedDeviceId||(explicit?'':this.deviceId),r=await connect(q,ipHint||this.ipHint,expected,this.clientId);if(generation!==this._generation)throw new Error('Connection request cancelled.');if(r.status.securityRequired){await global.ZfcSecurity.ensure(r.base,r.status,this.clientId,'WEB',(p,d,t)=>rawRequestBase(r.base,p,{method:'POST',data:d,timeout:t}));r.status=await requestBase(r.base,'/api/status?clientId='+encodeURIComponent(this.clientId));}if(r.status.webAppRouting&&String(r.status.mode).startsWith('STA')){const bound=await requestBase(r.base,'/api/webapp/register',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:r.status.deviceId,webAppId:this.webAppId||newWebAppId()},timeout:2400});if(generation!==this._generation)throw Error('Connection request cancelled.');if(bound.deviceId!==r.status.deviceId||!/^\d{6}$/.test(bound.webAppId))throw Error('WebApp registration identity differs.');this.webAppId=bound.webAppId;this.webAppRegistered=true;}else{this.webAppRegistered=false;this.webAppId=this.webAppId||newWebAppId();}return this._accept(r.status,r.base)}
+  disconnect({forgetIdentity=false}={}){if(this.webAppRegistered&&this.base)requestBase(this.base,'/api/webapp/unregister',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:600,keepalive:true}).catch(()=>{});this.webAppRegistered=false;this._generation++;this._controlActionSeq++;this._ownershipSeq=++this._requestSeq;this._leaseExpiresAt=0;this.base='';this.status=null;this._lastGoodAt=0;if(forgetIdentity){this.name='';this.deviceId='';this.ipHint=''}}
+  async refresh(timeout=2100){if(!this.base)throw new Error('Kit not connected.');const base=this.base,id=this.deviceId,generation=this._generation,seq=++this._requestSeq,st=await requestBase(base,`/api/status?clientId=${encodeURIComponent(this.clientId)}`,{timeout});if(generation!==this._generation)throw new Error('Status request cancelled.');if(id&&!sameDeviceIdentity(st.deviceId,id))throw new Error('Connected device identity changed.');return this._accept(st,base,seq)}
+  async reconnect(retries=4){if(this._reconnectPromise)return this._reconnectPromise;this._reconnectPromise=(async()=>{let last;const waits=[0,350,800,1500,2500];for(let i=0;i<Math.max(1,retries);i++){if(waits[i])await new Promise(r=>setTimeout(r,waits[i]));try{return await this.connect(this.name||this.deviceId,this.ipHint,this.deviceId)}catch(e){last=e}}throw last||new Error('Kit reconnect failed.')})();try{return await this._reconnectPromise}finally{this._reconnectPromise=null}}
+  async request(path,options={}){if(!this.base)throw Error('Kit not connected.');return requestBase(this.base,path,options)}
+  async uploadFirmware(bytes,name,boardId){
+    if(!this.base||!this.deviceId)throw Error('Connect and verify the kit first.');
+    const ch=global.ZfcSecurity?.get(this.base);if(!ch)throw Error('Pair the kit before encrypted OTA. USB FACTORY is required for migration.');
+    const digest=global.ZfcSecurity.hex(global.ZfcCrypto.sha256(bytes));const data={clientId:this.clientId,expectedDeviceId:this.deviceId};
+    await this.request('/api/firmware/begin',{method:'POST',data:{...data,size:bytes.length,sha256:digest,boardId},timeout:5000});
+    for(let offset=0;offset<bytes.length;offset+=1024){const chunk=bytes.slice(offset,offset+1024);const r=await this.request('/api/firmware/chunk',{method:'POST',data:{...data,offset,data:global.ZfcSecurity.hex(chunk)},timeout:5000});if(r.offset!==offset+chunk.length)throw Error('Firmware offset not confirmed.');}
+    return this.request('/api/firmware/end',{method:'POST',data,timeout:10000});
+  }
+  async telemetry(compact=false){const generation=this._generation,id=this.deviceId,seq=++this._requestSeq,t=await requestBase(this.base,'/api/telemetry?'+(compact?'stream=rc&':'')+'clientId='+encodeURIComponent(this.clientId),{timeout:1400});if(generation!==this._generation)throw Error('Telemetry request cancelled.');if(t.deviceId&&!sameDeviceIdentity(id,t.deviceId))throw Error('Telemetry Device ID mismatch.');return this._ownership(t,seq)}
+  async i2cScan(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/i2c/scan',{timeout:6500})}
+  async imuRead(){if(!this.base)throw new Error('Kit not connected.');return requestBase(this.base,'/api/imu',{timeout:2200})}
+  async acquire(takeover=false){if(!this.status?.securityRequired)throw Error('Install matching secure firmware with USB FACTORY before taking control.');if(global.ZfcSecurity?.get(this.base)?.role==='COMPANION')throw Error('App keeps joystick control. Laptop has training and PID permission.');if(this.status?.controlRole==='MOBILE')throw Error('Stop app training before taking web control.');const generation=this._generation,id=this.deviceId,action=++this._controlActionSeq,r=await requestBase(this.base,'/api/control/acquire',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:id,clientRole:'WEB',...(takeover?{takeover:1}:{})},timeout:1800});if(generation!==this._generation||action!==this._controlActionSeq)throw new Error('Control request cancelled.');if(!r.ok||r.lockMine!==true||!sameDeviceIdentity(r.deviceId,id)||r.controlRole!=='WEB')throw Error('Kit did not return a valid control grant.');this._ownership({...r,locked:true,viewOnly:false},++this._requestSeq);return r}
+  async heartbeat(){const generation=this._generation,action=this._controlActionSeq,seq=++this._requestSeq,r=await requestBase(this.base,'/api/control/ping',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:1500});if(generation!==this._generation||action!==this._controlActionSeq)throw Error('Heartbeat request cancelled.');if(r.ok)this._ownership({...r,lockMine:true,locked:true,viewOnly:false,controlRole:'WEB'},seq);return r}
+  async release({keepalive=false}={}){if(!this.base)return{ok:true};const generation=this._generation,seq=++this._requestSeq;this._controlActionSeq++;try{return await requestBase(this.base,'/api/control/release',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:1200,keepalive})}finally{if(generation===this._generation){this._ownershipSeq=Math.max(seq,this._ownershipSeq);this._leaseExpiresAt=0;if(this.status)this.status.lockMine=false}}}
+  async command(command){if(!this.base)throw new Error('Kit not connected.');const c=command||{},data={clientId:this.clientId,type:String(c.type||''),expectedDeviceId:this.deviceId};Object.entries(c).forEach(([k,v])=>{if(k==='type'||k==='expectedDeviceId')return;data[k]=Array.isArray(v)?v.join(','):(typeof v==='object'&&v!==null?JSON.stringify(v):v)});if(c.type==='pid_set'&&global.ZfcSecurity?.get(this.base)){if(data.pidRevision===undefined){const current=await this.command({type:'pid_get'});data.pidRevision=current.pidRevision;}const r=await requestBase(this.base,'/api/command',{method:'POST',data,timeout:3500});for(let i=0;i<12;i++){await new Promise(resolve=>setTimeout(resolve,250));const confirmed=await this.command({type:'pid_get'});if(confirmed.pidRevision===r.pidRevision&&confirmed.savedRevision===r.pidRevision)return {...confirmed,type:'ack',saved:true,command:'pid_set'};if(confirmed.pidRevision>r.pidRevision)throw Error('PID changed during save; read current kit values.');}throw Error('PID persistence not confirmed. Read kit values before retrying.');}return requestBase(this.base,'/api/command',{method:'POST',data,timeout:c.type==='rc_frame'?180:['calibrate_gyro','flight_settings_set','settings_restore'].includes(c.type)?6500:2200})}
+  async rename(name){const r=await requestBase(this.base,'/api/name',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,name},timeout:3200});if(r?.status){const ip=r.status.ip||this.ipHint,base=ip?`http://${ip}`:this.base;return this._accept(r.status,base)}return this.refresh()}
+  async resetName(){return requestBase(this.base,'/api/name/reset',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:4200})}
+  async scanWifi(){let r;for(let i=0;i<40;i++){r=await requestBase(this.base,'/api/wifi/scan?clientId='+encodeURIComponent(this.clientId),{timeout:1800});if(!r.scanning)return r;await new Promise(resolve=>setTimeout(resolve,250))}throw Error('Wi-Fi scan timed out.')}
+  async savedWifi(){return requestBase(this.base,'/api/wifi/saved',{timeout:2200})}
+  async setWifi(ssid,password){return requestBase(this.base,'/api/wifi/set',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,ssid,password},timeout:6500})}
+  async testWifi(ssid,password,name=''){return requestBase(this.base,'/api/setup/test',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,ssid,password,name},timeout:3500})}
+  async wifiTestStatus(){return requestBase(this.base,'/api/setup/test/status?clientId='+encodeURIComponent(this.clientId),{timeout:3500})}
+  async useWifi(ssid){return requestBase(this.base,'/api/wifi/use',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,ssid},timeout:2200})}
+  async forgetWifi(ssid){return requestBase(this.base,'/api/wifi/forget',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId,ssid},timeout:2200})}
+  async resetWifi(){return requestBase(this.base,'/api/wifi/reset',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:2200})}
+  async firmwareInfo(){return requestBase(this.base,'/api/firmware/info',{timeout:2200})}
+  async reboot(){return requestBase(this.base,'/api/reboot',{method:'POST',data:{clientId:this.clientId,expectedDeviceId:this.deviceId},timeout:2200})}
+}
+
+global.ZebjusDroneKit={newWebAppId,normalizeKitName,hostFromName,baseFromName,loadKnown,rememberKit,clearKnownAddress,isDeviceId,sameDeviceIdentity,isCompatibleKit,connect,discoverName,scanDefaultKits,LocalKitClient,requestBase};
+})(window);

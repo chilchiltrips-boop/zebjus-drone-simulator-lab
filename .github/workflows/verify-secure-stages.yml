@@ -1,0 +1,156 @@
+name: Secure kit stage verification
+on:
+  push:
+    branches: [codex/webapp-id-routing, codex/secure-kit-stages, main]
+    paths-ignore: ["docs/**", "SUPPORT/**", "*.md", "*.txt"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: secure-kit-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  crypto-dependencies:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build pinned browser cryptography
+        run: |
+          mkdir -p /tmp/zfc-crypto-build
+          cd /tmp/zfc-crypto-build
+          npm install --no-save --package-lock=false @noble/hashes@2.4.0 @noble/ciphers@2.4.0 esbuild@0.25.10
+          cat > entry.js <<'JS'
+          import {sha256,sha512} from '@noble/hashes/sha2.js';
+          import {hmac} from '@noble/hashes/hmac.js';
+          import {hkdf} from '@noble/hashes/hkdf.js';
+          import {gcm} from '@noble/ciphers/aes.js';
+          const api={sha256,sha512,hmac256:(key,data)=>hmac(sha256,key,data),hkdf256:(key,salt,info,size=32)=>hkdf(sha256,key,salt,info,size),encryptGCM:(key,nonce,plain,aad)=>gcm(key,nonce,aad).encrypt(plain),decryptGCM:(key,nonce,cipher,aad)=>gcm(key,nonce,aad).decrypt(cipher)};
+          if(typeof window!=='undefined')window.ZfcCrypto=api;
+          if(typeof module!=='undefined')module.exports=api;
+          JS
+          ./node_modules/.bin/esbuild entry.js --bundle --format=iife --global-name=ZfcCryptoBundle --minify --outfile=zfc-crypto.js
+          cp node_modules/@noble/hashes/LICENSE noble-hashes-LICENSE
+          cp node_modules/@noble/ciphers/LICENSE noble-ciphers-LICENSE
+          sha256sum zfc-crypto.js > SHA256.txt
+          dpkg-query -W libc6
+      - name: Mirror host mbedTLS test dependency
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libmbedtls-dev
+          mkdir -p /tmp/zfc-crypto-build/host/include /tmp/zfc-crypto-build/host/lib
+          cp -r /usr/include/mbedtls /tmp/zfc-crypto-build/host/include/
+          cp /usr/lib/x86_64-linux-gnu/libmbedcrypto* /tmp/zfc-crypto-build/host/lib/
+          cp /usr/lib/x86_64-linux-gnu/libmbedtls* /tmp/zfc-crypto-build/host/lib/
+          cp /usr/lib/x86_64-linux-gnu/libmbedx509* /tmp/zfc-crypto-build/host/lib/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: secure-crypto-dependencies
+          path: |
+            /tmp/zfc-crypto-build/zfc-crypto.js
+            /tmp/zfc-crypto-build/SHA256.txt
+            /tmp/zfc-crypto-build/*LICENSE
+            /tmp/zfc-crypto-build/host
+
+  firmware-compile:
+    runs-on: ubuntu-latest
+    env:
+      ARDUINO_NETWORK_CONNECTION_TIMEOUT: 120s
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set Arduino cache directories
+        run: |
+          printf '%s\n' "ARDUINO_DIRECTORIES_DATA=$RUNNER_TEMP/zebjus-arduino/data" "ARDUINO_DIRECTORIES_DOWNLOADS=$RUNNER_TEMP/zebjus-arduino/downloads" >> "$GITHUB_ENV"
+      - uses: arduino/setup-arduino-cli@v2
+        with:
+          version: '1.5.1'
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/zebjus-arduino
+          key: ${{ runner.os }}-arduino-1.5.1-esp32-3.3.12-complete-v1
+      - run: python3 -B tools/build_firmware.py --install-only
+      - name: Compile secure firmware for both boards
+        run: python3 -B tools/build_firmware.py --board all --skip-core-install
+      - uses: actions/upload-artifact@v4
+        with:
+          name: secure-flightcore-candidate
+          path: |
+            FlightCore_Firmware/*_APP.bin
+            FlightCore_Firmware/*_FACTORY.bin
+            FlightCore_Firmware/build-report.json
+            FlightCore_Firmware/catalog.json
+            FlightCore_Firmware/latest.json
+            firmware-catalog.json
+            firmware-latest.json
+
+  secure-compatibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install protocol test dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libmbedtls-dev
+          npm install --no-save --package-lock=false playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Check secure pairing and permissions
+        run: |
+          cc -Wno-deprecated-declarations -I tools/security-host -I FlightCore_Firmware/src/crypto tools/security-host/srp_server.c FlightCore_Firmware/src/crypto/esp_srp.c FlightCore_Firmware/src/crypto/esp_srp_mpi.c -lmbedcrypto -o /tmp/zfc-srp-server
+          g++ -std=c++17 tools/security-host/secure_frame.cpp -lmbedcrypto -o /tmp/zfc-secure-frame
+          g++ -std=c++17 tools/test_webapp_scope.cpp -o /tmp/zfc-webapp-scope
+          /tmp/zfc-webapp-scope
+          node tools/test_webapp_binding.js
+          node tools/test_pairing_reset.js
+          node tools/test_ap_wifi_pairing.js
+          g++ -std=c++17 tools/test_ap_wifi_policy.cpp -o /tmp/zfc-ap-wifi-policy
+          /tmp/zfc-ap-wifi-policy
+          node tools/test_secure_frames.js
+          node tools/test_secure_pairing.js
+          node tools/test_secure_native.js
+          g++ -std=c++17 tools/test_secure_policy.cpp -o /tmp/zfc-secure-policy
+          /tmp/zfc-secure-policy
+          g++ -std=c++17 -I tools/security-host tools/test_virtual_pid.cpp -o /tmp/zfc-virtual-pid
+          /tmp/zfc-virtual-pid
+          node tools/test_exclusive_session.js
+          node tools/test_fc_training_gap.js
+          npm run test:ownership
+          npm run test:stability
+          npm run test:training-core
+          npm run test:flight-math
+          npm run test:rc-link
+          node tools/test_usb_recovery.js
+          node tools/test_firmware_updater.js
+          npm run test:recorder
+      - name: Verify paired browser workflow
+        run: node tools/test_secure_browser.js
+
+      - name: Verify UI and native regressions
+        run: |
+          npm run test:control
+          npm run test:wifi
+          npm run test:rc-monitor
+          npm run test:fc-setup
+          mkdir -p /tmp/aerion-java
+          javac -d /tmp/aerion-java android-app/app/src/main/java/in/zebjus/aerion/{LeaseGate,LocalPolicy,LaunchPolicy,NativeRcStream,SecureTransport,RouterNetworkPolicy}.java android-app/tests/{LeaseGateTest,NativeRcStreamTest,RouterNetworkPolicyTest,SimulationGapTest,PairingTimeoutTest}.java
+          java -cp /tmp/aerion-java in.zebjus.aerion.PairingTimeoutTest
+          java -cp /tmp/aerion-java in.zebjus.aerion.LeaseGateTest
+          java -cp /tmp/aerion-java in.zebjus.aerion.SimulationGapTest
+          java -cp /tmp/aerion-java in.zebjus.aerion.NativeRcStreamTest
+          java -cp /tmp/aerion-java in.zebjus.aerion.RouterNetworkPolicyTest
+          aerion_ui_failures=0
+          for aerion_ui in network mobile-view wifi-browser setup-browser setup-session training-browser learning-browser wix; do
+            echo "::group::$aerion_ui"
+            if ! npm run "test:$aerion_ui"; then aerion_ui_failures=$((aerion_ui_failures + 1)); fi
+            echo '::endgroup::'
+          done
+          test "$aerion_ui_failures" -eq 0

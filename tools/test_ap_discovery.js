@@ -1,0 +1,6 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
+(async()=>{
+ const storage=new Map();let name='';const context={window:{dispatchEvent(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},sessionStorage:{getItem:()=>null,setItem(){}},URLSearchParams,AbortController,setTimeout,clearTimeout,performance,Response,console,fetch:async url=>{if(!url.startsWith('http://192.168.4.1/'))throw Error('No AP mDNS');return new Response(JSON.stringify({ok:true,kit:'ZEBJUS_FLIGHTCORE',deviceId:'ZFC-001122334455',boardId:'ZFC-A2',name,mode:'AP / DIRECT',ip:'192.168.4.1'}),{status:200})}};
+ vm.createContext(context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../kit-local.js'),'utf8'),context);let found=await context.window.ZebjusDroneKit.scanDefaultKits({max:1});assert.equal(found.length,1);assert.equal(found[0].status.deviceId,'ZFC-001122334455');name='Aerion';found=await context.window.ZebjusDroneKit.scanDefaultKits({max:1});assert.equal(found.length,1);console.log('PASS: unnamed and named AP kits discovered by verified Device ID');
+})().catch(e=>{console.error(e);process.exitCode=1});

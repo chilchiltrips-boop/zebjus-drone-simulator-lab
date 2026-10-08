@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520" role="img" aria-labelledby="title desc">
+  <title id="title">Exact hardware profile required</title>
+  <desc id="desc">A neutral connector and circuit-board illustration indicating that product photos and a pinout are still needed.</desc>
+  <rect width="720" height="520" rx="30" fill="#edf2f1"/>
+  <rect x="105" y="92" width="510" height="300" rx="28" fill="#115b4c" stroke="#092f29" stroke-width="12"/>
+  <circle cx="148" cy="135" r="16" fill="#d7ad3f"/><circle cx="572" cy="135" r="16" fill="#d7ad3f"/>
+  <circle cx="148" cy="349" r="16" fill="#d7ad3f"/><circle cx="572" cy="349" r="16" fill="#d7ad3f"/>
+  <rect x="196" y="154" width="328" height="118" rx="16" fill="#0d2025"/>
+  <g fill="#e4b949">
+    <circle cx="221" cy="322" r="17"/><circle cx="276" cy="322" r="17"/><circle cx="331" cy="322" r="17"/>
+    <circle cx="386" cy="322" r="17"/><circle cx="441" cy="322" r="17"/><circle cx="496" cy="322" r="17"/>
+  </g>
+  <text x="360" y="212" text-anchor="middle" fill="#ecf7f5" font-family="Arial,sans-serif" font-weight="700" font-size="34">MODEL + PINOUT</text>
+  <text x="360" y="252" text-anchor="middle" fill="#78d9c0" font-family="Arial,sans-serif" font-weight="700" font-size="26">REQUIRED</text>
+  <text x="360" y="447" text-anchor="middle" fill="#33464a" font-family="Arial,sans-serif" font-size="23">Upload clear front/back photos before physical wiring</text>
+</svg>

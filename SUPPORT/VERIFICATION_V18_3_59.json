@@ -1,0 +1,87 @@
+{
+  "version": "18.3.59",
+  "firmwareBuild": {
+    "version": "18.3.59",
+    "builtAt": "2026-10-01T06:44:38Z",
+    "arduinoEsp32": "3.3.12",
+    "hardwareFlashingTested": false,
+    "boards": [
+      {
+        "boardId": "ZFC-A1",
+        "fqbn": "esp32:esp32:esp32c3",
+        "chipId": 5,
+        "appBytes": 1239152,
+        "otaSlots": [
+          {
+            "address": 65536,
+            "bytes": 1310720
+          },
+          {
+            "address": 1376256,
+            "bytes": 1310720
+          }
+        ],
+        "factoryBytes": 4194304,
+        "factoryAddress": "0x0",
+        "checks": [
+          "image magic",
+          "profile chip ID",
+          "release version",
+          "dual OTA slots",
+          "slot size",
+          "factory bootloader at 0x0",
+          "factory/APP identical"
+        ]
+      },
+      {
+        "boardId": "ZFC-A2",
+        "fqbn": "esp32:esp32:XIAO_ESP32C6",
+        "chipId": 13,
+        "appBytes": 1304400,
+        "otaSlots": [
+          {
+            "address": 65536,
+            "bytes": 1310720
+          },
+          {
+            "address": 1376256,
+            "bytes": 1310720
+          }
+        ],
+        "factoryBytes": 4194304,
+        "factoryAddress": "0x0",
+        "checks": [
+          "image magic",
+          "profile chip ID",
+          "release version",
+          "dual OTA slots",
+          "slot size",
+          "factory bootloader at 0x0",
+          "factory/APP identical"
+        ]
+      }
+    ]
+  },
+  "automatedChecks": {
+    "projectValidator": "passed",
+    "offlineDependencyClosure": "passed",
+    "fourBinaryHashesAndEmbeddedCatalog": "passed",
+    "firmwareUSBAndOTATransport": "passed with simulated transport",
+    "flightAppBrowser": "passed with normal browser security, real touch events and simulated kit HTTP",
+    "refreshAndIdentity": "passed with simulated HTTP",
+    "staleCommandAndGrantFencing": "passed with delayed simulated HTTP",
+    "APAndSTAHandoff": "passed with simulated HTTP",
+    "flightAppOfflineReload": "passed after stopping the server",
+    "existingPythonCvzoneExamplesAndLifecycle": "passed",
+    "completeEngineeringLabOffline": "passed using real browser WASM and synthetic camera frames",
+    "realTargetHandCameraRPC": "passed with synthetic hand data and simulated kit HTTP"
+  },
+  "physicalHardwareTested": false,
+  "pending": [
+    "Physical USB and OTA installation",
+    "Actual AP/STA Wi-Fi and range",
+    "Real touch-device testing",
+    "ESC/motor and IMU response",
+    "Flight timing and actual flight"
+  ]
+}

@@ -1,7 +1,23 @@
+#!/usr/bin/env python3
+"""Generate offline-cache inventory after editing the application."""
+import hashlib
+import json
 from pathlib import Path
-import json,hashlib
-root=Path(__file__).resolve().parents[1]
-paths=['index.html','flight/index.html','controller.css','controller.js','firmware-updater.js','firmware-catalog.json','manifest.webmanifest']+[p.relative_to(root).as_posix() for p in sorted((root/'vendor/esptool').rglob('*')) if p.is_file()]
-assets=[{'url':p,'bytes':(root/p).stat().st_size,'sha256':hashlib.sha256((root/p).read_bytes()).hexdigest()} for p in paths]
-(root/'offline-manifest.json').write_text(json.dumps({'version':(root/'VERSION.txt').read_text().strip(),'assets':assets},indent=2)+'\n')
-print('Minimal offline manifest:',len(assets),'assets')
+
+ROOT = Path(__file__).resolve().parents[1]
+files = []
+for p in sorted(ROOT.rglob('*')):
+    rel = p.relative_to(ROOT)
+    if not p.is_file():
+        continue
+    allowed = (len(rel.parts) == 1 and p.suffix in {'.html', '.js', '.css', '.json', '.webmanifest', '.png', '.jpg', '.jpeg', '.svg', '.glb'})
+    allowed |= rel.parts[0] == 'vendor' and not p.name.endswith(('.map', '.d.ts'))
+    allowed |= rel.as_posix() in {'python_companion/browser_cv2.py', 'python_companion/browser_cvzone.py', 'python_companion/simple_syntax.py', 'FlightCore_Firmware/catalog.json', 'FlightCore_Firmware/latest.json'}
+    allowed |= rel.parts[0] == 'FlightCore_Firmware' and p.suffix == '.bin'
+    allowed |= rel.parts[0] == 'flight' and p.suffix in {'.html', '.js', '.webmanifest', '.png'}
+    if allowed and (p.name not in {'offline-manifest.json', 'service-worker.js', 'package.json', 'release-integrity.json'} or rel.parts[0] == 'flight'):
+        data = p.read_bytes()
+        files.append({'path': rel.as_posix(), 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
+payload = {'version': (ROOT / 'VERSION.txt').read_text().strip(), 'totalBytes': sum(f['bytes'] for f in files), 'files': files}
+(ROOT / 'offline-manifest.json').write_text(json.dumps(payload, indent=2) + '\n')
+print('Offline files:', len(files), 'bytes:', payload['totalBytes'])

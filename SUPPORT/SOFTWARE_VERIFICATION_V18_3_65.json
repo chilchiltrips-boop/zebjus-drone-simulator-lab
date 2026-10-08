@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "product": "ZEBJUS Aerion",
+  "version": "18.3.65",
+  "verifiedAt": "2026-10-04T09:19:09Z",
+  "scope": "Software builds, actual-source host checks, mocked-controller browser flows and simulated-flight missions. No physical phone, controller, motor, radio or flight validation.",
+  "sourceCommit": "9017e5218d662c246d37f1c62f3fdf4d8d156d37",
+  "verifiedPackageCommit": "176d4d6f3df6080298080e4a0de96296cc511690",
+  "finalWebSourceCommit": "d240cca48e7af3c010b0083ec8b8f69d52952428",
+  "workflows": [
+    {
+      "kind": "full firmware/APK and regression verification",
+      "id": 37190966009,
+      "url": "https://github.com/chilchiltrips-boop/zebjus-drone-simulator-lab/actions/runs/37190966009",
+      "conclusion": "success"
+    },
+    {
+      "kind": "final web-only changes",
+      "id": 37191716120,
+      "url": "https://github.com/chilchiltrips-boop/zebjus-drone-simulator-lab/actions/runs/37191716120",
+      "conclusion": "success"
+    }
+  ],
+  "packages": [
+    {
+      "path": "android-app/dist/ZEBJUS_Aerion_V18_3_65_Android.apk",
+      "bytes": 57964,
+      "sha256": "031d5342175288ba89136cfec409a97078744183602e651409f9219deea88aaf"
+    },
+    {
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
+      "bytes": 1199984,
+      "sha256": "43c80730e0b6a7ead0d3a0d3e49db4e79acef981cdf241b4463e77549aab6312"
+    },
+    {
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
+      "bytes": 4194304,
+      "sha256": "1fe37a4ace939a7d06c70674a99388eefe0327156b8421fe60d6253ebc35ef0f"
+    },
+    {
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin",
+      "bytes": 1285664,
+      "sha256": "452b46e591fd52b6c45f91e421d9f7071866017ad27c441aa68fcc7f10e5a6df"
+    },
+    {
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin",
+      "bytes": 4194304,
+      "sha256": "ee92c466409c42ea6438d30c2545fb9ca4483ddd4b33733c0e9e4cc5f0945ade"
+    }
+  ],
+  "packageEvidence": "Downloaded successful full-run artifacts are byte-identical to the firmware/APK committed at verifiedPackageCommit. No firmware, Android source or embedded mobile assets changed between that package commit and finalWebSourceCommit.",
+  "checks": [
+    "Both pinned ESP32-C3 and XIAO ESP32-C6 profiles compile; image/chip/version, dual OTA slots, slot capacity and factory/application equality verified.",
+    "Android DEX, manifest, API levels, ZIP alignment, development signature and bundled mobile UI/transport equality verified.",
+    "Project JSON/JS/file references, local 3D assets, 22 offline Python packages and sealed release inventory verified.",
+    "Actual-source C++ flight math, RC receiver timing/endpoints/gaps/arming and setup/training output inhibition checked on the host.",
+    "Java native lease gate and 50 Hz RC UDP stream tested; browser transport, reconnect, output/camera cleanup and upload guards pass.",
+    "Guided setup, floating neutral-at-touch joysticks, live input ownership, AP/STA routing, short-gap recovery, hard-loss/manual rearm and mobile flows pass.",
+    "All 10 teaching missions checked for task/landing completion, obstacle crashes, gusts, LED/payload objectives and retry behavior.",
+    "Learning workspace browser checks navigation, individual I/O tools, merged connection/upgrades, unavailable sensor gauges, software 3D, locks, app RC-driven virtual flight, stale pause, neutral resume and page-exit STOP.",
+    "Final browser scenario proves an unready controller's placeholder 0-degree attitude is hidden after a valid measured sample; responsive views remain inside the viewport."
+  ],
+  "physicalValidation": {
+    "androidDeviceTested": false,
+    "hardwareFlashingTested": false,
+    "escMotorBenchTested": false,
+    "ppmRfLossTested": false,
+    "physicalDroneTested": false
+  },
+  "firstUse": "Use matching V18.3.65 firmware and APK. Remove propellers for setup, motor/ESC tests and app/PPM training. Complete physical bench/device verification before flight."
+}
