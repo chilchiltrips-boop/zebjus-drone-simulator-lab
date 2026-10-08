@@ -140,7 +140,7 @@
     {
       "path": "flight/service-worker.js",
       "bytes": 1202,
-      "sha256": "da88fce9f16d044d36f6b2c7e13a9aa5bffe3c0c6161cf6173f2011dab7d7ae8"
+      "sha256": "86dfc17f2f33a544bf19301f66b37eed69f27474f898f075e86e4ecc5977fd51"
     },
     {
       "path": "flight-diagnostics.js",

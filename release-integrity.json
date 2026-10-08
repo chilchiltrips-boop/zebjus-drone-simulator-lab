@@ -955,7 +955,7 @@
     {
       "path": "flight/service-worker.js",
       "bytes": 1202,
-      "sha256": "da88fce9f16d044d36f6b2c7e13a9aa5bffe3c0c6161cf6173f2011dab7d7ae8"
+      "sha256": "86dfc17f2f33a544bf19301f66b37eed69f27474f898f075e86e4ecc5977fd51"
     },
     {
       "path": "flight-diagnostics.js",
@@ -1080,7 +1080,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 44078,
-      "sha256": "4ebea565b78fb10c1cf4c92d8c9fcd12af445ff8671fa1a9eef7ffb9fa6d1d02"
+      "sha256": "85db96ca8d8909d120bb4e7a9d13944126356fd537ef8d30dd7eb034a6e28f06"
     },
     {
       "path": "offline-support.js",
@@ -1340,7 +1340,7 @@
     {
       "path": "service-worker.js",
       "bytes": 6858,
-      "sha256": "bcf9ad73f3f826fdd031f5dd938bb9f878b01eb4b43459f8d52e9bf45eb39506"
+      "sha256": "23bc1a4d63feb71b437db88addfde1e7fb544c74c57d55561427bcb4be4f5211"
     },
     {
       "path": "start_offline.py",
