@@ -1,6 +1,6 @@
 {
   "version": "18.3.82",
-  "totalBytes": 115905194,
+  "totalBytes": 115905254,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -134,8 +134,8 @@
     },
     {
       "path": "flight/index.html",
-      "bytes": 143133,
-      "sha256": "a3b30cb9710f9eadb9ac07ef39baac9f7c388bbd1f0083aff883218fc7978d59"
+      "bytes": 143193,
+      "sha256": "67406a388becc7ad41a5191f864ecdc1ae9a0092bf6b0271d32664ae22e57741"
     },
     {
       "path": "flight/service-worker.js",

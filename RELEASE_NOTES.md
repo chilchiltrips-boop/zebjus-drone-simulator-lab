@@ -2,7 +2,7 @@
 
 Stop timed-out STA association before scanning and retry the preferred profile. Preserve transient AP fallback without persisting AP preference, retry the router only when recovery AP is idle, and report real STA disconnect reasons. Keep AP scan radio stable; reuse manually joined matching Android APs and accept selected local router LANs without Internet. Record native network/connection failures, reclaim idle released MOBILE sessions, and skip the STA-only live monitor on AP. Rebuild the matching signed Android APK and both board firmware packages; preserve manual ARM, exact kit identity, control ownership and simulator output inhibition.
 
-Opening a new connection dialog cancels pending discovery/reservation replies.
+Opening a new connection dialog cancels pending discovery/reservation replies, including delayed authenticated status.
 
 See SUPPORT/V18_3_82_UPDATE.md for the observed log evidence and this A2 kit's installation steps. Physical hardware connection/flash tests remain unperformed.
 
