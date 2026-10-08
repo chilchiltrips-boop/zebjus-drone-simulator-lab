@@ -1,0 +1,62 @@
+{
+  "version": "18.4.0",
+  "builtAt": "2026-10-08T08:04:45Z",
+  "arduinoEsp32": "3.3.12",
+  "hardwareFlashingTested": false,
+  "boards": [
+    {
+      "boardId": "ZFC-A1",
+      "fqbn": "esp32:esp32:esp32c3",
+      "chipId": 5,
+      "appBytes": 1197408,
+      "otaSlots": [
+        {
+          "address": 65536,
+          "bytes": 1310720
+        },
+        {
+          "address": 1376256,
+          "bytes": 1310720
+        }
+      ],
+      "factoryBytes": 4194304,
+      "factoryAddress": "0x0",
+      "checks": [
+        "image magic",
+        "profile chip ID",
+        "release version",
+        "dual OTA slots",
+        "slot size",
+        "factory bootloader at 0x0",
+        "factory/APP identical"
+      ]
+    },
+    {
+      "boardId": "ZFC-A2",
+      "fqbn": "esp32:esp32:XIAO_ESP32C6",
+      "chipId": 13,
+      "appBytes": 1282112,
+      "otaSlots": [
+        {
+          "address": 65536,
+          "bytes": 1310720
+        },
+        {
+          "address": 1376256,
+          "bytes": 1310720
+        }
+      ],
+      "factoryBytes": 4194304,
+      "factoryAddress": "0x0",
+      "checks": [
+        "image magic",
+        "profile chip ID",
+        "release version",
+        "dual OTA slots",
+        "slot size",
+        "factory bootloader at 0x0",
+        "factory/APP identical"
+      ]
+    }
+  ]
+}

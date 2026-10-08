@@ -15,7 +15,7 @@
     {
       "path": "FILE_COUNT.txt",
       "bytes": 3,
-      "sha256": "5ced0deaf966775a8b592f6bd95a33a67053b242a7c13654896cd9f2d36a0e37"
+      "sha256": "4b9258d432ecb4511cfe5471a58f3feea9e8aa513e1d32294894693827d3b0d4"
     },
     {
       "path": "FlightCore_Firmware/FlightControlMath.h",
@@ -58,19 +58,44 @@
       "sha256": "7b4f156b92314c676c76d5902066963266d49c3274e6b6acdcc1b97a265e3c01"
     },
     {
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
+      "bytes": 1197408,
+      "sha256": "a3f263be27ddc4d23a94ac0226c52df456386e408feee88402a5871ea60306e1"
+    },
+    {
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
+      "bytes": 4194304,
+      "sha256": "5becee8c7fac31c79e27f77cbb1e13181f297d04d9ab4cb15ca91bb4de824b81"
+    },
+    {
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin",
+      "bytes": 1282112,
+      "sha256": "71e6c7be8e26b045751191a385b58facf70cc5381c59872e9fb28d60026954cb"
+    },
+    {
+      "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin",
+      "bytes": 4194304,
+      "sha256": "30e44c48762e064bd9b7e792d9e1a91131a6458906999f9f7e12cda86ae9fc35"
+    },
+    {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h",
       "bytes": 882,
       "sha256": "341be1a9f1c3d7066a7bb595f94031fa17615a44606baec2d7461d475432eee0"
     },
     {
+      "path": "FlightCore_Firmware/build-report.json",
+      "bytes": 1322,
+      "sha256": "776dff72bbe8e169bf0c857fcb9811f6616fd1863ef6ecda0457192b8c72fcc8"
+    },
+    {
       "path": "FlightCore_Firmware/catalog.json",
-      "bytes": 2187,
-      "sha256": "497c0cdebbacc8415be1180ad7feefe83ef6d2e3882de8e0c53703abba871f02"
+      "bytes": 2786,
+      "sha256": "cb97f2ff60e2b5bc50a5a9adc64205d96666654e414b39ed38dafd629d261e8e"
     },
     {
       "path": "FlightCore_Firmware/latest.json",
-      "bytes": 259,
-      "sha256": "39a0eb87800405cc9d5331d71e0b212ec24ca7c0df2c8a48865bc2b51b35069d"
+      "bytes": 258,
+      "sha256": "4278c55796fea9fa032324d8d40159ff67daf9b57a818bcd9dd31583ca7b6ead"
     },
     {
       "path": "FlightCore_Firmware/src/DroneGPS.cpp",
@@ -144,8 +169,8 @@
     },
     {
       "path": "android-app/app/src/main/assets/flight/index.html",
-      "bytes": 68153,
-      "sha256": "fc387ce3027f80b2324ea7dc183ccf7d20aa5f99ae091a91d7b400942200a27f"
+      "bytes": 68728,
+      "sha256": "5eb6015a9ade250968c6578a6b0b30cd472a8c88ed2d358231a21d5229492df1"
     },
     {
       "path": "android-app/app/src/main/java/in/zebjus/aerion/LaunchPolicy.java",
@@ -249,28 +274,28 @@
     },
     {
       "path": "firmware-catalog.json",
-      "bytes": 2187,
-      "sha256": "497c0cdebbacc8415be1180ad7feefe83ef6d2e3882de8e0c53703abba871f02"
+      "bytes": 2786,
+      "sha256": "cb97f2ff60e2b5bc50a5a9adc64205d96666654e414b39ed38dafd629d261e8e"
     },
     {
       "path": "firmware-latest.json",
-      "bytes": 268,
-      "sha256": "1616f12a47e861a3fd8eeab4a8621e175c5a579c25b88e5d0e78336a1da63cad"
+      "bytes": 267,
+      "sha256": "146459a224b55a0762ab8b07c6b27d83fd13e95818a9c1da0fed9b1d0f2b22d7"
     },
     {
       "path": "firmware-updater.js",
-      "bytes": 30939,
-      "sha256": "c7fa2dd97b17c3576ed1439ffbc29982695c32b534c8e059e5578083bede7602"
+      "bytes": 31514,
+      "sha256": "7a442227bcace3b77f5a3293e502c6c80de353763bb701a8c85e972a11e5d2c0"
     },
     {
       "path": "flight/index.html",
-      "bytes": 68106,
-      "sha256": "e9278383c92d308ed08237636f6976914942f4ef36d6e923cc0439f24864e249"
+      "bytes": 68681,
+      "sha256": "5a5a510be8939d48b7b0c31e89b84fdcdd37baea42d9f82cbbe97d81ed7653e8"
     },
     {
       "path": "index.html",
-      "bytes": 68106,
-      "sha256": "e9278383c92d308ed08237636f6976914942f4ef36d6e923cc0439f24864e249"
+      "bytes": 68681,
+      "sha256": "5a5a510be8939d48b7b0c31e89b84fdcdd37baea42d9f82cbbe97d81ed7653e8"
     },
     {
       "path": "manifest.webmanifest",
@@ -280,7 +305,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 1417,
-      "sha256": "75532850c9dfa8dc93eb4806a8ff0a5946bb651222e3829b92173cf361a37c2f"
+      "sha256": "eaf6f809cdeafc9f2b0f6406d461bd011703589e644d1a13554cfd17c1ddfc70"
     },
     {
       "path": "package.json",
@@ -289,8 +314,8 @@
     },
     {
       "path": "release-status.json",
-      "bytes": 98,
-      "sha256": "949b3646e01a3a75699056ed28f5ce22ee0002d63c46140d49fbca34cecaf486"
+      "bytes": 115,
+      "sha256": "8c33ef137f4cc6ae317a1b02e1f39a59b7e2949dd741f86608f0695f04c784db"
     },
     {
       "path": "server.js",
