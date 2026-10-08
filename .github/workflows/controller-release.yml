@@ -16,13 +16,15 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
-      ARDUINO_DIRECTORIES_DATA: ${{ runner.temp }}/zebjus-arduino/data
-      ARDUINO_DIRECTORIES_DOWNLOADS: ${{ runner.temp }}/zebjus-arduino/downloads
       ARDUINO_NETWORK_CONNECTION_TIMEOUT: 120s
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+      - name: Configure Arduino cache directories
+        run: |
+          echo "ARDUINO_DIRECTORIES_DATA=${RUNNER_TEMP}/zebjus-arduino/data" >> "$GITHUB_ENV"
+          echo "ARDUINO_DIRECTORIES_DOWNLOADS=${RUNNER_TEMP}/zebjus-arduino/downloads" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
