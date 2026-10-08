@@ -4,7 +4,6 @@ import tempfile,subprocess
 root=Path(__file__).resolve().parents[1]
 ino=(root/'FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino').read_text()
 setup=(root/'FlightCore_Firmware/FlightSetup.h').read_text()
-training=(root/'FlightCore_Firmware/FlightTraining.h').read_text()
 def function(source,name):
  start=source.index('void '+name+'(');brace=source.index('{',start);depth=1;end=brace+1
  while depth:
@@ -43,11 +42,8 @@ void allMotorPulse(int p){for(int i=0;i<4;i++)writeEscMicroseconds(i,p);}
 '''
 checks=r'''
 int main(){
- trainingActive=true;armed=true;benchMode=BENCH_MOTOR;benchPulse=1250;benchUntilMs=9000;for(int i=0;i<4;i++){writeEscMicroseconds(i,1800);assert(outputs[i]==1000);}serviceBenchMode();assert(benchMode==BENCH_NONE);uint16_t trainRc[10]={1500,1500,1000,2000,2000,1000};serviceArming(trainRc);assert(!armed);trainingActive=false;
 
  uint16_t rc[10]={1500,1500,1000,1500,1000,1000,1000,1000,1500,1000};
- trainingActive=true;trainingExpires=clockMs;armed=true;webRcLastMs=clockMs;serviceTraining();assert(!trainingActive&&!armed&&setupAfterNeutral&&webRcLastMs==0);setupAfterNeutral=false;
- trainingActive=trainingAppOwned=true;trainingTarget=2;trainingOwner="phone";controlOwner="other";trainingExpires=clockMs+5000;serviceTraining();assert(!trainingActive&&trainingTarget==0&&setupAfterNeutral);trainingAppOwned=false;setupAfterNeutral=false;
  fcSetupActive=true;rc[3]=2000;serviceArming(rc);clockMs+=1200;serviceArming(rc);assert(!armed);
  fcSetupActive=false;setupAfterNeutral=true;serviceArming(rc);assert(setupAfterNeutral&&!armed);
  rc[3]=1500;serviceArming(rc);assert(!setupAfterNeutral&&!armed);
@@ -65,5 +61,5 @@ int main(){
 }
 '''
 with tempfile.TemporaryDirectory() as d:
- p=Path(d);src=p/'fc.cpp';binary=p/'fc';src.write_text(prefix+function(ino,'writeEscMicroseconds')+helpers+function(ino,'benchStop')+function(ino,'serviceBenchMode')+function(ino,'serviceArming')+function(setup,'serviceFcSetup')+function(training,'finishTraining')+function(training,'serviceTraining')+checks)
+ p=Path(d);src=p/'fc.cpp';binary=p/'fc';src.write_text(prefix+function(ino,'writeEscMicroseconds')+helpers+function(ino,'benchStop')+function(ino,'serviceBenchMode')+function(ino,'serviceArming')+function(setup,'serviceFcSetup')+checks)
  subprocess.run(['g++','-std=c++17','-I',str(root/'FlightCore_Firmware'),str(src),'-o',str(binary)],check=True);subprocess.run([str(binary)],check=True)

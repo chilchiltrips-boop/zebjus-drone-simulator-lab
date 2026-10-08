@@ -1,17 +1,17 @@
-"""Generate installed/offline Flight App copies; firmware AP serves API only."""
+"""Generate one minimal controller UI for web, offline browser and Android."""
 from pathlib import Path
-import sys,re
+import sys,json
 root=Path(__file__).resolve().parents[1]
-source=root/'tools/flight_app_source.html'
-text=source.read_text()
-shared='<script>\n'+(root/'control-sticks.js').read_text()+'\n'+(root/'mobile-flight-console.js').read_text()+'\n</script>'
-text=re.sub(r'<!-- AERION_SHARED_BEGIN -->.*?<!-- AERION_SHARED_END -->',lambda _: '<!-- AERION_SHARED_BEGIN -->\n'+shared+'\n<!-- AERION_SHARED_END -->',text,flags=re.S)
-if '--check' in sys.argv and text!=source.read_text():raise SystemExit('Regenerate shared Flight App scripts')
-if '--check' not in sys.argv:source.write_text(text)
-flight=text.encode()
-outputs={root/'flight/index.html':flight,root/'android-app/app/src/main/assets/flight/index.html':flight.replace(b'<script>\n(()=>',b'<script src="../android-transport.js"></script>\n<script>\n(()=>',1)}
+source=(root/'tools/flight_app_source.html').read_text()
+style='<style>\n'+(root/'controller.css').read_text()+'\n</style>'
+scripts='\n'.join('<script>\n'+(root/name).read_text()+'\n</script>' for name in ['controller.js','firmware-updater.js'])
+status=json.loads((root/'release-status.json').read_text())
+text=source.replace('<!-- SIMPLE_STYLE -->',style).replace('<!-- SIMPLE_SCRIPTS -->','<script>window.AerionRelease='+json.dumps(status,separators=(',',':'))+';</script>\n'+scripts)
+web=text.replace('<!-- ANDROID_TRANSPORT -->','')
+app=text.replace('<!-- ANDROID_TRANSPORT -->','<script src="../android-transport.js"></script>')
+outputs={root/'index.html':web,root/'flight/index.html':web,root/'android-app/app/src/main/assets/flight/index.html':app}
 for path,data in outputs.items():
     if '--check' in sys.argv:
-        if not path.is_file() or path.read_bytes()!=data:raise SystemExit('Regenerate installed Flight App: '+str(path))
-    else:path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
-print('Installed Flight App copies '+('verified' if '--check' in sys.argv else 'generated')+'; AP is API-only')
+        if not path.is_file() or path.read_text()!=data:raise SystemExit('Regenerate controller UI: '+str(path))
+    else:path.parent.mkdir(parents=True,exist_ok=True);path.write_text(data)
+print('Shared controller UI '+('verified' if '--check' in sys.argv else 'generated'))

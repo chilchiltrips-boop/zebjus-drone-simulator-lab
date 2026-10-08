@@ -18,6 +18,12 @@
  android.openWifi=()=>native.openWifi(token);
  android.useRouterWifi=()=>native.useRouterWifi(token);android.routerReady=()=>android.connectedRouter?.();
  android.joinWifi=()=>native.joinWifi(token,document.getElementById('expectedId').value.trim());
+ android.uploadFirmware=(url,bytes,fields)=>new Promise((resolve,reject)=>{
+  const id=prefix+(++sequence),timer=setTimeout(()=>{pending.delete(id);native.cancel(token,id);reject(Error('Firmware upload timed out.'))},125000);
+  pending.set(id,{resolve:r=>r.json().then(j=>{if(!r.ok||j.ok===false)reject(Error(j.message||'Firmware upload failed.'));else resolve(j)}),reject,timer,remove(){}});
+  let binary='';for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
+  try{native.uploadFirmware(token,id,url,btoa(binary),String(new URLSearchParams(fields)))}catch(e){pending.delete(id);clearTimeout(timer);reject(e)}
+ });
  const wifiUi=(message,busy=false)=>{document.getElementById('pairMessage').textContent=message;document.getElementById('androidWifi').disabled=busy;document.getElementById('checkConnection').disabled=busy;};
  android.wifiProgress=message=>wifiUi(message,true);
  android.wifiError=message=>wifiUi(message);
@@ -28,7 +34,8 @@
   document.querySelector('#connectDialog .dialog-head').after(button);
   const settings=document.createElement('button');settings.id='androidWifiSettings';settings.className='secondary';settings.textContent='Phone Wi-Fi settings (STA / Android 8–9)';settings.onclick=android.openWifi;button.after(settings);
   document.getElementById('pairMessage').textContent='Connect kit Wi-Fi here; Android asks you to choose the kit. AP password: 12345678.';
-  document.querySelector('#settingsDialog .links').hidden=true;
-  document.getElementById('fullscreen').hidden=true;
+  const router=document.createElement('button');router.id='androidRouterWifi';router.className='secondary';router.textContent='Use phone / router Wi-Fi';router.onclick=android.useRouterWifi;settings.after(router);
+  document.getElementById('fwConnectUsbBtn').disabled=true;
+  document.getElementById('fwUsbState').textContent='USB flashing: open the webapp on a laptop';
  });
 })();

@@ -1,0 +1,118 @@
+name: Build and verify simple controller release
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, 'simple-controller-*']
+permissions:
+  contents: write
+concurrency:
+  group: controller-release-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify-build:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      ARDUINO_DIRECTORIES_DATA: ${{ runner.temp }}/zebjus-arduino/data
+      ARDUINO_DIRECTORIES_DOWNLOADS: ${{ runner.temp }}/zebjus-arduino/downloads
+      ARDUINO_NETWORK_CONNECTION_TIMEOUT: 120s
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Verify complete source and controller guards
+        run: |
+          npm run release:check
+          npm run check
+          npm run test:control
+          npm run test:flight-math
+          npm run test:rc-link
+          npm run test:fc-setup
+          mkdir -p android-app/build/core-tests
+          javac -d android-app/build/core-tests android-app/app/src/main/java/in/zebjus/aerion/LeaseGate.java android-app/app/src/main/java/in/zebjus/aerion/LocalPolicy.java android-app/app/src/main/java/in/zebjus/aerion/LaunchPolicy.java android-app/app/src/main/java/in/zebjus/aerion/NativeRcStream.java android-app/tests/LeaseGateTest.java android-app/tests/NativeRcStreamTest.java
+          java -cp android-app/build/core-tests in.zebjus.aerion.LeaseGateTest
+          java -cp android-app/build/core-tests in.zebjus.aerion.NativeRcStreamTest
+      - name: Install browser and exercise the actual controller page
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+          npm run test:browser
+      - uses: arduino/setup-arduino-cli@v2
+        with:
+          version: '1.5.1'
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/zebjus-arduino
+          key: ${{ runner.os }}-arduino-1.5.1-esp32-3.3.12-complete-v1
+      - name: Build matching A1 and A2 firmware
+        run: |
+          python3 tools/test_firmware_setup.py
+          python3 tools/build_firmware.py --board all
+          python3 tools/embed_ap_pages.py
+          npm run test:control
+      - name: Install official Android build tools
+        run: |
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --install 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Build Android with the existing development certificate
+        id: apk
+        env:
+          AERION_DEVELOPMENT_STORE_PASSWORD: ${{ secrets.AERION_DEVELOPMENT_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -n "${AERION_DEVELOPMENT_STORE_PASSWORD:-}" ]; then
+            python3 android-app/tools/build_apk.py --build-tools "${ANDROID_HOME}/build-tools/36.0.0" --android-jar "${ANDROID_HOME}/platforms/android-36/android.jar"
+            echo 'signed=true' >> "$GITHUB_OUTPUT"
+          else
+            python3 android-app/tools/build_apk.py --unsigned-only --build-tools "${ANDROID_HOME}/build-tools/36.0.0" --android-jar "${ANDROID_HOME}/platforms/android-36/android.jar"
+            echo 'signed=false' >> "$GITHUB_OUTPUT"
+            echo '::warning::Android compilation passed. Set AERION_DEVELOPMENT_STORE_PASSWORD to the existing certificate password to publish the installable APK.'
+          fi
+      - name: Seal matching generated release
+        env:
+          AERION_APK_SIGNED: ${{ steps.apk.outputs.signed }}
+        run: |
+          python3 - <<'PY'
+          import os,json
+          from pathlib import Path
+          signed=os.environ['AERION_APK_SIGNED']=='true'
+          Path('release-status.json').write_text(json.dumps({'version':'18.4.0','apkAvailable':signed,'apkVersion':'18.4.0-simple.1','apkSigningPending':not signed},indent=2)+'\n')
+          PY
+          npm run release:seal
+          npm run check
+          npm run release:check
+      - name: Publish verified generated packages to the source branch
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          git fetch origin "${GITHUB_REF_NAME}"
+          test "$(git rev-parse FETCH_HEAD)" = "${GITHUB_SHA}" || { echo 'New source arrived; keeping this verified build as artifacts.'; exit 0; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A -- FlightCore_Firmware firmware-catalog.json firmware-latest.json firmware-updater.js index.html flight/index.html android-app release-status.json release-integrity.json offline-manifest.json FILE_COUNT.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'Build verified 18.4.0 controller firmware and Android packages [skip ci]'
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+      - name: Retain firmware, APK build and browser verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aerion-Simple-Controller-18.4.0
+          if-no-files-found: warn
+          path: |
+            FlightCore_Firmware/*_APP.bin
+            FlightCore_Firmware/*_FACTORY.bin
+            FlightCore_Firmware/build-report.json
+            android-app/dist/
+            android-app/build/cli/ZEBJUS_Aerion_V18_4_0_Unsigned.apk
+            android-app/build/controller-mobile.png

@@ -1,5 +1,0 @@
-opencv-python>=4.8,<5
-mediapipe>=0.10,<1
-cvzone>=1.6,<2
-matplotlib>=3.8,<4
-numpy>=1.26,<3

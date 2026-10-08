@@ -78,7 +78,7 @@ public final class MainActivity extends Activity {
 
     private final ConnectivityManager.NetworkCallback wifiCallback=new ConnectivityManager.NetworkCallback(){
         @Override public void onAvailable(Network network){chooseWifi(network);}
-        @Override public void onLost(Network network){if(network.equals(wifi)){wifi=null;emergency(gate.fence(false));emit("networkLost");}}
+        @Override public void onLost(Network network){if(network.equals(wifi)){wifi=null;emergency(gate.fence(false));emit("networkLost");Network active=connectivity.getActiveNetwork();NetworkCapabilities cap=active==null?null:connectivity.getNetworkCapabilities(active);if(cap!=null&&cap.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))chooseWifi(active);else for(Network candidate:connectivity.getAllNetworks()){NetworkCapabilities c=connectivity.getNetworkCapabilities(candidate);if(!candidate.equals(network)&&c!=null&&c.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)){chooseWifi(candidate);break;}}}}
     };
     private static long now(){return System.nanoTime()/1_000_000L;}
 
@@ -88,7 +88,7 @@ public final class MainActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         web=new WebView(this);web.setBackgroundColor(Color.rgb(8,9,11));setContentView(web);
         WebSettings settings=web.getSettings();settings.setJavaScriptEnabled(true);settings.setDomStorageEnabled(true);
-        settings.setAllowFileAccess(false);settings.setAllowContentAccess(false);
+        settings.setAllowFileAccess(false);settings.setAllowContentAccess(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setSupportMultipleWindows(false);settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
@@ -96,7 +96,7 @@ public final class MainActivity extends Activity {
         web.setWebChromeClient(new WebChromeClient(){
             @Override public boolean onShowFileChooser(WebView view,ValueCallback<Uri[]> callback,FileChooserParams params){
                 if(filePicker!=null)filePicker.onReceiveValue(null);filePicker=callback;pauseControl();
-                Intent pick=new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE);startActivityForResult(pick,PICK_BACKUP);return true;
+                Intent pick=new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("*/*").addCategory(Intent.CATEGORY_OPENABLE);startActivityForResult(pick,PICK_BACKUP);return true;
             }
         });web.addJavascriptInterface(new NativeBridge(),"NativeAerion");
         web.setWebViewClient(new WebViewClient(){
@@ -106,6 +106,7 @@ public final class MainActivity extends Activity {
             @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request){
                 Uri uri=request.getUrl();
                 if(uri.toString().equals(HOME))return false;
+                if("https".equals(uri.getScheme())&&"chilchiltrips-boop.github.io".equals(uri.getHost())&&uri.getPath()!=null&&uri.getPath().startsWith("/zebjus-drone-simulator-lab/")&&(uri.getPath().endsWith(".bin")||uri.getPath().endsWith(".apk"))){pauseControl();startActivity(new Intent(Intent.ACTION_VIEW,uri));return true;}
                 // Flight navigation remains inside this app. Kit configuration
                 // is available separately in the laptop WebApp.
                 return true;
@@ -126,7 +127,7 @@ public final class MainActivity extends Activity {
     private void chooseWifi(Network network){
         if(selectedKitWifi!=null && !selectedKitWifi.equals(network))return;
         if(destroyed || network.equals(wifi))return;
-        if(selectedKitWifi==null && wifi!=null)return;
+        if(selectedKitWifi==null && wifi!=null){NetworkCapabilities old=connectivity.getNetworkCapabilities(wifi);if(old!=null&&!network.equals(connectivity.getActiveNetwork()))return;}
         emergency(gate.fence(false));wifi=network;emit("networkLost");if(gate.isForeground())emit("resume");
     }
     private void immersive(){getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);}
@@ -274,6 +275,7 @@ public final class MainActivity extends Activity {
         final String id,method,body;final URL url;final Network network;final int timeout;
         final LeaseGate.Grant grant;final LeaseGate.Lease lease;final Map<String,String> fields;
         final boolean safeFrame,readCommand;
+        byte[] firmware;
         volatile boolean cancelled;volatile HttpURLConnection connection;
         Job(String id,URL url,String method,String body,int timeout,Network network)throws Exception{
             this.id=id;this.url=url;this.method=method;this.body=body;this.timeout=timeout;this.network=network;
@@ -287,7 +289,7 @@ public final class MainActivity extends Activity {
                     if("rc_frame".equals(fields.get("type"))){safe=LocalPolicy.safe(LocalPolicy.channels(fields));if(!safe)l=gate.authorize(base,device,client);else if(gate.isForeground()){try{l=gate.authorize(base,device,client);}catch(IllegalStateException ignored){}}}
                     else if(!readonly){if(!LocalPolicy.configCommand(fields))throw new IllegalArgumentException("Unsupported controller setting.");l=gate.authorize(base,device,client);}
                 }
-                else if(path.equals("/api/wifi/use")||path.equals("/api/wifi/set")||path.equals("/api/setup/test"))l=gate.authorize(base,device,client);
+                else if(path.equals("/api/wifi/use")||path.equals("/api/wifi/set")||path.equals("/api/reboot")||path.equals("/api/firmware/update"))l=gate.authorize(base,device,client);
                 else if(path.equals("/api/control/ping"))l=gate.authorize(base,device,client);
             }
             grant=g;lease=l;safeFrame=safe;readCommand=readonly;
@@ -297,7 +299,7 @@ public final class MainActivity extends Activity {
         @Override public void run(){
             try{
                 if(!allowed())throw new IllegalStateException("Control stopped.");
-                Result result=http(network,url,method,body,timeout,this);
+                Result result=firmware==null?http(network,url,method,body,timeout,this):upload();
                 boolean ok=result.code>=200 && result.code<300 && new JSONObject(result.body).optBoolean("ok",true);
                 if(grant!=null){if(ok && !cancelled && gate.accept(grant,now(),new JSONObject(result.body).optLong("rcTimeoutMs",0))){configureRcStream(grant,result.body);}else{gate.cancel(grant);if(ok)releaseGrant(grant);if(ok)throw new IllegalStateException("Control request cancelled. Take control again.");}}
                 if(ok && lease!=null){if("rc_frame".equals(fields.get("type")))gate.rcAck(lease,now(),LocalPolicy.channels(fields));else gate.ack(lease,now());}
@@ -308,6 +310,18 @@ public final class MainActivity extends Activity {
                 if(!cancelled)failure(id,e instanceof IllegalArgumentException || e instanceof IllegalStateException ? e.getMessage() : "Kit not reachable. Join its Wi-Fi and check the address.");
             }finally{jobs.remove(id,this);}
         }
+        private Result upload()throws Exception{
+            if(!gate.isCurrent(lease))throw new IllegalStateException("Take control before firmware update.");
+            String query="clientId="+enc(fields.get("clientId"))+"&expectedDeviceId="+enc(fields.get("expectedDeviceId"))+"&boardId="+enc(fields.get("boardId"));
+            HttpURLConnection c=(HttpURLConnection)network.openConnection(new URL(LocalPolicy.origin(url)+"/api/firmware/update?"+query));connection=c;
+            String boundary="Aerion-"+UUID.randomUUID();byte[] head=("--"+boundary+"\r\nContent-Disposition: form-data; name=\"firmware\"; filename=\"update.bin\"\r\nContent-Type: application/octet-stream\r\n\r\n").getBytes(StandardCharsets.UTF_8),tail=("\r\n--"+boundary+"--\r\n").getBytes(StandardCharsets.UTF_8);
+            try{
+                c.setConnectTimeout(5000);c.setReadTimeout(120000);c.setInstanceFollowRedirects(false);c.setUseCaches(false);c.setRequestMethod("POST");c.setDoOutput(true);c.setRequestProperty("Content-Type","multipart/form-data; boundary="+boundary);c.setFixedLengthStreamingMode(head.length+firmware.length+tail.length);
+                if(cancelled)throw new IllegalStateException("Firmware update cancelled.");
+                try(OutputStream out=c.getOutputStream()){out.write(head);for(int offset=0;offset<firmware.length;offset+=8192){if(cancelled)throw new IllegalStateException("Firmware update cancelled.");out.write(firmware,offset,Math.min(8192,firmware.length-offset));}out.write(tail);}
+                int code=c.getResponseCode();InputStream in=code<400?c.getInputStream():c.getErrorStream();if(in==null)return new Result(code,"{}");try(InputStream response=in){return new Result(code,new String(read(response,65536),StandardCharsets.UTF_8));}
+            }finally{c.disconnect();firmware=null;}
+        }
     }
     @Override protected void onActivityResult(int request,int result,Intent data){
         super.onActivityResult(request,result,data);
@@ -315,6 +329,15 @@ public final class MainActivity extends Activity {
         if(request==SAVE_EXPORT){String value=exportText;exportText=null;if(result==RESULT_OK&&data!=null&&data.getData()!=null&&value!=null){try(OutputStream out=getContentResolver().openOutputStream(data.getData())){if(out!=null)out.write(value.getBytes(StandardCharsets.UTF_8));}catch(Exception e){emit("exportFailed");}}}
     }
     private final class NativeBridge{
+        @JavascriptInterface public void uploadFirmware(String key,String id,String address,String encoded,String form){
+            if(!token.equals(key)||destroyed)return;
+            try{
+                URL url=LocalPolicy.api(address,"POST");if(!url.getPath().equals("/api/firmware/update"))throw new IllegalArgumentException("Use the firmware update API.");
+                if(encoded.length()>2800000)throw new IllegalArgumentException("Firmware image is too large.");byte[] image=android.util.Base64.decode(encoded,android.util.Base64.NO_WRAP);if(image.length<32768||image.length>2097152||image[0]!=(byte)0xE9||image[32]!=(byte)0x32||image[33]!=(byte)0x54||image[34]!=(byte)0xCD||image[35]!=(byte)0xAB)throw new IllegalArgumentException("Choose a valid APP .bin image.");
+                Job job=new Job(id,url,"POST",form,120000,wifi);int chip=(image[12]&255)|((image[13]&255)<<8);String board=job.fields.get("boardId");if(!("ZFC-A1".equals(board)&&chip==5||"ZFC-A2".equals(board)&&chip==13))throw new IllegalArgumentException("Firmware board profile mismatch.");job.firmware=image;
+                if(jobs.putIfAbsent(id,job)!=null)throw new IllegalArgumentException("Duplicate firmware request.");workers.execute(job);
+            }catch(Exception e){failure(id,e.getMessage());}
+        }
         @JavascriptInterface public void request(String key,String id,String address,String method,String form,int requestedTimeout){
             if(!token.equals(key) || destroyed || id==null || !id.matches("[A-Za-z0-9-]{1,96}"))return;
             Job job=null;

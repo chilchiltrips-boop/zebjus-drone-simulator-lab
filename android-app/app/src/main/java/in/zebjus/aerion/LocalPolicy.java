@@ -14,8 +14,8 @@ public final class LocalPolicy {
         URI uri=new URI(value);
         if (!"http".equals(uri.getScheme()) || uri.getUserInfo()!=null || uri.getFragment()!=null || !localHost(uri.getHost())) throw new IllegalArgumentException("Use the kit's local HTTP IP address or .local name.");
         String path=uri.getPath();
-        boolean read=path.equals("/api/status") || path.equals("/api/telemetry") || path.equals("/api/wifi/saved") || path.equals("/api/wifi/scan") || path.equals("/api/setup/test/status");
-        boolean write=path.equals("/api/control/acquire") || path.equals("/api/control/ping") || path.equals("/api/control/release") || path.equals("/api/command") || path.equals("/api/wifi/use") || path.equals("/api/wifi/set") || path.equals("/api/setup/test");
+        boolean read=path.equals("/api/status") || path.equals("/api/telemetry") || path.equals("/api/firmware/info") || path.equals("/api/wifi/saved") || path.equals("/api/wifi/scan");
+        boolean write=path.equals("/api/control/acquire") || path.equals("/api/control/ping") || path.equals("/api/control/release") || path.equals("/api/command") || path.equals("/api/wifi/use") || path.equals("/api/wifi/set") || path.equals("/api/reboot") || path.equals("/api/firmware/update");
         if (!(read && method.equals("GET") || write && method.equals("POST"))) throw new IllegalArgumentException("This request is not a flight API operation.");
         return uri.toURL();
     }
@@ -42,11 +42,11 @@ public final class LocalPolicy {
     }
     public static boolean readCommand(Map<String,String> form) {
         String t=form.getOrDefault("type","");
-        return java.util.Arrays.asList("training_status","training_ping","training_end","pid_get","calibration_get","snapshot_get","flight_settings_get","diagnostics_get","sensor_status","sixface_get","setup_status","receiver_setup_get","receiver_read","ppm_read","pinmap_get","bench_status").contains(t);
+        return java.util.Arrays.asList("pid_get","calibration_get","snapshot_get","flight_settings_get","diagnostics_get","sensor_status","setup_status","receiver_setup_get","receiver_read","ppm_read","pinmap_get","bench_status").contains(t);
     }
     public static boolean configCommand(Map<String,String> form) {
         String t=form.getOrDefault("type","");
-        return java.util.Arrays.asList("training_select","network_mode_set","flight_settings_set","rc_source_set","flight_stop","pid_set","calibration_set","level_calibrate","calibrate_gyro","sixface_capture","sixface_commit","sixface_reset","settings_restore","setup_begin","setup_ping","setup_end","setup_calibrate","setup_motor","setup_esc","airframe_set","input_set","receiver_setup_set","motor_stop").contains(t);
+        return java.util.Arrays.asList("network_mode_set","flight_settings_set","rc_source_set","flight_stop","pid_set","calibration_set","level_calibrate","calibrate_gyro","setup_begin","setup_ping","setup_end","setup_calibrate","setup_motor","setup_esc","airframe_set","input_set","receiver_setup_set","motor_stop").contains(t);
     }
     public static int[] channels(Map<String,String> form) {
         if(!"rc_frame".equals(form.get("type")))throw new IllegalArgumentException("Only RC flight frames are supported here.");

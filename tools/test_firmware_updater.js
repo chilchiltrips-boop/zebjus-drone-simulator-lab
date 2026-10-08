@@ -9,10 +9,10 @@ const ID='ZFC-001122334455';let selected=null;
 const client={base:'http://192.168.4.1',deviceId:ID,clientId:'WEB-TEST',connected:true,firmwareInfo:async()=>({boardId:'ZFC-A2',firmware:'18.3.60',freeSketchBytes:1310720,armed:selected?.armed})};
 const school={client,getSelectedDevice:()=>selected,canControl:()=>true,markOffline(){},reconnectAfterFirmware:async()=>selected,refreshNow:async()=>selected};
 class XHR{constructor(){this.upload={}}open(method,url){this.method=method;this.url=url}send(form){posts.push({url:this.url,form});this.status=200;this.responseText='{"ok":true}';this.onload()}}
-const sandbox={window:{zebjusSchool:school,addEventListener(){}},document:{querySelector:s=>nodes.get(s)||null,readyState:'loading',addEventListener(){}},console,Uint8Array,Blob,FormData,XMLHttpRequest:XHR,setTimeout:f=>{queueMicrotask(f)},setInterval:()=>1,clearInterval(){},confirm:()=>true,Date};
+const sandbox={location:{pathname:'/'},navigator:{},window:{zebjusSchool:school,addEventListener(){}},document:{querySelector:s=>nodes.get(s)||null,readyState:'loading',addEventListener(){}},console,Uint8Array,Blob,FormData,XMLHttpRequest:XHR,setTimeout:f=>{queueMicrotask(f)},setInterval:()=>1,clearInterval(){},confirm:()=>true,Date};
 vm.createContext(sandbox);vm.runInContext(source.replace(/\}\)\(\);\s*$/,`window.test={validateEspImage,usbFlash,wifiFlash,set:(f,id)=>{fw=f;catalog=globalThis.cat;usbBoardId=id;loader={writeFlash:async options=>globalThis.writes.push(options),after:async()=>{}}},busy:()=>busy};})();`),Object.assign(sandbox,{cat:catalog,writes}));
 const api=sandbox.window.test;
-function image(board,kind){return new Uint8Array(fs.readFileSync(path.join(root,'FlightCore_Firmware',board.latest[kind].file)))}
+function image(board,kind){const filename=path.join(root,'FlightCore_Firmware',board.latest[kind].file);if(fs.existsSync(filename))return new Uint8Array(fs.readFileSync(filename));const offset=kind==='factory'?65536:0,bytes=new Uint8Array(offset+32768).fill(23);for(const start of new Set([0,offset])){bytes[start]=0xE9;bytes[start+1]=3;bytes[start+12]=board.imageChipIds[0];bytes[start+13]=0;}bytes.set([0x32,0x54,0xCD,0xAB],offset+32);return bytes;}
 (async()=>{
  for(const b of catalog.boards){
   for(const kind of ['app','factory']){

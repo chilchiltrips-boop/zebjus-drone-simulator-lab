@@ -1,444 +1,310 @@
-<!DOCTYPE html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#091018"><title>ZEBJUS Aerion · Controller</title><link rel="icon" href="data:,"><style>
+:root{color-scheme:dark;--bg:#091018;--panel:#111c27;--line:#263b4e;--text:#e9f2f7;--muted:#9bb0c0;--blue:#44c9ff;--red:#ff807a;--green:#79ddb4}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,sans-serif}button,input,select{font:inherit}button,a{touch-action:manipulation}button{cursor:pointer;color:var(--text);background:#1c3041;border:1px solid var(--line);border-radius:9px;padding:10px 15px;min-height:44px}button:disabled{opacity:.4;cursor:default}.primary,button.primary{color:#04141e;background:var(--blue);font-weight:700}.danger{color:var(--red)}a{color:var(--blue)}input,select{max-width:100%;background:#09121b;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:10px}input[type=checkbox]{width:19px;height:19px;accent-color:var(--blue)}[hidden]{display:none!important}header,main,nav{max-width:1100px;margin:auto}header{padding:22px 20px;display:flex;align-items:center;justify-content:space-between;gap:15px}.brand{font-size:19px;font-weight:800;letter-spacing:.12em}.brand small{font-size:11px;display:block;color:var(--muted);letter-spacing:.03em;margin-top:6px}.connection{display:flex;gap:9px;align-items:center}#linkState{font-size:12px;color:var(--muted)}nav{display:flex;gap:9px;padding:0 20px 18px}nav button[aria-selected=true]{border-color:var(--blue);color:var(--blue)}main{padding:0 20px 30px}.card,.firmware-panel,.firmware-control-center{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}h1{font-size:24px;margin:0 0 10px}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:0 0 9px}p{color:var(--muted);line-height:1.65;margin:8px 0 14px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.spread{justify-content:space-between}.muted,small{color:var(--muted)}.status.good,.online{color:var(--green)}.status.warn{color:#ffce78}.status.danger,.offline{color:var(--red)}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}.metrics div{background:#0a1520;border-radius:9px;padding:13px}.metrics small{display:block;font-size:11px;margin-bottom:7px}.metrics b{font-variant-numeric:tabular-nums;font-size:16px}.sticks{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px 0}.stick{position:relative;aspect-ratio:1;max-width:290px;width:100%;margin:auto;border-radius:50%;border:2px solid #36526a;background:radial-gradient(circle,#213c51 0 20%,#142736 21% 62%,#20394b 63% 65%,#0b1924 66%);touch-action:none;user-select:none}.stick:before,.stick:after{content:'';position:absolute;background:#ffffff15}.stick:before{width:1px;height:80%;left:50%;top:10%}.stick:after{height:1px;width:80%;top:50%;left:10%}.stick[aria-disabled=true]{opacity:.4}.knob{position:absolute;width:25%;height:25%;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;background:linear-gradient(135deg,#a4c8da,#4d798f);box-shadow:0 5px 16px #0008;pointer-events:none}.stick-label{text-align:center;color:var(--muted);font-size:12px;margin-top:13px}.throttle{width:min(400px,100%)}.throttle input{width:100%;padding:0;accent-color:var(--blue)}.toolbar{position:sticky;bottom:0;background:#111c27f5;border:1px solid var(--line);border-radius:12px;padding:12px;z-index:2;display:flex;justify-content:center;gap:10px}#arm.active{background:#703338;border-color:var(--red)}#message{min-height:24px;margin:14px 0;color:var(--blue)}label{display:block;color:var(--muted);font-size:13px;margin:12px 0}label input,label select{display:block;margin-top:6px;width:100%}label.check{display:flex;gap:10px;align-items:center}label.check input{display:inline;width:19px;margin:0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.pid-grid{display:grid;grid-template-columns:1.5fr repeat(3,1fr);gap:8px;align-items:center}.pid-grid input{width:100%;padding:8px}.pid-grid small{font-size:11px}.settings-result{white-space:pre-wrap;font:12px/1.65 ui-monospace,monospace;color:var(--muted)}dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:16px;max-width:520px;width:calc(100% - 32px);padding:22px}dialog::backdrop{background:#000b}details summary{cursor:pointer;padding:10px 0}.firmware-heading,.firmware-panel-head,.firmware-target-option{display:flex;align-items:center;justify-content:space-between;gap:12px}.firmware-target-option{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:9px}.firmware-target-option span,.firmware-panel-head small{display:block;color:var(--muted);font-size:12px;line-height:1.5;margin-top:5px}.firmware-target-icon{font-size:12px;font-weight:800;color:var(--blue)}.firmware-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.firmware-meta,.firmware-kit-meta{display:grid;grid-template-columns:1fr 1fr;gap:9px;font-size:12px}.firmware-meta span,.firmware-kit-meta span{color:var(--muted);display:block}.firmware-meta strong,.firmware-kit-meta strong{display:block;overflow-wrap:anywhere}.firmware-dropzone{border:1px dashed #466b87;border-radius:10px;padding:15px;margin:12px 0}.firmware-actions,.firmware-recovery-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.firmware-progress{height:9px;background:#07121c;border-radius:6px;overflow:hidden;margin:12px 0}.firmware-progress div{height:100%;background:var(--blue)}#fwLog{white-space:pre-wrap;overflow-wrap:anywhere;max-height:230px;overflow:auto;background:#07121c;padding:14px;border-radius:8px;font:11px/1.6 ui-monospace,monospace}.firmware-stage-list{display:flex;gap:8px;flex-wrap:wrap;font-size:11px}.firmware-stage-list .done{color:var(--green)}.firmware-stage-list .active{color:var(--blue)}.firmware-stage-list .error{color:var(--red)}.firmware-file-label{display:inline-block;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:10px;margin:8px 0}.firmware-source-message{font-size:12px;color:var(--muted);line-height:1.5}footer{max-width:1100px;margin:auto;padding:0 20px 25px;color:var(--muted);font-size:11px}@media(max-width:650px){header{padding:18px 14px}.brand{font-size:16px}main,nav{padding-left:14px;padding-right:14px}.grid,.firmware-grid{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.card{padding:15px}.sticks{gap:12px}.toolbar{gap:7px}.toolbar button{padding:10px}.firmware-target-option{align-items:flex-start;flex-wrap:wrap}.pid-grid{grid-template-columns:1.3fr repeat(3,1fr)}.pid-grid input{padding:6px}.connection{flex-direction:column;align-items:flex-end;gap:4px}}
 
-<html lang="en">
-<head>
-<meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content" name="viewport"/>
-<meta content="#07111b" name="theme-color"/>
-<title>ZEBJUS Aerion</title>
-<script src="wix-embed.js?v=18.3.66-web.2"></script>
-<link href="styles.css?v=18.3.66-r2" rel="stylesheet"/><link href="lab-workflow.css?v=18.3.66" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
-<link href="wix-embed.css?v=18.3.66-web.2" rel="stylesheet"/>
-<link href="flight-training.css?v=18.3.66-web.2" rel="stylesheet"/>
-<link href="icon-192.png" rel="apple-touch-icon"/>
-<meta content="#07111b" name="theme-color"/>
-</head>
-<body>
-<div id="app">
-<header class="topbar">
-<div class="topbar-main">
-<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS Aerion</b><span>V18.3.66 • Build · Code · Fly</span></div></div>
-<div class="top-network-control"><span>STA</span><button id="topNetworkToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Switch kit between STA and AP" disabled><i></i></button><span>AP</span><b id="topNetworkMode">NO KIT</b></div>
-<div class="top-control-control"><span>Take control</span><button id="topControlToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Take or release kit control" disabled><i></i></button><b id="topControlState">OFF</b></div>
-<span class="top-kit-status offline" id="topKitStatus" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span>
-<a class="zebjus-top-shop" href="https://www.zebjus.in/category/all-products" rel="noopener" target="_blank"><span>BUILD IT FOR REAL</span><b>Shop components ↗</b></a>
-<div class="top-actions topbar-edit"><button class="btn ghost" disabled id="undoBtn">↶ Undo</button><button class="btn ghost" disabled id="redoBtn">↷ Redo</button><button class="btn ghost" id="saveBtn">Save</button><button class="btn danger ghost" id="resetBtn">Reset</button></div>
-</div>
-<div class="topbar-status" role="status"><span class="status" id="assetStatus">Loading local 3D engine…</span><span class="status good" id="saveState">Ready</span><span class="adaptive-layout-badge" id="adaptiveLayoutBadge">AUTO LAYOUT</span></div>
-</header>
-<div id="topNetworkNotice" class="top-network-notice" hidden role="status"><span id="topNetworkNoticeText"></span><button id="closeNetworkNotice" type="button" aria-label="Close network message">×</button></div>
-<nav class="tabs" aria-label="Drone lab pages">
-<button class="tab active" data-tab="assembly">ASSEMBLY LAB</button><button class="tab" data-tab="wiring">2D WIRING</button><button class="tab" data-tab="setup">SETUP WIZARD</button><button class="tab" data-tab="io">HARDWARE I/O</button><button class="tab" data-tab="python">PYTHON LAB</button><button class="tab" data-tab="sim">TRIPOD SIMULATOR</button><button class="tab" data-tab="joystick">JOYSTICK</button><button class="tab" data-tab="training">FLIGHT TRAINING</button><button class="tab" data-tab="firmware">FIRMWARE & CONNECT</button><button class="tab" data-tab="telemetry">TELEMETRY</button><button class="tab" data-tab="settings">SETTINGS</button>
-</nav>
-<main>
-<section class="panel tab-panel active assembly-grid" id="tab-assembly">
-<aside class="left-panel">
-<div class="panel-head"><div><small>GUIDED BUILD</small><h2>F450 A→Z Assembly</h2></div><span class="pill" id="progressPill">0%</span></div>
-<div class="mode-row"><button class="mode active" id="guidedModeBtn">Guided</button><button class="mode" id="freeModeBtn">Free build</button></div>
-<div class="step-list" id="assemblySteps"></div>
-<div class="step-actions"><button class="btn ghost" id="prevStepBtn">← Previous</button><button class="btn primary" id="nextStepBtn">Next →</button></div>
-</aside>
-<section class="center-stage">
-<div class="stage-toolbar">
-<div class="view-switch"><button class="view-btn active" id="objectViewBtn">Object</button><button class="view-btn" id="wireMapBtn">Wiring map</button><button class="view-btn" id="xrayBtn">Frame X-ray</button><button class="view-btn" id="fcCaseXrayBtn">FC case X-ray</button><button class="view-btn power-connect-btn" id="batteryConnectBtn">Connect battery</button><span class="status" id="batteryPowerState">POWER OFF</span><span class="fc-led-state off" id="fcLedState"><i class="pwr"></i>PWR <i class="stat"></i>OFF</span></div>
-<div class="camera-actions"><button class="view-btn active" id="view3dBtn">3D</button><button class="view-btn" id="topBtn">Top</button><button class="view-btn" id="frontBtn">Front</button><button class="view-btn" id="explodeBtn">Exploded</button><button class="view-btn" id="autoRotateBtn">Auto rotate</button></div>
-</div>
-<div class="three-wrap" id="threeWrap">
-<div class="stage-preview-control" id="assemblyWiringPreviewBox" hidden><button class="btn primary small" id="assemblyWiringPreviewBtn">▶ Preview wiring here</button><span id="assemblyWiringPreviewLabel">Watch the connector path on this model</span></div>
-<div class="wire-legend hidden" id="wireLegend"><b>WIRE COLOURS / GAUGE</b><span><i class="w red thick"></i>+12V / battery / ESC power • THICK</span><span><i class="w ground-brown thick"></i>GND return • THICK brown-black</span><span><i class="w source"></i>Source / PWM • ORANGE thin</span><span><i class="w pink"></i>+5V • LIGHT RED thin</span><span><i class="w phase-u"></i>Motor U</span><span><i class="w phase-v"></i>Motor V</span><span><i class="w phase-w"></i>Motor W</span></div>
-<div id="threeContainer"></div><div class="three-tooltip" id="threeTooltip"></div><a class="zebjus-workstation-watermark" href="https://www.zebjus.in/category/all-products" rel="noopener" target="_blank"><b>ZEBJUS</b><span>Build it for real</span><em>www.zebjus.in ↗</em></a>
-<div class="virtual-chip"><i></i><div><b>VIRTUAL BENCH</b><span>No real hardware energised</span></div></div>
-<div class="snap-message" id="snapMessage">Initializing V18 school engineering runtime…</div>
-</div>
-</section>
-<aside class="right-panel right-workbench">
-<section class="right-shelf-section">
-<div class="panel-head"><div><small>REAL-STYLE COMPONENT SHELF</small><h2>Pick next component</h2></div></div>
-<div class="shelf-note">Required parts stay in assembly order. Installed parts disappear; Undo/Delete returns them. Expansion devices are optional.</div><a class="zebjus-ad-card compact" href="https://www.zebjus.in/category/all-products" rel="noopener" target="_blank">
-<div class="zebjus-ad-copy"><small>ZEBJUS HARDWARE</small><b>Build this drone for real</b><span>Motors • ESCs • LiPo • Prop guards • modules</span><em>www.zebjus.in ↗</em></div>
-<div class="zebjus-ad-images"><img alt="A2212 motor" src="ref_a2212-motor.png"/><img alt="30A ESC" src="ref_simonk-30a-esc.png"/><img alt="LiPo battery" src="ref_lipo-2200.png"/></div>
-</a>
-<div class="component-shelf vertical-shelf" id="componentShelf"></div>
-</section>
-</aside>
-<section class="assembly-bottom-panel">
-<div class="build-bottom-grid">
-<div class="current-step-compact">
-<div class="panel-head compact"><div><small>CURRENT STEP</small><h2 id="currentStepTitle">Start assembly</h2></div></div>
-<div class="current-step-card" id="currentStepCard"></div>
-</div>
-<div class="build-check-compact">
-<div class="panel-head compact"><div><small>BUILD CHECK</small><h2>Completion</h2></div></div>
-<div class="checks" id="buildChecks"></div>
-</div>
-</div>
-</section>
-<div aria-hidden="true" class="inspector hidden-inspector" id="inspector"></div>
-</section>
-<section class="panel tab-panel" id="tab-wiring">
-<div class="wiring-layout">
-<div class="wiring-card">
-<div class="section-toolbar"><div><b>F450 Interactive 2D Wiring Bench • CC3D X</b><span>M1 front-left • M2 front-right • M3 rear-right • M4 rear-left. Drag components • W wire mode • F flip • R rotate • Delete removes selected</span></div><div class="toolbar-row"><button class="btn ghost small" id="wireUndoBtn">↶ Wire undo</button><button class="btn ghost small" id="deleteWireBtn">Delete wire</button><button class="btn ghost small" id="deleteNodeBtn">Delete object</button><button class="btn ghost small" id="centerWireLayoutBtn">Reset layout</button><button class="btn primary small" id="autoWireBtn">Reference wiring + modules</button><button class="btn ghost small" id="clearWireBtn">Clear wires</button><span class="status" id="wireModeBadge">OBJECT MODE</span></div></div>
-<div class="svg-wrap"><svg id="wiringSvg" viewbox="0 0 1500 900"></svg></div>
-</div>
-<aside class="wiring-side">
-<div class="panel-head"><div><small>ASSEMBLY SYNC</small><h2>2D → Guided build</h2></div><span class="status" id="wireSyncBadge">LIVE</span></div><div class="wire-assembly-sync" id="wireAssemblySync">Draw correct wiring here. Guided Assembly updates automatically.</div>
-<div class="panel-head compact"><div><small>VALIDATION</small><h2>Electrical check</h2></div></div><div class="checks" id="wireValidation"></div><a class="zebjus-ad-card mini" href="https://www.zebjus.in/category/all-products" rel="noopener" target="_blank"><div class="zebjus-ad-copy"><small>NEED REAL PARTS?</small><b>ESC • Motor • Power • Connectors</b><span>Continue from virtual wiring to a real build.</span><em>Visit ZEBJUS ↗</em></div><div class="zebjus-ad-images"><img alt="ESC" src="ref_simonk-30a-esc.png"/><img alt="Motor" src="ref_a2212-motor.png"/></div></a>
-<div class="io-wire-link"><b>Real motor connector map</b><p>Connect the verified kit; choose D0–D3 for each logical motor. Python and the FC use this same map.</p><div id="wireMotorMapRows" class="io-motor-map"></div><div class="io-actions"><button class="btn primary small" id="wireSaveMotorMap">Save to real FC</button><button class="btn ghost small" id="wireReadMotorMap">Read map</button></div><pre class="io-result" id="wireMotorMapResult">2D drawing is a reference until a real kit is connected.</pre><button class="btn ghost small" id="wireOpenIo">Open Hardware I/O Studio</button></div>
-<div class="motor-test-panel">
-<div class="panel-head compact"><div><small>ESC / MOTOR TEST</small><h2>Virtual PWM bench</h2></div><span class="status" id="wireRunState">STOPPED</span></div>
-<button class="btn primary full" id="wireRunBtn">RUN MOTOR TEST</button>
-<label class="range-line">PWM / throttle <output id="wirePwmOut">1000 µs</output><input id="wireThrottle" max="2000" min="1000" step="10" type="range" value="1000"/></label>
-<label class="toggle-line"><input checked="" id="wireAllMotors" type="checkbox"/> Test all enabled motors</label>
-<div class="wire-motor-rows" id="wireMotorRows">
-<label><input checked="" id="wireM1" type="checkbox"/><span>M1</span><b id="wireM1State">OFF</b></label>
-<label><input checked="" id="wireM2" type="checkbox"/><span>M2</span><b id="wireM2State">OFF</b></label>
-<label><input checked="" id="wireM3" type="checkbox"/><span>M3</span><b id="wireM3State">OFF</b></label>
-<label><input checked="" id="wireM4" type="checkbox"/><span>M4</span><b id="wireM4State">OFF</b></label>
-</div>
-<p class="micro-note">Motor starts above ~1100 µs. M1/M4 phase terminals face inward toward ESC1/ESC4; M2/M3 retain their inward-facing layout. F changes connector side without reversing labels. Swapping two U/V/W phases reverses motor direction.</p>
-</div>
-<div class="wire-gauge-guide">
-<b>WIRE GUIDE</b>
-<span><i class="wg pwr"></i><strong>+12V / high current</strong> — thick red</span>
-<span><i class="wg gnd"></i><strong>GND / return</strong> — thick brown-black</span>
-<span><i class="wg src"></i><strong>Source / PWM</strong> — thin orange</span>
-<span><i class="wg five"></i><strong>+5V</strong> — thin light red</span>
-</div>
-<div class="optional-io-panel">
-<div class="panel-head compact"><div><small>OPTIONAL I/O</small><h2>Add external device</h2></div></div>
-<div class="inline-form"><select id="optionalWireDevice"><option value="ppm">PPM Receiver</option><option value="servo">Servo</option><option value="matrix">LED Matrix</option><option value="sensor">I²C Sensor</option><option value="gps">GPS + stand</option><option value="led">LED / Output</option></select><button class="btn ghost small" id="addOptionalWireDevice">Add</button></div>
-<label class="wire-gps-select">GPS wiring mode<select id="wireGpsProtocol"><option value="NMEA_9600">NMEA 9600 • GPS TX → FC RX</option><option value="UBX_10HZ">DroneGPS UBX 10 Hz • GPS TX/RX ↔ FC RX/TX</option></select></label>
-<div class="wire-pin-plan" id="wirePinPlan">Add a servo or GPS, then press Reference wiring + modules.</div><button class="btn ghost small full" id="wireApplyAuxPins">Apply drawn servo / GPS signal pins to real kit</button>
-<p class="micro-note">Adding an optional device here also attaches it in 3D. Deleting it from 2D or 3D removes it from both views. Shortcuts: W = wire mode, F = flip, R = rotate, Delete = remove selected object or wire.</p>
-</div>
-</aside>
-</div>
-</section>
-<section class="panel tab-panel" id="tab-setup"><div class="page-heading"><div><small>ASSEMBLE · WIRE · CONFIGURE</small><h1>Flight controller setup</h1><p>Follow every step in order. Live diagrams show motor outputs, sensor progress and receiver movement.</p></div><button class="btn ghost" data-open-page="firmware">Connect a controller</button></div><div id="setupWizardRoot"></div></section>
-<section class="panel tab-panel" id="tab-sim">
-<div class="sim-grid sim-v17-grid">
-<div class="sim-card">
-<div class="section-toolbar sim-toolbar">
-<div><b>PID Learning Simulator</b><span>Rate Hold = capture stick-release Roll/Pitch attitude • Angle = calibrated level hold • Yaw always rate</span></div>
-<div class="toolbar-row sim-toolbar-actions"><select id="simFlightMode"><option value="angle">ANGLE MODE • calibrated Roll/Pitch level hold</option><option value="rate">RATE HOLD • capture released Roll/Pitch attitude</option></select><label class="sim-real-mirror"><input id="simRealMirror" type="checkbox"/> <span>REAL KIT MIRROR</span></label><span class="status" id="simRealMirrorState">SIM ONLY</span><button class="btn ghost small" id="simCalibrateLevelBtn">Calibrate level</button><button class="btn ghost small" id="simDisturbBtn">Manual tilt: OFF</button><button class="btn primary small" id="simRunBtn">RUN</button><button class="btn ghost small" id="simResetBtn">Reset</button></div>
-</div>
-<div id="simThree"></div>
-<div class="sim-axis-check"><b>AXIS MAP</b><span>← / → = ROLL only</span><span>↑ / ↓ = PITCH only</span><span>A / D = YAW rate</span></div><div class="sim-disturb-hint" id="simDisturbHint"><b>Manual disturbance lesson:</b> Rate Hold captures the Roll/Pitch attitude when the stick is released and returns to that captured attitude after wind/manual disturbance. Angle Mode returns to the calibrated level when Roll/Pitch stick is released. Yaw remains rate-only.</div>
-</div>
-<aside class="sim-controls sim-v17-controls">
-<div class="metrics sim-metrics">
-<div><span>ROLL</span><b id="simRoll">0.0°</b><small id="simRollTarget">Target 0.0°</small></div>
-<div><span>PITCH</span><b id="simPitch">0.0°</b><small id="simPitchTarget">Target 0.0°</small></div>
-<div><span>YAW</span><b id="simYaw">0.0°</b><small>Heading is free</small></div>
-<div><span>YAW RATE</span><b id="simYawRate">0.0°/s</b><small id="simYawTarget">Target 0.0°/s</small></div>
-<div><span>THROTTLE / LIFT</span><b id="simLift">1000 µs</b><small>Quadratic thrust</small></div>
-<div><span>RESPONSE</span><b id="simTuneState">READY</b><small id="simDiagnosis">Adjust PID and disturb the drone</small></div>
-</div>
-<div class="tx-title"><div><b>VIRTUAL TRANSMITTER</b><span>Mouse / touch + keyboard</span></div><div class="rx-mirror-state"><i class="health-dot lost" id="simRxMirrorLed"></i><span><b id="simRxMirrorBadge">REAL RX WAITING</b><em id="simRxMirrorText">PPM, WebApp, AP or Python RC can mirror into the Tripod transmitter.</em></span></div></div>
-<div class="tx-sticks v15-sticks">
-<div class="gimbal-card"><small>THROTTLE / YAW RATE</small><div class="web-stick v15-gimbal tripod-stick" id="leftStick"><i id="leftStickKnob"></i></div><span id="leftStickRead">T 1000 • Y 0</span><span class="stick-hint">W/S throttle • A/D yaw</span></div>
-<div class="gimbal-card"><small>PITCH / ROLL</small><div class="web-stick v15-gimbal tripod-stick" id="rightStick"><i id="rightStickKnob"></i></div><span id="rightStickRead">P 0 • R 0</span><span class="stick-hint">Arrow keys • pitch / roll</span></div>
-</div>
-<div class="sim-pid-box v17-pid-box">
-<div class="panel-head compact"><div><small>LIVE PID</small><h2 id="simPidTitle">Angle Mode: Roll/Pitch Angle + Rate • Yaw Rate</h2></div><span class="status good" id="simPidModeBadge">ANGLE</span></div>
-<section class="axis-pid-card" id="simRatePidPanel">
-<div class="axis-pid-head"><b>RATE PID • INNER LOOP</b><span>Roll / Pitch / Yaw</span></div>
-<div class="axis-pid-table">
-<b>AXIS</b><b>P</b><b>I</b><b>D</b>
-<span>ROLL</span><input id="simRateRollP" max="4" min="0" step="0.05" type="number"/><input id="simRateRollI" max="40" min="0" step="0.5" type="number"/><input id="simRateRollD" max=".15" min="0" step="0.005" type="number"/>
-<span>PITCH</span><input id="simRatePitchP" max="4" min="0" step="0.05" type="number"/><input id="simRatePitchI" max="40" min="0" step="0.5" type="number"/><input id="simRatePitchD" max=".15" min="0" step="0.005" type="number"/>
-<span>YAW</span><input id="simRateYawP" max="6" min="0" step="0.05" type="number"/><input id="simRateYawI" max="35" min="0" step="0.5" type="number"/><input id="simRateYawD" max=".08" min="0" step="0.002" type="number"/>
-</div>
-</section>
-<section class="axis-pid-card" id="simAnglePidPanel">
-<div class="axis-pid-head"><b>ANGLE PID • OUTER LOOP</b><span>Roll / Pitch only • NO Yaw angle lock</span></div>
-<div class="axis-pid-table">
-<b>AXIS</b><b>P</b><b>I</b><b>D</b>
-<span>ROLL</span><input id="simAngleRollP" max="8" min="0" step="0.1" type="number"/><input id="simAngleRollI" max="4" min="0" step="0.05" type="number"/><input id="simAngleRollD" max=".25" min="0" step="0.005" type="number"/>
-<span>PITCH</span><input id="simAnglePitchP" max="8" min="0" step="0.1" type="number"/><input id="simAnglePitchI" max="4" min="0" step="0.05" type="number"/><input id="simAnglePitchD" max=".25" min="0" step="0.005" type="number"/>
-</div>
-</section>
-<div class="pid-presets">
-<button class="btn ghost small pid-preset" data-preset="lowP">Low P</button>
-<button class="btn ghost small pid-preset" data-preset="highP">High P</button>
-<button class="btn ghost small pid-preset" data-preset="lowI">Low I</button>
-<button class="btn ghost small pid-preset" data-preset="highI">High I</button>
-<button class="btn ghost small pid-preset" data-preset="lowD">Low D</button>
-<button class="btn ghost small pid-preset" data-preset="highD">High D</button>
-<button class="btn primary small pid-preset" data-preset="stable">Stable example</button>
-</div>
-<button class="btn primary full" id="simApplyPidBtn">Apply PID to simulator</button>
-<div class="sim-env-card">
-<div class="axis-pid-head"><b>PHYSICS / LOAD</b><span>Battery • payload • CG • wind • motor lag</span></div>
-<div class="sim-env-grid">
-<label>Battery <output id="simBatteryOut">12.2 V</output><input id="simBatteryV" max="12.6" min="9.6" step="0.1" type="range" value="12.2"/></label>
-<label>Payload <output id="simPayloadOut">0 g</output><input id="simPayload" max="800" min="0" step="25" type="range" value="0"/></label>
-<label>CG X <output id="simCgXOut">0 mm</output><input id="simCgX" max="25" min="-25" step="1" type="range" value="0"/></label>
-<label>CG Y <output id="simCgYOut">0 mm</output><input id="simCgY" max="25" min="-25" step="1" type="range" value="0"/></label>
-<label>Wind <output id="simWindOut">0%</output><input id="simWind" max="100" min="0" step="5" type="range" value="0"/></label>
-<label>Motor lag <output id="simLagOut">0.12 s</output><input id="simMotorLag" max="0.30" min="0.04" step="0.01" type="range" value="0.12"/></label>
-</div>
-</div>
-</div>
-<div class="motor-mix v15-motor-mix"><span>M1 <b id="m1">0%</b></span><span>M2 <b id="m2">0%</b></span><span>M3 <b id="m3">0%</b></span><span>M4 <b id="m4">0%</b></span></div>
-<p class="micro-note">Arrow keys: Pitch/Roll • W/S: Throttle • A/D: Yaw rate • R: Run/Stop.</p>
-</aside>
-<section class="pid-class-card">
-<div class="panel-head"><div><small>STUDENT LESSON</small><h2>Learn what P, I and D actually do</h2></div><div class="teach-selects"><select id="teachAxis"><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw rate</option></select><select id="teachLoop"><option value="rate">Rate loop</option><option value="angle">Angle loop</option></select></div></div>
-<div class="pid-class-grid">
-<article class="pid-term p"><b>P • Proportional</b><span>Correction from the error right now.</span><p><strong>Too low:</strong> weak / slow response. <strong>Too high:</strong> aggressive correction and oscillation.</p><output id="liveP">0.00</output></article>
-<article class="pid-term i"><b>I • Integral</b><span>Accumulated error over time.</span><p><strong>Too low:</strong> CG/wind bias remains. <strong>Too high:</strong> slow wobble, overshoot and wind-up.</p><output id="liveI">0.00</output></article>
-<article class="pid-term d"><b>D • Derivative</b><span>Damping from how fast error changes.</span><p><strong>Too low:</strong> bounce / overshoot. <strong>Too high:</strong> harsh/noisy motor corrections.</p><output id="liveD">0.00</output></article>
-</div>
-<div class="pid-live-equation"><span>Target <b id="teachTarget">0.00</b></span><span>Actual <b id="teachActual">0.00</b></span><span>Error <b id="teachError">0.00</b></span><span>Loop <b id="teachLoopLive">RATE</b></span></div>
-<div class="pid-coach" id="pidCoach">Run the simulator, apply a preset or change P/I/D, then manually disturb the drone. The coach explains the response.</div>
-<div class="mode-lesson">
-<div><b>RATE HOLD</b><span>While the Roll/Pitch stick is moved it commands angular rate. When released, this trainer captures the current Roll/Pitch attitude and uses a fixed attitude-capture helper feeding the Rate PID to maintain that angle against disturbance.</span></div>
-<div><b>ANGLE MODE</b><span>Roll/Pitch stick commands angle around the calibrated level. When released, target returns to the calibrated level. Wind or manual tilt is corrected back to that level by Angle PID → Rate PID.</span></div>
-<div><b>YAW</b><span>Yaw is Rate PID in both modes. There is no Yaw Angle PID or heading lock.</span></div><div class="accuracy-note"><b>COURSE NOTE</b><span>Pure acro/rate mode normally holds angular rate only. This simulator’s <strong>Rate Hold</strong> intentionally adds stick-release attitude capture so students can study disturbance rejection using the Rate PID around a held attitude.</span></div>
-</div>
-<a class="zebjus-ad-card pid-ad" href="https://www.zebjus.in/category/all-products" rel="noopener" target="_blank"><div class="zebjus-ad-copy"><small>FROM SIMULATION TO HARDWARE</small><b>Practice here. Build with ZEBJUS.</b><span>F450 components, electronics and learning hardware.</span><em>www.zebjus.in ↗</em></div><div class="zebjus-ad-images"><img alt="F450 drone" src="ref_f450-complete.png"/><img alt="ZEBJUS FC" src="ref_zebjus-fc-gerber-top.png"/></div></a><div class="tuning-lesson"><b>Practical tuning exercise</b><ol><li>Set I and D low. Increase <b>P</b> until response is quick but begins to oscillate, then reduce slightly.</li><li>Increase <b>D</b> until overshoot / bounce is damped without noisy motor activity.</li><li>Add <b>I</b> until persistent error from CG or wind disappears.</li><li>After the Rate loop is stable, tune Roll/Pitch <b>Angle P</b> for the desired leveling speed.</li><li>Yaw is tuned only in the Rate loop.</li></ol></div>
-</section>
-<div class="chart-card sim-chart-card"><div class="sim-chart-head"><b>PID RESPONSE</b><span><i class="c-target"></i>Target <i class="c-roll"></i>Roll <i class="c-pitch"></i>Pitch <i class="c-yaw"></i>Yaw rate</span></div><canvas height="260" id="simChart" width="1200"></canvas></div>
-</div>
-</section>
-<section class="panel tab-panel" id="tab-joystick"><div id="mobileMirrorBanner" class="mobile-mirror-banner" hidden>MOBILE CONTROLS THIS KIT · LAPTOP VIEW ONLY · Sticks show received mobile commands.</div>
-<div class="joystick-page-grid">
-<section class="form-card joystick-main-card joystick-console">
-<a class="btn primary small" id="openFlightApp" href="flight/index.html">Open Aerion Flight App ↗</a><div class="panel-head joystick-head"><div><small>10-CHANNEL CONTROL LAB</small><h2>Virtual Transmitter</h2><p>Mouse, touch or keyboard control with visual safety interlocks.</p></div><div class="tx-power-wrap"><span class="status" id="webJoyRoleBadge">LOCAL</span><button class="tx-power-btn off" id="webTxPowerBtn" type="button"><i></i><span>TRANSMITTER OFF</span></button></div></div>
-<div aria-label="Transmitter status indicators" class="tx-led-strip">
-<div><i class="tx-led" id="webTxLedPower"></i><span>POWER</span><b id="webTxPowerText">OFF</b></div>
-<div><i class="tx-led" id="webTxLedLink"></i><span>LINK</span><b id="webTxLinkText">SIM</b></div>
-<div><i class="tx-led" id="webTxLedArm"></i><span>ARM</span><b id="webTxArmText">SAFE</b></div>
-<div><i class="tx-led mode" id="webTxLedMode"></i><span>MODE</span><b id="webTxModeText">ANGLE</b></div>
-<div><i class="tx-led" id="webTxLedAlt"></i><span>ALT</span><b id="webTxAltText">OFF</b></div>
-</div>
-<div class="target-separation"><div class="target-card sim"><b>SIMULATOR</b><span>Safe local practice. No kit command is sent.</span></div><div class="target-card real"><b>REAL KIT</b><span>Single-controller lock • supervised prop-off bench only.</span></div></div>
-<div class="form-grid compact-form-grid tx-top-controls">
-<label>Control target<select id="webJoyTarget"><option value="sim">SIMULATOR • Safe / Local</option><option value="device">REAL KIT + TRIPOD MIRROR</option></select></label>
-<label>Flight mode<select id="webMode"><option value="1000">ANGLE</option><option value="1500">RATE</option><option value="2000">ALTITUDE</option></select></label>
-<label>Send rate<select id="webJoyRate"><option value="20">20 Hz • default</option><option value="25">25 Hz</option><option value="50">50 Hz • bench timing check</option><option value="10">10 Hz</option><option value="5">5 Hz</option></select></label>
-</div>
-<div class="arm-guidance safe" id="webArmMessage"><b>TRANSMITTER OFF</b><span>Turn the transmitter on to enable controls.</span></div>
-<div class="web-tx-shell">
-<div class="web-gimbal-card"><small>LEFT • THROTTLE / YAW</small><div class="web-stick disabled" id="webLeftStick"><i id="webLeftKnob"></i></div><b id="webLeftRead">T 1000 • Y 0</b><span class="stick-hint">W/S throttle • A/D yaw</span></div>
-<div class="web-tx-center">
-<div class="web-tx-title"><b>ZEBJUS TX10</b><span id="joyTargetNote">Transmitter is OFF. Outputs are held safe.</span><em class="target-mode-badge sim" id="joyTargetBadge">SIMULATOR</em></div>
-<button class="btn ghost full" disabled="" id="webArmBtn">ARM • THROTTLE LOW REQUIRED</button>
-<div class="tx-aux-grid"><label>CH9 Camera / AUX <output id="webCh9Out">1500</output><input id="webCh9" max="2000" min="1000" step="10" type="range" value="1500"/></label><label class="toggle-line led-output-toggle"><input id="webLed" type="checkbox"/> CH10 LED Output <i class="mini-led" id="webLedOutputLamp"></i></label></div>
-<div class="tx-action-row"><button class="btn ghost full" id="webJoyCenterBtn">Center sticks / throttle low</button><button class="btn danger ghost full" id="webJoyDisarmBtn">DISARM / SAFE</button></div>
-</div>
-<div class="web-gimbal-card"><small>RIGHT • PITCH / ROLL</small><div class="web-stick disabled" id="webRightStick"><i id="webRightKnob"></i></div><b id="webRightRead">P 0 • R 0</b><span class="stick-hint">Arrow keys • pitch / roll</span></div>
-</div>
-<div class="keyboard-strip"><b>KEYBOARD • joystick and Settings share the same mappings</b><span><kbd id="joyKeysPitch">↑ ↓</kbd> Pitch</span><span><kbd id="joyKeysRoll">← →</kbd> Roll</span><span><kbd id="joyKeysThrottle">W S</kbd> Throttle</span><span><kbd id="joyKeysYaw">A D</kbd> Yaw</span><span><kbd>T</kbd> TX On/Off</span><span><kbd>M</kbd> Mode</span><span><kbd>X</kbd> DISARM</span></div>
-<div class="channel-grid" id="webChannelGrid"></div>
-</section>
-<aside class="form-card joystick-side-card">
-<div class="panel-head"><div><small>LIVE TARGET</small><h2>Selected Kit</h2></div><span class="status" id="shareStateBadge">Offline</span></div>
-<div class="metrics classroom-mini-metrics"><div><span>ACCESS</span><b>OPEN</b></div><div><span>KIT</span><b id="joySelectedModule">None</b></div><div><span>TARGET</span><b id="joyTargetSummary">SIMULATOR</b></div><div><span>HARDWARE</span><b id="joyLock">--</b></div></div>
-<p class="micro-note" id="joyTargetHelp" aria-live="polite">Select and connect your kit to enable real control.</p><button class="btn primary full" id="joyConnectKitBtn" type="button">Open Firmware &amp; Connect</button>
-<div class="joystick-stream-health"><i class="health-dot lost" id="joyCommandDot"></i><div><span>REAL-KIT COMMAND STREAM</span><b id="joyCommandState">LOST</b><small id="joyCommandAge">Kit offline</small></div></div>
-<div class="joy-rate-grid"><div><span>TX sent</span><b id="joyTxRate">-- Hz</b></div><div><span>FC RC received</span><b id="joyRxRate">-- Hz</b></div><div><span>FC control loop</span><b id="joyLoopRate">-- Hz</b></div></div><p class="micro-note" id="joyRateNote">These are measured rates from firmware, not target rates. PPM or Web/AP/Python is shown according to the active source.</p><div class="joy-python-values" id="joyPythonValues">Python RC idle • run a keyboard transmitter project to view transmitted channels here.</div><div class="joy-python-tools"><button class="btn danger ghost small" id="joyStopPythonBtn" hidden>Stop Python RC ■</button><pre class="terminal mini joy-python-log" id="joyPythonLog" hidden aria-live="polite"></pre></div>
-<div class="joystick-safety-card"><b>ARM INTERLOCK</b><p><strong>All flight modes:</strong> ARM is enabled only when throttle is low (≤1050).</p><p><strong>Altitude:</strong> low throttle is allowed and stays where you leave it. Raise it manually after arming when required.</p><p><strong>X key:</strong> immediately disarms and holds throttle at 1000.</p></div>
-<div class="joystick-safety-card keyboard"><b>NO AUDIO ALERTS</b><p>This transmitter uses only LED/status indications. CH8 stays reserved at its safe value.</p></div>
-<div class="watchdog-card"><div class="watchdog-head"><div><b>INPUT WATCHDOG</b><span>Back-up protection for missed pointer / key release events.</span></div><span class="health-badge ok" id="joyWatchdogBadge">READY</span></div><label>Directional timeout<select id="joyWatchdogMs"><option value="750">0.75 s</option><option value="1000">1.0 s</option><option selected="" value="1500">1.5 s</option><option value="2500">2.5 s</option><option value="4000">4.0 s</option></select></label><label class="toggle-line"><input checked="" id="joyWatchdogWarnArmed" type="checkbox"/> Show warning if watchdog centers while armed</label><p>Roll, Pitch and Yaw return to center after inactivity. Throttle is never changed by this watchdog.</p></div>
-<div class="callout"><b>Real-hardware safety</b><p>Direct AP at 192.168.4.1/fly has this controller for outdoor local use. The same-Wi-Fi WebApp can control the selected verified kit. Validate timing, RC loss, motor order and range with propellers removed before any flight; both links share the FC failsafe.</p></div>
-<div class="zebjus-market-card"><div><small>BUILD • LEARN • CUSTOMIZE</small><b>ZEBJUS kits and student projects</b><p>Explore drone components, custom kits, tutorials and project support.</p><div class="zebjus-market-links"><a href="https://www.zebjus.in/" target="_blank" rel="noopener noreferrer">ZEBJUS learning ↗</a><a href="https://www.zebjus.in/category/all-products" target="_blank" rel="noopener noreferrer">Components &amp; kits ↗</a></div></div><img src="ref_zebjus-fc-gerber-top.png" alt="ZEBJUS flight controller board" loading="lazy"/></div></aside>
-</div>
-</section>
-<section class="panel tab-panel firmware-page" id="tab-firmware">
-<div class="page-heading"><div><small>CONTROLLER CONNECTION & SOFTWARE</small><h1>Firmware & connect</h1><p>Find your kit, select the matching firmware, and update from one place.</p></div></div><div id="kitConnectionTools">
-<div class="school-grid">
-<section class="form-card school-connect-card pro-connect-card">
-<div class="connect-hero"><div><span class="connect-kicker">SAME-WI-FI • AUTOMATIC DISCOVERY</span><h2>Connect Your ZEBJUS Kit</h2><p>No IP address knowledge is required. The browser scans the default names <b>zebjus_drone_1, zebjus_drone_2…</b>, fills the detected Kit Name automatically, verifies the permanent Device ID, then remembers the verified kit for fast reconnect.</p></div><span class="status connection-badge" id="kitConnBadge">Not connected</span></div>
-<div class="connect-steps"><div><i>1</i><b>Same Wi-Fi</b><span>Connect this computer and the drone kit to the same Wi-Fi network.</span></div><div><i>2</i><b>Auto Discover</b><span>Default kit names are scanned automatically in the background.</span></div><div><i>3</i><b>Verified Connect</b><span>The permanent Device ID is checked before the address is trusted.</span></div></div>
-<label class="switch-row pro-demo-row"><div><strong>Demo mode</strong><span>ON forces on-screen simulation. OFF uses the connected kit and automatically falls back to Offline Simulation if the kit disconnects.</span></div><input id="demoMode" type="checkbox"/></label>
-<div class="kit-connect-fields">
-<label class="kit-name-field"><span>Kit name</span><small>Auto-filled after discovery. You can also type a known name.</small><input autocomplete="off" id="kitSearchInput" placeholder="Scanning for zebjus_drone_1…"/></label>
-<label><span>Cached IP</span><small>Filled automatically after a verified connection.</small><input autocomplete="off" id="kitCachedIp" inputmode="decimal" placeholder="Auto after discovery"/></label>
-</div>
-<div class="connect-actions"><button class="btn primary" id="kitSearchBtn">Connect Selected Kit</button><button class="btn ghost" id="refreshModulesBtn">Rescan This Wi-Fi</button><button class="btn ghost" id="disconnectKitBtn">Disconnect</button></div>
-<div class="detected-kit-field"><label><span>Kits found on this Wi-Fi</span><small>Detected default names appear here. Selecting one fills the Kit Name and verified cached IP.</small><select id="kitSelect"><option value="">Scanning default kit names…</option></select></label><i aria-hidden="true" class="scan-pulse"></i></div>
-<div class="connection-help" id="kitInfo"><b>Automatic connection order</b><span>Cached IP → Device ID verification → <code>kit-name.local</code> → Device ID verification.</span></div>
-<div class="simple-error" hidden="" id="simpleErrorStatus"></div>
-<details class="connection-log"><summary>Connection activity</summary><pre class="terminal mini" id="schoolLog">Background discovery ready.</pre></details>
-</section>
-<section class="form-card selected-module-card">
-<div class="panel-head"><div><small>CONNECTED KIT DETAILS</small><h2 id="selectedDeviceName">No kit selected</h2></div><span class="status" id="selectedDeviceOnline">Offline</span></div>
-<div class="easy-status-strip"><div><span>LOCAL LINK</span><b id="simpleServiceStatus">READY</b></div><div><span>KIT</span><b id="simpleKitStatus">NOT SELECTED</b></div><div><span>CONTROL</span><b id="simpleControlStatus">--</b></div><div><span>NETWORK</span><b id="simpleNetworkStatus">--</b></div></div>
-<div class="kit-health-panel">
-<div class="health-title"><div><small>LIVE DATA PATH</small><b>Command &amp; Sensor Health</b></div><span>Kit online and command freshness are monitored separately.</span></div>
-<div class="kit-health-grid">
-<div><i class="health-dot lost" id="healthCommandDot"></i><span>COMMAND</span><b class="lost" id="healthCommand">LOST</b><small id="healthCommandAge">No live stream</small></div>
-<div><i class="health-dot lost" id="healthImuDot"></i><span>IMU</span><b class="not-found" id="healthImu">NOT FOUND</b><small>Gyro + accelerometer</small></div>
-<div><i class="health-dot lost" id="healthBarometerDot"></i><span>BAROMETER</span><b class="not-found" id="healthBarometer">NOT FOUND</b><small>Altitude pressure</small></div>
-<div><i class="health-dot lost" id="healthLidarDot"></i><span>LIDAR</span><b class="not-found" id="healthLidar">NOT FOUND</b><small>Range sensor</small></div>
-<div><i class="health-dot lost" id="healthReceiverDot"></i><span>RECEIVER</span><b class="not-found" id="healthReceiver">NOT FOUND</b><small id="healthReceiverAge">PPM / RC input</small></div>
-</div>
-</div>
-<div class="device-detail-grid">
-<div><span>Device ID</span><b id="selectedDeviceId">--</b></div><div><span>Access</span><b id="selectedDeviceSchool">Open</b></div>
-<div><span>Mode</span><b id="selectedDeviceMode">--</b></div><div><span>Wi-Fi</span><b id="selectedDeviceNetwork">--</b></div>
-<div><span>RSSI</span><b id="selectedDeviceRssi">--</b></div><div><span>Firmware</span><b id="selectedDeviceFirmware">--</b></div><div><span>Firmware built</span><b id="selectedDeviceFirmwareBuilt">--</b></div>
-<div><span>IP</span><b id="selectedDeviceIp">--</b></div><div><span>Control</span><b id="selectedDeviceLock">--</b></div><div><span>Last seen</span><b id="selectedDeviceLastSeen">--</b></div>
-</div>
-<p class="micro-note" id="selectedControlNote">Select a kit.</p>
-<div class="button-row"><button class="btn primary" id="takeControlBtn">Take Control</button><button class="btn danger ghost" hidden="" id="releaseControlBtn">Release Kit</button><button class="btn ghost" id="pingSelectedDeviceBtn">Ping Kit</button></div>
-<div class="device-mode-strip"><span><i class="net-dot ap"></i>AP / Setup <b id="apModeIndicator">--</b></span><span><i class="net-dot sta"></i>STA / Webapp <b id="staModeIndicator">--</b></span></div>
-</section>
-<section class="form-card module-list-card">
-<div class="panel-head"><div><small>AUTOMATIC DISCOVERY • SAME WI-FI</small><h2>Available Kits</h2></div><span class="pill" id="moduleCountBadge">0 kits</span></div>
-<span class="pill" id="networkGroupBadge">Same Wi-Fi • cached IP → mDNS</span>
-<div class="module-list" id="moduleList"><div class="empty-module">Scanning zebjus_drone_1, zebjus_drone_2… on this Wi-Fi…</div></div>
-</section>
-<section class="form-card">
-<div class="panel-head"><div><small>KIT IDENTITY</small><h2>Change unique kit name</h2></div></div>
-<div class="device-edit-row"><input id="deviceRenameInput" placeholder="example: class_a_drone_3"/><button class="btn ghost" id="renameDeviceBtn">Check &amp; Save Name</button></div>
-<div class="button-row"><button class="btn ghost" id="resetKitNameBtn">Reset Auto Name</button></div>
-<span class="micro-note" id="kitNameMessage">The browser remembers the verified Kit Name, IP and permanent Device ID.</span>
-</section>
-<section class="form-card"><div class="panel-head"><div><small>NETWORK</small><h2>Wi-Fi management</h2></div></div><p class="micro-note">STA details and saved networks are in Settings.</p><button class="btn ghost full" id="goSettingsWifi">Open Wi-Fi settings</button></section>
-</div>
-</div>
+</style></head><body>
+<header><div class="brand">ZEBJUS AERION<small>Controller · 18.4.0</small></div><div class="connection"><span id="linkState">DISCONNECTED</span><button id="connect" class="primary">Connect</button></div></header>
+<nav aria-label="Controller pages"><button data-page="fly" aria-selected="true">Controls</button><button data-page="setup" aria-selected="false">Setup</button><button data-page="firmware" aria-selected="false">Firmware</button></nav>
+<main><section id="tab-fly"><div class="card"><div class="row spread"><div><h1 id="kitName">Connect your controller</h1><small id="kitIdentity">AP Wi-Fi or the same local Wi-Fi</small></div><b id="flightState">DISARMED</b></div><p id="connectionHealth">Join the controller Wi-Fi, then connect.</p><div class="metrics"><div><small>IMU</small><b id="imuValue">--</b></div><div><small>Roll / pitch</small><b id="angleValue">--</b></div><div><small>Link latency</small><b id="linkValue">--</b></div><div><small>RC / controller loop</small><b id="rateValue">--</b></div></div><div class="row spread muted" style="margin-top:14px"><small>Input: <b id="sourceValue">NONE</b></small><small>Battery: <b id="batteryValue">--</b></small></div></div>
+<div class="card"><div class="sticks"><div><div class="stick" id="left" role="group" aria-label="Throttle and yaw stick" aria-disabled="true"><i class="knob"></i></div><div class="stick-label">THROTTLE / YAW</div></div><div><div class="stick" id="right" role="group" aria-label="Pitch and roll stick" aria-disabled="true"><i class="knob"></i></div><div class="stick-label">PITCH / ROLL</div></div></div><div class="row spread"><label class="throttle">Throttle · <b id="throttleValue">0%</b><input id="throttle" type="range" min="1000" max="2000" value="1000" step="1" disabled></label><small>W/S throttle · arrows pitch/roll · A/D yaw · X stop</small></div></div>
+<div class="toolbar"><button id="control" class="primary" disabled>Take control</button><button id="arm" disabled>ARM</button><button id="mode" disabled>ANGLE</button><button id="stop" class="danger">STOP</button></div></section>
+<section id="tab-setup" hidden><div class="card"><h1>Controller setup</h1><p>Connect the kit. Keep the controller disarmed while changing settings.</p><div class="row"><button id="readSettings">Read settings</button><button id="disconnect">Disconnect</button><button id="forget">Forget kit</button></div><pre id="settingsResult" class="settings-result">Settings will appear here.</pre></div><div class="grid"><div class="card"><h2>IMU calibration</h2><p>Place the frame level and still. Calibration keeps motor outputs blocked.</p><label class="check"><input id="props" type="checkbox">All propellers removed</label><div class="row"><button id="gyro">Calibrate gyro</button><button id="level">Set level</button></div></div><div class="card"><h2>Wi-Fi</h2><p>Use direct controller AP Wi-Fi or save the local router network.</p><label>Wi-Fi name<input id="wifiSsid" autocomplete="off"></label><label>Password<input id="wifiPassword" type="password" autocomplete="new-password"></label><div class="row"><button id="saveWifi">Save local Wi-Fi</button><button id="switchAp">Use direct AP</button></div><small>Controller AP password: 12345678</small></div></div><div class="card"><h2>PID</h2><p>Read the current settings before editing. Changes require the controller to be disarmed.</p><div id="pidFields" class="pid-grid"><small>Axis</small><small>P</small><small>I</small><small>D</small></div><button id="savePid" style="margin-top:15px">Save PID</button></div></section>
+<section id="tab-firmware" hidden><div class="card"><div class="row spread"><h1>Firmware update</h1><span id="fwOverallBadge" class="status">READY</span></div><p>Choose a matching APP image for Wi-Fi update, or a FACTORY image for USB recovery.</p><div class="row"><a href="https://chilchiltrips-boop.github.io/zebjus-drone-simulator-lab/FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin">A1 APP .bin</a><a href="https://chilchiltrips-boop.github.io/zebjus-drone-simulator-lab/FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin">A2 APP .bin</a></div></div>
+<div class="firmware-grid"><div class="card"><div class="row spread"><h2>1. Choose firmware</h2><b id="fwSourceBadge">NO FILE</b></div><label>Board profile<select id="fwBoardProfile"><option value="auto">Detect from connected controller</option></select></label><label>Image type<select id="fwImageType"><option value="app">APP · Wi-Fi / USB update</option><option value="factory">FACTORY · USB recovery</option></select></label><div class="row"><button id="fwAutoLoadBtn">Load latest .bin</button><label class="firmware-file-label">Choose .bin<input id="fwFileInput" type="file" accept=".bin,application/octet-stream"></label></div><div id="fwDropZone" class="firmware-dropzone"><b id="fwFileName">No firmware loaded</b><p id="fwSourceMessage">Choose a .bin or load the published package.</p></div><div class="firmware-meta"><div><span>Version</span><strong id="fwFileVersion">--</strong></div><div><span>Size</span><strong id="fwFileSize">--</strong></div><div><span>Target</span><strong id="fwDetectedBoard">--</strong></div><div><span>Detection</span><strong id="fwBoardSource">--</strong></div><div><span>Built</span><strong id="fwBuildTime">--</strong></div><div><span>Build</span><strong id="fwBuildId">--</strong></div><div><span>SHA-256</span><strong id="fwFileHash">--</strong></div><div><span>Package</span><strong id="fwPackageState">--</strong></div></div></div>
+<div class="card"><h2>2. Connect and flash</h2><div class="firmware-target-option"><div><b>USB</b><span>Desktop Chrome / Edge. Select the controller port.</span></div><button id="fwConnectUsbBtn" class="primary">Select USB port</button></div><div class="row"><b id="fwSerialBadge">USB NOT CONNECTED</b><button id="fwDisconnectUsbBtn">Disconnect USB</button><a id="fwOpenDirect" href="https://chilchiltrips-boop.github.io/zebjus-drone-simulator-lab/?tab=firmware" target="_blank" rel="noopener">Open USB page directly</a></div><p><span id="fwUsbState">Not connected</span> · <span id="fwUsbChip">--</span></p><details><summary>USB recovery options</summary><label>Transfer speed<select id="fwUsbBaud"><option selected value="115200">115200 · reliable</option><option value="460800">460800</option><option value="921600">921600</option></select></label><label class="check"><input id="fwEraseUsb" type="checkbox">Erase flash (FACTORY image only)</label></details><div class="firmware-actions"><button id="fwUsbFlashBtn" class="primary">Flash USB</button><button id="fwWifiFlashBtn">Flash Wi-Fi</button></div><p>Wi-Fi update requires a connected, disarmed controller. Control is acquired automatically for the update.</p><div class="firmware-kit-meta"><div><span>Controller</span><b id="fwKitState">OFFLINE</b><i id="fwKitBadge" hidden></i></div><div><span>Installed firmware</span><b id="fwCurrentVersion">--</b></div><div><span>Device ID</span><b id="fwDeviceId">--</b></div><div><span>Board</span><b id="fwLiveBoard">--</b></div><div><span>Build time</span><b id="fwCurrentBuildTime">--</b></div></div></div></div>
+<div class="card"><div class="row spread"><b id="fwProgressTitle">Choose firmware to begin</b><b id="fwProgressPct">0%</b></div><div class="firmware-progress"><div id="fwProgressBar"></div></div><div class="firmware-stage-list"><span id="fwStagePrepare">Prepare</span><span id="fwStageFlash">Flash</span><span id="fwStageVerify">Verify</span><span id="fwStageReboot">Reboot</span><span id="fwStageReconnect">Reconnect</span></div><pre id="fwLog">Firmware updater ready.</pre></div></section><p id="message" role="status" aria-live="polite"></p></main>
+<dialog id="connectDialog"><div class="row spread dialog-head"><h2>Connect controller</h2><button id="closeConnect" aria-label="Close connection">×</button></div><p>Join the kit AP Wi-Fi or the same router Wi-Fi. Enter its IP if it uses local Wi-Fi.</p><label>Controller address<input id="kitAddress" value="192.168.4.1" placeholder="192.168.4.1 or controller.local" autocomplete="off"></label><input id="expectedId" type="hidden"><p id="pairMessage">AP password: 12345678</p><button id="checkConnection" class="primary">Connect</button></dialog>
+<footer>18.4.0 · Local communication · <a id="apkDownload" href="https://chilchiltrips-boop.github.io/zebjus-drone-simulator-lab/android-app/dist/ZEBJUS_Aerion_V18_4_0_Android.apk">Android APK</a></footer>
 
-<div class="firmware-hero">
-<div><span class="connect-kicker">WEB FLASH • WIFI OTA • USB RECOVERY</span><h2>ZEBJUS FlightCore Firmware Center</h2><p>Update the ZEBJUS FlightCore without Arduino IDE. The updater detects the connected ZEBJUS board profile, selects the matching firmware package, supports Wi-Fi OTA, and provides USB first-flash/recovery with live progress, reboot and reconnect monitoring.</p></div>
-<div class="firmware-hero-badges"><span class="firmware-badge offline" id="fwKitBadge">KIT OFFLINE</span><span class="firmware-badge offline" id="fwSerialBadge">USB NOT CONNECTED</span></div>
-</div>
-<div class="firmware-grid">
-<div class="form-card firmware-source-card">
-<div class="panel-head"><div><small>STEP 1 • FIRMWARE SOURCE</small><h2>Choose firmware</h2></div><span class="status" id="fwSourceBadge">NO FILE</span></div>
-<div class="firmware-source-actions"><button class="btn primary" id="fwAutoLoadBtn">Auto Load Latest</button><label class="btn ghost firmware-file-label">Import .bin<input accept=".bin,application/octet-stream" id="fwFileInput" type="file"/></label><button class="btn ghost" id="fwForgetBtn">Forget Cached</button></div>
-<div class="firmware-drop-zone" id="fwDropZone"><b>Drop firmware .bin here</b><span>Application image: Wi-Fi OTA or USB @ 0x10000 • Factory/Merged image: USB @ 0x0</span></div>
-<div class="firmware-file-info">
-<div><span>FILE</span><b id="fwFileName">No firmware loaded</b></div><div><span>VERSION</span><b id="fwFileVersion">--</b></div><div><span>BUILD DATE / TIME</span><b id="fwBuildTime">--</b></div><div><span>BUILD ID</span><b class="mono" id="fwBuildId">--</b></div><div><span>SIZE</span><b id="fwFileSize">--</b></div><div><span>SHA-256</span><b class="mono" id="fwFileHash">--</b></div>
-</div>
-<div class="firmware-config-row"><label>Image type<select id="fwImageType"><option value="app">Application / OTA image</option><option value="factory">Factory / merged image</option></select></label><label>Board profile<select id="fwBoardProfile"><option value="auto">Auto detect / current default</option></select></label></div><div class="firmware-board-detect"><div><span>TARGET BOARD</span><b id="fwDetectedBoard">ZEBJUS FlightCore A1</b></div><div><span>DETECTION</span><b id="fwBoardSource">Default profile</b></div><div><span>LATEST PACKAGE</span><b id="fwPackageState">Checking…</b></div></div>
-<p class="micro-note" id="fwSourceMessage">Auto Load detects the online/USB board first. With no board connected it uses the current default FlightCore profile, then loads that profile’s bundled or browser-cached firmware.</p>
-</div>
-<div class="form-card firmware-target-card">
-<div class="panel-head"><div><small>STEP 2 • TARGET</small><h2>Connect controller</h2></div></div>
-<div class="firmware-target-option wifi"><div class="firmware-target-icon">Wi-Fi</div><div><b>Online Kit OTA</b><span>Fast update through the selected same-Wi-Fi kit. Requires Take Control, DISARMED state, and an application .bin.</span></div><button class="btn ghost small" id="fwRefreshKitBtn">Check Kit</button></div>
-<div class="firmware-target-option usb"><div class="firmware-target-icon">USB</div><div><b>USB Web Serial</b><span>First flash / recovery / factory image. Chrome or Edge on HTTPS/localhost. The browser will ask you to select the FlightCore USB port.</span></div><button class="btn primary small" id="fwConnectUsbBtn">Connect USB</button></div>
-<div class="firmware-usb-info"><div><span>Detected board</span><b id="fwUsbChip">--</b></div><div><span>USB status</span><b id="fwUsbState">Not connected</b></div><div><span>Baud</span><select id="fwUsbBaud"><option value="115200">115200</option><option selected="" value="460800">460800</option><option value="921600">921600</option></select></div></div>
-<label class="firmware-check"><input id="fwEraseUsb" type="checkbox"/> Erase entire flash before USB factory flash <small>Only available for Factory/Merged images. Never erase when flashing an app-only image.</small></label>
-<div class="firmware-upgrade-actions"><button class="btn primary" id="fwUpgradeBtn">Upgrade</button><button class="btn danger ghost" id="fwUpgradeEraseBtn">Upgrade &amp; Erase</button><p class="micro-note">Upgrade uses the connected kit or USB port. Upgrade &amp; Erase requires USB and a complete factory image; it clears saved configuration.</p></div><div class="firmware-target-actions"><button class="btn primary full" id="fwWifiFlashBtn">Flash Selected Kit over Wi-Fi</button><button class="btn ghost full" id="fwUsbFlashBtn">Flash Connected FlightCore over USB</button></div>
-</div>
-<div class="form-card firmware-control-card">
-<div class="panel-head"><div><small>STEP 3 • UPDATE MONITOR</small><h2>Flash, reboot &amp; reconnect</h2></div><span class="status" id="fwOverallBadge">READY</span></div>
-<div class="firmware-progress-wrap"><div class="firmware-progress-head"><b id="fwProgressTitle">Waiting for firmware</b><span id="fwProgressPct">0%</span></div><div class="firmware-progress"><i id="fwProgressBar"></i></div></div>
-<div class="firmware-stages"><div id="fwStagePrepare"><i></i><span>Prepare</span></div><div id="fwStageFlash"><i></i><span>Flash</span></div><div id="fwStageVerify"><i></i><span>Verify</span></div><div id="fwStageReboot"><i></i><span>Reboot</span></div><div id="fwStageReconnect"><i></i><span>Reconnect</span></div></div>
-<div class="firmware-live-status"><div><span>Current kit firmware</span><b id="fwCurrentVersion">--</b></div><div><span>Current FW built</span><b id="fwCurrentBuildTime">--</b></div><div><span>Device ID</span><b id="fwDeviceId">--</b></div><div><span>Kit state</span><b id="fwKitState">OFFLINE</b></div><div><span>Board profile</span><b id="fwLiveBoard">--</b></div></div>
-<div class="firmware-recovery-actions"><button class="btn ghost" id="fwRebootBtn">Reboot Online Kit</button><button class="btn ghost" id="fwReconnectBtn">Reconnect Kit</button><button class="btn ghost" id="fwDisconnectUsbBtn">Disconnect USB</button></div>
-<pre class="terminal firmware-log" id="fwLog">Firmware Center ready.</pre>
-</div>
-</div>
-<div class="firmware-safety-strip"><b>FLIGHT SAFETY</b><span>Firmware write and reboot are blocked while the kit reports ARMED. Wi-Fi OTA requires the browser to own the hardware control lock. Keep propellers removed during bench firmware work.</span></div>
-</section>
-<section class="panel tab-panel" id="tab-io">
-<div class="io-hero"><div><small>ZEBJUS FLIGHTCORE • ZEBJUS Aerion F1</small><h2>Hardware I/O Studio</h2><p>Live connector map, PPM polarity, shared I²C bus, servo, GPS and matrix tests. Read-only cards work in view mode; changes acquire the selected kit's control lock.</p></div><span class="status" id="ioConnection">SELECT A KIT</span></div>
-<div id="hardwareToolMenu" class="tool-menu"></div><button id="hardwareToolBack" class="btn ghost" hidden>← All hardware tools</button><div class="io-dashboard">
-<section data-hw-tool="motors" hidden class="io-card io-motors"><div class="io-card-title"><div><small>01 • MOTOR CONNECTORS</small><h3>Top view and output routing</h3></div><span id="ioFlightStatus" class="status">SAFE</span></div>
-<div class="io-frame cc3d-frame"><div class="io-front">↑ FRONT • CC3D X</div><div class="io-motor cw"><b>M1 • FRONT LEFT</b><span>↻ CW • <em data-io-motor="1">D1</em></span></div><div class="io-motor ccw"><b>M2 • FRONT RIGHT</b><span>↺ CCW • <em data-io-motor="2">D2</em></span></div><div class="io-motor ccw"><b>M4 • REAR LEFT</b><span>↺ CCW • <em data-io-motor="4">D0</em></span></div><div class="io-motor cw"><b>M3 • REAR RIGHT</b><span>↻ CW • <em data-io-motor="3">D3</em></span></div></div>
-<div class="io-motor-map" id="ioMotorMapRows"></div><div class="io-actions"><button class="btn primary" id="ioSaveMotors">Save routing &amp; reboot</button><button class="btn ghost" id="ioReadMotors">Read from FC</button></div><div class="io-actions io-test-row" id="ioMotorTests"></div><button class="btn danger ghost" id="ioMotorStop">Stop motor test</button><p class="io-note">CC3D X order: M1 front-left, M2 front-right, M3 rear-right, M4 rear-left. Mix is +R−P+Y, −R−P−Y, −R+P+Y, +R+P−Y. D1/D2/D3/D0 are default output pins. A routing change reboots the FC; verify physical ESC wiring and motor direction with all props removed.</p></section>
-<section data-hw-tool="ppm" hidden class="io-card"><div class="io-card-title"><div><small>02 • PPM RECEIVER</small><h3>Edge and axis reverse</h3></div><span class="io-pill">A2 D6 or D10</span></div><label>Receiver signal pin<select id="ioPpmPin"><option value="16">D6 / GPIO16 (default)</option><option value="18">D10 / GPIO18</option></select></label><label>Signal edge<select id="ioPpmEdge"><option>RISING</option><option>FALLING</option></select></label><label>Physical PPM arming<select id="ioPpmArmMode"><option value="YAW_LEFT">Yaw left ARM / right DISARM</option><option value="YAW_STICK">Yaw right arm • yaw left disarm (default)</option><option value="CH5_SWITCH">CH5 arm switch</option></select></label><div class="io-checks"><label><input type="checkbox" data-io-reverse="0"> Roll</label><label><input type="checkbox" data-io-reverse="1"> Pitch</label><label><input type="checkbox" data-io-reverse="2"> Throttle</label><label><input type="checkbox" data-io-reverse="3"> Yaw</label></div><div class="io-actions"><button class="btn primary" id="ioSavePpm">Save PPM mapping</button><button class="btn ghost" id="ioReadPpm">Read channels</button></div><pre class="io-result" id="ioPpmResult">No receiver sample yet.</pre><p class="io-note">PPM default: minimum throttle + centred roll/pitch, hold yaw right 1 s to arm or yaw left 1 s to disarm. CH5 switch is selectable. 15 s without stick movement disarms only at minimum throttle. Web/AP/Python always use CH5; CH6 remains Angle/Rate. D10 is unavailable to servo, GPS and GPIO while assigned to PPM. Confirm the actual receiver signal wire before changing pins.</p></section>
-<section data-hw-tool="i2c" hidden class="io-card"><div class="io-card-title"><div><small>03 • SHARED I²C</small><h3>Scan, register read and test</h3></div><span class="io-pill">D4 SDA • D5 SCL</span></div><button class="btn primary" id="ioScan">Scan all addresses</button><div id="ioDevices" class="io-devices">Connect a kit, then scan.</div><div class="io-fields"><label>Address decimal / 0x<input id="ioI2cAddress" value="0x70" inputmode="text"></label><label>Register<input id="ioI2cReg" value="0x00" inputmode="text"></label><label>Read bytes<input id="ioI2cLength" type="number" min="1" max="16" value="1"></label></div><div class="io-actions"><button class="btn ghost" id="ioI2cRead">Read register</button><label class="io-write-field">Decimal bytes, e.g. 1,2<input id="ioI2cBytes" placeholder="1,2"></label><button class="btn ghost" id="ioI2cWrite">Write register</button></div><pre class="io-result" id="ioI2cResult">Generic read/write reports raw bytes; decoding depends on the device datasheet.</pre></section>
-<section data-hw-tool="aux" hidden class="io-card"><div class="io-card-title"><div><small>04 • AUX OUTPUT</small><h3>Servo + digital GPIO</h3></div><span class="io-pill">D7–D10 only</span></div><label>Servo signal pin<select id="ioServoPin" class="io-aux-options"></select></label><div class="io-actions"><button class="btn primary" id="ioServoConfig">Connect servo</button><button class="btn ghost" id="ioServoCenter">Center 1500 µs</button></div><label>Pulse <output id="ioServoPulseOut">1500 µs</output><input id="ioServoPulse" type="range" min="1000" max="2000" step="10" value="1500"></label><button class="btn ghost" id="ioServoSend">Send pulse</button><div class="io-fields"><label>Digital pin<select id="ioGpioPin" class="io-aux-options"></select></label><label>Output<select id="ioGpioValue"><option value="0">LOW</option><option value="1">HIGH</option></select></label></div><div class="io-actions"><button class="btn ghost" id="ioGpioRead">Read GPIO</button><button class="btn ghost" id="ioGpioWrite">Write GPIO</button><button class="btn ghost" id="ioGpioRelease">Release pin</button></div><pre class="io-result" id="ioAuxResult">Shared pins cannot be assigned to servo and GPS together.</pre></section>
-<section data-hw-tool="gps" hidden class="io-card"><div class="io-card-title"><div><small>05 • GPS UART</small><h3>GPS input and measured rate</h3></div><span class="io-pill">GPS TX → FC RX</span></div><label>Protocol<select id="ioGpsProtocol"><option value="NMEA_9600">Generic NMEA • 9600 baud</option><option value="UBX_10HZ">DroneGPS NEO-7 • UBX 10 Hz</option></select></label><label>FC RX pin ← GPS TX<select id="ioGpsPin" class="io-aux-options"></select></label><label>FC TX pin → GPS RX (UBX setup)<select id="ioGpsTxPin" class="io-aux-options"></select></label><div class="io-actions"><button class="btn primary" id="ioGpsConfig">Configure GPS</button><button class="btn ghost" id="ioGpsRead">Read GPS / measured Hz</button></div><pre class="io-result" id="ioGpsResult">Connect GPS to read NMEA or measured UBX complete-epoch Hz.</pre><p class="io-note">UBX mode bundles DroneGPS for u-blox 7 / NEO-7, requests 10 Hz, and needs GPS TX+RX on separate free D7–D10 pins. Configuration reboots the kit; check measuredHz and rateOk after reconnect. NMEA needs RX only. GPS data does not control flight or provide loiter.</p></section>
-<section data-hw-tool="matrix" hidden class="io-card"><div class="io-card-title"><div><small>06 • I²C LED MATRIX</small><h3>HT16K33 • 8×8</h3></div><span class="io-pill">0x70–0x77</span></div><label>Address<select id="ioMatrixAddress"><option value="112">0x70</option><option value="113">0x71</option><option value="114">0x72</option><option value="115">0x73</option><option value="116">0x74</option><option value="117">0x75</option><option value="118">0x76</option><option value="119">0x77</option></select></label><div class="io-matrix" id="ioMatrixGrid" aria-label="8 by 8 LED matrix editor"></div><div class="io-actions"><button class="btn primary" id="ioMatrixSend">Show pattern</button><button class="btn ghost" id="ioMatrixClear">Clear</button></div><pre class="io-result" id="ioMatrixResult">Multiple I²C devices may share SDA/SCL when their addresses differ.</pre></section>
-</div><div class="io-footer"><b>Flight mode</b><span>CH6 low = ANGLE cascade (outer angle P/I/D → inner rate PID). CH6 high = direct RATE PID. I/O bus tests and pin edits require DISARM; observe measured loop Hz after connecting devices.</span></div>
-<div data-hw-tool="calibration" hidden id="calibrationTools">
-<div class="bridge-audit-note"><b>REAL-FC STATUS</b><span>ZEBJUS Aerion F1 supports persistent MPU6050 level calibration. Acc X/Y/Z offsets and Roll/Pitch trim are stored in NVS; gyro bias is measured from the live sensor. Read-only calibration/status works in View Only mode.</span></div>
-<div class="two-col">
-<div class="form-card"><div class="panel-head"><div><small>PERSISTENT LEVEL CALIBRATION</small><h2>Accelerometer offsets</h2></div><span class="status" id="calSaveBadge">NOT READ</span></div>
-<div class="calibration-offset-grid">
-<label><span>Acc X offset (g)</span><input id="calAccX" type="number" step="0.001" value="-0.100"></label>
-<label><span>Acc Y offset (g)</span><input id="calAccY" type="number" step="0.001" value="0.030"></label>
-<label><span>Acc Z offset (g)</span><input id="calAccZ" type="number" step="0.001" value="0.120"></label>
-<label><span>Roll trim (°)</span><input id="calTrimRoll" type="number" step="0.1" value="0.0"></label>
-<label><span>Pitch trim (°)</span><input id="calTrimPitch" type="number" step="0.1" value="0.0"></label>
-</div>
-<div class="button-row calibration-actions"><button class="btn ghost" id="calReadBtn">Read from FC</button><button class="btn primary" id="calCaptureBtn">Capture Level</button><button class="btn ghost" id="calSaveBtn">Save Offsets</button><button class="btn danger ghost" id="calDefaultsBtn">Restore Defaults</button></div>
-<p class="micro-note" id="calNote">Place the drone flat and completely still before Capture Level. Calculated target is X=0 g, Y=0 g, Z=+1 g. Mutating commands automatically request control for the selected Device ID.</p>
-</div>
-<div class="form-card"><div class="panel-head"><div><small>LIVE</small><h2>Sensor / bias status</h2></div></div><div class="metrics"><div><span>GYRO X</span><b id="gyroX">—</b></div><div><span>GYRO Y</span><b id="gyroY">—</b></div><div><span>GYRO Z</span><b id="gyroZ">—</b></div><div><span>LEVEL</span><b id="levelState">Waiting</b></div></div><div class="calibration-live-grid"><div><span>Bias Roll</span><b id="calBiasRoll">--</b></div><div><span>Bias Pitch</span><b id="calBiasPitch">--</b></div><div><span>Bias Yaw</span><b id="calBiasYaw">--</b></div><div><span>Current Acc X</span><b id="calLiveAx">--</b></div><div><span>Current Acc Y</span><b id="calLiveAy">--</b></div><div><span>Current Acc Z</span><b id="calLiveAz">--</b></div></div><div class="orientation-card">↑<span>Match the ZEBJUS FC FRONT arrow to the red-arm front.</span></div></div>
-</div>
-<div class="form-card calibration-wizard-card"><div class="panel-head"><div><small>SAFE BENCH TOOLS</small><h2>Calibration / motor checks</h2></div></div><div class="cal-steps" id="calSteps"></div></div>
-<div class="form-card calibration-six-card"><div class="panel-head"><div><small>REFERENCE INSPIRED • DISARMED</small><h2>Six-face accelerometer check</h2></div></div><p class="micro-note">Remove propellers. Place each labelled axis upward/downward, hold the frame still, then capture. This checks all six faces before suggesting additive X/Y/Z offsets. Scale is measured as a diagnostic; a sensor with bad scale is rejected rather than silently corrected.</p><div class="six-face-grid" id="calSixFaces"></div><pre id="calSixResult" class="terminal">Connect a real ZFC-A2 kit and capture the six orientations.</pre><div class="button-row"><button id="calSixApply" class="btn primary" disabled>Save verified offsets to FC</button><button id="calSixReset" class="btn ghost">Clear captures</button></div></div>
-</div><div data-hw-tool="pid" hidden id="pidTools"><div class="bridge-audit-note"><b>REAL-FC STATUS</b><span>ZEBJUS Aerion F1 now supports guarded persistent Rate + Angle PID tuning. PID writes are allowed only while DISARMED, validated against safe ranges and saved to NVS; read-back is supported.</span></div><div class="pid-layout"><div class="form-card" id="pidEditor"></div><aside class="form-card"><div class="panel-head"><div><small>ACTIONS</small><h2>Apply tuning</h2></div><span class="status good" id="pidSaveBadge">SAVED</span></div><p class="micro-note" id="pidSaveNote">No unsaved PID changes.</p><button class="btn primary full" id="applyPidBtn">Apply to tripod simulator</button><button class="btn ghost full" id="readPidBtn">Read from real FC</button><button class="btn ghost full" id="sendPidBtn">Save to real FC</button><button class="btn ghost full" id="restorePidBtn">Restore defaults in editor</button><div class="callout"><b>Rate + Angle</b><p>Rate loop controls angular rate. Angle mode cascades an angle controller into the rate loop. Use the tripod simulator before free flight.</p></div></aside></div></div><section data-hw-tool="advanced" hidden class="form-card"><h2>Controller limits, filters &amp; network</h2><div id="labKitConsole"></div></section><section data-hw-tool="guided" hidden><div id="hardwareWizard"></div></section></section>
-<section class="panel tab-panel" id="tab-python">
-<div class="python-ide-layout">
-<aside class="python-project-card">
-<div class="python-pane-head"><div><small>PROJECT</small><b>Student Python Files</b></div><button class="btn ghost small" id="pythonNewFileBtn">+ New</button></div>
-<div class="python-file-list" id="pythonFileList"></div>
-<div class="python-project-actions"><button class="btn ghost small" id="pythonSaveFileBtn">Save</button><button class="btn ghost small" id="pythonUndoFileBtn" disabled>↶ Undo</button><button class="btn ghost small" id="pythonRedoFileBtn" disabled>↷ Redo</button><button class="btn danger ghost small" id="pythonDeleteFileBtn">Delete</button><button class="btn ghost small" id="pythonExportBtn">Export</button><button class="btn ghost small" id="pythonImportBtn">Import</button><input accept=".json,application/json" hidden id="pythonImportFile" type="file"/></div>
+<script>window.AerionRelease={"version":"18.4.0","apkAvailable":false,"apkVersion":"18.4.0-simple.1","apkSigningPending":true};</script>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),now=()=>performance.now(),neutral=()=>[1500,1500,1000,1500,1000,1000,1000,1000,1500,1000];
+let saved={};try{saved=JSON.parse(localStorage.getItem('aerion-simple-kit')||'{}')}catch{}
+const params=new URLSearchParams(location.search),state={base:'',id:params.get('kitId')||saved.deviceId||'',name:'',online:false,own:false,tx:false,busy:false,manual:true,epoch:0,pending:null,cleanup:Promise.resolve(),status:{},channels:neutral(),ack:0,statusAt:0,failures:0,latency:0,timeout:1000,client:'',telemetry:{},setup:null,ackSent:0,armAt:0,wasArmed:false,pidLoaded:false};
+let polling=false,pinging=false,lastTick=now();const held=new Set(),axes={left:{x:0,y:0,pointer:null},right:{x:0,y:0,pointer:null}};
+function message(text){$('message').textContent=text;}
+function origin(value){const u=new URL(value.includes('://')?value:'http://'+value);if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw Error('Enter the controller IP address or .local name.');return u.origin;}
+async function request(base,path,data,timeout=1600,expected=state.id){
+ const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),timeout);
+ try{const body=data?new URLSearchParams({...data,...(expected?{expectedDeviceId:expected}:{})}):undefined;
+  const r=await fetch(base+path,{method:body?'POST':'GET',body,headers:body?{'Content-Type':'application/x-www-form-urlencoded'}:undefined,cache:'no-store',signal:ctl.signal,aerionTimeout:timeout});
+  const j=await r.json();if(!r.ok||j.ok===false){const e=Error(j.message||'Controller request failed.');e.status=r.status;throw e;}if(j.deviceId&&expected&&j.deviceId!==expected){const e=Error('Different controller at this address. Reconnect and verify the kit.');e.status=409;throw e;}return j;
+ }catch(e){if(e.name==='AbortError')throw Error('Controller response timed out.');throw e}finally{clearTimeout(timer)}
+}
+const api=(path,data,timeout)=>request(state.base,path,data?{clientId:state.client,...data}:null,timeout);
+function validate(j){if(j.kit!=='ZEBJUS_FLIGHTCORE'||!/^ZFC-[A-Fa-f0-9]{12}$/.test(j.deviceId||''))throw Error('This address is not a ZEBJUS controller.');if(state.id&&j.deviceId!==state.id)throw Error('A different controller was found. Choose Forget kit to connect it.');return j;}
+function safe(){state.channels[0]=state.channels[1]=state.channels[3]=1500;state.channels[2]=state.channels[4]=1000;state.armAt=0;state.wasArmed=false;held.clear();for(const side of ['left','right']){axes[side].x=axes[side].y=0;axes[side].pointer=null;draw(side);}render();}
+function render(){
+ const s=state.status,t=state.telemetry,active=state.own&&state.tx,armed=!!s.armed||state.channels[4]>1500;
+ $('linkState').textContent=state.online?'CONNECTED':state.manual?'DISCONNECTED':'RECONNECTING';$('linkState').className=state.online?'online':'offline';
+ $('kitName').textContent=state.online?state.name:'Connect your controller';$('kitIdentity').textContent=state.online?state.id+' · '+new URL(state.base).hostname:'AP Wi-Fi or the same local Wi-Fi';
+ $('connectionHealth').textContent=!state.online?'Join the controller Wi-Fi, then connect.':s.flightReady?'Controller ready · '+(String(s.mode).startsWith('AP')?'Direct AP Wi-Fi':'Local Wi-Fi'):s.webRc===false?'Sensor bridge connected · motor control unavailable on this board':'Controller connected · IMU / flight setup needs attention';
+ $('control').textContent=active?'Release control':'Take control';$('control').disabled=state.busy||!state.online||!!state.setup||s.webRc===false||!!(s.locked&&!s.lockMine&&!state.own);
+ $('arm').textContent=armed?'DISARM':'ARM';$('arm').classList.toggle('active',armed);$('arm').disabled=!active||!s.flightReady; $('mode').textContent=state.channels[5]>=1500?'RATE':'ANGLE';$('mode').disabled=!active||armed&&!s.capabilities?.inflightModeSwitch;
+ $('throttle').value=state.channels[2];$('throttleValue').textContent=Math.round((state.channels[2]-1000)/10)+'%';$('throttle').disabled=!active||state.channels[4]<1500;
+ for(const side of ['left','right'])$(side).setAttribute('aria-disabled',String(!active));
+ $('imuValue').textContent=(s.imuModel||t.imu?.model||'--')+' · '+(s.flightReady?'ready':'check');$('angleValue').textContent=Number(t.roll||0).toFixed(1)+'° / '+Number(t.pitch||0).toFixed(1)+'°';$('linkValue').textContent=state.online?Math.round(state.latency)+' ms':'--';$('rateValue').textContent=Number(t.webRcFrameHz||0)+' / '+Number(t.flightLoopHz||0)+' Hz';
+ $('flightState').textContent=armed?'ARMED':active?'CONTROL ON':'DISARMED';$('flightState').className=armed?'danger':'online';$('sourceValue').textContent=t.rcSource||s.rcSource||'NONE';$('batteryValue').textContent=t.batteryValid?Number(t.battery).toFixed(2)+' V':'--';
+ $('readSettings').disabled=state.busy||!state.online;for(const id of ['gyro','level','savePid','saveWifi','switchAp'])$(id).disabled=state.busy||!state.online||armed||!!state.setup;
+ $('stop').disabled=!state.own;$('savePid').disabled=state.busy||!state.online||armed||!!state.setup||!state.pidLoaded||s.pidWritable===false;$('disconnect').disabled=!state.online;$('checkConnection').disabled=state.busy;
+}
+async function connect(){
+ if(state.busy)return;state.busy=true;state.manual=false;const epoch=++state.epoch;render();$('pairMessage').textContent='Connecting…';
+ try{await state.cleanup;const typed=$('kitAddress').value.trim(),candidates=[typed&&origin(typed),params.get('kitIp')&&origin(params.get('kitIp')),saved.base,'http://192.168.4.1'].filter(Boolean);let found,last;
+  for(const base of [...new Set(candidates)]){try{const j=validate(await request(base,'/api/status',null,1500));if(epoch!==state.epoch)return;found={base,j};break}catch(e){last=e}}
+  if(!found)throw last||Error('Controller not found. Join its Wi-Fi and check the IP.');const {base,j}=found;
+  state.base=base;state.id=j.deviceId;state.name=j.name||j.deviceName||'FlightCore';state.status=j;state.online=true;state.statusAt=now();state.failures=0;state.channels=neutral();state.channels[5]=j.flightMode==='RATE'?1500:1000;state.timeout=Number(j.rcTimeoutMs)||1000;
+  saved={deviceId:state.id,base};try{localStorage.setItem('aerion-simple-kit',JSON.stringify(saved))}catch{}$('expectedId').value=state.id;$('kitAddress').value=base;$('pairMessage').textContent='Connected to '+state.name;if($('connectDialog').open)$('connectDialog').close();message('Connected. Take control to enable sticks. ARM remains manual.');
+ }catch(e){if(epoch===state.epoch){state.online=false;$('pairMessage').textContent=e.message;message(e.message)}}finally{if(epoch===state.epoch){state.busy=false;render()}}
+}
+async function acquire(){
+ if(state.own)return;if(!state.online)throw Error('Connect the controller first.');
+ const epoch=state.epoch,base=state.base,id=state.id,client='FLY-'+crypto.randomUUID();await state.cleanup;
+ const fresh=validate(await request(base,'/api/status',null,1500,id));if(epoch!==state.epoch)throw Error('Connection changed. Connect again.');state.status={...state.status,...fresh};if(fresh.armed)throw Error('Disarm before taking app or browser control.');
+ const grant=await request(base,'/api/control/acquire',{clientId:client,clientRole:window.AerionAndroid?'MOBILE':'WEB'},1800,id);
+ if(epoch!==state.epoch||!state.online){await request(base,'/api/control/release',{clientId:client},600,id).catch(()=>{});throw Error('Connection changed. Connect again.');}
+ state.client=client;state.own=true;state.status.locked=state.status.lockMine=true;state.timeout=Number(grant.rcTimeoutMs)||state.timeout;state.ack=now();safe();
+}
+function stop(text='Controls stopped. ARM manually after taking control.',offline=false){
+ const base=state.base,id=state.id,client=state.client,owned=state.own,pending=state.pending,setup=state.setup;
+ state.epoch++;state.busy=false;state.own=state.tx=false;state.pending=null;state.setup=null;if(offline)state.online=false;safe();const safeChannels=state.channels.join(',');
+ if(owned)state.cleanup=Promise.allSettled([state.cleanup,pending]).then(async()=>{
+  if(setup)await request(base,'/api/command',{clientId:client,type:'setup_end',session:setup.token},650,id).catch(()=>{});
+  window.AerionAndroid?.pauseStream?.(base,id,client);
+  await request(base,'/api/command',{clientId:client,type:'rc_frame',channels:safeChannels},650,id).catch(()=>{});
+  await request(base,'/api/control/release',{clientId:client},650,id).catch(()=>{});
+ });message(text);render();
+}
+async function takeControl(){
+ if(state.busy)return;if(state.tx){stop('Control released.');return;}state.busy=true;render();
+ try{if(state.own){stop('Preparing stick control.');state.busy=true;}await acquire();const epoch=state.epoch;await api('/api/command',{type:'rc_source_set',source:'WEB'});if(epoch!==state.epoch)return;state.tx=true;state.ack=now();await sendFrame();if(state.tx)message(state.status.flightReady?'Sticks enabled. ARM at minimum throttle.':'Connected and control acquired. Complete IMU setup before ARM.');}catch(e){stop(e.message)}finally{state.busy=false;render()}
+}
+async function sendFrame(){
+ if(!state.tx||!state.own||state.pending)return;const epoch=state.epoch,sent=now(),p=api('/api/command',{type:'rc_frame',channels:state.channels.map(v=>clamp(Math.round(v),1000,2000)).join(',')},350);state.pending=p;
+ try{const j=await p;if(epoch!==state.epoch)return;state.ack=now()-(j.rcQueued?Number(j.rcAckAgeMs)||0:0);state.latency=now()-sent;state.ackSent=sent;if(typeof j.flightReady==='boolean')state.status.flightReady=j.flightReady;if(typeof j.armed==='boolean'){if(state.channels[4]>1500&&!j.armed&&(state.wasArmed||now()-state.armAt>1500)){safe();message('Controller disarmed: '+(j.lastDisarmReason||'failsafe')+'. ARM manually.');}state.status.armed=j.armed;if(j.armed)state.wasArmed=true;}render();
+ }catch(e){if(epoch===state.epoch&&[400,403,409,423].includes(e.status))stop(e.message,e.status===409)}finally{if(state.pending===p)state.pending=null}
+}
+function draw(side){const a=axes[side],k=$(side).querySelector('.knob');k.style.left=(50+a.x*32)+'%';k.style.top=(50+a.y*32)+'%';}
+function updateAxes(){state.channels[0]=Math.round(1500+axes.right.x*500);state.channels[1]=Math.round(1500-axes.right.y*500);state.channels[3]=Math.round(1500+axes.left.x*500);}
+for(const side of ['left','right']){
+ const el=$(side),a=axes[side];const move=e=>{const r=el.getBoundingClientRect(),radius=r.width*.32;let x=(e.clientX-r.left-r.width/2)/radius,y=(e.clientY-r.top-r.height/2)/radius,n=Math.hypot(x,y);if(n>1){x/=n;y/=n;}a.x=x;a.y=y;draw(side);updateAxes();};
+ el.onpointerdown=e=>{if(!state.tx||a.pointer!==null||e.button>0)return;e.preventDefault();a.pointer=e.pointerId;el.setPointerCapture(e.pointerId);move(e)};el.onpointermove=e=>{if(a.pointer===e.pointerId)move(e)};
+ const release=e=>{if(a.pointer!==e.pointerId)return;a.pointer=null;a.x=a.y=0;draw(side);updateAxes();};for(const type of ['pointerup','pointercancel','lostpointercapture'])el.addEventListener(type,release);
+}
+setInterval(()=>{
+ const t=now(),dt=clamp((t-lastTick)/1000,0,.08);lastTick=t;if(!state.tx)return;
+ if(t-state.ack>clamp(state.timeout-150,250,850)){stop('Control signal lost. Reconnect, then ARM manually.');return;}
+ if(axes.right.pointer===null){axes.right.x=(held.has('ArrowRight')?1:0)-(held.has('ArrowLeft')?1:0);axes.right.y=(held.has('ArrowDown')?1:0)-(held.has('ArrowUp')?1:0);draw('right');}
+ if(axes.left.pointer===null){axes.left.x=(held.has('d')?1:0)-(held.has('a')?1:0);draw('left');}updateAxes();
+ let throttle=axes.left.pointer!==null?-axes.left.y:(held.has('w')?1:0)-(held.has('s')?1:0);if(t-state.ack>300&&throttle>0)throttle=0;if(state.channels[4]>1500)state.channels[2]=clamp(state.channels[2]+throttle*250*dt,1000,2000);sendFrame();render();
+},40);
+async function refresh(){
+ if(polling||state.busy||state.manual||document.hidden)return;if(!state.online){if(!state.base)return;polling=true;try{const j=validate(await request(state.base,'/api/status',null,1200));state.status=j;state.online=true;state.failures=0;state.statusAt=now();message('Controller reconnected. Take control, then ARM manually.');render();}catch{}finally{polling=false}return;}
+ polling=true;const epoch=state.epoch,sent=now();try{const j=await api('/api/telemetry?clientId='+encodeURIComponent(state.client),null,1500);validate(j);if(epoch!==state.epoch)return;state.telemetry=j;const newerRc=state.tx&&sent<state.ackSent;state.status={...state.status,...j,...(newerRc?{armed:state.status.armed,flightReady:state.status.flightReady,lockMine:true}:{})};state.statusAt=now();state.failures=0;if(!state.tx)state.latency=now()-sent;if(state.own&&!newerRc&&!j.lockMine){stop('Control released by the controller. Take control again.');return;}render();}
+ catch(e){if(epoch===state.epoch){if(e.status===409)stop(e.message,true);else if(++state.failures>=5&&now()-state.statusAt>4500)stop('Controller Wi-Fi unavailable. Reconnecting…',true)}}finally{polling=false}
+}
+setInterval(refresh,1000);
+setInterval(async()=>{if(!state.own||state.tx||pinging||document.hidden)return;pinging=true;const epoch=state.epoch;try{await api('/api/control/ping',{},1200)}catch(e){if(epoch===state.epoch&&[403,409,423].includes(e.status))stop(e.message)}finally{pinging=false}},1000);
+async function prepareConfiguration(){if(state.status.armed||state.channels[4]>1500)throw Error('Disarm before configuration or firmware update.');if(state.tx){safe();await Promise.resolve(state.pending).catch(()=>{});await sendFrame();state.tx=false;window.AerionAndroid?.pauseStream?.(state.base,state.id,state.client);}await acquire();render();}
+const pidNames=['rateRoll','ratePitch','rateYaw','angleRateRoll','angleRatePitch','angleRateYaw','angleRoll','anglePitch'];
+for(const name of pidNames){const title=document.createElement('small');title.textContent=name;$('pidFields').append(title);for(const term of ['P','I','D']){const input=document.createElement('input');input.type='number';input.step='any';input.min='0';input.max=term==='I'?'100':'50';input.id='pid-'+name+term;input.setAttribute('aria-label',name+' '+term);$('pidFields').append(input)}}
+async function readSettings(){const j=await api('/api/command',{type:'snapshot_get'},3000);for(const name of pidNames)for(const term of ['P','I','D'])$('pid-'+name+term).value=j.pid?.[name]?.[term]??state.status.pid?.[name]?.[term]??0;$('settingsResult').textContent=JSON.stringify({deviceId:state.id,sensors:j.sensors||state.status.sensors,flightSettings:j.flightSettings||state.status.flightSettings},null,2);state.pidLoaded=pidNames.every(name=>['P','I','D'].every(term=>Number.isFinite(Number(j.pid?.[name]?.[term]??state.status.pid?.[name]?.[term]))));message('Controller settings read.');render();}
+async function action(fn){if(state.busy)return;state.busy=true;render();try{await fn()}catch(e){message(e.message)}finally{state.busy=false;render()}}
+async function calibrate(kind){
+ if(!$('props').checked)throw Error('Remove all propellers and tick the confirmation.');await prepareConfiguration();const setup={token:'SETUP-'+crypto.randomUUID(),epoch:state.epoch};state.setup=setup;
+ try{const begin=await api('/api/command',{type:'setup_begin',session:setup.token,confirm:'PROPS_REMOVED'},2000);if(!begin.active)throw Error('Controller setup was not confirmed.');await api('/api/command',{type:'setup_calibrate',session:setup.token,kind},2000);
+  for(let i=0;i<80;i++){await new Promise(r=>setTimeout(r,250));if(state.setup!==setup||state.epoch!==setup.epoch)throw Error('Calibration stopped because the connection changed.');const j=await api('/api/command',{type:'setup_ping',session:setup.token},1800);message('Calibrating '+kind+' · '+(j.samples||0)+' / '+(j.total||0));if(j.job===3)throw Error('Calibration failed. Check IMU wiring and keep the frame still.');if(j.job===2){message(kind+' calibration completed. ARM manually after taking control.');return;}}
+  throw Error('Calibration timed out.');
+ }finally{if(state.setup===setup){await api('/api/command',{type:'setup_end',session:setup.token},1200).catch(()=>{});state.setup=null;}}
+}
+function showTab(name){document.querySelectorAll('[data-page]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.page===name)));document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!=='tab-'+name);if(name!=='fly'&&state.tx)stop('Control paused for settings.');}
+document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>showTab(b.dataset.page));
+$('connect').onclick=()=>{if(state.own)stop('Control paused while connecting.');$('kitAddress').value=state.base||saved.base||'192.168.4.1';$('expectedId').value=state.id;$('connectDialog').showModal()};$('closeConnect').onclick=()=>$('connectDialog').close();$('checkConnection').onclick=connect;$('control').onclick=takeControl;$('stop').onclick=()=>stop('STOP requested · controls reset.');
+$('arm').onclick=()=>{if(!state.tx)return;if(state.channels[4]>1500||state.status.armed){safe();sendFrame();return;}if(state.channels[2]>1050){message('Lower throttle before ARM.');return;}if(!state.status.flightReady)return;safe();state.channels[4]=2000;state.armAt=now();message('ARM requested. Raise throttle gently after confirmation.');sendFrame();render()};
+$('mode').onclick=()=>{state.channels[5]=state.channels[5]>=1500?1000:1500;sendFrame();render()};$('throttle').oninput=e=>{if(state.tx&&state.channels[4]>1500)state.channels[2]=Number(e.target.value);render()};
+$('disconnect').onclick=()=>{state.manual=true;stop('Disconnected.',true)};$('forget').onclick=()=>{state.manual=true;stop('Kit forgotten.',true);state.id=state.base='';saved={};try{localStorage.removeItem('aerion-simple-kit')}catch{}$('expectedId').value='';$('kitAddress').value='192.168.4.1';render()};
+$('readSettings').onclick=()=>action(readSettings);$('gyro').onclick=()=>action(()=>calibrate('gyro'));$('level').onclick=()=>action(()=>calibrate('level'));
+$('savePid').onclick=()=>action(async()=>{await prepareConfiguration();const values={};for(const name of pidNames)for(const term of ['P','I','D']){const v=Number($('pid-'+name+term).value);if(!Number.isFinite(v)||v<0)throw Error('Enter valid PID values.');values[name+term]=v;}await api('/api/command',{type:'pid_set',...values},3000);message('PID saved.');});
+$('saveWifi').onclick=()=>action(async()=>{await prepareConfiguration();const ssid=$('wifiSsid').value.trim();if(!ssid)throw Error('Enter the Wi-Fi name.');await api('/api/wifi/set',{ssid,password:$('wifiPassword').value},3000);$('wifiPassword').value='';stop('Wi-Fi saved. Join that network and reconnect.',true);state.manual=true;});
+$('switchAp').onclick=()=>action(async()=>{await prepareConfiguration();await api('/api/command',{type:'network_mode_set',mode:'AP'},2500);stop('Direct AP selected. Join the controller Wi-Fi (password 12345678), then reconnect.',true);state.manual=true;});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('connectDialog').open){stop('STOP requested · controls reset.');return;}if(!state.tx||e.target.matches('input,textarea,select')||e.ctrlKey||e.metaKey||e.altKey)return;const k=e.key.length===1?e.key.toLowerCase():e.key;if(['w','s','a','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k)){e.preventDefault();held.add(k);}if(k==='x')stop('STOP requested · controls reset.');});addEventListener('keyup',e=>held.delete(e.key.length===1?e.key.toLowerCase():e.key));
+function leave(){state.manual=true;if(state.own){const base=state.base,id=state.id,client=state.client;stop('Controls paused. Take control and ARM manually.');try{navigator.sendBeacon(base+'/api/command',new URLSearchParams({type:'rc_frame',clientId:client,expectedDeviceId:id,channels:neutral().join(',')}));navigator.sendBeacon(base+'/api/control/release',new URLSearchParams({clientId:client,expectedDeviceId:id}));}catch{}}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)leave()});addEventListener('pagehide',leave);addEventListener('blur',()=>{held.clear();if(!window.AerionAndroid)leave()});
+if(window.AerionAndroid){const a=window.AerionAndroid;a.pause=leave;a.stopped=()=>stop('Control signal stopped. Take control again.');a.networkLost=()=>{state.manual=false;stop('Controller Wi-Fi lost. Reconnecting…',true)};a.resume=()=>{state.manual=false;refresh()};a.connectedWifi=()=>{state.manual=false;$('kitAddress').value='192.168.4.1';connect()};a.connectedRouter=()=>{state.manual=false;message('Phone Wi-Fi selected. Enter the controller IP and connect.');};a.openKit=(id,base)=>{if(state.own)leave();state.id=id;$('kitAddress').value=base;connect();};}
+window.zebjusSchool={getSelectedDevice:()=>state.online?{...state.status,deviceId:state.id,deviceName:state.name,online:true}:null,canControl:()=>state.own,markOffline:()=>stop('Controller restarting. Reconnecting…',true),refreshNow:refresh,reconnectNow:async()=>{state.manual=false;await refresh();return window.zebjusSchool.getSelectedDevice()},client:{get base(){return state.base},get deviceId(){return state.id},get clientId(){return state.client},get connected(){return state.online},firmwareInfo:()=>api('/api/firmware/info',null,1800),reboot:()=>api('/api/reboot',{},1800)}};
+if(window.AerionRelease?.apkAvailable===false){$('apkDownload').hidden=true;const pending=document.createElement('span');pending.textContent='Android APK build pending';$('apkDownload').after(pending);}
+window.AerionController={state,connect,takeControl,stop,refresh,prepareConfiguration,request,showTab};$('kitAddress').value=saved.base||'192.168.4.1';$('expectedId').value=state.id;showTab(['setup','firmware'].includes(params.get('tab'))?params.get('tab'):'fly');render();
+if(!window.AerionAndroid&&'serviceWorker'in navigator)navigator.serviceWorker.register(location.pathname.includes('/flight/')?'../service-worker.js':'./service-worker.js').catch(()=>{});
+})();
 
-</aside>
-<div class="editor-card python-editor-card">
-<div class="section-toolbar"><div><b id="pythonEditorTitle">main.py</b><span>Type normal Python • hardware quick code is optional</span></div><div class="python-toolbar-actions"><select id="pythonTarget" title="Python execution target"><option value="sim">Python / Simulator</option><option value="real">Real ZEBJUS kit</option></select><select id="pythonQuickHardware" title="Load Python Flight Lab example" hidden><option value="">Python project examples…</option><option value="simple-keyboard">Classroom Keyboard Control</option><option value="simple-hands">Classroom Hand Control (Simulator)</option><option value="simple-led">Classroom LED Blink</option><option value="pinmap">Motor Pin Map</option><option value="ppm-flip">PPM Polarity + Flip</option><option value="multi-i2c">Multiple I²C Devices</option><option value="servo">Servo PWM</option><option value="gps">GPS NMEA</option><option value="matrix">8×8 LED Matrix</option><option value="gpio">Spare GPIO</option><option value="i2c">I²C Scanner</option><option value="imu">IMU Live</option><option value="gyro">Gyroscope Read</option><option value="accel">Accelerometer Read</option><option value="angle">Angle / Attitude Read</option><option value="ppm">PPM / Receiver Read</option><option value="status">FlightCore Status</option><option value="pid-read">Read PID from FC</option><option value="rate-pid">RATE PID Tuning</option><option value="angle-pid">ANGLE PID Tuning</option><option value="pid-defaults">Restore PID Defaults</option><option value="keyboard-rc">Keyboard Transmitter</option><option value="rc-script">Scripted RC Demo</option><option value="gyro-cal">Gyro Calibration</option><option value="cal-read">Read Level Calibration</option><option value="acc-offsets">Set Accel Offsets</option><option value="level-cal">Auto Level Calibration</option><option value="motor-test">Motor Sequence Test</option><option value="esc-cal">ESC Calibration</option><option value="level-check">Level Checker</option><option value="rx-monitor">Receiver Channel Monitor</option><option value="imu-still">IMU Stillness / Vibration</option><option value="sensor-snapshot">Sensor Snapshot</option><option value="flight-diag">Flight Diagnostics</option><option value="rc-center">Safe RC Center</option><option value="throttle-ramp">Simulator Throttle Ramp</option><option value="bench-status">Bench Status Monitor</option><option value="motor-one">Single Motor Test</option><option value="pid-step">RATE PID Step Response</option><option value="rc-rate">RC Input + FC Loop Hz</option><option value="plot-imu">Plot IMU / Matplotlib</option><option value="camera-opencv">Camera / OpenCV Edges</option><option value="cvzone-hands">cvzone Hand Drawing</option><option value="hand-landmarks">MediaPipe Hand Landmarks</option><option value="cv-telemetry">Camera + Kit Telemetry</option><option value="combined">Combined Custom Project</option></select><button class="btn danger ghost small" id="stopPythonBtn">Stop ■</button><button class="btn primary small" id="runPythonBtn">Run ▶</button><button class="btn ghost small" id="rerunPythonBtn" title="Run the current file again">Rerun ↻</button></div></div>
-<div class="python-editor-shell"><div id="pythonMonaco" aria-label="Python smart code editor"></div><textarea id="pythonEditor" spellcheck="false" aria-label="Python editor fallback"></textarea></div>
-<div class="python-editor-footer"><span>Scroll to view the full script • long lines wrap</span><span>Type while True: then Enter • 4-space indent</span><span>Ctrl/⌘ + Space suggestions</span><span>Ctrl/⌘ + Enter run</span><span id="pythonI2cPins">I²C pins: from connected board</span></div>
-</div>
-<div class="python-col-resizer" id="pythonColResizer" title="Drag to resize editor / tools"></div>
-<div class="python-side-stack">
-<div class="terminal-card python-imu-card">
-<div class="section-toolbar"><div><b>IMU Live Graph</b><span>Accelerometer + gyroscope • live rate / age / CSV</span></div><span class="status" id="imuGraphBadge">LIVE</span></div>
-<details class="imu-toolbox" open><summary>IMU Tools • live graph / rate / CSV / browser calibration</summary><div class="imu-tool-metrics"><div><span>SENSOR</span><b id="imuToolSensor">--</b></div><div><span>RATE</span><b id="imuToolRate">-- Hz</b></div><div><span>AGE</span><b id="imuToolAge">-- ms</b></div><div><span>RECORD</span><b id="imuToolRecord">OFF</b></div></div><canvas id="imuAccelChart" width="520" height="120"></canvas><canvas id="imuGyroChart" width="520" height="120"></canvas><div class="imu-tool-actions"><button class="btn ghost small" id="imuCalibrateBtn">Calibrate level</button><button class="btn ghost small" id="imuRecordBtn">Record CSV</button><button class="btn ghost small" id="imuCsvBtn" disabled>Download CSV</button></div><p class="micro-note" id="imuToolNote">Graph calibration is a browser teaching offset. Persistent real-FC X/Y/Z level offsets are available in Calibration and from Python.</p></details>
-<details class="python-vision-toolbox"><summary>Camera / cvzone / Python plots</summary><div class="python-vision-actions"><button class="btn ghost small" id="pythonCameraStart">Open camera output</button><button class="btn ghost small" id="pythonCameraStop">Stop camera / program</button><button class="btn ghost small" id="pythonHandsToggle" disabled>Hands: auto with script</button><button class="btn ghost small" id="pythonOutputOpen">Open output</button></div><div class="python-camera-stage" aria-hidden="true"><video id="pythonCameraVideo" autoplay muted playsinline></video><canvas id="pythonCameraOverlay"></canvas></div><p class="micro-note" id="pythonCameraStatus">Camera appears in the output popup while a script runs and disappears on Stop or completion. Browser Python supports cv2.VideoCapture(0), cvzone.HandTrackingModule.HandDetector, cv2.imshow(), await drone.wait_key(30), and plt.show().</p><p class="micro-note">Camera requires HTTPS/localhost and browser permission. Embedded pages must allow camera. Browser cvzone offers HandDetector.findHands/fingersUp only; use the laptop companion for the full native cvzone/MediaPipe libraries.</p></details>
-<div class="zebjus-market-card"><div><small>BUILD • LEARN • CUSTOMIZE</small><b>ZEBJUS kits and student projects</b><p>Explore drone components, custom kits, tutorials and project support.</p><div class="zebjus-market-links"><a href="https://www.zebjus.in/" target="_blank" rel="noopener noreferrer">ZEBJUS learning ↗</a><a href="https://www.zebjus.in/category/all-products" target="_blank" rel="noopener noreferrer">Components &amp; kits ↗</a></div></div><img src="ref_zebjus-fc-gerber-top.png" alt="ZEBJUS flight controller board" loading="lazy"/></div>
-</div>
-<div class="python-row-resizer" id="pythonRowResizer" title="Drag to resize IMU graph / terminal"></div>
-<div class="terminal-card python-terminal-card">
-<div class="section-toolbar"><div><b>Run / Terminal</b><span id="pyStatus">Python 3 + ZEBJUS hardware bridge</span></div><div class="terminal-toolbar-actions"><button class="btn ghost small" id="copyTerminalBtn" title="Copy all terminal output">Copy Output</button><button class="btn ghost small" id="clearTerminalBtn">Clear</button></div></div>
-<div class="python-runtime-help"><span><b>Python:</b> isolated Worker • Stop terminates infinite loops • errors are red.</span><span><b>Panels:</b> drag the separators to resize editor, IMU graph and terminal.</span></div>
-<pre class="terminal" id="pythonTerminal" tabindex="0">Python Lab ready. Type Python code or choose optional hardware quick code, then press Run.</pre>
-</div>
-</div>
-</div>
-<div id="pythonOutputWindow" class="python-output-window" role="dialog" aria-label="Python output window" hidden><div class="python-output-title" id="pythonOutputDrag"><b id="pythonOutputTitle">Python Output</b><div><a id="pythonOutputDownload" class="btn ghost small" hidden download="zebjus-output.png">Download</a><button class="btn ghost small" id="pythonOutputClose" type="button" aria-label="Close output window">×</button></div></div><img id="pythonOutputImage" alt="Live OpenCV or Matplotlib output"/><p>Drag the title to move • drag the lower right corner to resize.</p></div>
-</section>
-<section class="panel tab-panel" id="tab-training"><div id="flightTrainingRoot"></div></section>
-<section class="panel tab-panel" id="tab-telemetry"><div class="page-heading"><div><small>FLIGHT DATA</small><h1>Telemetry cockpit</h1><p>Live attitude and link health from your selected controller.</p></div><span id="cockpitLink" class="status">NO LINK</span></div><div class="cockpit-layout"><div class="form-card cockpit-data"><div class="cockpit-health" id="cockpitHealth"></div><div class="metrics"><div><span>ROLL</span><b id="telRoll">—</b></div><div><span>PITCH</span><b id="telPitch">—</b></div><div><span>YAW ESTIMATE</span><b id="telYaw">—</b></div><div><span>BATTERY</span><b id="telBatt">—</b></div></div><div class="cockpit-facts" id="cockpitFacts"></div><details><summary>Received telemetry stream</summary><pre class="terminal" id="telemetryLog"></pre></details></div><div class="instrument-grid"><figure><canvas id="attitudeGauge" width="320" height="320" aria-label="Attitude indicator"></canvas><figcaption>ATTITUDE <b id="gaugeAttitude">WAITING</b></figcaption></figure><figure><canvas id="headingGauge" width="320" height="320" aria-label="Integrated yaw estimate"></canvas><figcaption>YAW ESTIMATE <b id="gaugeHeading">—</b></figcaption></figure><figure><canvas id="altitudeGauge" width="320" height="320" aria-label="Altitude gauge"></canvas><figcaption>ALTITUDE <b id="gaugeAltitude">SENSOR NOT AVAILABLE</b></figcaption></figure><figure><canvas id="vsiGauge" width="320" height="320" aria-label="Vertical speed indicator"></canvas><figcaption>VERTICAL SPEED <b id="gaugeVsi">SENSOR NOT AVAILABLE</b></figcaption></figure></div></div></section>
-<section class="panel tab-panel" id="tab-settings"><div class="settings-grid"><section class="form-card offline-settings">
-<div class="panel-head"><div><small>OFFLINE LAB</small><h2>Python, camera &amp; hands</h2></div></div>
-<p class="micro-note">Use Start_Offline on your laptop, then connect to the kit AP Wi-Fi. Python, OpenCV, plots and hand tracking use files included in this app. Allow camera access when asked.</p>
-<div class="button-row"><button class="btn primary" id="offlinePrepareBtn">Save for offline use</button><button class="btn ghost" id="offlineCheckBtn">Check offline files</button></div>
-<progress class="offline-progress" id="offlineProgress" value="0" max="1" aria-label="Offline save progress"></progress>
-<p class="micro-note" id="offlineStatus" role="status" aria-live="polite">Local files are included. Check here before saving a browser offline copy.</p>
-<small class="micro-note" id="offlineSize">The browser copy uses space on this device.</small>
-</section><section class="form-card">
-<div class="panel-head"><div><small>NETWORK / STA</small><h2>Kit Wi-Fi settings</h2></div></div>
-<div class="settings-network-summary" id="settingsNetworkSummary">Connect a kit to view STA details.</div><div class="button-row"><button class="btn ghost" id="scanWifiBtn">Scan Wi-Fi</button><button class="btn danger ghost" id="resetWifiBtn">Forget All Wi-Fi</button></div>
-<div class="callout"><b>Direct AP, no case button needed</b><p>Every kit has a unique AP name and permanent Device ID. Use the AP password shown on the kit label. Switch to AP while disarmed, or the kit enters AP if saved Wi-Fi is unavailable. After joining that Wi-Fi, open the installed Aerion Flight app or your locally running web lab. AP stays selected across power cycles.</p></div><div class="button-row"><button class="btn ghost" id="showApCredentialsBtn">Show this kit's AP details</button><button class="btn ghost" id="switchApBtn">Switch selected kit to AP</button></div><span class="micro-note" id="apCredentials">Select a verified kit and Take Control to display its AP details.</span>
-<label>Wi-Fi network<select id="wifiSelect"><option value="">Connect kit first</option></select></label>
-<label>Wi-Fi password<input autocomplete="new-password" id="wifiPassword" placeholder="Password" type="password"/></label>
-<button class="btn primary full" id="saveWifiBtn">Save Wi-Fi &amp; reconnect</button>
-<div class="callout"><b>Saved Wi-Fi profiles on this kit</b><p>SSID + password are stored separately inside this ZEBJUS controller. Passwords are never shown back to the browser. Use the APK Wi-Fi panel to test a new network before saving while the kit is in AP mode.</p></div>
-<label>Saved network<select id="savedWifiSelect"><option value="">Connect kit first</option></select></label>
-<div class="button-row"><button class="btn ghost" id="refreshSavedWifiBtn">Refresh Saved</button><button class="btn ghost" id="useSavedWifiBtn">Use Selected</button><button class="btn ghost" id="forgetSavedWifiBtn">Forget Selected</button></div>
-<span class="micro-note" id="wifiMessage"></span>
-</section><div class="form-card"><div class="panel-head"><div><small>FLIGHT / BASIC</small><h2>Flight mode and control</h2></div></div><div class="settings-network-summary" id="settingsFlightState">Select a kit or use Simulator.</div><label for="basicFlightMode">Joystick flight mode<select id="basicFlightMode"><option value="1000">ANGLE • level + inner rate PID</option><option value="1500">RATE • direct rate PID</option></select></label><div class="button-row"><button class="btn primary" id="settingsOpenJoystick">Open joystick</button><button class="btn ghost" id="settingsOpenPid">Open PID tuning</button></div><p class="micro-note">Changing mode while armed is blocked. Real-kit flight mode follows CH6 from the active RC source; altitude hold is not enabled in this firmware.</p></div><div class="form-card"><div class="panel-head"><div><small>KEYBOARD</small><h2>Joystick + Simulator key mapping</h2></div></div><p class="micro-note">Click an action and press a key; changes appear on both controller pages. T = transmitter, M = mode, X = immediate disarm are reserved. Directional sticks recenter on key release; throttle holds its last value. Save for this browser. Python projects can define their own key constants in code.</p><div class="key-settings" id="keySettings"></div><div class="button-row"><button class="btn primary" id="saveKeysBtn">Save key mapping</button><button class="btn ghost" id="resetKeysBtn">Restore defaults</button></div></div><div class="form-card"><div class="panel-head"><div><small>FC CASE / EXPANSION</small><h2>Accessible case headers</h2></div></div><div class="io-guide"><div><b>FC MOUNT</b><span>Double-side foam tape directly on the top plate • NO spacer / standoff.</span></div><div><b>ESC1–ESC4</b><span>Upward 2.54 mm male header pins. Source row • +5V centre row • GND bottom row. ESC female plug comes down from above.</span></div><div><b>External GPIO ×3</b><span>Source / +5V / GND. Use for servo, LED, LED matrix, GPS/control or sensors as appropriate.</span></div><div><b>RX / PPM header</b><span>Optional. PPM signal / +5V / GND. When RX is not used, the source pin can be used as another compatible I/O.</span></div><div><b>I²C 4-pin</b><span>VCC • GND • SCL • SDA remains user accessible.</span></div></div><img alt="ZEBJUS FC accessible pin reference" class="fc-reference-img" src="fc_board_reference.png"/></div>
-<div class="form-card"><div class="panel-head"><div><small>PYTHON CLASSROOM</small><h2>Example projects</h2></div></div><label class="sound-toggle"><input id="pythonExamplesEnabled" type="checkbox"/> Show Python example projects in the editor</label><p class="micro-note">Off by default on this browser. Students can type and run their own main.py. This display setting is for classroom focus, not access security; anyone with this browser can enable it.</p></div>
-<div class="form-card"><div class="panel-head"><div><small>PROJECT TOOLS</small><h2>Export / report / fullscreen</h2></div></div><div class="export-grid"><button class="btn ghost" id="exportProjectBtn">Export project JSON</button><button class="btn ghost" id="importProjectBtn">Import project JSON</button><input accept=".json,application/json" hidden="" id="importProjectFile" type="file"/><button class="btn ghost" id="exportSvgBtn">Export wiring SVG</button><button class="btn ghost" id="exportPngBtn">Export wiring PNG</button><button class="btn ghost" id="exportBomBtn">Export BOM CSV</button><button class="btn ghost" id="exportReportBtn">Progress report</button><button class="btn ghost" id="exportDiagnosticsBtn">Diagnostic JSON</button><button class="btn ghost" id="printWiringBtn">Print / Save PDF</button><button class="btn primary" id="fullscreenBtn">Fullscreen Lab</button></div></div>
-<div class="form-card"><div class="panel-head"><div><small>AUDIO</small><h2>Comfortable sound effects</h2></div><span class="status good" id="soundState">ON</span></div><label class="sound-toggle"><input checked="" id="soundEnabled" type="checkbox"/> Enable simulator / component sounds</label><label>Master volume <output id="soundVolumeOut">55%</output><input id="soundVolume" max="100" min="0" step="5" type="range" value="55"/></label><p class="micro-note">Component pick/drop sounds are stronger. Battery power-up uses a realistic synthetic ESC startup sequence without continuous assembly motor noise. PID simulator and 2D BLDC motor sound remain speed-dependent.</p></div>
-<div class="zebjus-market-card"><div><small>BUILD • LEARN • CUSTOMIZE</small><b>ZEBJUS kits and student projects</b><p>Explore drone components, custom kits, tutorials and project support.</p><div class="zebjus-market-links"><a href="https://www.zebjus.in/" target="_blank" rel="noopener noreferrer">ZEBJUS learning ↗</a><a href="https://www.zebjus.in/category/all-products" target="_blank" rel="noopener noreferrer">Components &amp; kits ↗</a></div></div><img src="ref_zebjus-fc-gerber-top.png" alt="ZEBJUS flight controller board" loading="lazy"/></div>
-<div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option selected="" value="balanced">Balanced</option><option value="low">Low-end laptop</option></select></label><button class="btn ghost full" id="applyPerformanceBtn">Apply graphics profile</button><pre class="terminal mini" id="startupDiagnostics">Collecting diagnostics…</pre></div>
-</div></section>
-</main></div>
-<script src="ui-runtime.js?v=18.3.66-r2"></script>
-<script src="offline-support.js?v=18.3.66-r2"></script>
-<script src="kit-local.js?v=18.3.66-r2"></script>
-<script src="control-sticks.js?v=18.3.66-r2"></script>
-<script src="fc-setup.js?v=18.3.66-web.2"></script>
-<script src="kit-console.js?v=18.3.66-r2"></script>
-<script src="lab-workflow.js?v=18.3.66"></script>
-<script src="telemetry-cockpit.js?v=18.3.66"></script>
-<script src="flight-training-core.js?v=18.3.66-web.2"></script>
-<script src="flight-training-input.js?v=18.3.66-web.2"></script>
-<script type="module" src="flight-training.js?v=18.3.66-web.2"></script>
-<script src="flight-diagnostics.js?v=18.3.66-r2"></script>
-<script src="app.js?v=18.3.66-r2" type="module"></script>
-<script src="school-lab.js?v=18.3.66-web.2"></script>
-<script src="hardware-io.js?v=18.3.66-r2"></script>
-<script src="firmware-updater.js?v=18.3.66-r2"></script>
+</script>
+<script>
+(function(){
+'use strict';
+function confirmInLab(message){return window.AerionDialogs?.confirm(message)??Promise.resolve(confirm(message))}
+
+const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const VERSION='18.4.0',BASE=location.pathname.includes('/flight/')?'../FlightCore_Firmware':'./FlightCore_Firmware',DB='zebjus-flightcore-firmware',STORE='images';
+let catalog=null,fw=null,serialPort=null,transport=null,loader=null,usbSignature='',usbBoardId='',busy=false,loading=false,criticalBusy=false,usbConnecting=false,loadEpoch=0,catalogSource='',liveFirmwareBuiltAt='',postFlashWatchTimer=null;
+const EMBEDDED_CATALOG={"schema":2,"product":"ZEBJUS_FLIGHTCORE","version":"18.4.0","defaultBoardId":"ZFC-A1","boards":[{"id":"ZFC-A1","name":"ZEBJUS FlightCore A1 \u2022 ESP32-C3","appAddress":"0x10000","flashMode":"dio","flashFreq":"80m","flashSize":"4MB","latest":{"version":"18.4.0","app":{"available":false,"file":"ZEBJUS_FLIGHTCORE_A1_APP.bin","sha256":"","size":0,"builtAt":"","buildId":""},"factory":{"available":false,"file":"ZEBJUS_FLIGHTCORE_A1_FACTORY.bin","sha256":"","size":0,"builtAt":"","buildId":""}},"usbMatch":["ESP32-C3","ESP32C3"],"flasher":"serial-loader-v1","build":{"builder":"arduino-cli","fqbn":"esp32:esp32:esp32c3"},"imageChipIds":[5],"supportedSensors":["LSM6DS3","MPU6050"],"recommendedSensor":"LSM6DS3"},{"id":"ZFC-A2","name":"ZEBJUS FlightCore A2 \u2022 ZEBJUS Aerion F1","appAddress":"0x10000","flashMode":"dio","flashFreq":"80m","flashSize":"4MB","latest":{"version":"18.4.0","app":{"available":false,"file":"ZEBJUS_FLIGHTCORE_A2_APP.bin","sha256":"","size":0,"builtAt":"","buildId":""},"factory":{"available":false,"file":"ZEBJUS_FLIGHTCORE_A2_FACTORY.bin","sha256":"","size":0,"builtAt":"","buildId":""}},"usbMatch":["ZEBJUS Aerion F1","ESP32C6"],"flasher":"serial-loader-v1","build":{"builder":"arduino-cli","fqbn":"esp32:esp32:XIAO_ESP32C6"},"imageChipIds":[13],"supportedSensors":["MPU6050","LSM6DS3"],"recommendedSensor":"MPU6050"}]};
+function school(){return window.zebjusSchool||null}
+function log(msg){const e=$('#fwLog');if(e)e.textContent=`${new Date().toLocaleTimeString()}  ${msg}\n${e.textContent}`.slice(0,16000)}
+function text(id,v){const e=$(id);if(e)e.textContent=v}
+function textTitle(id,v){const e=$(id);if(e){e.textContent=v;e.title=String(v||'')}}
+function badge(id,label,cls=''){const e=$(id);if(e){e.textContent=label;e.className='status '+cls}}
+function prettyBytes(n){n=+n||0;if(n<1024)return n+' B';if(n<1048576)return(n/1024).toFixed(1)+' KB';return(n/1048576).toFixed(2)+' MB'}
+function formatBuildTime(v){if(!v)return'--';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleString([], {year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})}
+function stage(name,state){const e=$('#fwStage'+name);if(e)e.className=state||''}
+function resetStages(){['Prepare','Flash','Verify','Reboot','Reconnect'].forEach(x=>stage(x,''))}
+function progress(p,title){p=Math.max(0,Math.min(100,Math.round(p)));const b=$('#fwProgressBar');if(b)b.style.width=p+'%';text('#fwProgressPct',p+'%');if(title)text('#fwProgressTitle',title)}
+function setBusy(on,kind='critical'){if(kind==='load')loading=!!on;else criticalBusy=!!on;busy=loading||criticalBusy;['#fwAutoLoadBtn','#fwWifiFlashBtn','#fwUsbFlashBtn','#fwDisconnectUsbBtn','#fwBoardProfile','#fwImageType','#fwFileInput','#fwUsbBaud','#fwEraseUsb'].forEach(s=>{const e=$(s);if(e)e.disabled=busy});const usb=$('#fwConnectUsbBtn');if(usb)usb.disabled=criticalBusy||usbConnecting;const erase=$('#fwEraseUsb');if(erase&&$('#fwImageType')?.value==='app'){erase.disabled=true;erase.checked=false}const page=$('#tab-firmware'),label=$('.firmware-file-label');if(page)page.classList.toggle('firmware-busy',busy);if(label)label.setAttribute('aria-disabled',busy?'true':'false')}
+async function download(url,type='json',timeout=10000){const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),timeout);try{const r=await fetch(url,{cache:'no-store',signal:ctl.signal});if(!r.ok)throw Error('HTTP '+r.status);return type==='json'?await r.json():new Uint8Array(await r.arrayBuffer())}finally{clearTimeout(timer)}}
+async function sha256(bytes){try{const h=await crypto.subtle.digest('SHA-256',bytes);return[...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch{return''}}
+function inferType(name){return/factory|merged|merge\.bin/i.test(String(name||''))?'factory':'app'}
+function inferVersion(name){const m=String(name||'').match(/(?:v|_)(\d+)[._-](\d+)[._-](\d+)/i);return m?`${m[1]}.${m[2]}.${m[3]}`:'Custom'}
+function boardById(id){return catalog?.boards?.find(b=>b.id===id)||null}
+function mapHardwareSignature(raw){const s=String(raw||'').toUpperCase();for(const b of catalog?.boards||[])for(const m of b.usbMatch||[])if(s.includes(String(m).toUpperCase()))return b.id;return''}
+function boardName(id){return boardById(id)?.name||id||'Unknown board'}
+function cleanHardwareText(v){return String(v||'').replace(/ESP32[- ]?C[36]/ig,'controller').replace(/ESP32C[36]/ig,'controller').replace(/ESP-ROM[^\n]*/ig,'FlightCore bootloader').replace(/Espressif/ig,'ZEBJUS controller')}
+function validateEspImage(bytes,boardId,type='app'){if(!(bytes instanceof Uint8Array)||bytes.length<32768)throw new Error('Firmware file is too small to be a valid controller image.');if(bytes[0]!==0xE9)throw new Error('Invalid firmware image: ESP image magic 0xE9 is missing.');const segments=bytes[1];if(segments<1||segments>16)throw new Error('Invalid firmware image: segment table is not plausible.');let nonZero=0,nonFF=0;const step=Math.max(1,Math.floor(bytes.length/8192));for(let i=0;i<bytes.length;i+=step){if(bytes[i]!==0)nonZero++;if(bytes[i]!==0xFF)nonFF++}if(nonZero<64||nonFF<64)throw new Error('Invalid firmware image: file contains mostly empty/zero data.');const board=boardById(boardId),chipId=bytes.length>13?(bytes[12]|(bytes[13]<<8)):null,allowed=board?.imageChipIds||[];if(allowed.length&&chipId!=null&&!allowed.includes(chipId))throw new Error(`Firmware chip ID ${chipId} does not match ${boardName(boardId)}.`);const appOffset=type==='factory'?parseInt(board?.appAddress||'0x10000'):0;
+if(bytes.length<appOffset+32768||bytes[appOffset]!==0xE9)throw new Error('Application image is missing at the required flash offset.');
+const appChip=bytes[appOffset+12]|(bytes[appOffset+13]<<8);
+if(allowed.length&&!allowed.includes(appChip))throw new Error('Factory application belongs to a different controller profile.');
+const descriptor=(bytes[appOffset+32]|(bytes[appOffset+33]<<8)|(bytes[appOffset+34]<<16)|(bytes[appOffset+35]<<24))>>>0;
+if(descriptor!==0xABCD5432)throw new Error('Application descriptor missing. Select the correct APP or FACTORY image.');
+return{segments,chipId,type,appOffset}}
+async function loadCatalog(){
+ if(catalog)return catalog;
+ const urls=window.AerionAndroid?[]:[`${BASE}/catalog.json?v=${VERSION}`,`${BASE}/../firmware-catalog.json?v=${VERSION}`];
+ for(const url of urls){
+   try{
+     const j=await download(url,'json',2500);
+     if(!j?.boards?.length)continue;
+     catalog=j;catalogSource=url;break;
+   }catch(_){}
+ }
+ if(!catalog){
+   catalog=JSON.parse(JSON.stringify(EMBEDDED_CATALOG));
+   catalogSource='embedded';
+   log('Firmware catalog file unavailable • using built-in board catalog.');
+ }
+ const sel=$('#fwBoardProfile');
+ if(sel){for(const b of catalog.boards||[]){if(!sel.querySelector(`option[value="${b.id}"]`)){const o=document.createElement('option');o.value=b.id;o.textContent=b.name;sel.appendChild(o)}}}
+ return catalog;
+}
+async function fetchBundledFirmware(file,version){
+ const paths=[`${BASE}/${file}?v=${encodeURIComponent(version||VERSION)}`,`./${file}?v=${encodeURIComponent(version||VERSION)}`];
+ let last='';
+ for(const src of paths){try{return{bytes:await download(src,'bytes',15000),src}}catch(e){last=e?.message||String(e)}}
+ throw new Error(`Firmware package file is not present (${last||'not found'}).`);
+}
+async function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function cacheKey(boardId,type){return`${boardId||'unknown'}:${type||'app'}`}
+async function cacheFirmware(){if(!fw)return;try{const db=await openDb();await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put({...fw,bytes:fw.bytes.buffer},cacheKey(fw.boardId,fw.type));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch(e){log('Could not cache firmware: '+e.message)}}
+async function loadCached(boardId,type='app'){try{const db=await openDb(),v=await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readonly'),r=tx.objectStore(STORE).get(cacheKey(boardId,type));r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});db.close();if(v?.bytes){await setFirmware(new Uint8Array(v.bytes),v.name||'cached.bin',{type:v.type,version:v.version,boardId:v.boardId,builtAt:v.builtAt,buildId:v.buildId,cache:false,source:'Browser cache'});return true}}catch{}return false}
+async function clearCached(){try{const db=await openDb();await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).clear();tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch{}fw=null;renderFirmware();log('Cached firmware cleared.')}
+async function setFirmware(bytes,name,opt={}){if(!(bytes instanceof Uint8Array))bytes=new Uint8Array(bytes);const type=opt.type||inferType(name),boardId=opt.boardId||await targetBoardId(false);const imageInfo=validateEspImage(bytes,boardId,type),hash=await sha256(bytes);fw={bytes,name,type,version:opt.version||inferVersion(name),builtAt:opt.builtAt||'',buildId:opt.buildId||'',boardId,hash,imageInfo,source:opt.source||'Imported file'};renderFirmware();if(opt.cache!==false)await cacheFirmware();log(`Firmware verified: ${name} • ${boardName(boardId)} • chip ${imageInfo.chipId??'--'} • ${prettyBytes(bytes.length)} • ${type}`)}
+function renderFirmware(){const has=!!fw;textTitle('#fwFileName',has?fw.name:'No firmware loaded');text('#fwFileVersion',has?fw.version:'--');textTitle('#fwBuildTime',has?formatBuildTime(fw.builtAt):'--');textTitle('#fwBuildId',has?(fw.buildId||'Imported / custom'):'--');text('#fwFileSize',has?prettyBytes(fw.bytes.length):'--');textTitle('#fwFileHash',has?(fw.hash?fw.hash.slice(0,18)+'…':'Unavailable'):'--');badge('#fwSourceBadge',has?'LOADED':'NO FILE',has?'good':'');const t=$('#fwImageType');if(t&&has)t.value=fw.type;const erase=$('#fwEraseUsb');if(erase){erase.disabled=(t?.value||fw?.type)==='app';if(erase.disabled)erase.checked=false}}
+async function onlineBoardInfo(){const s=school(),d=s?.getSelectedDevice?.();if(!d?.online||!s?.client?.connected)return null;try{const i=await s.client.firmwareInfo();liveFirmwareBuiltAt=i.firmwareBuiltAt||i.buildDateTime||i.buildTime||liveFirmwareBuiltAt;return{...i,boardId:i.boardId||mapHardwareSignature(i.chip),boardName:i.boardName||boardName(i.boardId||mapHardwareSignature(i.chip))}}catch{return null}}
+async function targetBoardId(updateUi=true){await loadCatalog();const manual=$('#fwBoardProfile')?.value||'auto';let id='',source='';if(manual!=='auto'){id=manual;source='Manual selection'}else if(usbBoardId){id=usbBoardId;source='USB auto-detect'}else{const info=await onlineBoardInfo();if(info?.boardId){id=info.boardId;source='Online kit auto-detect'}}if(!id){id=catalog.defaultBoardId;source='Default profile'}if(updateUi){text('#fwDetectedBoard',boardName(id));text('#fwBoardSource',source);const p=boardById(id)?.latest?.[$('#fwImageType')?.value||'app'];text('#fwPackageState',p?.available?`Bundled ${boardById(id).latest.version}`:'Build not bundled')}return id}
+async function autoLoad(){
+ if(window.AerionAndroid){log('Choose a matching .bin downloaded from the firmware links.');text('#fwSourceMessage','Choose the matching APP .bin to update this controller over Wi-Fi.');return;}
+ const epoch=++loadEpoch;setBusy(true,'load');resetStages();stage('Prepare','active');progress(5,'Checking matching firmware…');
+ try{const id=await targetBoardId(true),type=$('#fwImageType')?.value||'app',b=boardById(id),pkg=b?.latest?.[type];
+  if(!pkg?.available||!pkg.file)throw Error('The matching firmware build is not published yet.');
+  const bytes=pkg.url?await download(pkg.url,'bytes',15000):(await fetchBundledFirmware(pkg.file,b.latest.version||VERSION)).bytes;
+  const hash=await sha256(bytes);if(pkg.sha256&&hash.toLowerCase()!==String(pkg.sha256).toLowerCase())throw Error('Bundled firmware checksum mismatch.');
+  if(epoch!==loadEpoch)return;await setFirmware(bytes,pkg.file,{type,version:b.latest.version,builtAt:pkg.builtAt||b.latest.builtAt,buildId:pkg.buildId||'',boardId:id,source:'Published package'});
+  text('#fwSourceMessage','Matching firmware loaded.');text('#fwPackageState','READY · '+b.latest.version);progress(100,'Firmware ready');stage('Prepare','done');
+ }catch(e){if(epoch===loadEpoch){log('Load firmware: '+e.message);progress(0,'Choose a matching .bin or retry');stage('Prepare','error');}}
+ finally{if(epoch===loadEpoch)setBusy(false,'load');}
+}
+async function importFile(file){if(!file)return;if(!/\.bin$/i.test(file.name))throw new Error('Select a compiled .bin firmware file.');const id=await targetBoardId(true);await setFirmware(new Uint8Array(await file.arrayBuffer()),file.name,{boardId:id});text('#fwSourceMessage',`Imported firmware assigned to ${boardName(id)} and cached in this browser.`);text('#fwPackageState','IMPORTED');progress(100,'Firmware ready');stage('Prepare','done')}
+function kitStatus(){const s=school(),d=s?.getSelectedDevice?.(),online=!!d?.online;text('#fwCurrentVersion',online?(d.firmware||d.version||'--'):'--');textTitle('#fwCurrentBuildTime',online?formatBuildTime(d.firmwareBuiltAt||d.buildDateTime||d.buildTime||liveFirmwareBuiltAt):'--');text('#fwDeviceId',online?(d.deviceId||'--'):'--');text('#fwKitState',online?(d.armed?'ARMED':'ONLINE • DISARMED'):'OFFLINE');text('#fwLiveBoard',online?(d.boardName||boardName(d.boardId)||'Detecting…'):'--');const kb=$('#fwKitBadge');if(kb){kb.textContent=online?'KIT ONLINE':'KIT OFFLINE';kb.className='firmware-badge '+(online?'online':'offline')}return{s,d,online}}
+async function refreshKit(){const{s}=kitStatus();try{await s?.refreshNow?.();const info=await onlineBoardInfo();if(info?.boardId){text('#fwLiveBoard',info.boardName||boardName(info.boardId));text('#fwCurrentVersion',info.firmware||info.version||'--');textTitle('#fwCurrentBuildTime',formatBuildTime(info.firmwareBuiltAt||info.buildDateTime||info.buildTime||''));if(!usbBoardId)await targetBoardId(true)}kitStatus();log('Kit status refreshed.')}catch(e){log('Kit check: '+e.message)}}
+function ensureWifiReady(){const{s,d,online}=kitStatus();if(!fw)throw new Error('Load firmware first.');if(fw.type!=='app')throw new Error('Wi-Fi OTA accepts an application image only. Use USB for Factory/Merged images.');if(!online||!s?.client?.connected)throw new Error('Connect the kit first.');if(d.armed)throw new Error('DISARM the flight controller before firmware update.');if(!s.canControl?.())throw new Error('Take Control of the kit before firmware update.');return s}
+async function verifyPostFlashFirmware(s,expectedVersion=''){
+ try{
+   const info=await s?.client?.firmwareInfo?.();if(!info)return null;
+   liveFirmwareBuiltAt=info.firmwareBuiltAt||info.buildDateTime||info.buildTime||liveFirmwareBuiltAt;
+   text('#fwCurrentVersion',info.firmware||info.version||'--');textTitle('#fwCurrentBuildTime',formatBuildTime(liveFirmwareBuiltAt));text('#fwLiveBoard',info.boardName||boardName(info.boardId)||'--');
+   const actual=String(info.firmware||info.version||'').trim();
+   return{info,actual,matches:!expectedVersion||actual===String(expectedVersion)};
+ }catch{return null}
+}
+function stopPostFlashWatch(){if(postFlashWatchTimer){clearInterval(postFlashWatchTimer);postFlashWatchTimer=null}}
+function startPostFlashWatch(expectedVersion=''){
+ stopPostFlashWatch();const deadline=Date.now()+300000;let checking=false;
+ postFlashWatchTimer=setInterval(async()=>{
+   if(checking)return;checking=true;
+   try{
+     const s=school(),d=s?.getSelectedDevice?.();
+     if(d?.online&&s?.client?.connected){
+       const v=await verifyPostFlashFirmware(s,expectedVersion);
+       if(v){stage('Reconnect','done');progress(100,v.matches?'Update complete • kit reconnected & firmware verified':'Kit reconnected • verify firmware version');badge('#fwOverallBadge',v.matches?'COMPLETE':'RECONNECTED','good');log(v.matches?`Kit reconnected in background • firmware ${v.actual} verified.`:`Kit reconnected in background • reports firmware ${v.actual||'unknown'}; expected ${expectedVersion}.`);stopPostFlashWatch();await refreshKit();}
+     }else if(Date.now()<deadline){try{await s?.reconnectNow?.()}catch{}}
+     if(Date.now()>=deadline){stopPostFlashWatch();log('Background reconnect watch ended after 5 minutes. Firmware flash had already completed successfully.');}
+   }finally{checking=false}
+ },4500)
+}
+async function wifiFlash(){
+ if(busy)return;stopPostFlashWatch();let s;
+ try{await window.AerionController?.prepareConfiguration()}catch(e){log(e.message);return;}
+ try{
+   s=ensureWifiReady();const info=await s.client.firmwareInfo(),target=fw.boardId||await targetBoardId(false),actual=info.boardId||mapHardwareSignature(info.chip);
+   if(info?.armed)throw new Error('DISARM the flight controller before firmware update.');
+   if(actual&&target&&actual!==target)throw new Error(`Firmware is for ${boardName(target)}, but the connected controller is ${info.boardName||boardName(actual)}.`);
+   if(info?.freeSketchBytes&&fw.bytes.length>+info.freeSketchBytes)throw new Error(`Firmware is ${prettyBytes(fw.bytes.length)}, larger than the available application space ${prettyBytes(info.freeSketchBytes)}.`);
+   log(`OTA target verified: ${info.boardName||boardName(actual)} • current ${info.firmware||'--'}`)
+ }catch(e){log(e.message);badge('#fwOverallBadge','BLOCKED','warn');return}
+ if(!await confirmInLab(`Flash ${fw.name} to ${s.getSelectedDevice().deviceName||'selected kit'} over Wi-Fi?\n\nKeep the drone DISARMED and powered until reboot completes.`))return;
+ setBusy(true);resetStages();stage('Prepare','done');stage('Flash','active');progress(2,'Uploading firmware to kit…');badge('#fwOverallBadge','UPDATING','warn');
+ const c=s.client,url=`${c.base}/api/firmware/update?clientId=${encodeURIComponent(c.clientId)}&boardId=${encodeURIComponent(fw.boardId||'')}&expectedDeviceId=${encodeURIComponent(c.deviceId)}`;
+ try{
+   const result=window.AerionAndroid?.uploadFirmware?await window.AerionAndroid.uploadFirmware(url,fw.bytes,{clientId:c.clientId,expectedDeviceId:c.deviceId,boardId:fw.boardId}):await new Promise((resolve,reject)=>{const x=new XMLHttpRequest();x.open('POST',url,true);x.timeout=120000;x.upload.onprogress=e=>{if(e.lengthComputable)progress(5+(e.loaded/e.total)*78,`Uploading ${prettyBytes(e.loaded)} / ${prettyBytes(e.total)}`)};x.onerror=()=>reject(new Error('Firmware upload connection failed.'));x.ontimeout=()=>reject(new Error('Firmware upload timed out.'));x.onload=()=>{let r={};try{r=JSON.parse(x.responseText||'{}')}catch{}if(x.status>=200&&x.status<300&&r.ok!==false)resolve(r);else reject(new Error(r.message||`Kit returned HTTP ${x.status}`))};const f=new FormData();f.append('firmware',new Blob([fw.bytes],{type:'application/octet-stream'}),fw.name);x.send(f)});
+   stage('Flash','done');stage('Verify','done');progress(88,'Firmware verified • rebooting…');stage('Reboot','active');log(result.message||'Firmware written successfully.');
+   await sleep(1900);stage('Reboot','done');stage('Reconnect','active');progress(92,'Firmware flashed • waiting for Wi-Fi reboot…');badge('#fwOverallBadge','FLASHED • RECONNECTING','warn');s.markOffline?.('Firmware reboot');
+   const totalMs=120000,reconnectStart=Date.now();let d=null;
+   if(s.reconnectAfterFirmware){
+     d=await s.reconnectAfterFirmware({totalMs,onProgress:x=>{const pct=92+Math.min(1,x.elapsedMs/totalMs)*7;const labels={cached:'Trying previous IP…',mdns:'Waiting for kit-name.local…',discovery:'Scanning same Wi-Fi for the kit…',timeout:'Reconnect window elapsed'};progress(Math.min(99,pct),`${labels[x.phase]||'Reconnecting…'} ${Math.round(x.elapsedMs/1000)}s / 120s`)}})
+   }else{
+     for(let i=0;i<60;i++){await sleep(1900);try{d=await s.reconnectNow?.();if(d?.online)break}catch{}progress(Math.min(99,92+(Date.now()-reconnectStart)/totalMs*7),`Reconnecting… ${Math.round((Date.now()-reconnectStart)/1000)}s / 120s`)}
+   }
+   if(d?.online){
+     const v=await verifyPostFlashFirmware(s,fw.version==='Custom'?'':fw.version);stage('Reconnect','done');progress(100,v?.matches?'Update complete • kit reconnected & firmware verified':'Kit reconnected • verify firmware version');badge('#fwOverallBadge',v?.matches?'COMPLETE':'RECONNECTED','good');log(v?.matches?`Automatic reconnect complete • firmware ${v.actual} verified.`:`Kit reconnected, but firmware reports ${v?.actual||'unknown'} (expected ${fw.version}).`);await refreshKit()
+   }else{
+     progress(99,'Flash successful • reconnect still pending');badge('#fwOverallBadge','FLASH SUCCESS • RECONNECT PENDING','warn');log('Firmware flash succeeded. The kit has not reappeared yet; background reconnect will continue for up to 5 minutes.');startPostFlashWatch(fw.version)
+   }
+ }catch(e){stage('Flash','error');badge('#fwOverallBadge','FAILED','danger');progress(0,'Update failed');log('Wi-Fi update failed: '+e.message)}finally{setBusy(false)}
+}
+async function loadUsbFlasher(){try{return await import(location.pathname.includes('/flight/')?'../vendor/esptool/bundle.mjs':'./vendor/esptool/bundle.mjs')}catch(e){throw Error('USB loader could not load. Refresh the page or use the direct USB link.')}}
+async function connectUsb(){
+ if(usbConnecting||criticalBusy)return;
+ if(window.isSecureContext===false){log('USB requires HTTPS or localhost. Open the direct USB page.');text('#fwUsbState','Open HTTPS USB page');return;}
+ if(!navigator.serial?.requestPort){log('USB port selection requires desktop Chrome / Edge. Use Wi-Fi update on the Android app.');text('#fwUsbState','Desktop Chrome / Edge required');return;}
+ const policy=document.permissionsPolicy||document.featurePolicy;
+ if(policy?.allowsFeature&&!policy.allowsFeature('serial')){log('This embedded page blocks USB. Click Open USB page directly.');text('#fwUsbState','Open USB page directly');return;}
+ usbConnecting=true;setBusy(true);badge('#fwOverallBadge','SELECT USB PORT','warn');text('#fwUsbState','Choose the controller in the browser port picker');
+ try{
+  // Call the chooser directly in the click event, before any await or download.
+  const selected=navigator.serial.requestPort();serialPort=await selected;++loadEpoch;setBusy(false,'load');
+  text('#fwUsbState','Port selected · connecting bootloader…');await loadCatalog();const mod=await loadUsbFlasher();
+  transport=new mod.Transport(serialPort,true);loader=new mod.ESPLoader({transport,baudrate:+($('#fwUsbBaud')?.value||115200),terminal:{clean(){},writeLine(v){if(String(v).trim())log('[USB] '+String(v))},write(v){if(String(v).trim())log('[USB] '+String(v))}}});
+  usbSignature=await loader.main();usbBoardId=mapHardwareSignature(usbSignature);if(!usbBoardId)throw Error('Selected USB device is not a supported FlightCore A1 / A2.');
+  text('#fwUsbChip',boardName(usbBoardId));text('#fwUsbState','Bootloader connected');const badgeNode=$('#fwSerialBadge');if(badgeNode){badgeNode.textContent='USB CONNECTED';badgeNode.className='online'}badge('#fwOverallBadge','USB READY','good');
+  await targetBoardId(true);log('USB connected: '+boardName(usbBoardId));
+ }catch(e){await disconnectUsb(false);if(e.name==='NotFoundError'){text('#fwUsbState','No port selected · retry Select USB port');badge('#fwOverallBadge','SELECT PORT','warn');log('Port selection cancelled. Click Select USB port to retry.');}else if(e.name==='SecurityError'){text('#fwUsbState','USB permission blocked · open direct page');log('USB permission blocked. Open the USB page directly and allow the controller port.');}else{badge('#fwOverallBadge','USB CONNECT FAILED','danger');text('#fwUsbState',e.message);log('USB: '+e.message+' Close Arduino Serial Monitor and reconnect the USB cable before retrying.');}}
+ finally{usbConnecting=false;setBusy(false);}
+}
+async function usbFlash(){if(busy)return;if(!fw)return log('Load firmware first.');if(!loader)return log('Connect USB first.');const type=fw.type,target=fw.boardId||await targetBoardId(false);if(usbBoardId&&target!==usbBoardId)return log(`Blocked: firmware is for ${boardName(target)}, USB controller is ${boardName(usbBoardId)}.`);const erase=!!$('#fwEraseUsb')?.checked;if(erase&&type!=='factory')return log('Erase is blocked for application-only images because it would remove the bootloader/partition table.');const bp=boardById(target);if(!bp)return log('Selected board profile is not available.');if(!await confirmInLab(`USB flash ${fw.name}\nType: ${type==='factory'?'Factory/Merged':'Application'}\nBoard: ${boardName(target)}\n\nContinue?`))return;setBusy(true);resetStages();stage('Prepare','done');stage('Flash','active');progress(2,'Preparing USB flash…');badge('#fwOverallBadge','FLASHING','warn');try{if(erase){progress(4,'Erasing flash…');await loader.eraseFlash()}const address=type==='factory'?0:parseInt(bp.appAddress||'0x10000');await loader.writeFlash({fileArray:[{data:fw.bytes,address}],flashMode:bp.flashMode||'dio',flashFreq:bp.flashFreq||'80m',flashSize:bp.flashSize||'4MB',eraseAll:false,compress:true,reportProgress:(i,w,t)=>progress(5+(w/t)*80,`USB flash ${prettyBytes(w)} / ${prettyBytes(t)}`)});stage('Flash','done');stage('Verify','done');stage('Reboot','active');progress(90,'Flash complete • restarting controller…');await loader.after('hard_reset');stage('Reboot','done');progress(94,'Controller restarted');log('USB firmware flash completed.');await disconnectUsb(false);stage('Reconnect','active');const s=school();if(s?.getSelectedDevice?.()){s.markOffline?.('Firmware reboot');for(let i=0;i<18;i++){await sleep(1100);try{const d=await s.reconnectNow?.();if(d?.online){stage('Reconnect','done');progress(100,'Update complete • kit online');badge('#fwOverallBadge','COMPLETE','good');return}}catch{}}}stage('Reconnect','');progress(100,'USB flash complete');badge('#fwOverallBadge','FLASHED','good')}catch(e){stage('Flash','error');badge('#fwOverallBadge','FAILED','danger');progress(0,'USB flash failed');log('USB flash failed: '+e.message)}finally{setBusy(false)}}
+async function disconnectUsb(update=true){try{if(transport)await transport.disconnect()}catch{}loader=null;transport=null;serialPort=null;usbSignature='';usbBoardId='';text('#fwUsbChip','--');text('#fwUsbState','Not connected');const b=$('#fwSerialBadge');if(b){b.textContent='USB NOT CONNECTED';b.className='firmware-badge offline'}if(update){log('USB disconnected.');await targetBoardId(true)}}
+async function rebootKit(){const{s,d,online}=kitStatus();if(!online)return log('Kit is offline.');if(d.armed)return log('Reboot blocked: DISARM the kit first.');if(!s?.canControl?.())return log('Take Control before reboot.');if(!await confirmInLab('Reboot the selected flight controller now?'))return;try{badge('#fwOverallBadge','REBOOTING','warn');resetStages();stage('Reboot','active');progress(45,'Sending reboot command…');const j=await s.client.reboot();if(j?.ok===false)throw new Error(j.message||'Reboot failed');s.markOffline?.('Manual reboot');stage('Reboot','done');stage('Reconnect','active');progress(65,'Waiting for kit…');for(let i=0;i<20;i++){await sleep(1000);const d2=await s.reconnectNow?.().catch(()=>null);if(d2?.online){stage('Reconnect','done');progress(100,'Kit rebooted and reconnected');badge('#fwOverallBadge','ONLINE','good');return}}throw new Error('Reconnect timed out')}catch(e){badge('#fwOverallBadge','RECONNECT','warn');log(e.message)}}
+async function reconnectKit(){const s=school();if(!s)return;stage('Reconnect','active');progress(60,'Reconnecting to kit…');try{const d=await s.reconnectNow?.(true);if(d?.online){stage('Reconnect','done');progress(100,'Kit online');badge('#fwOverallBadge','ONLINE','good');await refreshKit()}else throw new Error('Kit not found yet.')}catch(e){badge('#fwOverallBadge','OFFLINE','warn');log('Reconnect: '+e.message)}}
+async function upgrade(erase=false){if(busy)return;try{if(erase){if(!loader)throw Error('Upgrade & Erase requires a connected USB controller.');$('#fwImageType').value='factory';await autoLoad();if(!fw||fw.type!=='factory')throw Error('Matching complete factory image is required.');$('#fwEraseUsb').checked=true;try{await usbFlash()}finally{$('#fwEraseUsb').checked=false}}else{if(!fw)await autoLoad();if(!fw)throw Error('Load a matching firmware image first.');if(loader)await usbFlash();else await wifiFlash()}}catch(e){log(e.message)}}
+function bind(){$('#fwUpgradeBtn')?.addEventListener('click',()=>upgrade(false));$('#fwUpgradeEraseBtn')?.addEventListener('click',()=>upgrade(true));const fi=$('#fwFileInput');if(fi)fi.onchange=()=>importFile(fi.files?.[0]).catch(e=>log(e.message));$('#fwAutoLoadBtn')?.addEventListener('click',autoLoad);$('#fwForgetBtn')?.addEventListener('click',clearCached);$('#fwRefreshKitBtn')?.addEventListener('click',refreshKit);$('#fwConnectUsbBtn')?.addEventListener('click',connectUsb);$('#fwDisconnectUsbBtn')?.addEventListener('click',()=>disconnectUsb());$('#fwWifiFlashBtn')?.addEventListener('click',wifiFlash);$('#fwUsbFlashBtn')?.addEventListener('click',usbFlash);$('#fwRebootBtn')?.addEventListener('click',rebootKit);$('#fwReconnectBtn')?.addEventListener('click',reconnectKit);$('#fwImageType')?.addEventListener('change',async()=>{fw=null;renderFirmware();await autoLoad()});$('#fwBoardProfile')?.addEventListener('change',async()=>{fw=null;renderFirmware();await autoLoad()});const dz=$('#fwDropZone');if(dz){['dragenter','dragover'].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.add('drag')}));['dragleave','drop'].forEach(n=>dz.addEventListener(n,e=>{e.preventDefault();dz.classList.remove('drag')}));dz.addEventListener('drop',e=>importFile(e.dataTransfer?.files?.[0]).catch(er=>log(er.message)))}window.addEventListener('beforeunload',()=>{try{transport?.disconnect()}catch{}})}
+async function init(){if(!$('#tab-firmware'))return;bind();resetStages();renderFirmware();kitStatus();setInterval(kitStatus,1000);try{await loadCatalog();await targetBoardId(true)}catch(e){log(e.message)}text('#fwSourceMessage','Choose a .bin or click Load latest. USB port selection is ready.');}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,100));else setTimeout(init,100);
+})();
+
+</script>
 </body></html>
