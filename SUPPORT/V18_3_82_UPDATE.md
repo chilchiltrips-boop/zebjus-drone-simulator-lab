@@ -18,6 +18,8 @@ The previous fallback path persisted AP preference; subsequent boots could there
 - Record connection errors and the native network selection in Android exports, and router attempt diagnostics in WebApp status. Reclaim released idle mobile authentication sessions after their activity deadline, while preserving active control and training sessions.
 - AP uses HTTP telemetry; the WebApp does not open the STA-only live RC monitor or label AP rejection as a training conflict.
 
+- Web Start now waits for its confirmed app session and fresh observer RC to start Flight Training once. An early manual app ARM cannot be erased by a delayed Web Start acknowledgement resetting the virtual lesson.
+
 ## Install and reconnect this A2 kit
 
 1. Keep the frame level and still for gyro calibration, with propellers removed during setup. The uploaded controller is **ZFC-A2 / ESP32-C6 Aerion F1**.

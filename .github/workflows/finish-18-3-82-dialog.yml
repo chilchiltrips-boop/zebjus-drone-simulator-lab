@@ -47,6 +47,7 @@ jobs:
           npm run test:mobile-view
           node android-app/tests/browser_transport_test.js
           node android-app/tests/browser_reconnect_test.js
+          npm run test:training-browser
           for aerion_handoff in 1 2 3; do
             node android-app/tests/browser_modes_test.js
           done
@@ -59,7 +60,7 @@ jobs:
           from pathlib import Path
           p=Path('VALIDATION_REPORT.txt')
           text=p.read_text()
-          text += '\nNative simulator handoff regression: the browser pilot waits for a fresh, exact-run Java native acknowledgement of neutral channels before manual ARM. Tripod/Flight input and output inhibition passed three consecutive complete native publisher browser runs.\n'
+          text += '\nNative simulator handoff regression: the browser pilot waits for a fresh, exact-run Java native acknowledgement of neutral channels before manual ARM. A held Web Start acknowledgement exercises early manual app ARM: the virtual lesson waits for confirmation and starts once without resetting its ARM state. Tripod/Flight input and output inhibition passed three consecutive complete native publisher browser runs.\n'
           p.write_text(text)
           Path('.github/workflows/finish-18-3-82-dialog.yml').unlink()
           PY
