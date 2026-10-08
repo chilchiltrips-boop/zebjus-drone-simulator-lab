@@ -1,6 +1,6 @@
 {
   "version": "18.3.82",
-  "builtAt": "2026-10-08T14:35:20Z",
+  "builtAt": "2026-10-08T14:58:16Z",
   "arduinoEsp32": "3.3.12",
   "hardwareFlashingTested": false,
   "boards": [
@@ -8,7 +8,7 @@
       "boardId": "ZFC-A1",
       "fqbn": "esp32:esp32:esp32c3",
       "chipId": 5,
-      "appBytes": 1301744,
+      "appBytes": 1301856,
       "otaSlots": [
         {
           "address": 65536,
@@ -41,7 +41,7 @@
       "boardId": "ZFC-A2",
       "fqbn": "esp32:esp32:XIAO_ESP32C6",
       "chipId": 13,
-      "appBytes": 1392432,
+      "appBytes": 1392560,
       "otaSlots": [
         {
           "address": 65536,
