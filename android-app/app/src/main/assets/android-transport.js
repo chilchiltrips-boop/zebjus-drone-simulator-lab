@@ -23,18 +23,23 @@
  android.saveFile=(name,body,mime)=>native.saveFile(token,name,body,mime);
  android.openWifi=()=>native.openWifi(token);
  android.useRouterWifi=(ssid='',fromAp=false)=>native.useRouterWifi(token,ssid,fromAp);android.routerReady=()=>{wifiUi('Router Wi-Fi connected. Checking the kit…');android.connectedRouter?.()};
- android.joinWifi=()=>{android.selectNetwork?.('AP');native.joinWifi(token,document.getElementById('kitName').value.trim())};
- android.joinRouter=()=>{android.selectNetwork?.('STA');wifiUi('Join the same router as the STA kit and WebApp. Enter the kit router IP, then Check connection.');android.useRouterWifi('',false)};
+ android.joinWifi=()=>{android.selectNetwork?.('AP');const name=document.getElementById('kitName').value.trim(),id=document.getElementById('expectedId').value.trim();let ssid=name;
+  // A paired kit's old generated SSID changed to a numbered Kit Name in 18.3.81.
+  // Let Android list current kit APs; the subsequent connection still verifies
+  // the saved exact kit identity before pairing or reserving control.
+  if(/^ZFC-[A-F0-9]{12}$/i.test(id)){const suffix=id.slice(4);if(new RegExp('^(zebjus_drone_|FlightCore (A1|A2)-)'+suffix+'$','i').test(name)||name.toLowerCase()===('F450-'+suffix.slice(-6)).toLowerCase())ssid='';}
+  native.joinWifi(token,ssid)};
+ android.joinRouter=()=>{const fromAp=android.selectNetwork?.('STA')===true;wifiUi('Join the same router as the STA kit and WebApp. Enter the kit router IP, then Check connection.');android.useRouterWifi('',fromAp)};
  const wifiUi=(message,busy=false)=>{document.getElementById('pairMessage').textContent=message;document.getElementById('androidWifi').disabled=busy;document.getElementById('androidRouterWifi').disabled=busy;document.getElementById('checkConnection').disabled=busy;};
- android.wifiProgress=message=>wifiUi(message,true);
- android.wifiError=message=>wifiUi(message);
- android.wifiReady=()=>{wifiUi('Kit Wi-Fi connected. Verifying your kit…');android.connectedWifi?.()};
+ android.wifiProgress=message=>{wifiUi(message,true);android.connectionEvent?.('wifi-selection',message)};
+ android.wifiError=message=>{wifiUi(message);android.connectionEvent?.('wifi-error',message)};
+ android.wifiReady=()=>{wifiUi('Kit Wi-Fi connected. Verifying your kit…');android.connectionEvent?.('wifi-ready','Kit Wi-Fi selected; checking the paired controller.');android.connectedWifi?.()};
  android.pause=()=>{};android.resume=()=>{};android.networkLost=()=>{};android.stopped=()=>{};
  addEventListener('DOMContentLoaded',()=>{
   const button=document.createElement('button');button.id='androidWifi';button.className='primary';button.textContent='Real flight · Kit AP';button.onclick=android.joinWifi;
   const choices=document.createElement('div');choices.className='connection-choices';document.querySelector('#connectDialog .dialog-head').after(choices);choices.append(button);
   const router=document.createElement('button');router.id='androidRouterWifi';router.className='primary';router.textContent='Router Wi-Fi · STA';router.onclick=android.joinRouter;choices.append(router);
-  const version=document.createElement('p');version.id='androidAppVersion';version.className='note';version.textContent='Android 18.3.81-android.1 · Saved kit pairing is kept on update.';choices.before(version);
+  const version=document.createElement('p');version.id='androidAppVersion';version.className='note';version.textContent='Android 18.3.82-android.1 · Saved kit pairing is kept on update.';choices.before(version);
   const settings=document.createElement('button');settings.id='androidWifiSettings';settings.className='secondary';settings.textContent='Phone Wi-Fi settings (STA / Android 8–9)';settings.onclick=android.openWifi;choices.after(settings);
   document.getElementById('pairMessage').textContent='Choose Kit AP for direct joystick control or Router Wi-Fi for the web simulator. Training uses the same router as the paired STA kit and WebApp, and starts its simulator from the WebApp. Kit AP password: 12345678. Updated AP firmware pairs automatically; router mode keeps owner pairing. Use Phone Wi-Fi settings if the router is not connected.';
   document.querySelector('#settingsDialog .links').hidden=true;

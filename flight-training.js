@@ -1,4 +1,4 @@
-import {TrainingScene,cameraModes} from './flight-training-scene.js?v=18.3.81-web.1';
+import {TrainingScene,cameraModes} from './flight-training-scene.js?v=18.3.82-web.1';
 const {lessons,FlightTraining,neutral,clamp}=window.AerionTrainingCore,{TrainingInput}=window.AerionTrainingInput,$=s=>document.querySelector(s),root=$('#flightTrainingRoot');
 let model=new FlightTraining(),source='local',running=false,paused=false,keys=new Set(),bridge=null,epoch=0,pending=false,pingBusy=false,rx=null,rxAt=0,lastFrame=0,lastUi=0,lastRender=0,accumulator=0,view=null,quality='low',cameraMode='chase',guideHome=false,observerDismissed='',appDestination=null,linkPaused=false;
 const input=new TrainingInput(),local=input.channels,stickBindings=[];

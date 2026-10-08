@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.81 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
+  ZEBJUS FlightCore V18.3.82 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -12,10 +12,9 @@
 
   First use:
     1. Power kit. If no valid saved Wi-Fi exists it starts a setup AP.
-    2. Join ZEBJUS-FC-<full Device ID suffix>, using the unique key printed
-       to Serial on first boot. Record the credentials on the case.
-    3. Choose Kit Name + Wi-Fi + password and press SAVE & TEST.
-    4. Password is saved only after a real STA connection succeeds.
+    2. Join the AP named after the Kit Name, password 12345678.
+    3. Choose Kit Name + Wi-Fi + password and press Save Wi-Fi & reconnect.
+    4. The profile is saved and acknowledged before reboot attempts STA.
     5. On restart, kit joins that Wi-Fi and advertises <kit-name>.local.
     6. In Drone Lab enter the same Kit Name once. Future reconnect uses cached IP
        first and mDNS as fallback.
@@ -29,8 +28,8 @@
     - Settings can select persistent AP while disarmed; the AP page can return
       to saved Wi-Fi without reaching the enclosed board's BOOT button.
     - If saved Wi-Fi is unavailable at boot or lost while disarmed, AP starts
-      automatically and stays selected until saved Wi-Fi is chosen in the AP
-      portal. The physical BOOT recovery remains optional.
+      automatically; it retries the router only while the recovery AP is idle.
+      Explicit AP selection stays selected until saved Wi-Fi is chosen.
 
   Required libraries:
     - Supported vendor Arduino core 3.3.x
@@ -76,7 +75,7 @@ bool secureLayoutReady();
 #endif
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.81";
+static const char* FW_VERSION="18.3.82";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -122,7 +121,14 @@ static const int MOTOR_PINS[4]={-1,-1,-1,-1};
 #endif
 static const char* DEFAULT_WIFI_SSID=ZEBJUS_DEFAULT_WIFI_SSID;
 static const char* DEFAULT_WIFI_PASS=ZEBJUS_DEFAULT_WIFI_PASS;
-static const uint32_t CONNECT_TIMEOUT_MS=12000;
+static const uint32_t CONNECT_TIMEOUT_MS=20000;
+static const uint32_t WIFI_RECOVERY_RETRY_MS=60000;
+volatile uint16_t wifiDisconnectReason=0;
+String wifiAttemptSSID;
+int wifiAttemptStatus=WL_IDLE_STATUS;
+uint16_t wifiAttemptReason=0;
+bool wifiFallbackAp=false;
+uint32_t wifiFallbackAt=0;
 static const uint32_t LOCK_TIMEOUT_MS=10000;
 static const uint32_t WIFI_LOST_TO_SETUP_MS=20000;
 static const uint32_t FORCE_AP_HOLD_MS=5000;
@@ -382,22 +388,27 @@ void factoryResetAll(){clearSavedWiFi();clearKitName();prefs.begin("zjsys",false
 // ============================================================
 bool tryNetwork(int index){
   if(index<0||index>=MAX_WIFI||!savedSSID[index].length())return false;
-  Serial.println("Trying Wi-Fi: "+savedSSID[index]);WiFi.disconnect(false,false);delay(100);WiFi.begin(savedSSID[index].c_str(),savedPASS[index].c_str());
+  WiFi.setAutoReconnect(false);WiFi.disconnect(false,false);delay(200);wifiDisconnectReason=0;wifiAttemptSSID=savedSSID[index];
+  Serial.println("Trying Wi-Fi: "+wifiAttemptSSID);WiFi.setMinSecurity(savedPASS[index].length()?WIFI_AUTH_WPA2_PSK:WIFI_AUTH_OPEN);WiFi.begin(savedSSID[index].c_str(),savedPASS[index].c_str());
   unsigned long t=millis();while(WiFi.status()!=WL_CONNECTED&&millis()-t<CONNECT_TIMEOUT_MS){delay(200);Serial.print(".");}Serial.println();
-  if(WiFi.status()!=WL_CONNECTED)return false;
+  wifiAttemptStatus=WiFi.status();wifiAttemptReason=wifiDisconnectReason;if(wifiAttemptStatus!=WL_CONNECTED){Serial.printf("STA failed: status %d, disconnect reason %u\n",wifiAttemptStatus,(unsigned)wifiAttemptReason);WiFi.disconnect(false,false);delay(200);return false;}
+  WiFi.setAutoReconnect(true);wifiFallbackAp=false;
   Serial.println("WiFi Connected");Serial.println("SSID : "+WiFi.SSID());Serial.println("IP   : "+WiFi.localIP().toString());return true;
 }
 bool connectSavedWiFi(){
   bool any=false;for(int i=0;i<MAX_WIFI;i++)if(savedSSID[i].length())any=true;if(!any){Serial.println("No saved Wi-Fi");return false;}
-  WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);
+  WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(false);WiFi.setSleep(false);
   int preferred=savedIndex(preferredSSID);if(preferred>=0&&tryNetwork(preferred))return true;
-  Serial.println("Scanning saved Wi-Fi profiles...");int n=WiFi.scanNetworks();if(n<=0){WiFi.scanDelete();return false;}
-  bool tried[MAX_WIFI]={false};if(preferred>=0)tried[preferred]=true;
+  // Stop the timed-out association before scanning; retry the preferred profile
+  // after discovery instead of excluding it forever after the first attempt.
+  Serial.println("Scanning saved Wi-Fi profiles...");int n=WiFi.scanNetworks(false,true);if(n<=0){Serial.printf("Saved Wi-Fi scan result: %d\n",n);WiFi.scanDelete();return preferred>=0&&tryNetwork(preferred);}
+  bool tried[MAX_WIFI]={false};
+  for(int i=0;i<n;i++)if(savedIndex(WiFi.SSID(i))>=0)Serial.printf("Saved Wi-Fi visible: %s, channel %d, RSSI %d dBm\n",WiFi.SSID(i).c_str(),WiFi.channel(i),WiFi.RSSI(i));
   for(int attempt=0;attempt<MAX_WIFI;attempt++){
     int best=-1,bestRssi=-1000;for(int i=0;i<n;i++){int s=savedIndex(WiFi.SSID(i));if(s>=0&&!tried[s]&&WiFi.RSSI(i)>bestRssi){best=s;bestRssi=WiFi.RSSI(i);}}
     if(best<0)break;tried[best]=true;if(tryNetwork(best)){WiFi.scanDelete();return true;}
   }
-  WiFi.scanDelete();return false;
+  WiFi.scanDelete();return preferred>=0&&!tried[preferred]&&tryNetwork(preferred);
 }
 bool queryResultIsName(int i,const String& candidate,bool ignoreSelf){
   String other=normalizeDisplayName(MDNS.txt(i,"name"));if(!other.length())other=normalizeDisplayName(MDNS.instanceName(i));
@@ -932,6 +943,7 @@ String statusJson(const String& clientId=""){
   String j="{\"ok\":true,\"kit\":\"ZEBJUS_FLIGHTCORE\",\"version\":\""+String(FW_VERSION)+"\",\"firmware\":\""+String(FW_VERSION)+"\",\"firmwareBuiltAt\":\""+String(FW_BUILD_DATE)+" "+String(FW_BUILD_TIME)+" UTC\"";
   j+=",\"name\":\""+jsonEscape(kitName)+"\",\"deviceName\":\""+jsonEscape(kitName)+"\",\"hostname\":\""+hostFromName(kitName)+"\",\"deviceId\":\""+deviceId+"\",\"boardId\":\""+String(BOARD_ID)+"\",\"boardName\":\""+String(BOARD_NAME)+"\"";
   j+=",\"connected\":"+String(connected?"true":"false")+",\"ssid\":\""+jsonEscape(connected?WiFi.SSID():"")+"\",\"ip\":\""+(setupMode?WiFi.softAPIP().toString():WiFi.localIP().toString())+"\",\"rssi\":"+String(connected?WiFi.RSSI():0);
+  j+=",\"wifiDiagnostics\":{\"preferredSsid\":\""+jsonEscape(preferredSSID)+"\",\"attemptedSsid\":\""+jsonEscape(wifiAttemptSSID)+"\",\"attemptStatus\":"+String(wifiAttemptStatus)+",\"disconnectReason\":"+String(wifiAttemptReason)+",\"recoveryAp\":"+String(wifiFallbackAp?"true":"false")+",\"retryWhenIdleMs\":"+String(WIFI_RECOVERY_RETRY_MS)+"}";
   j+=",\"mode\":\""+mode+"\",\"apPreferred\":"+String(preferredApMode()?"true":"false")+",\"apSsid\":\""+jsonEscape(apName)+"\",\"armed\":"+String(effectiveArmed()?"true":"false")+",\"locked\":"+String(lockActive()?"true":"false")+",\"lockMine\":"+String(lockMine(clientId)?"true":"false")+",\"lockTimeoutMs\":"+String(LOCK_TIMEOUT_MS)+",\"rcTimeoutMs\":"+String(WEB_RC_STALE_MS)+",\"rcCenterMs\":"+String(RcLinkPolicy::CENTER_AFTER_MS)+",\"benchRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"webRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"apRc\":"+String((ALLOW_WEB_RC&&FLIGHT_CONTROL_ENABLED)?"true":"false")+",\"firmwareRole\":\""+String(FLIGHT_CONTROL_ENABLED?"RATE_ANGLE_FLIGHT_CORE":"WIFI_SENSOR_BRIDGE")+"\",\"flightCoreIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"flightReady\":"+String(flightReady?"true":"false")+",\"escOutputs\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"pidWritable\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"calibrationIntegrated\":"+String(FLIGHT_CONTROL_ENABLED?"true":"false")+",\"flightMode\":\""+String(flightModeName(flightMode))+"\",\"rcSource\":\""+String(rcSourceName(activeRcSource))+"\",\"rcPolicy\":\"PPM_FIRST_THEN_NETWORK\",\"otaUpdate\":true,\"receiverHealth\":\""+receiverHealth()+"\",\"receiverPin\":"+String(ppmReceiverPin)+",\"i2cScan\":true,\"imuRead\":true,\"imuModel\":\""+String(imuName(detectedImu))+"\",\"i2cSda\":"+String(I2C_SDA_PIN)+",\"i2cScl\":"+String(I2C_SCL_PIN)+",\"benchMode\":"+String((int)benchMode)+",\"loopCount\":"+String(flightLoopCount)+",\"maxLoopGapUs\":"+String(maxFlightLoopGapUs)+",\"loopOverruns\":"+String(flightLoopOverruns)+",\"outputWatchdogTripped\":"+String(flightWatchdogTripped?"true":"false")+",\"outputWatchdogTrips\":"+String(flightWatchdogTrips)+",\"ppmFrameHz\":"+String(ppmFrameHz)+",\"webRcFrameHz\":"+String(webRcFrameHz)+",\"flightLoopHz\":"+String(flightLoopHz)+",\"expansion\":"+expansionJson()+",\"pid\":"+pidJson()+"}";
   j.remove(j.length()-1);j+=bootDiagnosticsJson();j+=",\"rcMonitorPort\":"+String(RcMonitorProtocol::PORT)+",\"securityRequired\":true,\"securityProtocol\":\"ZFC3\",\"pidRevision\":"+String(pidRevision)+",\"savedRevision\":"+String(pidSavedRevision)+",\"rcMonitorProtocol\":\"ZFC3_NDJSON\""+rcTransportJson()+flightFeatureJson(server.arg("clientId"))+"}";return j;
 }
@@ -1123,12 +1135,14 @@ void wifiScanApi(){
  if(lockActive()&&!lockMine(server.arg("clientId"))){sendMessage(423,"View-only session cannot scan / change kit radio");return;}
  if(wifiTestState==WT_RUNNING||wifiTestState==WT_SUCCESS){sendMessage(423,"Wait for Wi-Fi test");return;}
  static bool scanActive=false;int n=WiFi.scanComplete();
- if(!scanActive){if(setupMode)WiFi.mode(WIFI_AP_STA);WiFi.scanDelete();WiFi.scanNetworks(true);scanActive=true;sendJson(202,"{\"ok\":true,\"scanning\":true,\"networks\":[]}");return;}
+ if(!scanActive){if(setupMode){WiFi.setAutoReconnect(false);WiFi.mode(WIFI_AP_STA);}WiFi.scanDelete();WiFi.scanNetworks(true);scanActive=true;sendJson(202,"{\"ok\":true,\"scanning\":true,\"networks\":[]}");return;}
  if(n==WIFI_SCAN_RUNNING){sendJson(202,"{\"ok\":true,\"scanning\":true,\"networks\":[]}");return;}
- if(n<0){scanActive=false;if(setupMode)WiFi.mode(WIFI_AP);sendMessage(503,"Wi-Fi scan failed");return;}
+ if(n<0){scanActive=false;sendMessage(503,"Wi-Fi scan failed");return;}
  String j="{\"ok\":true,\"scanning\":false,\"networks\":[";bool first=true;
  for(int i=0;i<n;i++){String ssid=WiFi.SSID(i);if(!ssid.length())continue;if(!first)j+=",";first=false;j+="{\"ssid\":\""+jsonEscape(ssid)+"\",\"rssi\":"+String(WiFi.RSSI(i))+",\"secure\":"+String(WiFi.encryptionType(i)!=WIFI_AUTH_OPEN?"true":"false")+"}";}
- j+="]}";WiFi.scanDelete();scanActive=false;if(setupMode)WiFi.mode(WIFI_AP);sendJson(200,j);
+ // Leave the unassociated STA scan interface enabled until reboot. Toggling
+ // it off here can disconnect Android's local-only AP connection after a scan.
+ j+="]}";WiFi.scanDelete();scanActive=false;sendJson(200,j);
 }
 void startWifiTestApi(){
   // Compatibility route: saving never depends on a live STA test or status polling.
@@ -1231,10 +1245,10 @@ void setupRoutes(){
 }
 void startNormalServer(){
   setupMode=false;WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();startRcUdp();startRcMonitor();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.81 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.82 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
-  invalidateRcUdp();setupMode=true;if(!preferredApMode())setPreferredApMode(true);controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();serviceTraining();if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());server.begin();startRcUdp();startRcMonitor();wifiTestState=WT_IDLE;
+  invalidateRcUdp();setupMode=true;wifiFallbackAt=millis();controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();serviceTraining();if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.setAutoReconnect(false);WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());server.begin();startRcUdp();startRcMonitor();wifiTestState=WT_IDLE;
   Serial.println("==============================");Serial.println("ZEBJUS FlightCore SETUP MODE");Serial.println("AP Status: "+String(ok?"STARTED":"FAILED"));Serial.println("SSID     : "+apName);Serial.println("Password : "+apPassword);Serial.println("Write the AP SSID and password on the kit case before closing it.");Serial.println("Setup    : http://192.168.4.1");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);
 }
 
@@ -1244,18 +1258,27 @@ void startSetupMode(){
 void checkRecoveryButton(){
   if(RECOVERY_BUTTON_PIN<0)return;if(effectiveArmed()||benchMode!=BENCH_NONE){recoveryPressedAt=0;return;}int state=digitalRead(RECOVERY_BUTTON_PIN);
   if(state==LOW){if(!recoveryPressedAt)recoveryPressedAt=millis();unsigned long held=millis()-recoveryPressedAt;if(held>=FACTORY_RESET_HOLD_MS&&!factoryResetTriggered){factoryResetTriggered=true;Serial.println("BOOT 10s -> FACTORY RESET");factoryResetAll();setForceSetupFlag(true);delay(150);ESP.restart();}}
-  else if(recoveryPressedAt){unsigned long held=millis()-recoveryPressedAt;recoveryPressedAt=0;if(!factoryResetTriggered&&held>=FORCE_AP_HOLD_MS){Serial.println("BOOT 5s release -> SELECT AP MODE");setForceSetupFlag(true);delay(120);ESP.restart();}factoryResetTriggered=false;}
+  else if(recoveryPressedAt){unsigned long held=millis()-recoveryPressedAt;recoveryPressedAt=0;if(!factoryResetTriggered&&held>=FORCE_AP_HOLD_MS){Serial.println("BOOT 5s release -> SELECT AP MODE");setPreferredApMode(true);setForceSetupFlag(true);delay(120);ESP.restart();}factoryResetTriggered=false;}
 }
 void networkHealth(){
-  if(setupMode)return;if(WiFi.status()==WL_CONNECTED){wifiLostAt=0;return;}if(effectiveArmed())return;if(!wifiLostAt)wifiLostAt=millis();if(millis()-wifiLostAt>WIFI_LOST_TO_SETUP_MS){Serial.println("Wi-Fi unavailable -> setup AP recovery");setForceSetupFlag(true);delay(100);ESP.restart();}
+  if(setupMode){
+    // Recovery AP stays stable while any phone/computer or control session uses
+    // it. Explicit AP mode never retries STA behind the user's back.
+    if(!wifiFallbackAp||restartAt)return;
+    if(WiFi.softAPgetStationNum()||lockActive()||effectiveArmed()||benchMode!=BENCH_NONE||fcSetupActive||trainingActive||firmwareUploadActive){wifiFallbackAt=millis();return;}
+    if(millis()-wifiFallbackAt>=WIFI_RECOVERY_RETRY_MS){Serial.println("Recovery AP idle -> retry saved router Wi-Fi");restartAt=millis()+250;}
+    return;
+  }
+  if(WiFi.status()==WL_CONNECTED){wifiLostAt=0;return;}if(effectiveArmed())return;if(!wifiLostAt)wifiLostAt=millis();if(millis()-wifiLostAt>WIFI_LOST_TO_SETUP_MS){Serial.println("Wi-Fi unavailable -> setup AP recovery");setForceSetupFlag(true);delay(100);ESP.restart();}
 }
 
 void setup(){
   if(USER_LED_PIN>=0){pinMode(USER_LED_PIN,OUTPUT);digitalWrite(USER_LED_PIN,HIGH);}
-  Serial.begin(115200);delay(300);Serial.printf("Boot: reset reason %u, free heap %u bytes\n",(unsigned)esp_reset_reason(),(unsigned)ESP.getFreeHeap());WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);loadExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}
+  Serial.begin(115200);delay(300);Serial.printf("Boot: reset reason %u, free heap %u bytes\n",(unsigned)esp_reset_reason(),(unsigned)ESP.getFreeHeap());WiFi.persistent(false);WiFi.setAutoReconnect(false);WiFi.onEvent([](WiFiEvent_t,WiFiEventInfo_t info){wifiDisconnectReason=info.wifi_sta_disconnected.reason;},ARDUINO_EVENT_WIFI_STA_DISCONNECTED);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);loadExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}
   busMutex=xSemaphoreCreateRecursiveMutex();deviceId=getDeviceId();loadFlightSettings();loadFcSetup();loadKitName();updateApName();loadApPassword();loadSavedWiFi();loadPidSettings();startPidSaveWorker();loadCalibrationSettings();initPairing();probeImuAtBoot();setupFlightCore();flightHeartbeatUs=micros();if(FLIGHT_CONTROL_ENABLED&&xTaskCreate(flightOutputSupervisor,"fc-output-guard",3072,nullptr,21,nullptr)!=pdPASS){flightReady=false;motorsSafe();Serial.println("Output supervisor unavailable: arming disabled");}setupExpansionPeripherals();setupRoutes();startFlightTask();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.81 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
-  bool forceApOnce=consumeForceSetupFlag();if(forceApOnce||preferredApMode()){startSetupMode();return;}
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.82 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  bool forceApOnce=consumeForceSetupFlag(),explicitAp=preferredApMode(),anySaved=false;for(int i=0;i<MAX_WIFI;i++)if(savedSSID[i].length())anySaved=true;wifiFallbackAp=!explicitAp&&anySaved;
+  if(forceApOnce||explicitAp){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }
 void loop(){

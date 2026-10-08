@@ -1,4 +1,4 @@
-# V18.3.81 active secure routing
+# V18.3.82 active secure routing
 
 Current kits require per-kit SRP owner/invitation pairing and AES-GCM authenticated requests/RC/ACK/observer frames (ZFC3). Earlier plaintext examples below describe legacy releases; they cannot bypass current authentication.
 
@@ -10,7 +10,7 @@ Native RC is 50 Hz; the selected encrypted observer is at most 10 Hz. Active con
 
 Wi-Fi `POST /api/wifi/set` persists and reads back credentials, then returns `profileSaved:true`, `connectionVerified:false` and `restartInMs:2500` before changing the radio. The kit restarts into STA afterward; router connectivity is checked after reconnecting. Compatibility `/api/setup/test` uses the same acknowledgement path. NVS failure returns an error without scheduling restart. AP requests require an authenticated, disarmed maintenance session.
 
-Fresh valid PPM is first for physical flight, regardless of AUTO/WEB preference. PPM-only never falls back to network. Simulation still uses its explicit APP/PPM source and blocks real outputs. AP permits authenticated RC/STOP and explicit disarmed Wi-Fi maintenance; STA provides scoped training/configuration/OTA. There is no WAN flight command relay. See [installation and connection](SUPPORT/V18_3_81_UPDATE.md).
+Fresh valid PPM is first for physical flight, regardless of AUTO/WEB preference. PPM-only never falls back to network. Simulation still uses its explicit APP/PPM source and blocks real outputs. AP permits authenticated RC/STOP and explicit disarmed Wi-Fi maintenance; STA provides scoped training/configuration/OTA. There is no WAN flight command relay. See [installation and connection](SUPPORT/V18_3_82_UPDATE.md).
 
 ---
 

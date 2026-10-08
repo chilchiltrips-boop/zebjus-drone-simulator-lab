@@ -12,6 +12,7 @@ import android.net.NetworkRequest;
 import android.net.Uri;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PatternMatcher;
@@ -81,7 +82,7 @@ public final class MainActivity extends Activity {
     private final ConnectivityManager.NetworkCallback wifiCallback=new ConnectivityManager.NetworkCallback(){
         @Override public void onAvailable(Network network){runOnUiThread(()->chooseWifi(network));}
         @Override public void onCapabilitiesChanged(Network network,NetworkCapabilities capabilities){runOnUiThread(()->chooseWifi(network));}
-        @Override public void onLost(Network network){runOnUiThread(()->{if(network.equals(wifi)){wifi=null;emergency(gate.fence(false));emit("networkLost");}if(preferRouterWifi)selectRouterWifi();});}
+        @Override public void onLost(Network network){runOnUiThread(()->{if(network.equals(selectedKitWifi))selectedKitWifi=null;if(network.equals(wifi)){wifi=null;emergency(gate.fence(false));emit("networkLost");}if(preferRouterWifi)selectRouterWifi();});}
     };
     private static long now(){return System.nanoTime()/1_000_000L;}
 
@@ -128,9 +129,16 @@ public final class MainActivity extends Activity {
     private boolean preferRouterWifi=false;
     private Network departingKitWifi;
     private String routerSsid="";
+    private String networkSsid(Network network){
+        if(network==null)return "";NetworkCapabilities c=connectivity.getNetworkCapabilities(network);
+        if(Build.VERSION.SDK_INT>=29&&c!=null&&c.getTransportInfo() instanceof WifiInfo){String s=RouterNetworkPolicy.ssid(((WifiInfo)c.getTransportInfo()).getSSID());if(!s.isEmpty())return s;}
+        // Android 10/11 can redact transport info even for the current Wi-Fi.
+        if(network.equals(connectivity.getActiveNetwork()))try{return RouterNetworkPolicy.ssid(((WifiManager)getApplicationContext().getSystemService(WIFI_SERVICE)).getConnectionInfo().getSSID());}catch(RuntimeException ignored){}
+        return "";
+    }
     private int routerScore(Network network){
         NetworkCapabilities c=connectivity.getNetworkCapabilities(network);if(c==null)return -1;
-        String ssid="";if(Build.VERSION.SDK_INT>=29 && c.getTransportInfo() instanceof WifiInfo)ssid=((WifiInfo)c.getTransportInfo()).getSSID();
+        String ssid=networkSsid(network);
         return RouterNetworkPolicy.score(c.hasTransport(NetworkCapabilities.TRANSPORT_WIFI),network.equals(departingKitWifi),c.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET),c.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED),network.equals(connectivity.getActiveNetwork()),ssid,routerSsid);
     }
     private void selectRouterWifi(){
@@ -142,6 +150,7 @@ public final class MainActivity extends Activity {
     private void chooseWifi(Network network){
         if(preferRouterWifi){selectRouterWifi();return;}
         if(selectedKitWifi!=null && !selectedKitWifi.equals(network))return;
+        String ssid=networkSsid(network);if(!pendingWifiId.isEmpty()&&!ssid.isEmpty()&&!RouterNetworkPolicy.sameAp(ssid,pendingWifiId))return;
         if(destroyed || network.equals(wifi))return;
         if(selectedKitWifi==null && wifi!=null)return;
         emergency(gate.fence(false));wifi=network;emit("networkLost");if(gate.isForeground())emit("resume");
@@ -188,8 +197,23 @@ public final class MainActivity extends Activity {
         String permission=Build.VERSION.SDK_INT>=33?Manifest.permission.NEARBY_WIFI_DEVICES:Manifest.permission.ACCESS_FINE_LOCATION;
         if(checkSelfPermission(permission)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{permission},WIFI_PERMISSION);return;}
         pauseControl();
+        // Reuse the AP already joined in Phone Wi-Fi settings. Requesting the
+        // same SSID again can tear down a working connection on Android 10/11.
+        for(Network network:connectivity.getAllNetworks()){
+            NetworkCapabilities c=connectivity.getNetworkCapabilities(network);
+            if(c!=null&&c.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)&&RouterNetworkPolicy.sameAp(networkSsid(network),id)){
+                // Keep our own matching request alive too: releasing it before
+                // reuse would leave a network that Android is tearing down.
+                if(kitRequest!=null&&!network.equals(selectedKitWifi)){
+                    try{connectivity.unregisterNetworkCallback(kitRequest);}catch(RuntimeException ignored){}
+                    kitRequest=null;
+                }
+                selectedKitWifi=network;wifi=network;if(resumed&&web.hasWindowFocus())gate.resume();emit("wifiReady");return;
+            }
+        }
         if(kitRequest!=null)try{connectivity.unregisterNetworkCallback(kitRequest);}catch(RuntimeException ignored){}
-        selectedKitWifi=null;
+        kitRequest=null;selectedKitWifi=null;
+        wifi=null;
         try{
             WifiNetworkSpecifier.Builder spec=new WifiNetworkSpecifier.Builder().setWpa2Passphrase(apPassword);
             String ssid=LaunchPolicy.apSsid(id);
@@ -374,7 +398,11 @@ public final class MainActivity extends Activity {
                 if(jobs.putIfAbsent(id,job)!=null)throw new IllegalArgumentException("Duplicate request.");(rc?flightWorker:workers).execute(job);}
             catch(Exception e){if(job!=null){job.cancel();jobs.remove(id,job);}failure(id,e.getMessage()==null?"Join your kit Wi-Fi and retry.":e.getMessage());}
         }
-        @JavascriptInterface public String rcDiagnostics(String key){return token.equals(key)?new JSONObject(rcStream.diagnostics()).toString():"{}";}
+        @JavascriptInterface public String rcDiagnostics(String key){
+            if(!token.equals(key))return "{}";JSONObject d=new JSONObject(rcStream.diagnostics());
+            try{Network network=wifi;NetworkCapabilities c=network==null?null:connectivity.getNetworkCapabilities(network);d.put("network",new JSONObject().put("selected",network!=null).put("wifi",c!=null&&c.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)).put("ssid",networkSsid(network)).put("target",preferRouterWifi?"STA":"AP").put("requestedKitSsid",pendingWifiId).put("routerSsid",routerSsid).put("internet",c!=null&&c.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)));}catch(Exception ignored){}
+            return d.toString();
+        }
         @JavascriptInterface public void cancel(String key,String id){if(token.equals(key)){Job job=jobs.get(id);if(job!=null)job.cancel();}}
         @JavascriptInterface public void pauseStream(String key,String base,String device,String client){
             if(!token.equals(key)||destroyed)return;

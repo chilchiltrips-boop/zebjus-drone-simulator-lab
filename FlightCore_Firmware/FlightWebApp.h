@@ -20,6 +20,7 @@ void webAppRegister(bool remove){
  sendJson(200,"{\"ok\":true,\"deviceId\":\""+deviceId+"\",\"webAppId\":\""+String(id)+"\",\"webAppRouting\":true,\"leaseMs\":10000}");
 }
 
-// Reclaim closed/idle browser identities, so repeated page refreshes cannot fill all six sessions.
+// Reclaim idle app and browser identities. Reconnect creates a fresh mobile
+// client; its released sessions must not occupy every slot for two hours.
 // Called with secureMutex held during an authenticated new pairing proof.
-bool secureBrowserRetired(const SecureSession& s){uint64_t bound;portENTER_CRITICAL(&stateMux);bound=trainingWebSession;portEXIT_CRITICAL(&stateMux);return (s.role=="WEB"||s.role=="COMPANION")&&s.client!=controlOwner&&s.id!=bound&&!webAppRegistry.find(s.id,millis())&&(uint32_t)(millis()-s.lastActivity)>=WebAppScope::LEASE_MS;}
+bool secureBrowserRetired(const SecureSession& s){uint64_t bound;portENTER_CRITICAL(&stateMux);bound=trainingWebSession;portEXIT_CRITICAL(&stateMux);return (s.role=="WEB"||s.role=="COMPANION"||s.role=="MOBILE")&&s.client!=controlOwner&&s.id!=bound&&!webAppRegistry.find(s.id,millis())&&(uint32_t)(millis()-s.lastActivity)>=WebAppScope::LEASE_MS;}

@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FW = ROOT / 'FlightCore_Firmware'
 
 LEGACY_FILES = [
+    'android-app/dist/ZEBJUS_Aerion_V18_3_81_Android.apk',
     'android-app/dist/ZEBJUS_Aerion_V18_3_80_Android.apk',
     'tools/ap_portal_source.html', 'tools/ap_io_source.html', 'tools/ap_fly_source.html', 'FlightCore_Firmware/AP_ASSETS.h',
     'android-app/dist/ZEBJUS_Aerion_V18_3_61_Android.apk',
