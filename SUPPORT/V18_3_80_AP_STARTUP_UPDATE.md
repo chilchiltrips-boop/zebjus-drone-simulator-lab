@@ -1,6 +1,6 @@
 # V18.3.80 — AP connection and Aerion identity
 
-Install matching **18.3.80-android.1 / 1838001** and controller firmware **18.3.80**. The previous signing certificate is retained: install over the existing app; do not uninstall or Clear data.
+Install matching **18.3.80-android.2 / 1838002** and controller firmware **18.3.80**. The previous signing certificate is retained: install over the existing app; do not uninstall or Clear data.
 
 For the user’s kit, the generated name becomes **FlightCore A2-41FEFF63B0E4**. AP SSID remains **ZEBJUS-FC-41FEFF63B0E4**, Device ID remains **ZFC-41FEFF63B0E4**, and AP password becomes **12345678** after the firmware update. Old automatic zebjus_drone names migrate; custom names stay intact. Update any saved name in another browser if it still searches for the old name, retaining the exact Device ID.
 

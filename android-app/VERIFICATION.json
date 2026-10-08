@@ -1,6 +1,6 @@
 {
-  "version": "18.3.80-android.1",
-  "apk_sha256": "68b3467f87dc64f6d843b45c1bc66339dbe28b0b9281b61c3ad2518759a32342",
+  "version": "18.3.80-android.2",
+  "apk_sha256": "7c1abfa42bd66a04f5ef32e9fb86b79e1c3712cf2244460b853c542b7aecdb16",
   "certificate_sha256": "0286c9c3d51284e695cd900d87b6cc7a99ae47991c27cd42c0313fd9f1780f9c",
   "checks": [
     "APK ZIP integrity",

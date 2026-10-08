@@ -239,7 +239,6 @@ window.AerionFlightRecorder={create,mount,clean};
 <!-- AERION_SHARED_END -->
 <script>
 (()=>{'use strict';
-setTimeout(()=>document.getElementById('brandSplash')?.remove(),1400);
 const $=id=>document.getElementById(id),clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),hosted=/\/flight\/(?:index\.html)?$/.test(location.pathname),params=new URLSearchParams(location.search),KNOWN='zebjus-known-kit';
 function read(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function write(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 const shared=read('zebjus.drone.knownKits.v183',[]),preferred=(()=>{try{return localStorage.getItem('zebjusV183LastKit')||''}catch{return ''}})(),saved=read(KNOWN,Array.isArray(shared)?shared.find(k=>k.deviceId===preferred)||shared[0]||{}:{}),channels=[1500,1500,1000,1500,1000,1000,1000,1000,1500,1000],held=new Set();

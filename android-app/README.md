@@ -1,6 +1,6 @@
-# Aerion Flight Android — 18.3.80-android.1
+# Aerion Flight Android — 18.3.80-android.2
 
-VersionCode 1838001. Install `dist/ZEBJUS_Aerion_V18_3_80_Android.apk` over the previous development app; the signing certificate is unchanged. Install matching controller firmware 18.3.80 to enable automatic AP authentication and password 12345678.
+VersionCode 1838002. Install `dist/ZEBJUS_Aerion_V18_3_80_Android.apk` over the previous development app; the signing certificate is unchanged. Install matching controller firmware 18.3.80 to enable automatic AP authentication and password 12345678.
 
 Read the [FACTORY migration and pairing guide](../SUPPORT/V18_3_78_SECURE_KIT_UPDATE.md) first. Old APKs cannot control secure firmware. On firmware 18.3.80 the AP password is 12345678 and AP authentication is automatic. Router/STA mode keeps the owner code from the physical label/USB serial output. Training requires STA and a live paired kit; app invitations pair permitted laptop companions.
 
