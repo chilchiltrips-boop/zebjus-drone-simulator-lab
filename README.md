@@ -1,15 +1,15 @@
-> **Current release: 18.3.79.** Install the matching [Android APK](android-app/dist/ZEBJUS_Aerion_V18_3_79_Android.apk) and A1/A2 firmware. The app saves a six-digit WebApp ID for local STA training; the kit binds commands to that paired browser session. Fresh valid PPM has first priority for real outputs. [Setup and update instructions](SUPPORT/V18_3_79_WEBAPP_ID_UPDATE.md).
+> **Current release: 18.3.80.** Install the matching [Android APK](android-app/dist/ZEBJUS_Aerion_V18_3_80_Android.apk) and A1/A2 firmware. The app saves a six-digit WebApp ID for local STA training; the kit binds commands to that paired browser session. Fresh valid PPM has first priority for real outputs. [Setup and update instructions](SUPPORT/V18_3_80_WEBAPP_ID_UPDATE.md).
 
-> **Retained release fixes:** Take Control/ownership ordering, simulator recovery after web transfer, stale handling and flash probe diagnostics. App and web verify the unique Kit Name and full Device ID. Previous connection and Tripod direction fixes are retained. Install the matching [APK](android-app/dist/ZEBJUS_Aerion_V18_3_79_Android.apk) and controller firmware. [Remaining stages and migration requirements](SUPPORT/STAGED_KIT_RELEASES.md).
+> **Retained release fixes:** Take Control/ownership ordering, simulator recovery after web transfer, stale handling and flash probe diagnostics. App and web verify the unique Kit Name and full Device ID. Previous connection and Tripod direction fixes are retained. Install the matching [APK](android-app/dist/ZEBJUS_Aerion_V18_3_80_Android.apk) and controller firmware. [Remaining stages and migration requirements](SUPPORT/STAGED_KIT_RELEASES.md).
 
-# ZEBJUS Aerion V18.3.79
+# ZEBJUS Aerion V18.3.80
 
 This release keeps **Python Lab fifth**: Assembly → Wiring → Setup Wizard →
 Hardware I/O → Python Lab. Embed the lab in Wix using `?embed=wix`; the compact
 layout follows the iframe viewport and provides **Open full lab** for camera,
 USB or local-kit features blocked by parent permissions. See [Wix setup and
 permissions](WIX_EMBED.txt) and the ready-to-paste [HTML embed](WIX_EMBED.html).
-APK **18.3.79-android.2** is rebuilt with the same development certificate.
+A five-second company-Z/quad-rotor startup and new Aerion launcher mark are included. APK **18.3.80-android.1** is rebuilt with the same development certificate.
 Tripod and Flight Training use native ZRC2 input at 50 Hz and a dedicated NDJSON1 web monitor at 10 Hz on port 4211; real flight retains native ZRC1 UDP. Telemetry and app Kit settings include a live Flight recorder with marked events and ChatGPT JSON / numerical CSV export. PID Basic/Advanced/Expert and parameter banks have been removed. PID tuning previews in Tripod; Tripod edits stay virtual. Setup configuration continues when another browser tab is open; hiding a running motor/ESC test stops its output.
 
 Kit discovery preserves the connected browser's verified control ownership.
@@ -29,7 +29,7 @@ Open the web lab's **Setup Wizard** page after Assembly Lab and 2D Wiring. Hardw
 
 Laptop: extract the complete project and open `Start_Offline.bat` (Windows), `Start_Offline.command` (Mac), or run `python3 start_offline.py`. Open **http://localhost:8787/**. Python 3 or Node.js must already be installed to launch the local server. Join the kit Wi-Fi; the open WebApp automatically discovers the AP API for observation.
 
-Android: install **android-app/dist/ZEBJUS_Aerion_V18_3_79_Android.apk**, open Aerion Flight → Connect drone → **Real flight · Kit AP** for real flight. For training choose **Training · Router Wi-Fi**, enter the STA kit router IP, pair, then save the six-digit **Training WebApp ID** shown on app home. Kit, phone and computer must share the same router; there is no cloud command relay. For AP flight select the unique `ZEBJUS-FC-...` SSID for this Device ID. Use the random AP password from the kit label/USB serial output, then enter the per-kit pairing code.
+Android: install **android-app/dist/ZEBJUS_Aerion_V18_3_80_Android.apk**, open Aerion Flight → Connect drone → **Real flight · Kit AP** for real flight. For training choose **Training · Router Wi-Fi**, enter the STA kit router IP, pair, then save the six-digit **Training WebApp ID** shown on app home. Kit, phone and computer must share the same router; there is no cloud command relay. For AP flight select the unique `ZEBJUS-FC-...` SSID for this Device ID. AP password is 12345678 on firmware 18.3.80; AP pairing is automatic. Router mode keeps per-kit owner-code pairing.
 
 **AP Wi-Fi setup:** open `http://192.168.4.1/` or `/setup` while joined to the kit AP. Flight controls and Hardware I/O use the APK or local/cached WebApp. Captive probes still return 204, so open the address manually; joining Wi-Fi does not launch a closed app.
 
@@ -47,9 +47,9 @@ After hard loss, an explicitly enabled foreground APK/standalone Flight App can 
 
 ## Install and use the update
 
-Read the [18.3.79 pairing, FACTORY migration and training guide](SUPPORT/V18_3_78_SECURE_KIT_UPDATE.md). First migrate by USB FACTORY; restore reviewed settings while disarmed. App, web and firmware now use authenticated ZFC3 encryption. AP is joystick-only with separate Wi-Fi maintenance; training/PID use STA.
+Read the [18.3.80 pairing, FACTORY migration and training guide](SUPPORT/V18_3_78_SECURE_KIT_UPDATE.md). First migrate by USB FACTORY; restore reviewed settings while disarmed. App, web and firmware now use authenticated ZFC3 encryption. AP is joystick-only with separate Wi-Fi maintenance; training/PID use STA.
 
-**Install the new APK and flash matching V18.3.79 firmware.** Updating GitHub files alone does not update a phone or running kit. A1 is bridge-only. A2/Aerion F1 supports MPU6050 Rate/Angle; altitude hold/automatic landing are not implemented. Choose the matching controller profile before USB/OTA. APP and FACTORY images with stable names and verified hashes are in `FlightCore_Firmware/`.
+**Install the new APK and flash matching V18.3.80 firmware.** Updating GitHub files alone does not update a phone or running kit. A1 is bridge-only. A2/Aerion F1 supports MPU6050 Rate/Angle; altitude hold/automatic landing are not implemented. Choose the matching controller profile before USB/OTA. APP and FACTORY images with stable names and verified hashes are in `FlightCore_Firmware/`.
 
 Offline Python, OpenCV/NumPy, Matplotlib/pandas, editor and hand model/WASM remain bundled. Ordinary `while True:` and simple Drone calls work. Examples are hidden by default; settings enable them. Camera needs localhost/HTTPS and permission. Hardware I/O remains in the WebApp and Python companion.
 

@@ -1,4 +1,4 @@
-name: Verify and build Learning Lab V18.3.79
+name: Verify and build Learning Lab V18.3.80
 on:
   workflow_dispatch:
   push:
@@ -58,7 +58,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Aerion-Learning-Lab-UI-V18.3.79
+          name: Aerion-Learning-Lab-UI-V18.3.80
           if-no-files-found: warn
           path: |
             ${{ runner.temp }}/learning-lab-screenshots
@@ -93,12 +93,12 @@ jobs:
           node android-app/tests/browser_transport_test.js
           node android-app/tests/browser_modes_test.js
           mkdir -p "$RUNNER_TEMP/android-browser-screenshots"
-          cp ../native_modes_mobile.png ../flight_recorder_app.png ../native_connection_mobile.png ../native_connection_choices.png "$RUNNER_TEMP/android-browser-screenshots/"
+          cp ../native_modes_mobile.png ../flight_recorder_app.png ../native_connection_mobile.png ../native_connection_choices.png ../native_startup_mobile.png "$RUNNER_TEMP/android-browser-screenshots/"
       - name: Retain Android browser screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Aerion-Android-UI-V18.3.79
+          name: Aerion-Android-UI-V18.3.80
           if-no-files-found: warn
           path: ${{ runner.temp }}/android-browser-screenshots
   verify-build:

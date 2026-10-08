@@ -29,7 +29,7 @@ unsigned long clockMs=100,wifiTestStarted=0,restartAt=0;unsigned long millis(){r
 int wifiTestState=WT_RUNNING,reboots=0,safeStops=0;bool setupMode=true,mdnsStarted=false,autoNameRequired=false,FLIGHT_CONTROL_ENABLED=true,probeAvailable=true,nameConflict=false,preferAp=true,forceAp=true;
 struct Address{String toString(){return "10.0.0.20";}};struct Wifi{int state=WL_CONNECTED;bool dropped=false;int status(){return state;}Address localIP(){return {};}void disconnect(bool,bool){dropped=true;}void mode(int){}}WiFi;
 struct Mdns{int queryService(const char*,const char*){return nameConflict?1:0;}void end(){}}MDNS;struct SerialType{void println(const String&){}void println(const char*){}}Serial;struct Server{void handleClient(){}}server;struct Esp{void restart(){reboots++;}}ESP;
-bool startProbeMdns(){mdnsStarted=probeAvailable;return probeAvailable;}bool queryResultIsName(int,const String&,bool){return nameConflict;}String chooseFreeAutoNameFromCurrentQuery(int){return "zebjus_drone_2";}String shortId(){return "334455";}void saveKitName(const String& n){kitName=n;}void setPreferredApMode(bool v){preferAp=v;}void setForceSetupFlag(bool v){forceAp=v;}String optionalWebappUrl(){return "";}
+bool startProbeMdns(){mdnsStarted=probeAvailable;return probeAvailable;}bool queryResultIsName(int,const String&,bool){return nameConflict;}String chooseFreeAutoNameFromCurrentQuery(int){return "zebjus_drone_2";}String shortId(){return "334455";}String defaultKitName(){return "FlightCore A2-334455";}void saveKitName(const String& n){kitName=n;}void setPreferredApMode(bool v){preferAp=v;}void setForceSetupFlag(bool v){forceAp=v;}String optionalWebappUrl(){return "";}
 void servicePairing(){}void serviceSecureOta(){}void delay(int){}void serviceUserLed(){}void pollGps(){}void updateControlRates(){}void serviceBattery(){}void expireLock(){}void serviceTraining(){}void checkRecoveryButton(){}void networkHealth(){}void motorsSafe(){safeStops++;}bool saveWiFi(String,String,bool=true);
 '''
 checks=r'''
@@ -41,7 +41,7 @@ int main(){
  prefs.data.clear();prefs.data["zjwifi"]["s0"]="Existing";prefs.data["zjwifi"]["p0"]="existing-secret";clearRam();loadSavedWiFi();assert(savedIndex("Existing")==0&&savedIndex(DEFAULT_WIFI_SSID)<0);
  assert(saveWiFi("School","secret",true));clearRam();loadSavedWiFi();assert(preferredSSID=="School"&&savedPASS[savedIndex("School")]=="secret");prefs.fail=true;assert(!saveWiFi("Not-Stored","secret",true));assert(savedIndex("Not-Stored")<0);prefs.fail=false;
  resetTest();loop();assert(wifiTestState==WT_SUCCESS&&savedIndex(testSSID)>=0&&restartAt==7600&&!preferAp&&!forceAp&&testPASS.empty());clockMs=7599;loop();assert(reboots==0);clockMs=7600;loop();assert(reboots==1&&safeStops==1);
- resetTest();probeAvailable=false;testName="";loop();assert(wifiTestState==WT_SUCCESS&&kitName=="zebjus_drone_334455"&&restartAt==7600&&!WiFi.dropped);
+ resetTest();probeAvailable=false;testName="";loop();assert(wifiTestState==WT_SUCCESS&&kitName=="FlightCore A2-334455"&&restartAt==7600&&!WiFi.dropped);
  resetTest();nameConflict=true;loop();assert(wifiTestState==WT_SUCCESS&&kitName=="zebjus_drone_2");
  resetTest();prefs.fail=true;loop();assert(wifiTestState==WT_FAILED&&restartAt==0&&WiFi.dropped&&!testPASS.empty());
  resetTest();WiFi.state=0;clockMs=CONNECT_TIMEOUT_MS+1;loop();assert(wifiTestState==WT_FAILED&&restartAt==0&&WiFi.dropped&&!testPASS.empty());

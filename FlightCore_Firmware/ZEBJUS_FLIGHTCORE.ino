@@ -1,5 +1,5 @@
 /*
-  ZEBJUS FlightCore V18.3.79 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
+  ZEBJUS FlightCore V18.3.80 - RATE/ANGLE FLIGHT CORE + PYTHON CONTROL LAB
 
   Connection model copied from the proven ZEBJUS Python Lab approach:
     - Saved Wi-Fi -> direct STA connection on boot.
@@ -76,7 +76,7 @@ bool secureLayoutReady();
 #endif
 
 // ---------------- General ----------------
-static const char* FW_VERSION="18.3.79";
+static const char* FW_VERSION="18.3.80";
 static const char* FW_BUILD_DATE=__DATE__;
 static const char* FW_BUILD_TIME=__TIME__;
 
@@ -298,10 +298,9 @@ String hostFromName(String s){
 }
 void updateApName(){apName="ZEBJUS-FC-"+deviceId.substring(4);}
 void loadApPassword(){
- prefs.begin("zjap",false);apPassword=prefs.getString("pass","");
- if(apPassword.length()<16){uint8_t random[16];esp_fill_random(random,sizeof(random));apPassword=secureHex(random,sizeof(random));prefs.putString("pass",apPassword);memset(random,0,sizeof(random));}
- prefs.end();
+ prefs.begin("zjap",false);apPassword="12345678";if(prefs.getString("pass","")!=apPassword)prefs.putString("pass",apPassword);prefs.end();
 }
+String defaultKitName(){return String("FlightCore ")+String(BOARD_ID).substring(4)+"-"+deviceId.substring(4);}
 String optionalWebappUrl(){
   String base=String(WEBAPP_URL);base.trim();if(!base.length())return "";
   if(base.endsWith("/"))base.remove(base.length()-1);
@@ -320,11 +319,11 @@ bool argBool(const char* name,bool fallback=false){if(!server.hasArg(name))retur
 // ============================================================
 // NVS: Kit Name + multiple Wi-Fi profiles
 // ============================================================
-bool isLegacyAutoName(const String& name){return hostFromName(name)==hostFromName("F450-"+shortId());}
+bool isLegacyAutoName(const String& name){return hostFromName(name)==hostFromName("F450-"+shortId())||name.startsWith("zebjus_drone_");}
 void loadKitName(){
   prefs.begin("zjdrone",true);kitName=normalizeDisplayName(prefs.getString("name",""));prefs.end();
   autoNameRequired=!kitName.length()||isLegacyAutoName(kitName);
-  if(autoNameRequired)kitName="zebjus_drone_"+deviceId.substring(4);
+  if(autoNameRequired)kitName=defaultKitName();
   updateApName();
 }
 void saveKitName(const String& name){
@@ -408,7 +407,7 @@ bool queryResultIsName(int i,const String& candidate,bool ignoreSelf){
 bool startProbeMdns(){if(mdnsStarted){MDNS.end();mdnsStarted=false;delay(70);}String probe="zj-probe-"+shortId();probe.toLowerCase();mdnsStarted=MDNS.begin(probe.c_str());return mdnsStarted;}
 bool nameExistsOnNetwork(const String& candidate){if(!mdnsStarted&&!startProbeMdns())return false;delay(180);int count=MDNS.queryService("zebjus-drone","tcp");for(int i=0;i<count;i++)if(queryResultIsName(i,candidate,true))return true;return false;}
 String chooseFreeAutoNameFromCurrentQuery(int resultCount){
-  const String unique="zebjus_drone_"+deviceId.substring(4);
+  const String unique=defaultKitName();
   for(int num=0;num<=99;num++){
     String candidate=unique+(num?"_"+String(num):"");bool used=false;
     for(int i=0;i<resultCount;i++)if(queryResultIsName(i,candidate,false)){used=true;break;}
@@ -423,7 +422,7 @@ void startKitMdns(){
 }
 void ensureUniqueKitName(){
   if(!startProbeMdns()){
-    if(!kitName.length())saveKitName("zebjus_drone_"+deviceId.substring(4));
+    if(!kitName.length())saveKitName(defaultKitName());
     startKitMdns();return;
   }
   delay(150+(ESP.getEfuseMac()%450));
@@ -1142,7 +1141,7 @@ void processWifiTest(){
     Serial.println("Wi-Fi test connected: "+WiFi.localIP().toString());
     bool probe=startProbeMdns();int count=0;bool conflict=false;
     if(probe){delay(180);count=MDNS.queryService("zebjus-drone","tcp");for(int i=0;i<count;i++)if(queryResultIsName(i,testName,true)){conflict=true;break;}}
-    if(!testName.length()||conflict)testName=probe?chooseFreeAutoNameFromCurrentQuery(count):"zebjus_drone_"+shortId();
+    if(!testName.length()||conflict)testName=probe?chooseFreeAutoNameFromCurrentQuery(count):defaultKitName();
     if(mdnsStarted){MDNS.end();mdnsStarted=false;}
     if(!saveWiFi(testSSID,testPASS,true)){wifiTestState=WT_FAILED;testMessage="Connected, but Wi-Fi could not be saved. Retry.";WiFi.disconnect(false,false);WiFi.mode(WIFI_AP);return;}
     saveKitName(testName);autoNameRequired=false;setPreferredApMode(false);setForceSetupFlag(false);testRedirect=optionalWebappUrl();testMessage=probe?"Wi-Fi verified and saved. Restarting in STA mode.":"Wi-Fi saved. mDNS unavailable; use the STA IP. Restarting.";wifiTestState=WT_SUCCESS;restartAt=millis()+7500;testPASS="";Serial.println("Setup verified. Saved Kit Name: "+kitName);return;
@@ -1228,7 +1227,7 @@ void setupRoutes(){
 }
 void startNormalServer(){
   setupMode=false;WiFi.mode(WIFI_STA);WiFi.setAutoReconnect(true);WiFi.setSleep(false);ensureUniqueKitName();server.begin();startRcUdp();startRcMonitor();wifiLostAt=0;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.79 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore V18.3.80 LOCAL MODE");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);Serial.println("SSID     : "+WiFi.SSID());Serial.println("IP       : "+WiFi.localIP().toString());Serial.println("mDNS     : http://"+hostFromName(kitName)+".local");
 }
 void startSetupMode(){
   invalidateRcUdp();setupMode=true;if(!preferredApMode())setPreferredApMode(true);controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();serviceTraining();if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());server.begin();startRcUdp();startRcMonitor();wifiTestState=WT_IDLE;
@@ -1251,7 +1250,7 @@ void setup(){
   if(USER_LED_PIN>=0){pinMode(USER_LED_PIN,OUTPUT);digitalWrite(USER_LED_PIN,HIGH);}
   Serial.begin(115200);delay(300);Serial.printf("Boot: reset reason %u, free heap %u bytes\n",(unsigned)esp_reset_reason(),(unsigned)ESP.getFreeHeap());WiFi.persistent(false);WiFi.setAutoReconnect(true);if(RECOVERY_BUTTON_PIN>=0)pinMode(RECOVERY_BUTTON_PIN,INPUT_PULLUP);loadExpansionSettings();if(ENABLE_PPM_RECEIVER&&ppmReceiverPin>=0){pinMode(ppmReceiverPin,ppmEdgeFalling?INPUT_PULLDOWN:INPUT_PULLUP);attachInterrupt(digitalPinToInterrupt(ppmReceiverPin),ppmIsr,ppmEdgeFalling?FALLING:RISING);}
   busMutex=xSemaphoreCreateRecursiveMutex();deviceId=getDeviceId();loadFlightSettings();loadFcSetup();loadKitName();updateApName();loadApPassword();loadSavedWiFi();loadPidSettings();startPidSaveWorker();loadCalibrationSettings();initPairing();probeImuAtBoot();setupFlightCore();flightHeartbeatUs=micros();if(FLIGHT_CONTROL_ENABLED&&xTaskCreate(flightOutputSupervisor,"fc-output-guard",3072,nullptr,21,nullptr)!=pdPASS){flightReady=false;motorsSafe();Serial.println("Output supervisor unavailable: arming disabled");}setupExpansionPeripherals();setupRoutes();startFlightTask();
-  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.79 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
+  Serial.println("\n==============================\nZEBJUS FlightCore V18.3.80 LOCAL Wi-Fi + I2C\nBoard: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]\nID: "+deviceId+"\n==============================");
   bool forceApOnce=consumeForceSetupFlag();if(forceApOnce||preferredApMode()){startSetupMode();return;}
   if(connectSavedWiFi())startNormalServer();else startSetupMode();
 }

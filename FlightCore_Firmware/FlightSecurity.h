@@ -1,23 +1,28 @@
 #pragma once
 #include <esp_ota_ops.h>
+#include "ApWifiPolicy.h"
 // This file follows API handlers; dispatch reuses their safety checks with authenticated arguments.
 struct PairCredential {String id;uint8_t salt[16],verifier[384];int length=0;uint32_t expires=0;};
-PairCredential pairOwner,pairInvites[4];
+PairCredential pairOwner,pairApWifi,pairInvites[4];
 struct PairPending {esp_srp_handle_t* srp=nullptr;String client,role,credential;uint64_t id=0;uint32_t expires=0;uint8_t saltHash[32],key[64];} pairPending;
 SecureSession* secureCurrent=nullptr;uint64_t secureRequestSeq=0;uint32_t secureMaintenanceUntil[6]={};
 uint32_t pairRateAt=0;int pairRateCount=0;String pairSerial;
-bool makeCredential(PairCredential& c,const String& id,String& code){
- uint8_t random[16];esp_fill_random(random,16);code=secureHex(random,16);code.toUpperCase();String user=deviceId+"/"+id;char* salt=nullptr;char* verifier=nullptr;int len=0;
+bool makeCredentialWithCode(PairCredential& c,const String& id,const String& code){
+ String user=deviceId+"/"+id;char* salt=nullptr;char* verifier=nullptr;int len=0;
  int ret=esp_srp_gen_salt_verifier(user.c_str(),user.length(),code.c_str(),code.length(),&salt,16,&verifier,&len);
- bool ok=ret==ESP_OK&&salt&&verifier&&len>0&&len<=384;if(ok){c.id=id;c.length=len;memcpy(c.salt,salt,16);memcpy(c.verifier,verifier,len);}if(salt){memset(salt,0,16);free(salt);}if(verifier){memset(verifier,0,len);free(verifier);}memset(random,0,16);return ok;
+ bool ok=ret==ESP_OK&&salt&&verifier&&len>0&&len<=384;if(ok){c.id=id;c.length=len;memcpy(c.salt,salt,16);memcpy(c.verifier,verifier,len);}if(salt){memset(salt,0,16);free(salt);}if(verifier){memset(verifier,0,len);free(verifier);}return ok;
 }
+bool makeCredential(PairCredential& c,const String& id,String& code){uint8_t random[16];esp_fill_random(random,16);code=secureHex(random,16);code.toUpperCase();bool ok=makeCredentialWithCode(c,id,code);memset(random,0,16);return ok;}
+bool localApPairingPeer(){IPAddress ip=server.client().remoteIP();return setupMode&&ip[0]==AP_IP[0]&&ip[1]==AP_IP[1]&&ip[2]==AP_IP[2]&&ip[3]>1&&ip[3]<255;}
+bool secureApWifiSessionAllowed(const String& credential){return ZfcApWifi::sessionAllowed(setupMode,credential.c_str());}
+void initApWifiCredential(){String seed="ZFC3_AP_WIFI|"+deviceId+"|"+apPassword;uint8_t hash[32];mbedtls_sha256((uint8_t*)seed.c_str(),seed.length(),hash,0);String code=secureHex(hash,16);code.toUpperCase();pairApWifi.length=0;if(!makeCredentialWithCode(pairApWifi,"AP_WIFI",code)){flightReady=false;Serial.println("AP Wi-Fi authentication unavailable");}memset(hash,0,32);code="";seed="";}
 void clearPairPending(){if(pairPending.srp)esp_srp_free(pairPending.srp);pairPending.srp=nullptr;memset(pairPending.key,0,64);pairPending.id=0;}
 void initPairing(bool reset=false){
  if(!secureMutex)secureMutex=xSemaphoreCreateMutex();Preferences p;p.begin("zjpair",false);
  size_t n=reset?0:p.getBytesLength("verifier");pairOwner.id="OWNER";
  if(n>0&&n<=384&&p.getBytesLength("salt")==16){pairOwner.length=n;p.getBytes("salt",pairOwner.salt,16);p.getBytes("verifier",pairOwner.verifier,n);}
  else{String code;if(!makeCredential(pairOwner,"OWNER",code)){Serial.println("PAIRING ERROR: outputs unavailable");flightReady=false;p.end();return;}p.putBytes("salt",pairOwner.salt,16);p.putBytes("verifier",pairOwner.verifier,pairOwner.length);Serial.println("PAIR LABEL: "+deviceId+" / "+kitName+" / "+code);code="";}
- p.end();if(reset){xSemaphoreTake(secureMutex,portMAX_DELAY);for(auto& s:secureSessions){s.id=0;memset(s.keys,0,sizeof(s.keys));}xSemaphoreGive(secureMutex);for(auto& c:pairInvites)c.length=0;clearPairPending();invalidateRcUdp();forceDisarmRequested=true;}
+ p.end();initApWifiCredential();if(reset){xSemaphoreTake(secureMutex,portMAX_DELAY);for(auto& s:secureSessions){s.id=0;memset(s.keys,0,sizeof(s.keys));}xSemaphoreGive(secureMutex);for(auto& c:pairInvites)c.length=0;clearPairPending();invalidateRcUdp();forceDisarmRequested=true;}
 }
 void servicePairing(){
  if(pairPending.srp&&(int32_t)(pairPending.expires-millis())<=0)clearPairPending();
@@ -31,6 +36,7 @@ void pairingHello(){
  String cid=server.arg("clientId"),role=server.arg("role"),credential=server.arg("credential");
  if(cid.length()<8||cid.length()>96||!(role=="MOBILE"||role=="WEB"||role=="COMPANION")){sendMessage(400,"Invalid pairing identity");return;}
  PairCredential* c=nullptr;if(credential=="OWNER"&&role!="COMPANION")c=&pairOwner;
+ else if(credential=="AP_WIFI"&&pairApWifi.length&&ZfcApWifi::allowed(setupMode,localApPairingPeer(),role.c_str()))c=&pairApWifi;
  else if(role=="COMPANION")for(auto& invite:pairInvites)if(invite.id==credential&&invite.length&&(int32_t)(invite.expires-now)>0)c=&invite;
  if(!c){sendMessage(403,"Pairing invitation expired or invalid");return;}
  uint8_t A[384];if(!secureUnhex(server.arg("A"),A,384)){sendMessage(400,"Invalid SRP public key");return;}
@@ -46,6 +52,7 @@ void pairingHello(){
  sendJson(200,"{\"ok\":true,\"deviceId\":\""+deviceId+"\",\"sessionId\":\""+secureId(pairPending.id)+"\",\"B\":\""+secureHex((uint8_t*)B,bl)+"\",\"salt\":\""+secureHex(c->salt,16)+"\"}");
 }
 void pairingProof(){
+ if(pairPending.credential=="AP_WIFI"&&!ZfcApWifi::allowed(setupMode,localApPairingPeer(),pairPending.role.c_str())){clearPairPending();sendMessage(403,"AP Wi-Fi pairing is local AP only");return;}
  uint8_t proof[64],answer[64];String user=deviceId+"/"+pairPending.credential;
  if(!pairPending.srp||(int32_t)(pairPending.expires-millis())<=0||server.arg("sessionId")!=secureId(pairPending.id)||!secureUnhex(server.arg("M1"),proof,64)||esp_srp_exchange_proofs(pairPending.srp,(char*)user.c_str(),user.length(),(char*)proof,(char*)answer)!=ESP_OK){clearPairPending();sendMessage(403,"Pairing code not accepted");return;}
  xSemaphoreTake(secureMutex,portMAX_DELAY);SecureSession* target=nullptr;for(auto& s:secureSessions)if(!s.id||(int32_t)(s.expires-millis())<=0||secureBrowserRetired(s)){target=&s;break;}
@@ -64,7 +71,7 @@ bool secureSendJson(int code,const String& body){
  auto out=std::unique_ptr<uint8_t[]>(new uint8_t[plain.length()+16]);if(!ZfcSecure::seal(secureCurrent->keys[1],seq,(uint8_t*)aad.c_str(),aad.length(),(uint8_t*)plain.c_str(),plain.length(),out.get()))return true;
  cors();server.sendHeader("Cache-Control","no-store");server.send(200,"application/json","{\"sessionId\":\""+sid+"\",\"seq\":\""+counter+"\",\"cipher\":\""+secureHex(out.get(),plain.length()+16)+"\"}");return true;
 }
-bool secureOwner(){return secureCurrent&&secureCurrent->credential=="OWNER";}
+bool secureOwner(){return secureCurrent&&(secureCurrent->credential=="OWNER"||secureCurrent->credential=="AP_WIFI"&&setupMode&&(secureCurrent->role=="MOBILE"||secureCurrent->role=="WEB"));}
 #include "FlightWebApp.h"
 bool securePidPermission(){return secureCurrent&&(secureOwner()?controlAuthorized()||scopedTrainingBrowser():trainingActive&&trainingAppOwned&&controlRole=="MOBILE"&&scopedTrainingBrowser());}
 void secureInvite(){
@@ -75,7 +82,10 @@ void secureInvite(){
 }
 #include "SecurePolicy.h"
 bool securePermission(const String& path){
- if(!secureCurrent)return false;bool maintenance=(int32_t)(secureMaintenanceUntil[secureCurrent-secureSessions]-millis())>0;
+ if(!secureCurrent)return false;
+ if(server.arg("type")=="rc_frame"&&!ZfcApWifi::physicalRcAllowed(secureCurrent->credential.c_str(),secureCurrent->role.c_str())){sendMessage(403,"AP flight uses the Android native joystick");return false;}
+ if(secureCurrent->credential=="AP_WIFI"&&secureCurrent->role=="WEB"&&path=="/api/control/acquire"&&controlRole=="MOBILE"&&!lockMine(secureCurrent->client)){sendMessage(423,"App controls this kit; web is view-only");return false;}
+ bool maintenance=(int32_t)(secureMaintenanceUntil[secureCurrent-secureSessions]-millis())>0;
  bool ok=ZfcSecure::permitted(secureOwner(),setupMode,maintenance,!armed&&benchMode==BENCH_NONE,path.c_str(),server.arg("type").c_str());
  if(!ok)sendMessage(403,setupMode?"AP supports joystick and STOP; use STA for training/PID or open disarmed Wi-Fi maintenance":"Laptop permission does not include control, ARM or administration");return ok;
 }
@@ -106,4 +116,4 @@ void secureRequest(){
  if(!secureParse(String((char*)plain.get()))){sendMessage(400,"Invalid authenticated arguments");}else if(server.arg("expectedDeviceId")!=deviceId||server.arg("clientId")!=s->client){sendMessage(409,"Authenticated identity differs");}else{server.setSecureArg("clientId",s->client);server.setSecureArg("clientRole",s->role);secureDispatch(server.arg("path"));}
  server.secureContext=false;server.secureCount=0;secureCurrent=nullptr;memset(plain.get(),0,n);
 }
-void secureDiscovery(){sendJson(200,"{\"ok\":true,\"kit\":\"ZEBJUS_FLIGHTCORE\",\"deviceId\":\""+deviceId+"\",\"name\":\""+jsonEscape(kitName)+"\",\"ip\":\""+(setupMode?AP_IP.toString():WiFi.localIP().toString())+"\",\"mode\":\""+String(setupMode?"AP":"STA")+"\",\"firmware\":\""+String(FW_VERSION)+"\",\"boardId\":\""+String(BOARD_ID)+"\",\"securityRequired\":true,\"securityProtocol\":\"ZFC3\",\"partitionLayout\":\"ZFC_DUAL_1E0000\",\"rcMonitorPort\":4211,\"rcMonitorProtocol\":\"ZFC3_NDJSON\"}");}
+void secureDiscovery(){sendJson(200,"{\"ok\":true,\"kit\":\"ZEBJUS_FLIGHTCORE\",\"deviceId\":\""+deviceId+"\",\"name\":\""+jsonEscape(kitName)+"\",\"ip\":\""+(setupMode?AP_IP.toString():WiFi.localIP().toString())+"\",\"mode\":\""+String(setupMode?"AP":"STA")+"\",\"firmware\":\""+String(FW_VERSION)+"\",\"boardId\":\""+String(BOARD_ID)+"\",\"apWifiPairing\":"+String(setupMode&&pairApWifi.length?"true":"false")+",\"securityRequired\":true,\"securityProtocol\":\"ZFC3\",\"partitionLayout\":\"ZFC_DUAL_1E0000\",\"rcMonitorPort\":4211,\"rcMonitorProtocol\":\"ZFC3_NDJSON\"}");}

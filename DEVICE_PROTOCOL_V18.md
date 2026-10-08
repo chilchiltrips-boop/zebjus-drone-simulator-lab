@@ -1,4 +1,4 @@
-# V18.3.79 active secure routing
+# V18.3.80 active secure routing
 
 Current kits require per-kit SRP owner/invitation pairing and AES-GCM authenticated requests/RC/ACK/observer frames (ZFC3). Earlier plaintext examples below describe legacy releases; they cannot bypass current authentication.
 
@@ -8,7 +8,7 @@ MOBILE `training_select` includes the registered `webAppId` with the existing pr
 
 Native RC is 50 Hz; the selected encrypted observer is at most 10 Hz. Active control suspends background HTTP traffic. Monitor reconnect uses 1/2/4/8-second backoff; denied observers require explicit reconnect. Simulation gaps retain the same run within the 8-second app / 10-second kit bounds, neutralize input and require manual ARM on recovery. Observer loss for 10 seconds safely expires inhibition; old grants cannot become real-flight packets.
 
-Fresh valid PPM is first for physical flight, regardless of AUTO/WEB preference. PPM-only never falls back to network. Simulation still uses its explicit APP/PPM source and blocks real outputs. AP permits authenticated RC/STOP and explicit disarmed Wi-Fi maintenance; STA provides scoped training/configuration/OTA. There is no WAN flight command relay. See [installation and connection](SUPPORT/V18_3_79_WEBAPP_ID_UPDATE.md).
+Fresh valid PPM is first for physical flight, regardless of AUTO/WEB preference. PPM-only never falls back to network. Simulation still uses its explicit APP/PPM source and blocks real outputs. AP permits authenticated RC/STOP and explicit disarmed Wi-Fi maintenance; STA provides scoped training/configuration/OTA. There is no WAN flight command relay. See [installation and connection](SUPPORT/V18_3_80_WEBAPP_ID_UPDATE.md).
 
 ---
 

@@ -1,3 +1,12 @@
+# ZEBJUS Aerion V18.3.80 — automatic AP pairing and Aerion startup
+
+- Kit AP password is 12345678, including migration from the old random password. Generated kit names become FlightCore A1/A2 plus the exact device suffix. Custom kit names stay intact.
+- AP Wi-Fi peers automatically establish encrypted SRP/AES-GCM sessions without the label-code dialog. This AP credential is separate from owner pairing, blocked on STA, and expires when leaving AP. Browser AP sessions cannot publish physical RC or take an active MOBILE lease.
+- Router/STA owner and invitation pairing remains required. Native 50 Hz UDP, live PPM priority, simulator WebApp binding and all watchdogs are retained.
+- New company-Z/quad-rotor Aerion logo, Android launcher icon and five-second startup reveal. Reduced motion has a static five-second intro.
+- App home shows the WebApp ID before connection; Kit AP and Router Wi-Fi have separate buttons.
+- Install matching firmware 18.3.80 and APK 18.3.80-android.1; signed APK updates retain existing owner pairing and saved IDs.
+
 # ZEBJUS Aerion V18.3.79 — Android.2 visible ID and router connection
 
 - Show the Training WebApp ID field before kit connection; preserve a typed draft when the first kit is paired, and save only for that exact kit.

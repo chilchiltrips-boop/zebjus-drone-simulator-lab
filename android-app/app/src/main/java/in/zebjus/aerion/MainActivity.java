@@ -178,10 +178,7 @@ public final class MainActivity extends Activity {
         selectRouterWifi();
         if(wifi==null)wifiMessage("wifiError","Join "+(routerSsid.isEmpty()?"the kit's saved router Wi-Fi":routerSsid)+" in Phone Wi-Fi settings, then return here. Waiting for router Wi-Fi.");
     }
-    private void joinKitWifi(String id){
-        android.widget.EditText password=new android.widget.EditText(this);password.setInputType(129);password.setHint("Unique AP password from kit label");
-        new AlertDialog.Builder(this).setTitle("Kit Wi-Fi password").setView(password).setNegativeButton("Cancel",null).setPositiveButton("Connect",(d,w)->joinKitWifiWithPassword(id,password.getText().toString())).show();
-    }
+    private void joinKitWifi(String id){joinKitWifiWithPassword(id,"12345678");}
     private void joinKitWifiWithPassword(String id,String apPassword){
         preferRouterWifi=false;departingKitWifi=null;routerSsid="";
         if(!resumed || destroyed)return;
@@ -224,9 +221,10 @@ public final class MainActivity extends Activity {
             String path=uri.getPath();String mime;
             if("/assets/flight/index.html".equals(path))mime="text/html";
             else if("/assets/android-transport.js".equals(path))mime="text/javascript";
+            else if("/assets/aerion-drone-mark.png".equals(path))mime="image/png";
             else return empty(404);
             byte[] bytes;
-            try(InputStream in=getAssets().open(path.substring("/assets/".length()))){bytes=read(in,150000);}
+            try(InputStream in=getAssets().open(path.substring("/assets/".length()))){bytes=read(in,mime.equals("image/png")?2097152:200000);}
             if(mime.equals("text/html"))bytes=new String(bytes,StandardCharsets.UTF_8).replace("<script src=\"../android-transport.js\"></script>","<script>window.__aerionToken="+JSONObject.quote(token)+";</script><script src=\"../android-transport.js\"></script>").getBytes(StandardCharsets.UTF_8);
             Map<String,String> headers=new java.util.HashMap<>();headers.put("Cache-Control","no-store");headers.put("Content-Security-Policy","default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'none'; img-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'none'");
             return new WebResourceResponse(mime,"UTF-8",200,"OK",headers,new ByteArrayInputStream(bytes));

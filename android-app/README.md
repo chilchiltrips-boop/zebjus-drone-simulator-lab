@@ -1,8 +1,10 @@
-# Aerion Flight Android — 18.3.79-android.2
+# Aerion Flight Android — 18.3.80-android.1
 
-VersionCode 1837902. Install `dist/ZEBJUS_Aerion_V18_3_79_Android.apk` over the previous development app; the signing certificate is unchanged. Controller firmware 18.3.79 remains compatible; this Android UI update does not require another firmware flash.
+VersionCode 1838001. Install `dist/ZEBJUS_Aerion_V18_3_80_Android.apk` over the previous development app; the signing certificate is unchanged. Install matching controller firmware 18.3.80 to enable automatic AP authentication and password 12345678.
 
-Read the [FACTORY migration and pairing guide](../SUPPORT/V18_3_78_SECURE_KIT_UPDATE.md) first. Old APKs cannot control secure firmware. Use the per-kit AP password and owner code from the physical label/USB serial output. Training requires STA and a live paired kit; app invitations pair permitted laptop companions.
+Read the [FACTORY migration and pairing guide](../SUPPORT/V18_3_78_SECURE_KIT_UPDATE.md) first. Old APKs cannot control secure firmware. On firmware 18.3.80 the AP password is 12345678 and AP authentication is automatic. Router/STA mode keeps the owner code from the physical label/USB serial output. Training requires STA and a live paired kit; app invitations pair permitted laptop companions.
+
+The launcher and startup use the new geometric Z/quad-rotor Aerion Drone Lab mark. A five-second intro appears on app launch; reduced-motion uses a static intro. It does not transmit RC or replay on ordinary resume.
 
 ## Connect and practise
 

@@ -56,8 +56,10 @@ class Channel {
  monitorTicket(){if(this.native){const ticket=w.AerionAndroid.monitorTicket?.(this.base,this.id);if(!ticket)throw Error('Native monitor authentication unavailable.');return ticket;}return new URLSearchParams(this.envelope(new URLSearchParams({path:'/api/rc/live',method:'GET',clientId:this.cid,expectedDeviceId:this.id}).toString())).toString();}
 }
 async function promptCode(title){return new Promise((resolve,reject)=>{const box=document.createElement('dialog');box.innerHTML='<form method="dialog"><p></p><label>Pairing code <input autocomplete="off" spellcheck="false" maxlength="80" required></label><p><button value="cancel" formnovalidate>Cancel</button> <button value="pair">Pair kit</button></p></form>';box.querySelector('p').textContent=title;document.body.append(box);box.addEventListener('close',()=>{const code=box.querySelector('input').value.trim();box.remove();box.returnValue==='pair'?resolve(code):reject(Error('Pairing cancelled.'))},{once:true});box.showModal();});}
+function apWifiCode(id){if(!/^ZFC-[A-F0-9]{12}$/i.test(id))throw Error('Exact Device ID required for AP Wi-Fi pairing.');return hex(C.sha256(utf('ZFC3_AP_WIFI|'+id+'|12345678'))).slice(0,32).toUpperCase();}
 async function ensure(base,st,cid,role,raw){
  if(!st.securityRequired)return null;let ch=registry.get(base);if(ch&&ch.id===st.deviceId&&ch.cid===cid){try{await ch.request('/api/security/info',{},raw);return ch;}catch(e){registry.delete(base);}}
+ if(st.apWifiPairing===true&&String(st.mode).startsWith('AP')&&(role==='MOBILE'||role==='WEB')){ch=new Channel(base,st.deviceId,cid,role,'AP_WIFI');try{await ch.pair(apWifiCode(st.deviceId),raw);if(ch.info.name!==st.name)throw Error('Authenticated Kit Name differs from discovery. Select the correct kit.');return ch;}catch(e){registry.delete(base);throw e;}}
  const saved=w.AerionAndroid?.pairCode?.(st.deviceId)||'',requestedRole=role,title=st.name+' · '+st.deviceId;
  let code=saved||await promptCode(title+' — kit label code or app invitation');
  for(let attempt=0;attempt<2;attempt++){
@@ -65,5 +67,5 @@ async function ensure(base,st,cid,role,raw){
   ch=new Channel(base,st.deviceId,cid,pairRole,credential);try{await ch.pair(secret,raw);if(ch.info.name!==st.name)throw Error('Authenticated Kit Name differs from discovery. Select the correct kit.');if(credential==='OWNER')w.AerionAndroid?.savePairCode?.(st.deviceId,secret.toUpperCase());return ch;}catch(e){registry.delete(base);if(attempt||!saved||e.status!==403)throw e;code=await promptCode(title+' — saved pairing code was rejected. Enter the current code from PAIR LABEL after PAIR RESET.');}
  }
 }
-w.ZfcSecurity={Channel,ensure,get:base=>registry.get(base),clear:base=>registry.delete(base),promptCode,hex,unhex,cat,big,bytes,pow,N,G,utf,nonce,equal};if(typeof module!=='undefined')module.exports=w.ZfcSecurity;
+w.ZfcSecurity={Channel,ensure,apWifiCode,get:base=>registry.get(base),clear:base=>registry.delete(base),promptCode,hex,unhex,cat,big,bytes,pow,N,G,utf,nonce,equal};if(typeof module!=='undefined')module.exports=w.ZfcSecurity;
 })(typeof window!=='undefined'?window:globalThis);

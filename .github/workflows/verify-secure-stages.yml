@@ -111,6 +111,9 @@ jobs:
           /tmp/zfc-webapp-scope
           node tools/test_webapp_binding.js
           node tools/test_pairing_reset.js
+          node tools/test_ap_wifi_pairing.js
+          g++ -std=c++17 tools/test_ap_wifi_policy.cpp -o /tmp/zfc-ap-wifi-policy
+          /tmp/zfc-ap-wifi-policy
           node tools/test_secure_frames.js
           node tools/test_secure_pairing.js
           node tools/test_secure_native.js
