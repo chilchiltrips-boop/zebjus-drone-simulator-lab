@@ -4,12 +4,12 @@
     {
       "url": "index.html",
       "bytes": 68681,
-      "sha256": "5a5a510be8939d48b7b0c31e89b84fdcdd37baea42d9f82cbbe97d81ed7653e8"
+      "sha256": "c1735fac318fab0733e41fb6e2e9eb5c6f8074acc465e532e97f36be6df4f3e8"
     },
     {
       "url": "flight/index.html",
       "bytes": 68681,
-      "sha256": "5a5a510be8939d48b7b0c31e89b84fdcdd37baea42d9f82cbbe97d81ed7653e8"
+      "sha256": "c1735fac318fab0733e41fb6e2e9eb5c6f8074acc465e532e97f36be6df4f3e8"
     },
     {
       "url": "controller.css",
@@ -24,12 +24,12 @@
     {
       "url": "firmware-updater.js",
       "bytes": 31514,
-      "sha256": "7a442227bcace3b77f5a3293e502c6c80de353763bb701a8c85e972a11e5d2c0"
+      "sha256": "2133ace2691267e4e60d8f8028d4dfbec1f961e5e5a2ab43d10b66dd216942d2"
     },
     {
       "url": "firmware-catalog.json",
       "bytes": 2786,
-      "sha256": "cb97f2ff60e2b5bc50a5a9adc64205d96666654e414b39ed38dafd629d261e8e"
+      "sha256": "26861b3b1f5eeb8c404e4901b81edf42056a0e1c9bd9f2026313e0952fab69e0"
     },
     {
       "url": "manifest.webmanifest",

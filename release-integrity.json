@@ -60,22 +60,22 @@
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
       "bytes": 1197408,
-      "sha256": "a3f263be27ddc4d23a94ac0226c52df456386e408feee88402a5871ea60306e1"
+      "sha256": "456eec68d013b56afef3e6c8bb6b48e3fd8fe712e79b329ea55db5bb6dad5ba4"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "5becee8c7fac31c79e27f77cbb1e13181f297d04d9ab4cb15ca91bb4de824b81"
+      "sha256": "8a910ed2a87f091c8799e3e04bcad4e88ecbbe851265900992686b7cb1a10fbe"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin",
       "bytes": 1282112,
-      "sha256": "71e6c7be8e26b045751191a385b58facf70cc5381c59872e9fb28d60026954cb"
+      "sha256": "44fd2bf36b5638fc7a51c99ce0f073b1f6cf55e9b0fb60a84322620487ecb392"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "30e44c48762e064bd9b7e792d9e1a91131a6458906999f9f7e12cda86ae9fc35"
+      "sha256": "02dd6acd07ed522ac4faffc8725c1353b675ff6bdd65539c1137f9a89af6156c"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h",
@@ -85,17 +85,17 @@
     {
       "path": "FlightCore_Firmware/build-report.json",
       "bytes": 1322,
-      "sha256": "776dff72bbe8e169bf0c857fcb9811f6616fd1863ef6ecda0457192b8c72fcc8"
+      "sha256": "02121321bbc38e286fef9a94a1176c6a85906167676d1854c9dac85cba81a926"
     },
     {
       "path": "FlightCore_Firmware/catalog.json",
       "bytes": 2786,
-      "sha256": "cb97f2ff60e2b5bc50a5a9adc64205d96666654e414b39ed38dafd629d261e8e"
+      "sha256": "26861b3b1f5eeb8c404e4901b81edf42056a0e1c9bd9f2026313e0952fab69e0"
     },
     {
       "path": "FlightCore_Firmware/latest.json",
       "bytes": 258,
-      "sha256": "4278c55796fea9fa032324d8d40159ff67daf9b57a818bcd9dd31583ca7b6ead"
+      "sha256": "59339e6a9256bb71230bc0d39dc31cd514b25374e56fb8107f52dee68756dea4"
     },
     {
       "path": "FlightCore_Firmware/src/DroneGPS.cpp",
@@ -170,7 +170,7 @@
     {
       "path": "android-app/app/src/main/assets/flight/index.html",
       "bytes": 68728,
-      "sha256": "5eb6015a9ade250968c6578a6b0b30cd472a8c88ed2d358231a21d5229492df1"
+      "sha256": "edac8698a7cff5ad1061b55277f1ecc216173c7a3e0764a9ec85c15f7c066ff3"
     },
     {
       "path": "android-app/app/src/main/java/in/zebjus/aerion/LaunchPolicy.java",
@@ -275,27 +275,27 @@
     {
       "path": "firmware-catalog.json",
       "bytes": 2786,
-      "sha256": "cb97f2ff60e2b5bc50a5a9adc64205d96666654e414b39ed38dafd629d261e8e"
+      "sha256": "26861b3b1f5eeb8c404e4901b81edf42056a0e1c9bd9f2026313e0952fab69e0"
     },
     {
       "path": "firmware-latest.json",
       "bytes": 267,
-      "sha256": "146459a224b55a0762ab8b07c6b27d83fd13e95818a9c1da0fed9b1d0f2b22d7"
+      "sha256": "7ccad44d5970df10cc6659df2b7a9762bb4b6d5decad299749bbeaaa7217de88"
     },
     {
       "path": "firmware-updater.js",
       "bytes": 31514,
-      "sha256": "7a442227bcace3b77f5a3293e502c6c80de353763bb701a8c85e972a11e5d2c0"
+      "sha256": "2133ace2691267e4e60d8f8028d4dfbec1f961e5e5a2ab43d10b66dd216942d2"
     },
     {
       "path": "flight/index.html",
       "bytes": 68681,
-      "sha256": "5a5a510be8939d48b7b0c31e89b84fdcdd37baea42d9f82cbbe97d81ed7653e8"
+      "sha256": "c1735fac318fab0733e41fb6e2e9eb5c6f8074acc465e532e97f36be6df4f3e8"
     },
     {
       "path": "index.html",
       "bytes": 68681,
-      "sha256": "5a5a510be8939d48b7b0c31e89b84fdcdd37baea42d9f82cbbe97d81ed7653e8"
+      "sha256": "c1735fac318fab0733e41fb6e2e9eb5c6f8074acc465e532e97f36be6df4f3e8"
     },
     {
       "path": "manifest.webmanifest",
@@ -305,7 +305,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 1417,
-      "sha256": "eaf6f809cdeafc9f2b0f6406d461bd011703589e644d1a13554cfd17c1ddfc70"
+      "sha256": "12eab3fff65e12bb3c125d00d48ef961ba4893a87695c1bf6ee58fb37a380f41"
     },
     {
       "path": "package.json",
