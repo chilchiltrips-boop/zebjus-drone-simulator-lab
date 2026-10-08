@@ -1,3 +1,10 @@
+# ZEBJUS Aerion V18.3.79 — Android.2 visible ID and router connection
+
+- Show the Training WebApp ID field before kit connection; preserve a typed draft when the first kit is paired, and save only for that exact kit.
+- Separate Real flight · Kit AP and Training · Router Wi-Fi buttons. Router selection releases the native AP request and keeps controls disarmed.
+- Explain the same-router STA kit requirement, router IP and per-kit Save workflow. Display the Android revision in connection help.
+- Same signing certificate, retained pairing/settings and compatible firmware 18.3.79. No Clear data or repeat firmware flash needed for this UI follow-up.
+
 # ZEBJUS Aerion V18.3.79 — six-digit WebApp binding and PPM priority
 
 - Android 18.3.79-android.1 / 1837901 saves and replaces a training WebApp ID per exact kit.

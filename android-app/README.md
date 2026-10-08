@@ -1,12 +1,12 @@
-# Aerion Flight Android — 18.3.78-android.2
+# Aerion Flight Android — 18.3.79-android.2
 
-VersionCode 1837802. Install `dist/ZEBJUS_Aerion_V18_3_78_Android.apk` over the previous development app; the signing certificate is unchanged. Flash matching controller firmware 18.3.78 for A1 or A2.
+VersionCode 1837902. Install `dist/ZEBJUS_Aerion_V18_3_79_Android.apk` over the previous development app; the signing certificate is unchanged. Controller firmware 18.3.79 remains compatible; this Android UI update does not require another firmware flash.
 
 Read the [FACTORY migration and pairing guide](../SUPPORT/V18_3_78_SECURE_KIT_UPDATE.md) first. Old APKs cannot control secure firmware. Use the per-kit AP password and owner code from the physical label/USB serial output. Training requires STA and a live paired kit; app invitations pair permitted laptop companions.
 
 ## Connect and practise
 
-Open Connect drone → Connect kit Wi-Fi. Choose the kit network using its label. In STA mode join the same router and use the kit IP. Native requests are bound to the Wi-Fi network, including Wi-Fi without internet.
+Open Connect drone → **Real flight · Kit AP** for the kit network, or **Training · Router Wi-Fi** to release an old native AP binding and use the same router as the STA kit and computer. If no router is connected, open Phone Wi-Fi settings and return. Enter the kit router IP from the WebApp and Check connection. **Training WebApp ID** is visible on app home before connecting; enter six digits, then Save after pairing the exact kit. IDs stay separate for each kit. Updating the signed APK replaces bundled code/assets while retaining pairing and saved settings; Clear data is unnecessary. Native requests are bound to the Wi-Fi network, including Wi-Fi without internet.
 
 App home has **Tripod**, **Flight Training** and **Real Joystick** buttons. Tap a simulator to enable controls at throttle 0%, DISARMED. Open its web page on a computer connected to the same kit, then manually ARM the virtual drone in the app. No web Enable or simulator propeller checkbox is required. Both A1/C3 and A2/C6 support virtual practice without a ready IMU. Physical outputs remain DISARMED and blocked.
 

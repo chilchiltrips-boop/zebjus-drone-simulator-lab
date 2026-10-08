@@ -1,12 +1,12 @@
 # V18.3.79 — WebApp ID and PPM priority
 
-Install **18.3.79-android.1 / 1837901** and matching A1/A2 firmware together. The existing development signing certificate is retained. The hosted WebApp is updated separately; updating the website does not update a phone or running kit.
+Install **18.3.79-android.2 / 1837902** with compatible A1/A2 firmware 18.3.79. The android.2 UI follow-up needs no additional firmware flash if 18.3.79 is installed. The existing development signing certificate is retained. The hosted WebApp is updated separately; updating the website does not update a phone or running kit.
 
 ## Connect a phone to one WebApp
 
 1. Put the kit, phone and computer on the same router Wi-Fi. Open the hosted WebApp, connect the exact kit Device ID, and pair using the kit's owner code or the app's single-use laptop invitation.
 2. Read **WEBAPP ID** at the top of that WebApp. Registration activates it on this kit. Each page instance has a separate authenticated identity. The kit resolves six-digit collisions; different kits have separate registries, so the full Device ID remains mandatory.
-3. Connect the Android app to the same STA kit. Enter that WebApp ID in **Training WebApp ID**, then **Save / change WebApp ID**. The app remembers it separately for each kit. You can replace it later.
+3. In Android open **Connect drone → Training · Router Wi-Fi**. This releases any old kit AP binding. If needed use **Phone Wi-Fi settings**, join the router and return. Enter the kit router IP shown in the WebApp and Check connection/pair. The six-digit **Training WebApp ID** field is visible on app home even before connecting; enter the ID, then **Save / change WebApp ID** after pairing. The app remembers it separately for each kit. You can replace it later.
 4. Select **Tripod** or **Flight Training** in the app. The kit binds this run to that authenticated WebApp session. Only it receives the app's training RC stream or may run the virtual FC PID sensor bridge. The phone owns the joystick and manual virtual ARM. Other WebApps cannot take the mobile lease or inject training sensors.
 5. Keep the selected WebApp open in the foreground. To use a different page, end training, connect/pair that page, then save its displayed ID in the app. Refreshing a page creates a new authenticated instance; check its displayed ID again.
 
@@ -25,6 +25,10 @@ Native RC remains 50 Hz. The selected browser observer is bounded at 10 Hz. Acti
 Brief app ACK gaps neutralize simulation input while preserving the run and mobile lease within the existing 8-second app / 10-second kit windows. Recovery requires safe sticks and manual virtual ARM. A selected observer missing for 10 seconds, authentication loss, explicit STOP, kit change, or ID replacement ends or safely expires training. It cannot become a physical-flight ARM command.
 
 The previous pairing problem is also fixed: an Android saved code rejected after `PAIR RESET` prompts once for the new code. The code is saved only after successful authenticated pairing. SRP hello/proof can wait 15 seconds without extending RC or other HTTP timeouts.
+
+## APK update and saved data
+
+Install android.2 over android.1 with the same signing certificate. Android replaces APK code and bundled assets but keeps owner pairing and per-kit IDs/settings. The flight WebView uses `LOAD_NO_CACHE` and assets use `Cache-Control: no-store`; Clear data is not needed and would erase saved pairing. android.1 hid the ID field until kit connection and had no explicit router button; these were packaged UI issues. The connection dialog displays the installed Android revision.
 
 ## Installation and verification
 

@@ -9,7 +9,7 @@ Hardware I/O → Python Lab. Embed the lab in Wix using `?embed=wix`; the compac
 layout follows the iframe viewport and provides **Open full lab** for camera,
 USB or local-kit features blocked by parent permissions. See [Wix setup and
 permissions](WIX_EMBED.txt) and the ready-to-paste [HTML embed](WIX_EMBED.html).
-APK **18.3.79-android.1** is rebuilt with the same development certificate.
+APK **18.3.79-android.2** is rebuilt with the same development certificate.
 Tripod and Flight Training use native ZRC2 input at 50 Hz and a dedicated NDJSON1 web monitor at 10 Hz on port 4211; real flight retains native ZRC1 UDP. Telemetry and app Kit settings include a live Flight recorder with marked events and ChatGPT JSON / numerical CSV export. PID Basic/Advanced/Expert and parameter banks have been removed. PID tuning previews in Tripod; Tripod edits stay virtual. Setup configuration continues when another browser tab is open; hiding a running motor/ESC test stops its output.
 
 Kit discovery preserves the connected browser's verified control ownership.
@@ -29,7 +29,7 @@ Open the web lab's **Setup Wizard** page after Assembly Lab and 2D Wiring. Hardw
 
 Laptop: extract the complete project and open `Start_Offline.bat` (Windows), `Start_Offline.command` (Mac), or run `python3 start_offline.py`. Open **http://localhost:8787/**. Python 3 or Node.js must already be installed to launch the local server. Join the kit Wi-Fi; the open WebApp automatically discovers the AP API for observation.
 
-Android: install **android-app/dist/ZEBJUS_Aerion_V18_3_79_Android.apk**, open Aerion Flight → Connect drone → Connect kit Wi-Fi. Select the unique `ZEBJUS-FC-...` SSID for this Device ID. Use the random AP password from the kit label/USB serial output, then enter the per-kit pairing code.
+Android: install **android-app/dist/ZEBJUS_Aerion_V18_3_79_Android.apk**, open Aerion Flight → Connect drone → **Real flight · Kit AP** for real flight. For training choose **Training · Router Wi-Fi**, enter the STA kit router IP, pair, then save the six-digit **Training WebApp ID** shown on app home. Kit, phone and computer must share the same router; there is no cloud command relay. For AP flight select the unique `ZEBJUS-FC-...` SSID for this Device ID. Use the random AP password from the kit label/USB serial output, then enter the per-kit pairing code.
 
 **AP Wi-Fi setup:** open `http://192.168.4.1/` or `/setup` while joined to the kit AP. Flight controls and Hardware I/O use the APK or local/cached WebApp. Captive probes still return 204, so open the address manually; joining Wi-Fi does not launch a closed app.
 

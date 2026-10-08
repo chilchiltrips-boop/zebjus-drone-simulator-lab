@@ -23,17 +23,20 @@
  android.saveFile=(name,body,mime)=>native.saveFile(token,name,body,mime);
  android.openWifi=()=>native.openWifi(token);
  android.useRouterWifi=(ssid='',fromAp=false)=>native.useRouterWifi(token,ssid,fromAp);android.routerReady=()=>{wifiUi('Router Wi-Fi connected. Checking the kit…');android.connectedRouter?.()};
- android.joinWifi=()=>native.joinWifi(token,document.getElementById('expectedId').value.trim());
- const wifiUi=(message,busy=false)=>{document.getElementById('pairMessage').textContent=message;document.getElementById('androidWifi').disabled=busy;document.getElementById('checkConnection').disabled=busy;};
+ android.joinWifi=()=>{android.selectNetwork?.('AP');native.joinWifi(token,document.getElementById('expectedId').value.trim())};
+ android.joinRouter=()=>{android.selectNetwork?.('STA');wifiUi('Join the same router as the STA kit and WebApp. Enter the kit router IP, then Check connection.');android.useRouterWifi('',false)};
+ const wifiUi=(message,busy=false)=>{document.getElementById('pairMessage').textContent=message;document.getElementById('androidWifi').disabled=busy;document.getElementById('androidRouterWifi').disabled=busy;document.getElementById('checkConnection').disabled=busy;};
  android.wifiProgress=message=>wifiUi(message,true);
  android.wifiError=message=>wifiUi(message);
  android.wifiReady=()=>{wifiUi('Kit Wi-Fi connected. Checking its Device ID…');android.connectedWifi?.()};
  android.pause=()=>{};android.resume=()=>{};android.networkLost=()=>{};android.stopped=()=>{};
  addEventListener('DOMContentLoaded',()=>{
-  const button=document.createElement('button');button.id='androidWifi';button.className='primary';button.textContent='Connect kit Wi-Fi';button.onclick=android.joinWifi;
-  document.querySelector('#connectDialog .dialog-head').after(button);
-  const settings=document.createElement('button');settings.id='androidWifiSettings';settings.className='secondary';settings.textContent='Phone Wi-Fi settings (STA / Android 8–9)';settings.onclick=android.openWifi;button.after(settings);
-  document.getElementById('pairMessage').textContent='Connect kit Wi-Fi here; Android asks you to choose the kit. Use the unique AP password and pairing code from the kit label.';
+  const button=document.createElement('button');button.id='androidWifi';button.className='primary';button.textContent='Real flight · Kit AP';button.onclick=android.joinWifi;
+  const choices=document.createElement('div');choices.className='connection-choices';document.querySelector('#connectDialog .dialog-head').after(choices);choices.append(button);
+  const router=document.createElement('button');router.id='androidRouterWifi';router.className='primary';router.textContent='Training · Router Wi-Fi';router.onclick=android.joinRouter;choices.append(router);
+  const version=document.createElement('p');version.id='androidAppVersion';version.className='note';version.textContent='Android 18.3.79-android.2 · Saved pairing and IDs are kept on update.';choices.before(version);
+  const settings=document.createElement('button');settings.id='androidWifiSettings';settings.className='secondary';settings.textContent='Phone Wi-Fi settings (STA / Android 8–9)';settings.onclick=android.openWifi;choices.after(settings);
+  document.getElementById('pairMessage').textContent='Choose Kit AP for real flight or Router Wi-Fi for training. Training uses the same router as the paired STA kit and WebApp, with its six-digit ID on app home. Use Phone Wi-Fi settings if the router is not connected.';
   document.querySelector('#settingsDialog .links').hidden=true;
   document.getElementById('fullscreen').hidden=true;
  });

@@ -93,7 +93,7 @@ jobs:
           node android-app/tests/browser_transport_test.js
           node android-app/tests/browser_modes_test.js
           mkdir -p "$RUNNER_TEMP/android-browser-screenshots"
-          cp ../native_modes_mobile.png ../flight_recorder_app.png "$RUNNER_TEMP/android-browser-screenshots/"
+          cp ../native_modes_mobile.png ../flight_recorder_app.png ../native_connection_mobile.png ../native_connection_choices.png "$RUNNER_TEMP/android-browser-screenshots/"
       - name: Retain Android browser screenshots
         if: always()
         uses: actions/upload-artifact@v4
