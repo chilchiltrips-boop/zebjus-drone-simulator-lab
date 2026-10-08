@@ -71,6 +71,13 @@ jobs:
           AERION_DEVELOPMENT_STORE_PASSWORD: ${{ secrets.AERION_DEVELOPMENT_STORE_PASSWORD }}
         run: |
           set -euo pipefail
+          python3 - <<'PY_STATUS'
+          import os,json
+          from pathlib import Path
+          signed=bool(os.environ.get('AERION_DEVELOPMENT_STORE_PASSWORD'))
+          Path('release-status.json').write_text(json.dumps({'version':'18.4.0','apkAvailable':signed,'apkVersion':'18.4.0-simple.1','apkSigningPending':not signed},indent=2)+'\n')
+          PY_STATUS
+          python3 tools/embed_ap_pages.py
           if [ -n "${AERION_DEVELOPMENT_STORE_PASSWORD:-}" ]; then
             python3 android-app/tools/build_apk.py --build-tools "${ANDROID_HOME}/build-tools/36.0.0" --android-jar "${ANDROID_HOME}/platforms/android-36/android.jar"
             echo 'signed=true' >> "$GITHUB_OUTPUT"
@@ -83,15 +90,19 @@ jobs:
         env:
           AERION_APK_SIGNED: ${{ steps.apk.outputs.signed }}
         run: |
-          python3 - <<'PY'
-          import os,json
-          from pathlib import Path
-          signed=os.environ['AERION_APK_SIGNED']=='true'
-          Path('release-status.json').write_text(json.dumps({'version':'18.4.0','apkAvailable':signed,'apkVersion':'18.4.0-simple.1','apkSigningPending':not signed},indent=2)+'\n')
-          PY
           npm run release:seal
           npm run check
           npm run release:check
+          python3 - <<'PY_APK'
+          import os,zipfile
+          from pathlib import Path
+          apk=Path('android-app/dist/ZEBJUS_Aerion_V18_4_0_Android.apk') if os.environ['AERION_APK_SIGNED']=='true' else Path('android-app/build/cli/ZEBJUS_Aerion_V18_4_0_Unsigned.apk')
+          with zipfile.ZipFile(apk) as z:
+              assert z.testzip() is None
+              for name in ['flight/index.html','android-transport.js']:
+                  assert z.read('assets/'+name)==Path('android-app/app/src/main/assets/'+name).read_bytes(),name
+          print('Final APK/source assets match exactly')
+          PY_APK
       - name: Publish verified generated packages to the source branch
         if: github.event_name != 'pull_request'
         run: |

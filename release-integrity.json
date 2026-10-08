@@ -4,8 +4,8 @@
   "files": [
     {
       "path": ".github/workflows/controller-release.yml",
-      "bytes": 5733,
-      "sha256": "832ef4758698b875623039639161fd44124cdf0448bead9446df6f6493c005b1"
+      "bytes": 6429,
+      "sha256": "805b8ad9cb90511b467f095a4c851b161cc3748abd6a2dba7eb7d81b260e60cc"
     },
     {
       "path": ".gitignore",
