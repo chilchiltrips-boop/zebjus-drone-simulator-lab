@@ -16,13 +16,6 @@ int main(){
  assert(!RcUdpProtocol::decode(bytes,47,frame));bytes[6]=1;assert(!RcUdpProtocol::decode(bytes,48,frame));bytes[6]=0;
  RcUdpProtocol::put(bytes+28,999,2);assert(!RcUdpProtocol::decode(bytes,48,frame));RcUdpProtocol::put(bytes+28,1500,2);
  assert(RcUdpProtocol::decode(bytes,48,frame));uint8_t ack[28];RcUdpProtocol::ack(ack,frame,true,true);assert(ack[6]==3&&RcUdpProtocol::get(ack+16,8)==frame.token);
- assert(!frame.simulation&&frame.version==1);
- assert(RcUdpProtocol::permitted(frame,false,false,false));assert(!RcUdpProtocol::permitted(frame,false,true,true));assert(!RcUdpProtocol::permitted(frame,true,true,true));
- bytes[4]=2;assert(!RcUdpProtocol::decode(bytes,48,frame));bytes[5]=2;
- assert(RcUdpProtocol::decode(bytes,48,frame)&&frame.simulation&&frame.version==2);
- assert(RcUdpProtocol::permitted(frame,true,true,true));
- assert(!RcUdpProtocol::permitted(frame,true,false,true));assert(!RcUdpProtocol::permitted(frame,true,true,false));assert(!RcUdpProtocol::permitted(frame,false,false,true));
- RcUdpProtocol::ack(ack,frame,false,true);assert(ack[4]==2&&ack[6]==6&&RcUdpProtocol::get(ack+24,4)==42);
  assert(!RcUdpProtocol::newer(42,42)&&!RcUdpProtocol::newer(41,42)&&RcUdpProtocol::newer(43,42)&&RcUdpProtocol::newer(1,0xffffffffu));
  std::cout<<"PASS: bounded radio-gap centering/throttle/ARM, expiry/rollover, UDP frame bounds, channel validation, ACK identity and replay ordering\n";
 }

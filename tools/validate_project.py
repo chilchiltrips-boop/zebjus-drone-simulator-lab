@@ -183,8 +183,6 @@ if 'const FAILURE_LIMIT=5;' not in school or 'OFFLINE_AFTER_MS=10000' not in sch
 kit=read('kit-local.js')
 client_endpoints=set(re.findall(r"['\"`](/api/[A-Za-z0-9_./-]+)",kit))
 firmware_endpoints=set(re.findall(r'server\.on\(\"([^\"?]+)',ino))
-secure_routes=read('FlightCore_Firmware/FlightSecurity.h')
-firmware_endpoints.update(re.findall(r'p=="(/api/[^"]+)"',secure_routes))
 for ep in sorted(client_endpoints-firmware_endpoints): fail(f'kit-local.js endpoint missing in firmware: {ep}')
 
 # Build/update references must use stable firmware names and current supported core.
@@ -194,7 +192,7 @@ types_header=read('FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h')
 if 'ZEBJUS_FLIGHTCORE_TYPES.h' not in ino or 'ImuSample' not in types_header: fail('firmware ImuSample type is not safely declared in companion header')
 if 'enum ImuKind' not in types_header or 'IMU_MPU6050' not in types_header or 'IMU_LSM6DS3' not in types_header: fail('firmware ImuKind enum is not safely declared in companion header')
 if re.search(r'^\s*enum\s+ImuKind',ino,re.M): fail('ImuKind must not be declared inside the .ino because Arduino auto-prototype generation can place prototypes before it')
-if "('*.h','*.hpp','*.c','*.cpp','partitions.csv')" not in build: fail('firmware build script does not copy companion headers/sources into temporary Arduino sketch')
+if "('*.h','*.hpp','*.c','*.cpp')" not in build: fail('firmware build script does not copy companion headers/sources into temporary Arduino sketch')
 if 'ZEBJUS_FLIGHTCORE_A1_APP.bin' not in workflow or '_V18_' in workflow: fail('workflow still uses a versioned A1 application filename')
 if 'ZEBJUS_FLIGHTCORE_A2_APP.bin' not in workflow: fail('workflow does not require/publish the A2 application image')
 if 'concurrency:' not in workflow or 'cancel-in-progress: true' not in workflow: fail('workflow lacks firmware-build concurrency protection')
@@ -308,9 +306,9 @@ if 'calAccX' not in html or 'calCaptureBtn' not in html or 'calibrationUi' not i
 
 
 # V18.3.43 unified RC / simulator mirror.
-if 'RcPriority::choose(' not in ino or not (ROOT/'FlightCore_Firmware/RcPriority.h').is_file(): fail('PPM-first physical RC arbitration is missing')
-if 'SIMULATOR ONLY' not in html or 'simulatorPidOnly:true' not in app or 'mirrorSimPidToReal' in app: fail('Tripod PID must stay isolated from real hardware')
-if "String(t.rcSource||'NONE').toUpperCase()!=='NONE'" not in school or "api()?.controlSim?.({roll:(c[0]-1500)/500" not in school: fail('V18.3.43 active RC telemetry/Web joystick mirror is missing')
+if 'if(webRcFresh())return setupMode?RC_WEB_AP:RC_WEB_STA;if(receiverFresh())return RC_PPM' not in ino: fail('V18.3.43 Web/AP/Python-first RC arbitration is missing')
+if 'REAL KIT + TRIPOD MIRROR' not in html or 'simRealMirrorTick' not in app or 'mirrorSimPidToReal' not in app: fail('V18.3.43 Tripod real-kit mirror is missing')
+if "rcSource!=='NONE'" not in school or "api()?.controlSim?.({roll:(c[0]-1500)/500" not in school: fail('V18.3.43 active RC telemetry/Web joystick mirror is missing')
 if 'simulatorMirror:true' not in app: fail('V18.3.43 Python real-kit simulator mirror is missing')
 
 # V18.3.48 release integration and editable AP-page source consistency.
@@ -364,7 +362,7 @@ if 'id="tab-io"' not in html or f'hardware-io.js?v={version}' not in html: fail(
 # V18.3.48 safety, camera lifecycle, and calibration contract.
 for rel in ['python_companion/browser_cvzone.py','tools/test_camera_lifecycle.js','tools/test_browser_cvzone.py','SUPPORT/FLIGHTCORE_STAGE_GUIDE_V18_3_48.md','SUPPORT/FLIGHT_VALIDATION_V18_3_48.md']:
     if not (ROOT/rel).is_file(): fail(f'V18.3.48 project file missing: {rel}')
-for token in ['ppmPending','ppmIndex>=4','ppmInvalidFrame','ppmPinAllowed','ppmReceiverPin','flightOutputSupervisor','flightWatchdogTripped','outputWatchdogTrips','takeMessageCounters().completeEpochs','batteryValid']:
+for token in ['ppmPending','ppmIndex>=6','ppmInvalidFrame','ppmPinAllowed','ppmReceiverPin','flightOutputSupervisor','flightWatchdogTripped','outputWatchdogTrips','takeMessageCounters().completeEpochs','batteryValid']:
     if token not in ino: fail(f'V18.3.48 firmware receiver/output contract missing: {token}')
 for token in ['ioPpmPin','calSixFaces','calSixApply','cvzone-hands']:
     if token not in html: fail(f'V18.3.48 UI missing: {token}')

@@ -1,17 +1,3 @@
-# V18.3.80 active secure routing
-
-Current kits require per-kit SRP owner/invitation pairing and AES-GCM authenticated requests/RC/ACK/observer frames (ZFC3). Earlier plaintext examples below describe legacy releases; they cannot bypass current authentication.
-
-On STA, a paired WEB/COMPANION registers with encrypted `POST /api/webapp/register` using `webAppId` (six digits, 100000–999999), `clientId` and exact `expectedDeviceId`. The returned ID is unique among live browser registrations on this kit; collisions are reassigned. `/api/webapp/unregister` removes only the authenticated caller's registration. The foreground observer renews its 10-second registration without HTTP polling. Registrations are volatile and scoped to the full Device ID and authenticated browser session, not global internet logins.
-
-MOBILE `training_select` includes the registered `webAppId` with the existing private training session/target/source. The controller binds the run to that exact browser auth session. Status, training ACK and encrypted `rc_live` expose `trainingWebAppId`; a six-digit value is a routing ID, not a credential. During app training only this browser may subscribe to RC or submit virtual sensor/engine commands. Other browsers cannot acquire the mobile lease. App ID replacement explicitly stops the previous session and requires a new safe virtual ARM.
-
-Native RC is 50 Hz; the selected encrypted observer is at most 10 Hz. Active control suspends background HTTP traffic. Monitor reconnect uses 1/2/4/8-second backoff; denied observers require explicit reconnect. Simulation gaps retain the same run within the 8-second app / 10-second kit bounds, neutralize input and require manual ARM on recovery. Observer loss for 10 seconds safely expires inhibition; old grants cannot become real-flight packets.
-
-Fresh valid PPM is first for physical flight, regardless of AUTO/WEB preference. PPM-only never falls back to network. Simulation still uses its explicit APP/PPM source and blocks real outputs. AP permits authenticated RC/STOP and explicit disarmed Wi-Fi maintenance; STA provides scoped training/configuration/OTA. There is no WAN flight command relay. See [installation and connection](SUPPORT/V18_3_80_WEBAPP_ID_UPDATE.md).
-
----
-
 # ZEBJUS F450 V18.3.64 Local Device Protocol
 
 HTTP endpoints are local on the ESP32 (port 80). AP serves API only, with no browser/captive pages. V18.3.64 adds session-scoped Android RC on UDP port 4210. Older version sections describe historical capabilities where superseded.
@@ -35,7 +21,7 @@ Lock expires after 10 seconds without a valid owner command, accepted RC or hear
 
 ## V18.3.64 native flight transport
 
-A MOBILE grant on a flight-capable profile advertises `rcUdpPort=4210`, private `rcUdpToken` (16 hex digits), `rcUdpHz=50`, `rcTimeoutMs=1000` and `rcCenterMs=300`. This physical-flight grant applies to A2; A1 supports the ZRC2 simulator grant described in V18.3.68 below. Tokens are never in public status/telemetry. A legacy client can send an initial safe HTTP RC frame to invalidate the token and continue over HTTP.
+A MOBILE grant on a flight-capable profile advertises `rcUdpPort=4210`, private `rcUdpToken` (16 hex digits), `rcUdpHz=50`, `rcTimeoutMs=1000` and `rcCenterMs=300`. A1 provides no UDP grant. Tokens are never in public status/telemetry. A legacy client can send an initial safe HTTP RC frame to invalidate the token and continue over HTTP.
 
 All multi-byte fields are little endian. RC is exactly 48 bytes: magic `ZRC1` (0–3), version 1 (4), type 1 (5), reserved zero (6–7), device MAC uint64 (8–15), token uint64 (16–23), sequence uint32 (24–27), and ten uint16 channels (28–47), each 1000–2000. Only live tokens, exact device and newer sequence are accepted. Accepted packets renew RC/owner timestamps.
 
@@ -48,7 +34,7 @@ During a controller gap, roll/pitch/yaw centre at 300 ms while throttle/ARM/sour
 
 Form fields: `clientId`, `type`, plus command-specific values.
 
-Non-read-only hardware commands require the local control lock. PID/calibration changes are rejected while armed. On the A2 flight profile, fresh valid PPM takes priority over Web/AP/Python RC; network input is standby when PPM is absent. A source change while armed disarms. A1 remains bridge-only.
+Non-read-only hardware commands require the local control lock. PID/calibration changes are rejected while armed. On the A2 flight profile, a fresh verified Web/AP/Python RC frame takes priority; PPM is fallback after the web frame expires. A source change while armed disarms. A1 remains bridge-only.
 
 ## V18.3.48 expansion commands
 
@@ -65,7 +51,7 @@ CC3D X top view uses M1 front left, M2 front right, M3 rear right, M4 rear left.
 | `i2c_write` | decimal `address`, `reg`, `bytes` comma-separated (1–8) | disarmed register write, except the detected IMU |
 | `servo_config` / `servo_write` | `pin=-1` or GPIO17/19/20/18; `pulseUs` 1000–2000 | A2 50 Hz PWM on one free D7–D10 pin |
 | `gps_config` / `gps_read` | `pin=-1` or a free GPIO17/19/20/18 for FC RX; `protocol=NMEA_9600` or `UBX_10HZ`; `txPin` a distinct free GPIO for UBX; none to read | NMEA is 9600 baud RX-only; UBX configures 38400 baud and requests 100 ms epochs, then restarts FC; `gps_read` returns `measuredHz`, `targetHz`, `configError`, freshness, fix/quality fields in UBX mode |
-| `matrix_config` / `matrix_write` / `matrix_read` | `driver=HT16K33`, address 112–119; or `driver=MAX7219`, distinct free `dinPin`, `clkPin`, `csPin`; eight comma-separated decimal `rows`; none to read | HT16K33 on fixed I²C, or MAX7219 on three free A2 D7–D10 pins |
+| `matrix_config` / `matrix_write` / `matrix_read` | address 112–119; eight comma-separated decimal `rows`; none | HT16K33 8×8 |
 | `gpio_read` / `gpio_write` / `gpio_release` | free GPIO17/19/20/18; `value=0/1` on write | A2 3.3 V digital I/O; release drives LOW then returns pin to input |
 
 `GET /api/i2c/scan` scans every address 1–126 and reports ACK devices. Read-only commands work without the control lock; mutations require `/api/control/acquire`. Bus operations and pin changes are blocked while armed or a bench motor test is active. The firmware implements only the listed drivers, not arbitrary I²C device-specific protocols.
@@ -156,7 +142,7 @@ A2 / XIAO ESP32-C6 exposes the following `POST /api/command` types. Read-only co
 - `level_calibrate` / `calibrate_level` — while level/still, averages 100–1000 MPU6050 samples, calculates X=0 g / Y=0 g / Z=+1 g offsets, refreshes gyro bias and saves the offsets to NVS.
 - `calibration_defaults` — restores factory offsets `-0.10`, `+0.03`, `+0.12` g and zero Roll/Pitch trim.
 - `calibrate_gyro` — reruns the real A2 gyro-zero routine while disarmed and still.
-- `rc_frame` — accepts 6–10 decimal channel values, each 1000–2000 µs, in `channels`. Fresh valid PPM takes priority; authenticated network RC is standby.
+- `rc_frame` — accepts 6–10 decimal channel values, each 1000–2000 µs, in `channels`. Fresh verified Web/AP/Python RC takes priority; PPM is fallback.
 - `motor_test` — guarded single-motor low-pulse bench test. Requires `confirm=PROPS_REMOVED`.
 - `motor_order_test` — M1→M4 bench sequence. Requires `confirm=PROPS_REMOVED`.
 - `esc_calibrate` — guarded 3 s high + 3 s low calibration sequence. Requires `confirm=PROPS_REMOVED`.
@@ -178,7 +164,7 @@ The Python `Drone` class maps these commands to `pid_get()`, `set_rate_pid()`, `
 ## V18.3.64 unified RC arbitration
 
 - `WEB_STA` / `WEB_AP` frames are authoritative while fresh (`<1000 ms`) and require the control lock. Directional channels centre after 300 ms without RC.
-- Fresh valid physical `PPM` is primary; network input is eligible only when PPM is absent and preference is not PPM-only.
+- Physical `PPM` is automatic fallback when no fresh Web/AP/Python frame exists.
 - A source transition while armed disarms unless existing guarded handover checks accept a fresh matched standby source.
 - `/api/telemetry` exposes active `rcSource`, `rcAgeMs` and all ten `rc` channels so the browser can mirror PPM/AP/Python control into Tripod Simulator.
 - Tripod real mirror and Python real target use the same guarded `rc_frame` endpoint.
@@ -196,59 +182,8 @@ All mutations require exact Device ID, current control ownership and a unique 12
 - `airframe_set`: airframe=QUAD_X or QUAD_H.
 - `setup_calibrate`: kind=gyro (2000 attempts) or level (120 attempts), asynchronous status progress; missing / moving / non-level samples fail.
 - `setup_esc`: stage=HIGH (2000 µs, max 12 s) then LOW (1000 µs, 3 s), confirm=PROPS_REMOVED. PWM ESC only.
-- `setup_motor`: mask=1..15, pulse=1000..1300, durationMs=100..2000, confirm=PROPS_REMOVED. Wizard uses a bounded 2 s test. No RPM feedback.
+- `setup_motor`: mask=1..15, pulse=1000..1300, durationMs=100..2000, confirm=PROPS_REMOVED. Wizard uses 800 ms. No RPM feedback.
 - `input_set`: source=WEB or PPM, persistent.
-- `receiver_setup_set`: map0..7, min0..7 / centre0..7 / max0..7, reverse0..3, txMode=1..4 (default 2), armMode=YAW_RIGHT / YAW_LEFT / CH5_SWITCH. Roles are roll, pitch, throttle, yaw, ARM switch, flight-mode switch, AUX1, AUX2. The first four require distinct CH1..10; optional roles accept map=0 for unassigned. A switch ARM method requires a mapped ARM role. Complete atomic validation and NVS write; endpoints 750..2250, span >=400; directional centre margins >=150. NVS schema 2 migrates existing six-role schema 1 calibrations.
+- `receiver_setup_set`: map0..5 (distinct CH1..10), min0..5 / centre0..5 / max0..5, reverse0..3 and armMode=YAW_RIGHT / YAW_LEFT / CH5_SWITCH. Complete atomic validation and NVS write; endpoints 750..2250, span >=400; directional centre margins >=150.
 
 Setup inhibits flight RC and ARM. Lease / owner loss and the output supervisor stop bench outputs even before flight readiness. Completing setup requires neutral directional sticks, throttle minimum, ARM low and a new manual ARM. Calibration and receiver setup use a separate NVS namespace; FlightSettings schema 1 stays compatible.
-
-## V18.3.67 setup and expansion update
-
-The PPM decoder accepts valid frames with 4–10 channels and resets absent optional channels to safe values every frame. App/Web input needs no PPM calibration. The guided web receiver maps throttle, roll, pitch and yaw from actual channel movement before allowing optional channel skipping, then captures centres and measured travel. Transmitter mode changes only the displayed stick arrangement; detected PPM channels remain the source of mapping.
-
-Setup starts polling only after the matching active begin grant. Every poll renews the unchanged five-second setup lease. Completed checks retain Next when navigating Back; pending checks can be skipped and remain red in the device-scoped browser Telemetry report. Skipping does not calibrate a receiver or bypass firmware arming guards. Ordinary setup retains current/default PID; separate PID tuning lives in Hardware I/O.
-
-`pinmap_get.expansion` adds matrixDriver, matrixDinPin, matrixClkPin and matrixCsPin. Matrix pin configuration is disarmed-only; servo, GPS, PPM and GPIO reject occupied matrix pins. HT16K33 retains the board's fixed SDA/SCL bus. Python `matrix_config(driver="MAX7219", din_pin=17, clk_pin=19, cs_pin=20)` selects spare pins explicitly.
-
-A control grant adds `simulationOutputsBlocked` and `simulationRcTransport`. The Android native gate allows a 2600 ms ACK window only for a controller-verified outputs-blocked HTTP simulator grant. Physical UDP ACK limits and the 300 ms native input watchdog remain unchanged.
-
-## V18.3.68 ZRC2 simulator transport and PID preview
-
-`training_status` advertises `simulationRcProtocol:"ZRC2"` alongside legacy HTTP capability. After `training_select` confirms the MOBILE-owned APP simulator and blocked outputs, the app requests `rcTransport=UDP2` on `control/acquire`. The grant includes `rcProtocol:"ZRC2"`, `simulationRcTransport:"UDP"`, `simulationOutputsBlocked:true`, port 4210 and a fresh private 16-hex `rcUdpToken`. Both A1 and A2 support simulation grants without a flight-ready IMU.
-
-ZRC2 retains the 48-byte layout above, with version byte 2 and kind byte 2. The 28-byte ACK uses version 2 and flag bit 2 for simulation, alongside ready bit 1. Physical armed bit 0 must be clear. Android rejects a real-flight ACK for a simulator grant and vice versa. Accepted frames refresh RC, control and simulator inhibition leases at 50 Hz; HTTP latency does not stall them. Device/token/sequence checks, the 300 ms native input deadline and 900 ms UDP ACK deadline remain unchanged.
-
-Firmware only accepts a ZRC2 frame while the matching simulation grant is current and APP training is active. Training end/expiry, input/destination change, control release or replacement invalidates the token. A ZRC2 packet can never become a physical flight packet. Legacy HTTP simulation still requires the current run ID.
-
-The setup wizard renews both configuration and control leases independently of rendering frames. Hiding the page stops active motor/ESC output while preserving completed checks; closing it ends setup. PID read/draft/default operations preview only the virtual Tripod. Explicit PID Save performs `pid_set` then checked `pid_get`; Tripod controls never send physical PID or RC.
-
-## V18.3.69 compact mirror and explicit web transfer
-
-`GET /api/telemetry?stream=rc&clientId=...` returns verified Device ID, ownership, simulation selection/run, live ten-channel RC/age/source/receiver health, cached attitude, frame rates and battery. It never performs sensor I2C reads or returns PID/configuration payloads. App transmission and web app-control observation use this payload; the full web Telemetry page retains normal sensor/config telemetry.
-
-`POST /api/control/acquire` with `takeover=1`, a WEB client ID and exact expected Device ID requests app-to-web transfer. It is refused during physical ARM, bench outputs or another session's setup. Successful transfer ends simulation, invalidates UDP grants and clears previous RC; the new owner must send neutral low-throttle/ARM-low input and ARM manually. Ordinary acquire and anonymous discovery cannot take mobile control.
-
-## V18.3.70 simulator HTTP and flight recorder
-
-The shipped app selects `rcTransport=HTTP` for Tripod and Flight Training, even if firmware advertises optional ZRC2 support. Acquisition confirms an outputs-blocked HTTP simulation and returns no UDP port/token. Each acknowledged `rc_frame` is bound to the current Device ID and simulation run. This is separate from real-flight ZRC1; physical UDP timeouts and neutral/manual ARM gates are unchanged.
-
-Status and telemetry add public `rcTransport` diagnostics: UDP listening state, current protocol, received/accepted/rejected packet counts and last rejection reason. These never include private UDP tokens. Native Android adds `nativeRc` to its received telemetry with grant/input/ACK ages, protocol, native stop reason and UDP counters; HTTP diagnostics can retain previous UDP counts separately.
-
-App Kit settings and web Telemetry record the schema `zebjus.flight-diagnostics.v1`. Bounded JSON exports contain UTC observer receipt times, Device ID, configuration when received, RC/motor/controller/simulator samples, marked events and browser errors. CSV preserves numerical samples. App and web reports must be compared to diagnose both ends; missing fields are not proof of absent hardware or a particular bug.
-
-
-## V18.3.72 native simulator input and live observer
-
-The Android app requests `rcTransport=UDP2` with the current `simulationRunId`. A simulator grant supplies matching `deviceId`/`trainingRunId`, ZRC2, port 4210 and inhibited physical outputs. Native input is offered and published at 50 Hz independently of HTTP. Native rejects another run and delayed simulation input entering a real grant. ACK/channel capture confirms virtual ARM independently of physical ARM. Real watchdogs are unchanged. The native app requires matching grant fields; browser RC retains HTTP.
-
-Public status advertises `rcMonitorProtocol:"NDJSON1"`, `rcMonitorPort:4211`. `GET http://<kit>:4211/api/rc/live?deviceId=<exact-id>` returns HTTP chunked NDJSON at 25 Hz. OPTIONS supports local-network CORS. No command, control acquisition or token is accepted or disclosed here. The task allows three subscribers, bounded 768-byte requests/1200-byte packets, one pending packet each, nonblocking writes and a 1200 ms slow-write timeout.
-
-Packets include controller uptime/frame count, Device ID, ten RC channels/source/age, attitude/rates, physical ARM, outputsBlocked/virtualArmed and simulator destination/run/input/owner. The browser rejects invalid/wrong-kit/old-uptime packets and preserves newer stream RC over delayed HTTP snapshots. Full HTTP telemetry polls every two seconds while live; unavailable monitors reconnect and retain polling. Actual stale input pauses the virtual model; neutral/manual ARM is required.
-
-Diagnostic JSON retains up to 1200 app control samples at 200 ms intervals, with offered channels, native accepted channels/sequence, virtual ARM, run and input/ACK ages. Web reports include monitor state and simulator pose/pause events. Telemetry capture remains bounded at 900 samples; events at 240. Private grants are redacted. Capture both app and web for the same Device ID; observer UTC clocks and controller uptime are different.
-
-V18.3.72 keeps monitor workspace buffers outside the task stack and formats only for live subscriptions. Builds enforce a <=1024-byte direct task frame within its 8192-byte allocation. Public status/telemetry includes `boot` with resetReasonCode, uptimeMs, freeHeapBytes, rcMonitorRunning and rcMonitorFreeStackBytes. This is diagnostic evidence, not a physical boot verification.
-
-## V18.3.73 Wi-Fi setup result
-
-AP GET / and /setup serve a local Wi-Fi recovery form. Captive probes retain 204. GET /api/setup/test/status adds staIp and restartInMs alongside status, name, SSID and Device ID. Success confirms association and verified NVS profile storage and schedules the main-loop restartAt deadline. mDNS failure uses an ID-based name/IP hint; failed tests stay in AP and retain password input. Clients verify Device ID when reconnecting.

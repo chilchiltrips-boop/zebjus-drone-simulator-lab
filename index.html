@@ -5,21 +5,18 @@
 <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content" name="viewport"/>
 <meta content="#07111b" name="theme-color"/>
 <title>ZEBJUS Aerion</title>
-<script src="wix-embed.js?v=18.3.80-web.1"></script>
-<link href="styles.css?v=18.3.80-r1" rel="stylesheet"/><link href="lab-workflow.css?v=18.3.80-web.1" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
-<link href="wix-embed.css?v=18.3.80-web.1" rel="stylesheet"/>
-<link href="flight-training.css?v=18.3.80-web.1" rel="stylesheet"/>
+<script src="wix-embed.js?v=18.3.66-web.2"></script>
+<link href="styles.css?v=18.3.66-r2" rel="stylesheet"/><link href="lab-workflow.css?v=18.3.66" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
+<link href="wix-embed.css?v=18.3.66-web.2" rel="stylesheet"/>
+<link href="flight-training.css?v=18.3.66-web.2" rel="stylesheet"/>
 <link href="icon-192.png" rel="apple-touch-icon"/>
 <meta content="#07111b" name="theme-color"/>
 </head>
 <body>
-
-
 <div id="app">
 <header class="topbar">
-<div id="webAppLink" class="webapp-link"><span><b>WEBAPP ID <output id="webAppIdValue">------</output></b><em id="webAppIdNote">Connect and pair a STA kit to activate this ID.</em></span></div>
 <div class="topbar-main">
-<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS Aerion</b><span>V18.3.80 • Build · Code · Fly</span></div></div>
+<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS Aerion</b><span>V18.3.66 • Build · Code · Fly</span></div></div>
 <div class="top-network-control"><span>STA</span><button id="topNetworkToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Switch kit between STA and AP" disabled><i></i></button><span>AP</span><b id="topNetworkMode">NO KIT</b></div>
 <div class="top-control-control"><span>Take control</span><button id="topControlToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Take or release kit control" disabled><i></i></button><b id="topControlState">OFF</b></div>
 <span class="top-kit-status offline" id="topKitStatus" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span>
@@ -138,7 +135,6 @@
 <div><span>RESPONSE</span><b id="simTuneState">READY</b><small id="simDiagnosis">Adjust PID and disturb the drone</small></div>
 </div>
 <div class="tx-title"><div><b>VIRTUAL TRANSMITTER</b><span>Mouse / touch + keyboard</span></div><div class="rx-mirror-state"><i class="health-dot lost" id="simRxMirrorLed"></i><span><b id="simRxMirrorBadge">REAL RX WAITING</b><em id="simRxMirrorText">PPM, WebApp, AP or Python RC can mirror into the Tripod transmitter.</em></span></div></div>
-<p class="micro-note"><b>SIMULATOR ONLY</b> · Setup PID values can be previewed here. Tripod PID edits and controls stay in the simulator.</p>
 <div class="tx-sticks v15-sticks">
 <div class="gimbal-card"><small>THROTTLE / YAW RATE</small><div class="web-stick v15-gimbal tripod-stick" id="leftStick"><i id="leftStickKnob"></i></div><span id="leftStickRead">T 1000 • Y 0</span><span class="stick-hint">W/S throttle • A/D yaw</span></div>
 <div class="gimbal-card"><small>PITCH / ROLL</small><div class="web-stick v15-gimbal tripod-stick" id="rightStick"><i id="rightStickKnob"></i></div><span id="rightStickRead">P 0 • R 0</span><span class="stick-hint">Arrow keys • pitch / roll</span></div>
@@ -206,7 +202,7 @@
 <div class="chart-card sim-chart-card"><div class="sim-chart-head"><b>PID RESPONSE</b><span><i class="c-target"></i>Target <i class="c-roll"></i>Roll <i class="c-pitch"></i>Pitch <i class="c-yaw"></i>Yaw rate</span></div><canvas height="260" id="simChart" width="1200"></canvas></div>
 </div>
 </section>
-<section class="panel tab-panel" id="tab-joystick"><div id="mobileMirrorBanner" class="mobile-mirror-banner" hidden>APP CONTROLS THIS KIT · Live stick mirror <button id="mobileTakeWebControl" type="button">Take web control</button></div>
+<section class="panel tab-panel" id="tab-joystick"><div id="mobileMirrorBanner" class="mobile-mirror-banner" hidden>MOBILE CONTROLS THIS KIT · LAPTOP VIEW ONLY · Sticks show received mobile commands.</div>
 <div class="joystick-page-grid">
 <section class="form-card joystick-main-card joystick-console">
 <a class="btn primary small" id="openFlightApp" href="flight/index.html">Open Aerion Flight App ↗</a><div class="panel-head joystick-head"><div><small>10-CHANNEL CONTROL LAB</small><h2>Virtual Transmitter</h2><p>Mouse, touch or keyboard control with visual safety interlocks.</p></div><div class="tx-power-wrap"><span class="status" id="webJoyRoleBadge">LOCAL</span><button class="tx-power-btn off" id="webTxPowerBtn" type="button"><i></i><span>TRANSMITTER OFF</span></button></div></div>
@@ -219,7 +215,7 @@
 </div>
 <div class="target-separation"><div class="target-card sim"><b>SIMULATOR</b><span>Safe local practice. No kit command is sent.</span></div><div class="target-card real"><b>REAL KIT</b><span>Single-controller lock • supervised prop-off bench only.</span></div></div>
 <div class="form-grid compact-form-grid tx-top-controls">
-<label>Control target<select id="webJoyTarget"><option value="sim">SIMULATOR • Safe / Local</option><option value="device">REAL KIT · dedicated transmitter</option></select></label>
+<label>Control target<select id="webJoyTarget"><option value="sim">SIMULATOR • Safe / Local</option><option value="device">REAL KIT + TRIPOD MIRROR</option></select></label>
 <label>Flight mode<select id="webMode"><option value="1000">ANGLE</option><option value="1500">RATE</option><option value="2000">ALTITUDE</option></select></label>
 <label>Send rate<select id="webJoyRate"><option value="20">20 Hz • default</option><option value="25">25 Hz</option><option value="50">50 Hz • bench timing check</option><option value="10">10 Hz</option><option value="5">5 Hz</option></select></label>
 </div>
@@ -312,7 +308,7 @@
 <div class="firmware-grid">
 <div class="form-card firmware-source-card">
 <div class="panel-head"><div><small>STEP 1 • FIRMWARE SOURCE</small><h2>Choose firmware</h2></div><span class="status" id="fwSourceBadge">NO FILE</span></div>
-<div class="firmware-source-actions"><button class="btn primary" id="fwAutoLoadBtn">Auto Load Latest</button><label class="btn ghost firmware-file-label">Import .bin<input id="fwFileInput" type="file"/></label><button class="btn ghost" id="fwDownloadBinBtn">Download loaded .bin</button><button class="btn ghost" id="fwForgetBtn">Forget Cached</button></div>
+<div class="firmware-source-actions"><button class="btn primary" id="fwAutoLoadBtn">Auto Load Latest</button><label class="btn ghost firmware-file-label">Import .bin<input accept=".bin,application/octet-stream" id="fwFileInput" type="file"/></label><button class="btn ghost" id="fwForgetBtn">Forget Cached</button></div>
 <div class="firmware-drop-zone" id="fwDropZone"><b>Drop firmware .bin here</b><span>Application image: Wi-Fi OTA or USB @ 0x10000 • Factory/Merged image: USB @ 0x0</span></div>
 <div class="firmware-file-info">
 <div><span>FILE</span><b id="fwFileName">No firmware loaded</b></div><div><span>VERSION</span><b id="fwFileVersion">--</b></div><div><span>BUILD DATE / TIME</span><b id="fwBuildTime">--</b></div><div><span>BUILD ID</span><b class="mono" id="fwBuildId">--</b></div><div><span>SIZE</span><b id="fwFileSize">--</b></div><div><span>SHA-256</span><b class="mono" id="fwFileHash">--</b></div>
@@ -324,8 +320,7 @@
 <div class="panel-head"><div><small>STEP 2 • TARGET</small><h2>Connect controller</h2></div></div>
 <div class="firmware-target-option wifi"><div class="firmware-target-icon">Wi-Fi</div><div><b>Online Kit OTA</b><span>Fast update through the selected same-Wi-Fi kit. Requires Take Control, DISARMED state, and an application .bin.</span></div><button class="btn ghost small" id="fwRefreshKitBtn">Check Kit</button></div>
 <div class="firmware-target-option usb"><div class="firmware-target-icon">USB</div><div><b>USB Web Serial</b><span>First flash / recovery / factory image. Chrome or Edge on HTTPS/localhost. The browser will ask you to select the FlightCore USB port.</span></div><button class="btn primary small" id="fwConnectUsbBtn">Connect USB</button></div>
-<div class="firmware-usb-info"><div><span>Detected board</span><b id="fwUsbChip">--</b></div><div><span>USB status</span><b id="fwUsbState">Not connected</b></div><div><span>Baud</span><select id="fwUsbBaud"><option selected="" value="115200">115200</option><option value="460800">460800</option><option value="921600">921600</option></select></div></div>
-<label class="firmware-check"><input id="fwUsbManualBoot" type="checkbox"/> Already in BOOT mode <small>For recovery: USB power only, hold BOOT, tap RESET, release BOOT, then connect the USB port. Close Arduino Serial Monitor first. Pairing grants port access; USB READY confirms the bootloader and flash chip.</small></label>
+<div class="firmware-usb-info"><div><span>Detected board</span><b id="fwUsbChip">--</b></div><div><span>USB status</span><b id="fwUsbState">Not connected</b></div><div><span>Baud</span><select id="fwUsbBaud"><option value="115200">115200</option><option selected="" value="460800">460800</option><option value="921600">921600</option></select></div></div>
 <label class="firmware-check"><input id="fwEraseUsb" type="checkbox"/> Erase entire flash before USB factory flash <small>Only available for Factory/Merged images. Never erase when flashing an app-only image.</small></label>
 <div class="firmware-upgrade-actions"><button class="btn primary" id="fwUpgradeBtn">Upgrade</button><button class="btn danger ghost" id="fwUpgradeEraseBtn">Upgrade &amp; Erase</button><p class="micro-note">Upgrade uses the connected kit or USB port. Upgrade &amp; Erase requires USB and a complete factory image; it clears saved configuration.</p></div><div class="firmware-target-actions"><button class="btn primary full" id="fwWifiFlashBtn">Flash Selected Kit over Wi-Fi</button><button class="btn ghost full" id="fwUsbFlashBtn">Flash Connected FlightCore over USB</button></div>
 </div>
@@ -403,7 +398,7 @@
 <div id="pythonOutputWindow" class="python-output-window" role="dialog" aria-label="Python output window" hidden><div class="python-output-title" id="pythonOutputDrag"><b id="pythonOutputTitle">Python Output</b><div><a id="pythonOutputDownload" class="btn ghost small" hidden download="zebjus-output.png">Download</a><button class="btn ghost small" id="pythonOutputClose" type="button" aria-label="Close output window">×</button></div></div><img id="pythonOutputImage" alt="Live OpenCV or Matplotlib output"/><p>Drag the title to move • drag the lower right corner to resize.</p></div>
 </section>
 <section class="panel tab-panel" id="tab-training"><div id="flightTrainingRoot"></div></section>
-<section class="panel tab-panel" id="tab-telemetry"><div class="page-heading"><div><small>FLIGHT DATA</small><h1>Telemetry cockpit</h1><p>Live attitude and link health from your selected controller.</p></div><span id="cockpitLink" class="status">NO LINK</span></div><section id="flightRecorderRoot"></section><div class="cockpit-layout"><div class="form-card cockpit-data"><div class="cockpit-health" id="cockpitHealth"></div><div class="metrics"><div><span>ROLL</span><b id="telRoll">—</b></div><div><span>PITCH</span><b id="telPitch">—</b></div><div><span>YAW ESTIMATE</span><b id="telYaw">—</b></div><div><span>BATTERY</span><b id="telBatt">—</b></div></div><div class="cockpit-facts" id="cockpitFacts"></div><section class="cockpit-setup" id="cockpitSetup"><h3>Setup &amp; calibration</h3><p id="cockpitSetupSummary">Connect a kit to review its setup checks.</p><ul id="cockpitSetupChecks"></ul></section><details><summary>Controller messages</summary><pre class="terminal" id="telemetryLog"></pre></details></div><div class="instrument-grid"><figure><canvas id="attitudeGauge" width="320" height="320" aria-label="Attitude indicator"></canvas><figcaption>ATTITUDE <b id="gaugeAttitude">WAITING</b></figcaption></figure><figure><canvas id="headingGauge" width="320" height="320" aria-label="Integrated yaw estimate"></canvas><figcaption>YAW ESTIMATE <b id="gaugeHeading">—</b></figcaption></figure><figure><canvas id="altitudeGauge" width="320" height="320" aria-label="Altitude gauge"></canvas><figcaption>ALTITUDE <b id="gaugeAltitude">SENSOR NOT AVAILABLE</b></figcaption></figure><figure><canvas id="vsiGauge" width="320" height="320" aria-label="Vertical speed indicator"></canvas><figcaption>VERTICAL SPEED <b id="gaugeVsi">SENSOR NOT AVAILABLE</b></figcaption></figure></div></div></section>
+<section class="panel tab-panel" id="tab-telemetry"><div class="page-heading"><div><small>FLIGHT DATA</small><h1>Telemetry cockpit</h1><p>Live attitude and link health from your selected controller.</p></div><span id="cockpitLink" class="status">NO LINK</span></div><div class="cockpit-layout"><div class="form-card cockpit-data"><div class="cockpit-health" id="cockpitHealth"></div><div class="metrics"><div><span>ROLL</span><b id="telRoll">—</b></div><div><span>PITCH</span><b id="telPitch">—</b></div><div><span>YAW ESTIMATE</span><b id="telYaw">—</b></div><div><span>BATTERY</span><b id="telBatt">—</b></div></div><div class="cockpit-facts" id="cockpitFacts"></div><details><summary>Received telemetry stream</summary><pre class="terminal" id="telemetryLog"></pre></details></div><div class="instrument-grid"><figure><canvas id="attitudeGauge" width="320" height="320" aria-label="Attitude indicator"></canvas><figcaption>ATTITUDE <b id="gaugeAttitude">WAITING</b></figcaption></figure><figure><canvas id="headingGauge" width="320" height="320" aria-label="Integrated yaw estimate"></canvas><figcaption>YAW ESTIMATE <b id="gaugeHeading">—</b></figcaption></figure><figure><canvas id="altitudeGauge" width="320" height="320" aria-label="Altitude gauge"></canvas><figcaption>ALTITUDE <b id="gaugeAltitude">SENSOR NOT AVAILABLE</b></figcaption></figure><figure><canvas id="vsiGauge" width="320" height="320" aria-label="Vertical speed indicator"></canvas><figcaption>VERTICAL SPEED <b id="gaugeVsi">SENSOR NOT AVAILABLE</b></figcaption></figure></div></div></section>
 <section class="panel tab-panel" id="tab-settings"><div class="settings-grid"><section class="form-card offline-settings">
 <div class="panel-head"><div><small>OFFLINE LAB</small><h2>Python, camera &amp; hands</h2></div></div>
 <p class="micro-note">Use Start_Offline on your laptop, then connect to the kit AP Wi-Fi. Python, OpenCV, plots and hand tracking use files included in this app. Allow camera access when asked.</p>
@@ -416,11 +411,9 @@
 <div class="settings-network-summary" id="settingsNetworkSummary">Connect a kit to view STA details.</div><div class="button-row"><button class="btn ghost" id="scanWifiBtn">Scan Wi-Fi</button><button class="btn danger ghost" id="resetWifiBtn">Forget All Wi-Fi</button></div>
 <div class="callout"><b>Direct AP, no case button needed</b><p>Every kit has a unique AP name and permanent Device ID. Use the AP password shown on the kit label. Switch to AP while disarmed, or the kit enters AP if saved Wi-Fi is unavailable. After joining that Wi-Fi, open the installed Aerion Flight app or your locally running web lab. AP stays selected across power cycles.</p></div><div class="button-row"><button class="btn ghost" id="showApCredentialsBtn">Show this kit's AP details</button><button class="btn ghost" id="switchApBtn">Switch selected kit to AP</button></div><span class="micro-note" id="apCredentials">Select a verified kit and Take Control to display its AP details.</span>
 <label>Wi-Fi network<select id="wifiSelect"><option value="">Connect kit first</option></select></label>
-<label>Wi-Fi name / SSID<input id="wifiSsidManual" value="keralavision_binu_1384" placeholder="Exact Wi-Fi name" autocomplete="off" maxlength="32"/></label>
 <label>Wi-Fi password<input autocomplete="new-password" id="wifiPassword" placeholder="Password" type="password"/></label>
-<button class="btn primary full" id="saveWifiBtn">Test &amp; save Wi-Fi</button>
-<p class="micro-note">In AP mode, the kit tests the 2.4 GHz Wi-Fi before saving. After success, join that network on this computer and reconnect the kit. Allow Local Network Access for this site in Chrome/Edge.</p>
-<div class="callout"><b>Saved Wi-Fi profiles on this kit</b><p>SSID + password are stored inside this controller. Passwords are never shown back to the browser. Test and save from this page while the kit is in AP mode.</p></div>
+<button class="btn primary full" id="saveWifiBtn">Save Wi-Fi &amp; reconnect</button>
+<div class="callout"><b>Saved Wi-Fi profiles on this kit</b><p>SSID + password are stored separately inside this ZEBJUS controller. Passwords are never shown back to the browser. Use the APK Wi-Fi panel to test a new network before saving while the kit is in AP mode.</p></div>
 <label>Saved network<select id="savedWifiSelect"><option value="">Connect kit first</option></select></label>
 <div class="button-row"><button class="btn ghost" id="refreshSavedWifiBtn">Refresh Saved</button><button class="btn ghost" id="useSavedWifiBtn">Use Selected</button><button class="btn ghost" id="forgetSavedWifiBtn">Forget Selected</button></div>
 <span class="micro-note" id="wifiMessage"></span>
@@ -432,27 +425,20 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option selected="" value="balanced">Balanced</option><option value="low">Low-end laptop</option></select></label><button class="btn ghost full" id="applyPerformanceBtn">Apply graphics profile</button><pre class="terminal mini" id="startupDiagnostics">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.80-r1"></script>
-<script src="offline-support.js?v=18.3.80-r1"></script>
-<script src="rc-live.js?v=18.3.80-web.1"></script>
-<script src="vendor/crypto/zfc-crypto.js"></script>
-<script src="kit-security.js"></script>
-<script src="kit-local.js?v=18.3.80-net.2"></script>
-<script src="control-sticks.js?v=18.3.80-r1"></script>
-<script src="receiver-wizard.js?v=18.3.80-web.1"></script>
-<script src="pid-tuning.js?v=18.3.80-web.1"></script>
-<script src="fc-setup.js?v=18.3.80-web.1"></script>
-<script src="kit-console.js?v=18.3.80-r1"></script>
-<script src="lab-workflow.js?v=18.3.80-web.1"></script>
-<script src="telemetry-cockpit.js?v=18.3.80-web.1"></script>
-<script src="flight-training-core.js?v=18.3.80-web.1"></script>
-<script src="flight-training-input.js?v=18.3.80-web.1"></script>
-<script type="module" src="flight-training.js?v=18.3.80-web.1"></script>
-<script src="flight-recorder.js?v=18.3.80-r4"></script>
-<script src="flight-diagnostics.js?v=18.3.80-r1"></script>
-<script src="app.js?v=18.3.80-web.1" type="module"></script>
-<script src="fc-training-bridge.js"></script>
-<script src="school-lab.js?v=18.3.80-web.1"></script>
-<script src="hardware-io.js?v=18.3.80-r1"></script>
-<script src="firmware-updater.js?v=18.3.80-r4"></script>
+<script src="ui-runtime.js?v=18.3.66-r2"></script>
+<script src="offline-support.js?v=18.3.66-r2"></script>
+<script src="kit-local.js?v=18.3.66-r2"></script>
+<script src="control-sticks.js?v=18.3.66-r2"></script>
+<script src="fc-setup.js?v=18.3.66-web.2"></script>
+<script src="kit-console.js?v=18.3.66-r2"></script>
+<script src="lab-workflow.js?v=18.3.66"></script>
+<script src="telemetry-cockpit.js?v=18.3.66"></script>
+<script src="flight-training-core.js?v=18.3.66-web.2"></script>
+<script src="flight-training-input.js?v=18.3.66-web.2"></script>
+<script type="module" src="flight-training.js?v=18.3.66-web.2"></script>
+<script src="flight-diagnostics.js?v=18.3.66-r2"></script>
+<script src="app.js?v=18.3.66-r2" type="module"></script>
+<script src="school-lab.js?v=18.3.66-web.2"></script>
+<script src="hardware-io.js?v=18.3.66-r2"></script>
+<script src="firmware-updater.js?v=18.3.66-r2"></script>
 </body></html>

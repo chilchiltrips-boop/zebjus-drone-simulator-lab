@@ -1,18 +1,17 @@
 {
-  "version": "18.3.80-android.2",
-  "apk_sha256": "7c1abfa42bd66a04f5ef32e9fb86b79e1c3712cf2244460b853c542b7aecdb16",
-  "certificate_sha256": "0286c9c3d51284e695cd900d87b6cc7a99ae47991c27cd42c0313fd9f1780f9c",
-  "checks": [
-    "APK ZIP integrity",
-    "DEX compiled",
-    "manifest/package/minSDK/targetSDK",
-    "v2/v3 APK signature",
-    "4-byte ZIP alignment",
-    "bundled UI/transport exact byte equality"
-  ],
+  "version": "18.3.65-android.2",
+  "apk_sha256": "88d3e1781f6754c2f3959294978c1bc0445f6ff7b4af2874249a8762cc6756f6",
+  "checks": {
+    "APK_DEX_manifest_signature_alignment_and_exact_assets": "passed official Android SDK 36 local build tools",
+    "same_development_certificate_and_incremented_version_code": "passed",
+    "native_lease_scope_cancel_and_local_API_policy": "passed Java runtime",
+    "native_UDP_50Hz_loss_replay_stale_input_stop": "passed actual Java DatagramSocket loopback",
+    "bundled_flight_UI_and_transport_browser": "passed local Chrome Headless Shell 151 with simulated native bridge and controller API"
+  },
   "test_boundary": {
     "Android_phone_or_emulator_tested": false,
     "physical_drone_tested": false,
-    "physical_USB_flash_tested": false
+    "native_UDP": "actual Java DatagramSocket loopback",
+    "firmware": "unchanged 18.3.65"
   }
 }

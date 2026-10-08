@@ -22,7 +22,7 @@ async function wait(page,predicate,arg){await page.waitForFunction(predicate,arg
   if(d.expectedDeviceId&&d.expectedDeviceId!==id){code=409;response={ok:false,message:'Device ID mismatch'}}
   else if(u.pathname==='/api/status')response=status(u.searchParams.get('clientId'));
   else if(u.pathname==='/api/telemetry')response={ok:true,rcSource:'NONE',rcAgeMs:999999};
-  else if(u.pathname==='/api/control/acquire'){owner=d.clientId;response={ok:true,deviceId:ID,controlRole:'WEB',lockMine:true,lockTimeoutMs:10000}}
+  else if(u.pathname==='/api/control/acquire'){owner=d.clientId;response={ok:true}}
   else if(u.pathname==='/api/control/ping'){if(owner!==d.clientId){code=423;response={message:'lock lost'}}}
   else if(u.pathname==='/api/control/release'){owner='';armed=false}
   else if(u.pathname==='/api/command'&&d.type==='rc_frame'){

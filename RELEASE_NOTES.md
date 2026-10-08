@@ -1,92 +1,55 @@
-# ZEBJUS Aerion V18.3.80 — automatic AP pairing and Aerion startup
+# ZEBJUS Aerion V18.3.66
 
-- Kit AP password is 12345678, including migration from the old random password. Generated kit names become FlightCore A1/A2 plus the exact device suffix. Custom kit names stay intact.
-- AP Wi-Fi peers automatically establish encrypted SRP/AES-GCM sessions without the label-code dialog. This AP credential is separate from owner pairing, blocked on STA, and expires when leaving AP. Browser AP sessions cannot publish physical RC or take an active MOBILE lease.
-- Router/STA owner and invitation pairing remains required. Native 50 Hz UDP, live PPM priority, simulator WebApp binding and all watchdogs are retained.
-- New company-Z/quad-rotor Aerion logo, Android launcher icon and five-second startup reveal. Reduced motion has a static five-second intro.
-- App home shows the WebApp ID before connection; Kit AP and Router Wi-Fi have separate buttons.
-- Install matching firmware 18.3.80 and APK 18.3.80-android.1; signed APK updates retain existing owner pairing and saved IDs.
+Web r2 / Android r2: selecting an app simulator enables its transmitter at safe values; ARM remains manual. Flight Training joins from verified telemetry without a separate browser enable or status poll. A late-opened page can join an already armed app at neutral, minimum-throttle input. Stale RC pauses and disarms the virtual model without discarding progress; neutral DISARM then ARM in the app resumes the same lesson. Changing destinations, leaving the page, or loss of the app lease still stops the simulation.
 
-# ZEBJUS Aerion V18.3.79 — Android.2 visible ID and router connection
+The Android home now chooses one destination: Real flight (simulation OFF), Tripod simulator, or Flight Training. The app holds the simulator output-block lease; a connected web lab observes app ARM and joysticks without acquiring configuration ownership. Switching modes drains RC, resets throttle and refreshes the native grant. Lease/ownership/lifecycle loss stops simulation and requires fresh selection and manual ARM. An expired training STOP nonce cannot interrupt a later Real flight grant. Install APK 18.3.66-android.2 (1836602) and matching A2 firmware.
 
-- Show the Training WebApp ID field before kit connection; preserve a typed draft when the first kit is paired, and save only for that exact kit.
-- Separate Real flight · Kit AP and Training · Router Wi-Fi buttons. Router selection releases the native AP request and keeps controls disarmed.
-- Explain the same-router STA kit requirement, router IP and per-kit Save workflow. Display the Android revision in connection help.
-- Same signing certificate, retained pairing/settings and compatible firmware 18.3.79. No Clear data or repeat firmware flash needed for this UI follow-up.
+Setup adds an ESC safety checklist with bounded HIGH → Stop/LOW calibration and per-motor output sliders, CW/CCW diagrams, bounded Start/Stop and observed-start recording. Flight Training includes sixteen missions, ring direction/distance/height guidance, HOME/FINISH markers, physical ring contact alerts, blocking and recovery, photos, beacon placement and multi-pad landings. Keyboard throttle and flight/camera animations are smoothed.
 
-# ZEBJUS Aerion V18.3.79 — six-digit WebApp binding and PPM priority
+## Previous V18.3.65 changes
 
-- Android 18.3.79-android.1 / 1837901 saves and replaces a training WebApp ID per exact kit.
-- STA WebApps register separate authenticated six-digit IDs; firmware resolves collisions and binds a mobile training run to one browser session. Other browsers cannot receive its live training RC, inject virtual sensors, or take its mobile lease.
-- Physical flight chooses fresh valid PPM before network RC. Simulation retains its explicitly selected APP/PPM input and physical output inhibition.
-- Retains native UDP 50 Hz, selected observer 10 Hz, background HTTP suspension and bounded same-run simulation ACK recovery.
-- Rejected Android saved pairing codes prompt once after PAIR RESET; only SRP hello/proof allow 15-second HTTP waits.
-- Install matching APK and A1/A2 firmware. [Connection and installation guide](SUPPORT/V18_3_79_WEBAPP_ID_UPDATE.md). Automated checks do not imply physical phone, USB, RF-stall or drone flight testing.
+## Web update 4 — Flight Training
 
-## V18.3.78 web.2 / android.2 — exclusive mobile session
+- Corrected aircraft-relative forward/backward and lateral motion at all headings, nose/roll animation and grounded movement. Fixed-step 120 Hz simulation is independent of the 30/60 FPS graphics setting.
+- Added smooth keyboard, slider and circular dual-touch controls. Throttle changes gradually and holds on release; touching a joystick centre does not jump to 50%. Movement axes ease back to neutral.
+- Replaced the basic grid/cross model with a detailed carbon-frame quadcopter, battery, camera, motors, landing skids, curved propellers and throttle-driven rotor blur. Ground shadow, altitude projection and flight-phase cues clarify take-off, hover, descent and touchdown.
+- Added textured grassland, rolling hills, daylight sky/clouds, trees, rocks, access road, cars, hangar, wind turbines, racing arch, landing mats, route markings and lesson objects. Company advertisements use ZEBJUS branding on 3D objects and ground pads. Shared/instanced geometry and resource cleanup keep the scene compact and reusable offline.
+- Chase, FPV, Orbit and Overview views plus Find drone, heading and a north-up course map show where the aircraft is. Both transparent joystick controls remain usable in 320px/390px Wix views; drag the arena to orbit.
+- Added browser coverage for actual keyboard/touch movement, take-off/hover/soft landing, all camera modes, course geometry, repeated scene rebuilds, Wix sizes and canvas fallback. Existing guarded app/PPM input, setup recovery, Python page order and firmware behavior are preserved.
 
-- Native RC remains 50 Hz; the laptop observer is limited to 10 Hz.
-- Active native control suspends app HTTP telemetry/status and web background polling, health, discovery and lease pings. Stream retry uses 1/2/4/8-second backoff.
-- Verified simulation ACK gaps neutralize virtual input and retain the same run/grant for up to 8 seconds. Fresh ACKs alone cannot restore ARM; STOP/background and hard expiry still fence.
-- Web takeover is blocked while mobile training/native transmission is active.
-- Secure observer packets maintain paired-kit freshness and output-inhibition state. Advanced virtual sensors are bounded to 10 Hz; brief link gaps retain the chosen FC engine.
-- Dual OTA slots provide 1,966,080 bytes each. First migration requires the matching USB FACTORY image.
-- Automated verification does not replace physical phone/kit/router/USB/flight acceptance.
+## Web update 3 — 5 October 2026 (India)
 
-# ZEBJUS Aerion V18.3.78 — secure paired-kit stages 2–4
+- Anonymous background and manual kit scans no longer overwrite the connected browser's verified control ownership. Client-specific status and telemetry still revoke ownership when it actually changes.
+- After a stopped session, Airframe **Back** remains usable and **Restart setup** returns to Board. Each new setup requires a fresh propeller-removal confirmation and a new session nonce; outputs remain inhibited until the explicit setup gates pass.
+- Setup cleanup waits for cancellation/release before restart and never acquires control just to end an expired session. Late begin replies remain scoped to their original nonce.
+- Added an actual Lab/browser/controller-API regression for discovery, Airframe navigation, ownership loss and restart, alongside the full existing calibration/ESC/receiver wizard suite. Updated script URLs and offline cache for the fix. Android's separate Controls/Safety/Wi-Fi UI and firmware version remain unchanged.
 
-Ship matching app, web and firmware together. Per-kit SRP-6a pairing binds full
-Device ID, name and permissions; HTTP, native RC/ACK and monitor telemetry use
-separate AES-256-GCM keys/counters with replay rejection. Android stores owner
-codes with Keystore encryption. Single-use app invitations grant laptop training
-and PID permission while the app retains joystick ownership; companions cannot
-ARM, take control, run bench outputs or flash. Revoke permissions in app Settings.
+## Web update 2 / Android update 2 — 4 October 2026
 
-The first upgrade requires USB FACTORY migration to two 1,966,080-byte slots.
-AP passwords are random per kit. AP provides owner joystick/STOP and explicit
-disarmed Wi-Fi maintenance. STA on a shared router provides training/PID/admin;
-no public WAN physical RC relay is added.
+Python Lab is the fifth navigation page. Compact Wix embedding adapts the
+header, tabs, 3D benches and Python editor to the iframe viewport. A direct
+Open full lab link preserves the selected page for features restricted by
+parent permissions. WIX_EMBED.html and WIX_EMBED.txt provide the HTTPS
+embed code and Wix sizing/permission instructions. Active brand links use
+www.zebjus.in. APK 18.3.65-android.2 uses versionCode 1836502 and the same
+development certificate; controller firmware remains 18.3.65.
 
-Tripod/Flight Training require a live paired kit and active inhibited run. PID
-save uses revision checks, a staged FC apply and complete-record persistence with
-confirmed readback. A2 advanced training runs actual FC PID against laptop virtual
-sensors and returns virtual motor commands while every physical output is blocked.
-Native input reaches the UDP publisher independently of HTTP callbacks; validated
-ACKs prevent false stale stops. Frozen virtual outputs still expire.
+- Added a dedicated **Setup Wizard** after Assembly Lab and 2D Wiring: verified board selection, Quad X/H, mounting/limits, live gyro/level progress, ESC, measured motor idle, rotation, App/PPM receiver calibration, arm/failsafe and PID readback, followed by a saved completion record.
+- Hardware I/O now starts with 15 tool buttons. Each opens its own controls; the former Calibration/PID pages and advanced kit settings are available here. Individual guided tools share the setup lease and STOP guards.
+- Firmware & Connect combines kit discovery/connection and flashing. Upgrade supports USB or Wi-Fi OTA; Upgrade & Erase requires USB and the matching complete factory image.
+- Replaced telemetry tiles with attitude, integrated-yaw, altitude and vertical-speed instruments plus live system health. Missing/stale sensor readings stay unavailable.
+- Added ten lightweight 3D student flight lessons covering take-off/landing, heading, circuits, gates, obstacles, wind, LED communication, payload delivery and rescue. Simple geometry, capped 30 FPS and a software renderer support modest computers.
+- App and PPM training use a separate five-second output-inhibition lease. Real motor output, bench tests and physical arming are blocked. Loss/page exit ends the session and requires neutral inputs and a fresh manual ARM before real flight.
+- Simplified Android to Controls, Safety and Wi-Fi: stick feel, disarmed gyro/level calibration, failsafe information and essential pairing. Advanced setup/tuning stays in the web lab. APK version is 18.3.65-android.1 (1836501).
+- Software verification includes actual RC-driven simulated take-off/hover/landing, mission/collision/gust checks, firmware output/lease guards, native RC transport and browser workflows. Physical drone, ESC/radio and Android device qualification remain unperformed.
 
-Install **18.3.78-android.2 / 1837802** and matching A1/A2 firmware. The development
-signing certificate is unchanged. Older clients cannot control secure firmware.
-See [installation, pairing and verification](SUPPORT/V18_3_78_SECURE_KIT_UPDATE.md).
-Automated checks and both board builds are required; physical phone/FC/flash/flight
-verification remains a field-test boundary.
+## Previous release: V18.3.64
 
-# V18.3.74 connection stability and Tripod roll
-
-Tripod renders positive roll by lowering the model's right side; channel values and physical flight mixing are unchanged. App ACKs now renew paused-training freshness, and late paused-heartbeat errors are ignored after transmission resumes. STOP immediately pauses the native publisher; late callbacks after an intentional STOP cannot start recovery.
-
-Ordinary app status paints are capped at 10 Hz, with immediate safety updates. Web channel rows retain their DOM nodes, and buffered monitor stick frames are coalesced while ARM/destination/ownership edges are preserved. The firmware releases unused HTTP preconnect sockets after 250 ms instead of waiting 5 seconds. Deliberate bench/configuration pauses reset the flight-loop measurement clock without clearing a genuine watchdog trip. App diagnostic exports now record failed telemetry requests.
-
-Install APK **18.3.74-android.1** (1837401) with matching A1/A2 firmware and reload the web lab. Signing certificate and OTA partition layout are unchanged. See [diagnosis, verification and field checks](SUPPORT/V18_3_74_CONNECTION_AND_TRIPOD.md). Real kit testing is still required to assess any remaining radio, power or scheduling loss.
-
-# V18.3.73 USB and AP/STA connection recovery
-
-Correct the bundled ESP32-C6 SPI1 flash register base to 0x60003000 and patch cached target objects before probing. Discover unnamed valid kits, use stable temporary AP names, verify Wi-Fi credential/preferred-profile storage, and schedule the restart consumed by the main loop after a successful AP test. mDNS failure no longer rejects working credentials; setup status reports STA IP and restart delay.
-
-AP `/` and `/setup` provide a small Wi-Fi recovery form. Repair migration of optional local-build defaults while preserving saved profiles and Forget Wi-Fi. Public firmware contains no router credentials. Mobile failures retain password and AP connection; success hands over SSID/IP/name. Android waits for eligible router Wi-Fi and excludes the departing AP and cellular.
-
-Install APK 18.3.73-android.1 (1837301) with matching A1/A2 firmware. Signing certificate and OTA layout are unchanged. See [update and field test guide](SUPPORT/V18_3_73_UPDATE_AND_TEST.md). Physical flash/phone/router/flight testing remains necessary.
-
-# V18.3.72 monitor boot recovery
-
-Moved the read-only monitor buffers off its task stack, avoided idle formatting, added reset/heap/stack diagnostics, and enforced the compiler stack-frame budget for both firmware profiles. Serial boot evidence from the affected kit is still needed to confirm its exact failure cause. APK protocol remains compatible with V18.3.71.
-
-# ZEBJUS Aerion V18.3.72
-
-Field reports showed 49 Hz real input but only 1 Hz simulator HTTP input. Tripod stopped and Flight Training paused while Wi-Fi stayed connected. This release gives Android simulator input a scoped native ZRC2 50 Hz publisher and the web a separate read-only 25 Hz NDJSON1 observer on port 4211. HTTP replies no longer pace simulation sticks.
-
-- Exact Device ID, blocked physical outputs and simulator run are verified before publication. Input from an old destination is rejected; virtual ARM and physical ARM remain separate.
-- The observer task uses bounded requests/packets, three subscribers, nonblocking writes and slow-client expiry. Slow HTTP snapshots preserve newer RC/ARM/destination. Polling remains available when a monitor cannot connect.
-- App JSON captures offered and ACK-accepted channels independently of telemetry. Web JSON adds monitor health, controller uptime/frame count and simulator position/pause state.
-- Real-flight watchdogs, stale-input/manual re-arm gates, PPM setup and editable firmware PID remain. Tripod PID edits stay virtual; explicit Save writes the controller.
-
-Install the matching APK and A1/A2 firmware together. Tests execute production Java/firmware handlers and bundled app/web UI with mocked controller/radio; no physical phone, ESC, motor or flight test is implied.
+- Floating sticks now place their neutral centre exactly at the first touch, including blank space and edges. Pitch / roll / yaw use subsequent movement relative to that touch. Throttle holds on release. Fixed-centre mode remains available.
+- Removed duplicate web crosshairs and centred the shared crosshair behind the knob. Installed / Android direction arrows and yaw marks share the stick centre and radius. Bright travel indicators remain visible.
+- Added **Kit settings → FC Setup Wizard**: exact board / Device ID detection, Quad X/H, measured gyro / level sample progress, PWM ESC HIGH → LOW status, pilot-observed motor starting pulse, idle readback, selected / all motor rotation checks, Web or PPM input, six-channel mapping / min-max-centre / reverse calibration, yaw-left / yaw-right or mapped ARM switch, and receiver loss / restore observation. Advanced PID opens the existing guarded PID editor.
+- The wizard requires the verified A2 Aerion F1 flight profile. A1 remains bridge-only; unsupported aircraft are disabled. X/H use the existing front-left / front-right / rear-right / rear-left mixer. Physical motor wiring / direction must be checked.
+- Firmware scopes setup mutations to the current Device ID, control owner and unique setup session. Setup inhibits ARM and RC. Calibration runs outside the networking task. Motor tests stop at 800 ms in the wizard; ESC HIGH stops after at most 12 s, LOW after 3 s. A five-second setup lease, output supervisor and STOP / page / tab / ownership cleanup keep outputs at minimum after cancellation or loss.
+- After setup, directional sticks and throttle must return to neutral / minimum with ARM low. The app releases configuration control and takes a fresh RC grant for a subsequent manual ARM. Receiver endpoints, input preference, airframe and yaw direction persist without changing the existing FlightSettings schema.
+- Preserved V18.3.63 native 50 Hz UDP, bounded gap handling, safe foreground retry and manual re-arm behavior. No automatic re-arm follows a prolonged connection loss.
+- Rebuilt development-signed Android APK (1836401), A1/A2 APP and FACTORY firmware. Tests use host clocks, Java UDP loopback and simulated controller browser APIs. No physical drone, ESC, radio or Android phone flight qualification is claimed. Motor starts and ESC tones are pilot observations; no RPM feedback is available.

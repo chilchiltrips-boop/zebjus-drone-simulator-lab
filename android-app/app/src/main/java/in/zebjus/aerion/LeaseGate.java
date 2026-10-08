@@ -4,16 +4,12 @@ package in.zebjus.aerion;
 public final class LeaseGate {
     public static final long ACK_TIMEOUT_MS = 300;
     public static final long MAX_ACK_TIMEOUT_MS = 900;
-    public static final long INPUT_SOFT_STALE_MS = 300;
-    public static final long INPUT_TIMEOUT_MS = 900;
+    public static final long INPUT_TIMEOUT_MS = 300;
     public static final class Lease {
         public final String origin, deviceId, clientId;
         public final Object network;
-        private final long generation;
         private long ack;
         private final long ackTimeout;
-        private final boolean simulation;
-        private boolean virtualRecoveryRequired;
         private long inputAt;
         private int[] input;
         private volatile boolean controllerAck, controllerArmed, controllerReady;
@@ -21,8 +17,8 @@ public final class LeaseGate {
         private boolean streaming=false;
         private volatile boolean hasRc=false;
         public boolean hasRc(){return hasRc;}
-        Lease(String origin, String id, String client, Object network, long now, long timeout, long generation,boolean simulation) {
-            this.origin=origin; deviceId=id; clientId=client; this.network=network; ack=now; ackTimeout=timeout;this.generation=generation;this.simulation=simulation;
+        Lease(String origin, String id, String client, Object network, long now, long timeout) {
+            this.origin=origin; deviceId=id; clientId=client; this.network=network; ack=now; ackTimeout=timeout;
         }
         public boolean matches(String base, String id, String client) {
             return origin.equals(base) && deviceId.equals(id) && clientId.equals(client);
@@ -44,36 +40,26 @@ public final class LeaseGate {
     private boolean foreground;
     private Lease current;
     private Grant pending;
-    private String lastStopReason="";
 
     public synchronized void resume() { foreground=true; }
     public synchronized boolean isForeground() { return foreground; }
     public synchronized boolean isPending(Grant grant) { return foreground && pending==grant && grant.generation==generation; }
     public synchronized Grant beginGrant(String base, String id, String client, Object network) {
         if (!foreground || network==null) throw new IllegalStateException("Open the app and join the kit Wi-Fi.");
-        if (pending!=null) throw new IllegalStateException("Release the previous control session first.");
-        if(current!=null){
-            // A destination change invalidates the controller's UDP token.
-            // Renew only this paused reservation; never replace a live stream.
-            if(!current.matches(base,id,client)||current.network!=network||current.streaming||current.input!=null)throw new IllegalStateException("Stop the current transmitter before renewing control.");
-            generation++;current=null;
-        }
+        if (current!=null || pending!=null) throw new IllegalStateException("Release the previous control session first.");
         pending=new Grant(generation,base,id,client,network); return pending;
     }
     public synchronized boolean accept(Grant grant, long now) {
         return accept(grant,now,0);
     }
     public synchronized boolean accept(Grant grant, long now, long controllerTimeout) {
-        return accept(grant,now,controllerTimeout,false);
-    }
-    public synchronized boolean accept(Grant grant,long now,long controllerTimeout,boolean simulationOutputsBlocked) {
         if (pending!=grant || !foreground || grant.generation!=generation || current!=null) return false;
-        long timeout=simulationOutputsBlocked ? 8000 : controllerTimeout>0 ? Math.max(200,Math.min(MAX_ACK_TIMEOUT_MS,controllerTimeout-100)) : ACK_TIMEOUT_MS;
-        lastStopReason="";pending=null; current=new Lease(grant.origin,grant.deviceId,grant.clientId,grant.network,now,timeout,grant.generation,simulationOutputsBlocked); return true;
+        long timeout=controllerTimeout>0 ? Math.max(200,Math.min(MAX_ACK_TIMEOUT_MS,controllerTimeout-100)) : ACK_TIMEOUT_MS;
+        pending=null; current=new Lease(grant.origin,grant.deviceId,grant.clientId,grant.network,now,timeout); return true;
     }
     public synchronized Lease cancel(Grant grant) {
         if(pending==grant)pending=null;
-        return current!=null&&current.generation==grant.generation&&current.matches(grant.origin,grant.deviceId,grant.clientId)&&current.network==grant.network ? fence(false) : null;
+        return current!=null&&current.matches(grant.origin,grant.deviceId,grant.clientId)&&current.network==grant.network ? fence(false) : null;
     }
     public synchronized Lease authorize(String base, String id, String client) {
         if (!foreground || current==null || !current.matches(base,id,client)) throw new IllegalStateException("Take control again before sending commands.");
@@ -89,16 +75,10 @@ public final class LeaseGate {
         // A settings reservation may have been idle for seconds. Start one
         // bounded ACK window when its transmitter is explicitly enabled.
         if(!lease.streaming){lease.ack=now;lease.controllerAck=false;}
-        if(lease.simulation&&channels[4]<1500&&channels[2]<=1050)lease.virtualRecoveryRequired=false;
         lease.input=channels.clone();lease.inputAt=now;lease.hasRc=true;lease.mode=channels[5];lease.streaming=true;return true;
     }
     public synchronized int[] input(Lease lease,long now) {
-        if(!isCurrent(lease)||lease.input==null)return null;
-        long age=now-lease.inputAt;if(age>INPUT_TIMEOUT_MS)return null;
-        if(lease.simulation&&(age>INPUT_SOFT_STALE_MS||now-lease.ack>300))lease.virtualRecoveryRequired=true;
-        if(lease.simulation&&lease.virtualRecoveryRequired)return new int[]{1500,1500,1000,1500,1000,lease.mode,1000,1000,1500,1000};
-        if(age>INPUT_SOFT_STALE_MS){int[] safe=lease.input.clone();safe[0]=safe[1]=safe[3]=1500;return safe;}
-        return lease.input.clone();
+        return isCurrent(lease)&&lease.input!=null&&now-lease.inputAt<=INPUT_TIMEOUT_MS ? lease.input.clone() : null;
     }
     public synchronized void udpAck(Lease lease,long now,boolean armed,boolean ready) {
         if(isCurrent(lease)){lease.ack=now;lease.controllerAck=true;lease.controllerArmed=armed;lease.controllerReady=ready;}
@@ -114,12 +94,7 @@ public final class LeaseGate {
         generation++; pending=null; if (pause) foreground=false;
         Lease old=current; current=null; return old;
     }
-    public synchronized java.util.Map<String,Object> diagnostics(long now) {
-        java.util.Map<String,Object> out=new java.util.LinkedHashMap<>();out.put("foreground",foreground);out.put("reserved",current!=null);out.put("streaming",current!=null&&current.streaming);out.put("ackAgeMs",current==null?-1:Math.max(0,now-current.ack));out.put("inputAgeMs",current==null||current.input==null?-1:Math.max(0,now-current.inputAt));out.put("outputsBlocked",current!=null&&current.simulation);out.put("inputSoftStaleMs",INPUT_SOFT_STALE_MS);out.put("inputTimeoutMs",INPUT_TIMEOUT_MS);out.put("virtualRecoveryRequired",current!=null&&current.virtualRecoveryRequired);out.put("simulationLinkPaused",current!=null&&current.simulation&&now-current.ack>300);out.put("lastError",lastStopReason);return out;
-    }
     public synchronized Lease watchdog(long now) {
-        if(current==null)return null;
-        if(current.input!=null&&now-current.inputAt>INPUT_TIMEOUT_MS){lastStopReason="Native stick input exceeded its safety deadline";return fence(false);}
-        if(now-current.ack>(current.streaming?current.ackTimeout:5000)){lastStopReason=current.streaming?"Controller RC acknowledgements expired":"Configuration reservation heartbeat expired";return fence(false);}return null;
+        return current!=null && (current.input!=null&&now-current.inputAt>INPUT_TIMEOUT_MS || now-current.ack>(current.streaming?current.ackTimeout:5000)) ? fence(false) : null;
     }
 }

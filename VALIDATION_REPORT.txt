@@ -1,13 +1,19 @@
-ZEBJUS Aerion V18.3.78 web.2 / android.2 — stages 2–4 and exclusive mobile session
+ZEBJUS Aerion V18.3.66 validation
 
-Both Arduino-ESP32 3.3.12 controller profiles compiled successfully in secure-kit workflow 37636743147. A1 APP: 1,288,592 bytes; A2 APP: 1,379,296 bytes. Each dual OTA slot is 1,966,080 bytes; FACTORY images are 4,194,304 bytes. Image/chip/version/partition/slot/factory equality and direct monitor stack checks passed. First migration requires USB FACTORY and non-secret settings backup.
+PASS: rebuilt APK manifest / Java DEX / v2-v3 signature / ZIP alignment; exact bundled flight UI and Android transport. Same update certificate.
+PASS: compiled A1/A2 with Arduino CLI 1.3.1 and Arduino-ESP32 3.3.12; APP/FACTORY headers, chip profiles, dual OTA slots, size and matching catalog hashes.
+PASS: actual controller arming / bench / setup / PWM and training command functions; props/identity/MOBILE grant, exclusive targets, private nonces, late cancellation, lease/owner expiry, output inhibition and neutral/manual re-arm, and expired training cleanup isolation from a new Real grant.
+PASS: actual Android bundled UI plus actual web Lab sharing a mock kit; app home mode selection, observer without control takeover, app ARM starts Flight Training, exclusive Tripod/Flight RC, Real simulation OFF, private app lease, pending selection STOP and native lifecycle cleanup.
+PASS: native Java grant/lifecycle policy and actual UDP loopback; scoped ACK/replay, independent 50 Hz publication, input/ACK timeout and safe stop bursts.
+PASS: complete setup browser/session regression; ESC checklist / HIGH timeout / HIGH to LOW, bounded output sliders / delayed ACK Stop, motor direction/readback, PPM, scan ownership preservation, Airframe Back/Next and reachable Restart.
+PASS: sixteen mission core and browser tests; smoothed keys/joysticks, forward/backward movement and tilt, cameras/find drone, real RC virtual takeoff/hover/soft landing, ring height/direction/distance, collision alert/stuck/back-off/recovery, HOME/FINISH and new mission actions.
+PASS: all eleven web pages at five widths and nested Wix frames, fifth-position Python Lab, local Python execution/file operations, permission fallback, 320/390 px training and software rendering.
+PASS: flight app offline cache/multitouch/STOP/reconnect/identity/AP-STA and portrait/landscape; mobile view-only mirror, safe settings and Wi-Fi; controller math, RC protocol, setup/download/upload integrity and camera/output lifecycles.
 
-Real firmware SRP-6a and AES-GCM interoperation, wrong-code/session/device/replay rejection, single-use companion invitations, companion control denial, concurrent PID revision/save and isolated virtual PID output inhibition passed host/native/browser checks. Original Android development certificate retained. APK manifest/DEX/signature/ZIP/alignment/assets and source recompilation match: 18.3.78-android.2 / 1837802.
+APK: 18.3.66-android.2, code 1836602, 62060 bytes
+APK SHA256: d41398259f2edaf3ad8ee0af1d6198752811e9aac7b5f8cface610906ead086c
+Local compilation figures; CI may rebuild identical source. Catalog/build-report contain the final package metrics.
+ZFC-A1: APP 1200944 bytes; FACTORY 4194304 bytes
+ZFC-A2: APP 1287248 bytes; FACTORY 4194304 bytes
 
-Production native UDP publishes at 50 Hz; the monitor is capped at 10 Hz. Active MOBILE stops app/web background HTTP telemetry, status, health, discovery and lease polling. Monitor retry uses 1/2/4/8-second backoff. Explicit advanced virtual-sensor exchange is bounded to 10 Hz with one request in flight.
-
-Simulation ACK interruption tests retain the same run/lease for seven seconds, send neutral, fence delayed output, preserve the selected FC engine and require manual ARM after recovery. Hard expiry, STOP/background, wrong run and physical ARM rejection remain enforced. The previous real-flight input hotfix is preserved: 300 ms soft-stale axis centering, 900 ms hard input fence and at most 900 ms ACK expiry; simulation neutralizes throttle/ARM on soft loss and permits up to 8 seconds ACK recovery.
-
-Actual browser app/web tests cover observer-only mobile ownership, AP/STA reconnect, live mirrored sticks, read-only armed settings, no auto ARM/control, pairing/invitation/PID, training pause/resume and responsive rendering. Protocol/control/Wi-Fi/monitor/receiver/setup/USB/physics/recorder/offline/release checks passed. See SUPPORT/V18_3_78_SECURE_KIT_UPDATE.md for installation and verification boundaries.
-
-No physical controller flash, Android phone/emulator, router/radio, motor/ESC or flight test was performed. Automated checks cannot establish that the diagnosed physical AP stalls are eliminated.
+No physical Android phone, RF link, ESC/motor calibration or drone flight qualification was performed. Browser tests use simulated kit APIs. ESC tones and starting pulses require pilot observation.

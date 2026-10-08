@@ -33,6 +33,6 @@
   const tab=Array.from(document.querySelectorAll('.tabs .tab')).find(b=>b.dataset.tab===requested);if(!tab)return;
   let tries=0;const open=()=>{if(window.__zebjusAppLoaded){tab.click();return}if(++tries<300)setTimeout(open,100)};open();
  }
- window.AerionEmbed=Object.freeze({enabled,framed,version:'18.3.80-web.1'});
+ window.AerionEmbed=Object.freeze({enabled,framed,version:'18.3.66-web.2'});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();

@@ -3,7 +3,7 @@ name: Build Aerion Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [codex/webapp-id-routing, main]
+    branches: [main]
     paths:
       - 'android-app/app/**'
       - 'VERSION.txt'
@@ -21,7 +21,6 @@ on:
       - 'tools/flight_app_source.html'
       - 'control-sticks.js'
       - 'mobile-flight-console.js'
-      - 'flight-recorder.js'
       - 'fc-setup.js'
       - 'kit-console.js'
   pull_request:
@@ -33,7 +32,6 @@ on:
       - 'tools/flight_app_source.html'
       - 'control-sticks.js'
       - 'mobile-flight-console.js'
-      - 'flight-recorder.js'
       - 'fc-setup.js'
       - 'kit-console.js'
 
@@ -84,11 +82,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build/core-tests
-          javac -d build/core-tests app/src/main/java/in/zebjus/aerion/LeaseGate.java app/src/main/java/in/zebjus/aerion/LocalPolicy.java app/src/main/java/in/zebjus/aerion/LaunchPolicy.java app/src/main/java/in/zebjus/aerion/NativeRcStream.java app/src/main/java/in/zebjus/aerion/SecureTransport.java app/src/main/java/in/zebjus/aerion/RouterNetworkPolicy.java tests/LeaseGateTest.java tests/SimulationGapTest.java tests/NativeRcStreamTest.java tests/RouterNetworkPolicyTest.java
+          javac -d build/core-tests app/src/main/java/in/zebjus/aerion/LeaseGate.java app/src/main/java/in/zebjus/aerion/LocalPolicy.java app/src/main/java/in/zebjus/aerion/LaunchPolicy.java app/src/main/java/in/zebjus/aerion/NativeRcStream.java tests/LeaseGateTest.java tests/NativeRcStreamTest.java
           java -cp build/core-tests in.zebjus.aerion.LeaseGateTest
-          java -cp build/core-tests in.zebjus.aerion.SimulationGapTest
           java -cp build/core-tests in.zebjus.aerion.NativeRcStreamTest
-          java -cp build/core-tests in.zebjus.aerion.RouterNetworkPolicyTest
       - name: Recompile and verify delivered development APK
         run: |
           set -euo pipefail
@@ -99,7 +95,7 @@ jobs:
           name: Aerion-Android-APK
           if-no-files-found: error
           path: |
-            android-app/dist/ZEBJUS_Aerion_V18_3_80_Android.apk
+            android-app/dist/ZEBJUS_Aerion_V18_3_66_Android.apk
             android-app/dist/BUILD_REPORT.json
             android-app/dist/APK_SIGNATURE.txt
             android-app/dist/APK_MANIFEST.txt

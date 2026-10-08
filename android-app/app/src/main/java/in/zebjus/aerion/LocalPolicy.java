@@ -9,17 +9,13 @@ import java.util.Map;
 /** The native bridge can reach only the controller API on local Wi-Fi addresses. */
 public final class LocalPolicy {
     private LocalPolicy() {}
-    public static int requestTimeout(String path,boolean rc,int requested) {
-        boolean pairing=path.equals("/api/security/hello") || path.equals("/api/security/proof");
-        return Math.max(150,Math.min(rc?1500:pairing?15000:8000,requested));
-    }
     public static URL api(String value, String method) throws Exception {
         if (value.length()>2048) throw new IllegalArgumentException("Kit address is too long.");
         URI uri=new URI(value);
         if (!"http".equals(uri.getScheme()) || uri.getUserInfo()!=null || uri.getFragment()!=null || !localHost(uri.getHost())) throw new IllegalArgumentException("Use the kit's local HTTP IP address or .local name.");
         String path=uri.getPath();
         boolean read=path.equals("/api/status") || path.equals("/api/telemetry") || path.equals("/api/wifi/saved") || path.equals("/api/wifi/scan") || path.equals("/api/setup/test/status");
-        boolean write=path.startsWith("/api/security/") || path.equals("/api/control/acquire") || path.equals("/api/control/ping") || path.equals("/api/control/release") || path.equals("/api/command") || path.equals("/api/wifi/use") || path.equals("/api/wifi/set") || path.equals("/api/setup/test");
+        boolean write=path.equals("/api/control/acquire") || path.equals("/api/control/ping") || path.equals("/api/control/release") || path.equals("/api/command") || path.equals("/api/wifi/use") || path.equals("/api/wifi/set") || path.equals("/api/setup/test");
         if (!(read && method.equals("GET") || write && method.equals("POST"))) throw new IllegalArgumentException("This request is not a flight API operation.");
         return uri.toURL();
     }

@@ -23,7 +23,7 @@
  ];
  class FlightTraining{
   constructor(level=0){this.reset(level)}
-  reset(level=0){this.level=clamp(Math.floor(level),0,lessons.length-1);this.lesson=lessons[this.level];this.x=0;this.y=.22;this.z=0;this.vx=this.vy=this.vz=0;this.yaw=this.roll=this.pitch=this.yawRate=this.rollRate=this.pitchRate=0;this.time=0;this.airborne=false;this.armed=false;this.lowSeen=false;this.gesture=0;this.gestureTime=0;this.gestureLatched=false;this.hold=0;this.yawIndex=0;this.point=0;this.pointHold=0;this.payload=false;this.delivered=false;this.signalSent=false;this.result='ready';this.reason='';this.peak=0;this.windX=this.windZ=0;this.rows=Array(8).fill(0);this.landingQuality=null;this.ringContacts=0;this.stuck=false;this.contact=null;this.alert=null;this.gateApproached=false;this.inspectionIndex=0;this.beaconSent=false;this.landingIndex=0;this.padDeparted=true;this.channels=[...neutral];return this}
+  reset(level=0){this.level=clamp(Math.floor(level),0,lessons.length-1);this.lesson=lessons[this.level];this.x=0;this.y=.22;this.z=0;this.vx=this.vy=this.vz=0;this.yaw=this.roll=this.pitch=this.yawRate=0;this.time=0;this.airborne=false;this.armed=false;this.lowSeen=false;this.gesture=0;this.gestureTime=0;this.gestureLatched=false;this.hold=0;this.yawIndex=0;this.point=0;this.pointHold=0;this.payload=false;this.delivered=false;this.signalSent=false;this.result='ready';this.reason='';this.peak=0;this.windX=this.windZ=0;this.rows=Array(8).fill(0);this.landingQuality=null;this.ringContacts=0;this.stuck=false;this.contact=null;this.alert=null;this.gateApproached=false;this.inspectionIndex=0;this.beaconSent=false;this.landingIndex=0;this.padDeparted=true;this.channels=[...neutral];return this}
   start(){this.result='running';this.reason='';return this}
   fail(reason){this.result='failed';this.reason=reason;this.armed=false;return false}
   obstacles(){return(this.lesson.obstacles||[]).map(o=>({...o,x:o.x+(o.moving?Math.sin(this.time*.7)*3:0)}))}
@@ -57,24 +57,15 @@
    if(type==='drop'){if(!this.payload)return 'Pick up the parcel first.';if(distance(this,l.drop)>1.2||this.y>.9||speed>.8)return 'Reach DROP below 0.9 m and slow down.';if(l.pattern&&!this.signalSent)return 'Send the rescue signal from this station before releasing the parcel.';this.payload=false;this.delivered=true;return 'Parcel delivered.'}
    if(type==='signal'){if(!l.pattern)return 'This lesson has no signal task.';if(distance(this,l.signal)>1.4||this.y<1||this.y>3||speed>.8)return 'Hover near the signal station at 1–3 m and below 0.8 m/s.';if(!l.pattern.every((v,i)=>v===rows[i]))return 'Pattern differs from the target. Check the illuminated cells.';this.signalSent=true;return 'Virtual station received the correct LED message.'}return 'Unknown task.';
   }
-  tick(dt,input=neutral,{ppm=false,armMode='CH5_SWITCH',fc=undefined}={}){
+  tick(dt,input=neutral,{ppm=false,armMode='CH5_SWITCH'}={}){
    if(this.result!=='running')return;dt=clamp(dt,0,.05);if(!Array.isArray(input)||input.length<6||!input.every(v=>Number.isFinite(v)&&v>=750&&v<=2250)){this.fail('Invalid transmitter frame');return}const ch=input.map(v=>clamp(v,1000,2000));this.channels=ch;this.time+=dt;if(this.time>(this.lesson.timeLimit||240)){this.fail('Lesson time limit reached. Retry with a planned route.');return}
    if(ppm&&armMode!=='CH5_SWITCH'){const dir=ch[2]<=1050&&Math.abs(ch[0]-1500)<80&&Math.abs(ch[1]-1500)<80?(ch[3]>=1900?1:ch[3]<=1100?-1:0):0;if(dir!==this.gesture){this.gesture=dir;this.gestureTime=0;this.gestureLatched=false}this.gestureTime+=dt;if(dir&&this.gestureTime>=1&&!this.gestureLatched){this.armed=dir===(armMode==='YAW_LEFT'?-1:1);this.gestureLatched=true}}else{if(ch[4]<1500){this.armed=false;this.lowSeen=true}else if(!this.armed&&this.lowSeen&&ch[2]<=1050)this.armed=true}
    // Positive pitch moves along the nose: north (-Z) at 0°, east (+X) at 90°.
    const dead=v=>Math.abs(v)<.045?0:v,r=dead((ch[0]-1500)/500),p=dead((ch[1]-1500)/500),yaw=dead((ch[3]-1500)/500),flying=this.armed&&this.y>.225,mix=1-Math.exp(-dt*7);
-   if(fc){
-    if(!fc.outputsBlocked||!Array.isArray(fc.motors)||fc.motors.length!==4||fc.motors.some(x=>!Number.isFinite(x)||x<1000||x>2000)){this.fail('Invalid FC virtual motor output');return;}
-    this.armed=fc.virtualArmed===true;const [m1,m2,m3,m4]=fc.motors.map(v=>(v-1000)/1000);
-    this.rollRate=(this.rollRate||0)+((m1-m2-m3+m4)*90-(this.rollRate||0)*.6)*dt;
-    this.pitchRate=(this.pitchRate||0)+((-m1-m2+m3+m4)*85-(this.pitchRate||0)*.6)*dt;
-    this.yawRate+=((m1-m2+m3-m4)*70-this.yawRate*.6)*dt;
-    this.roll=clamp(this.roll+this.rollRate*dt,-70,70);this.pitch=clamp(this.pitch+this.pitchRate*dt,-70,70);this.yaw=(this.yaw+this.yawRate*dt+360)%360;
-   }else{
    this.yawRate+=((flying?yaw*85:0)-this.yawRate)*mix;if(flying)this.yaw=(this.yaw+this.yawRate*dt+360)%360;
-   this.roll+=((flying?r*23:0)-this.roll)*mix;this.pitch+=((flying?p*23:0)-this.pitch)*mix;   }
-   const a=this.yaw*Math.PI/180,bank=this.roll/23,tilt=this.pitch/23;
+   this.roll+=((flying?r*23:0)-this.roll)*mix;this.pitch+=((flying?p*23:0)-this.pitch)*mix;const a=this.yaw*Math.PI/180,bank=this.roll/23,tilt=this.pitch/23;
    const wind=this.lesson.wind||0,gust=this.time%13>4&&this.time%13<8;this.windX=gust?Math.sin(this.time*2.1)*wind:0;this.windZ=gust?Math.cos(this.time*1.7)*wind*.65:0;
-   const lift=fc?(fc.motors.reduce((a,b)=>a+(b-1000)/1000,0)/4-.5)*9:(ch[2]-1500)/500*(this.payload?3.7:4.5);const accY=this.armed?lift-this.vy*.9:-6.5;
+   const accY=this.armed?(ch[2]-1500)/500*(this.payload?3.7:4.5)-this.vy*.9:-6.5;
    this.vy=clamp(this.vy+accY*dt,-4,3);this.vx+=((flying?(bank*Math.cos(a)+tilt*Math.sin(a))*3.2+this.windX:0)-this.vx*1.15)*dt;this.vz+=((flying?(bank*Math.sin(a)-tilt*Math.cos(a))*3.2+this.windZ:0)-this.vz*1.15)*dt;const previous={x:this.x,y:this.y,z:this.z};this.x+=this.vx*dt;this.z+=this.vz*dt;this.y+=this.vy*dt;const hit=this.ringHit(previous,this);if(hit){this.x=previous.x;this.y=previous.y;this.z=previous.z;this.vx=this.vy=this.vz=0;if(!this.stuck||this.contact?.index!==hit.index){this.ringContacts++;this.contact={index:hit.index,origin:previous};this.alert={time:this.time,index:hit.index,text:`RING ${hit.index+1} CONTACT · drone blocked. Move back from the frame or press Recover.`};}this.stuck=true;}else if(this.stuck&&this.contact){const g=this.gates()[this.contact.index],o=this.contact.origin;if(this.frameDistance(this,g)>1.08&&Math.hypot(this.x-o.x,this.y-o.y,this.z-o.z)>.12){this.stuck=false;this.contact=null;this.alert={time:this.time,text:'Ring cleared. Line up with the opening and entry arrow.'};}}this.peak=Math.max(this.peak,this.y);if(this.y>.65)this.airborne=true;
    if(Math.abs(this.x)>17||Math.abs(this.z)>17||this.y>(this.lesson.ceiling||9)){this.fail('Training boundary exceeded. Reduce speed and keep the drone in view.');return}
    for(const o of this.obstacles())if(Math.abs(this.x-o.x)<o.w/2+.35&&Math.abs(this.z-o.z)<o.d/2+.35&&this.y<o.h+.25){this.fail(o.moving?'Moving obstacle collision':'Obstacle collision. Plan a route with more clearance.');return}
