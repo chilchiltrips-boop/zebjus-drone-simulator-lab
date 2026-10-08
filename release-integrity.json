@@ -589,8 +589,8 @@
     },
     {
       "path": "SUPPORT/V18_3_82_UPDATE.md",
-      "bytes": 5382,
-      "sha256": "c0a4727b95efaa1cf52dc0d06cffd7e8a70456cdf892909eb65070e707c83f40"
+      "bytes": 5598,
+      "sha256": "4e9d5b203a865ab4d268195d7f85e96d73e9ec384611aea068942491190bb098"
     },
     {
       "path": "SUPPORT/VERIFICATION_V18_3_59.json",
@@ -634,8 +634,8 @@
     },
     {
       "path": "VALIDATION_REPORT.txt",
-      "bytes": 4226,
-      "sha256": "f8dcd512e57e83290bdff8b7d202ce5af2f5fdef4ecbc07f4c3baabd8a418d88"
+      "bytes": 4641,
+      "sha256": "5563a38b542ec42d83a415baa7cac6484e4f31b137e55da16da775e30ddf8a8f"
     },
     {
       "path": "VERSION.txt",
@@ -854,8 +854,8 @@
     },
     {
       "path": "android-app/tests/browser_modes_test.js",
-      "bytes": 17987,
-      "sha256": "c7582cc72613b1f5a5496d6dea31d928d89dde413a55af3866695b74d3048178"
+      "bytes": 19914,
+      "sha256": "dedb746bacfa3f131018ca779c0da2d48f1d4965ae853a16f00779c40261633d"
     },
     {
       "path": "android-app/tests/browser_reconnect_test.js",
@@ -864,8 +864,8 @@
     },
     {
       "path": "android-app/tests/browser_transport_test.js",
-      "bytes": 12788,
-      "sha256": "4a786dc1e7a78c2f8b35c34f615490d192d18050c03465e10c29b2312eb8ee24"
+      "bytes": 12785,
+      "sha256": "a1867511a8f8f83624d72901e09bab438042024b588c8735588660f6aead3452"
     },
     {
       "path": "android-app/tools/build_apk.py",
@@ -1004,8 +1004,8 @@
     },
     {
       "path": "flight-training.js",
-      "bytes": 32629,
-      "sha256": "281d79abf300211b0ab763a2984cd64b21f498ec13912787c585f0cd9ecff649"
+      "bytes": 32745,
+      "sha256": "d349716aa01ec5d06ea8bbb46e46fac4b0684356a5ecf69e716bea015d43a00e"
     },
     {
       "path": "frame_screw_m25.glb",
@@ -1095,7 +1095,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 44078,
-      "sha256": "03a657fc34cf1659e272eac0048587359d8ba47912cd05854df03310e931bd97"
+      "sha256": "00c913b322600a66d3c28da447e2ee8851872ce476207dd02c554b7cb00cf15a"
     },
     {
       "path": "offline-support.js",

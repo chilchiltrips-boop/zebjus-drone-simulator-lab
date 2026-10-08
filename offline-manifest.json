@@ -1,6 +1,6 @@
 {
   "version": "18.3.82",
-  "totalBytes": 115905254,
+  "totalBytes": 115905370,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -174,8 +174,8 @@
     },
     {
       "path": "flight-training.js",
-      "bytes": 32629,
-      "sha256": "281d79abf300211b0ab763a2984cd64b21f498ec13912787c585f0cd9ecff649"
+      "bytes": 32745,
+      "sha256": "d349716aa01ec5d06ea8bbb46e46fac4b0684356a5ecf69e716bea015d43a00e"
     },
     {
       "path": "frame_screw_m25.glb",
