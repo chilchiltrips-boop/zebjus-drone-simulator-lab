@@ -2,7 +2,7 @@
 // Execute the shipped Android UI with stale router IPs and an exact paired kit.
 const assert=require('node:assert/strict'),http=require('node:http'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const root=path.resolve(__dirname,'../..'),ID='ZFC-001122334455',name='zebjus_drone_1',oldName='zebjus_drone_001122334455',requests=[],errors=[];
-let server,browser,owner='',wrong=false;
+let server,browser,owner='',wrong=false,holdAuthenticatedStatus=false,authenticationWaiting=false,resumeStatus;
 (async()=>{
  server=http.createServer((req,res)=>{const rel=new URL(req.url,'http://localhost').pathname.replace(/^\/assets\//,'');if(!['flight/index.html','android-transport.js','aerion-drone-mark.png'].includes(rel))return res.writeHead(404).end();res.writeHead(200,{'Content-Type':rel.endsWith('.js')?'text/javascript':rel.endsWith('.png')?'image/png':'text/html'});res.end(fs.readFileSync(path.join(root,'android-app/app/src/main/assets',rel)))});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));browser=await chromium.launch({headless:true,executablePath:process.env.ZEBJUS_CHROMIUM});const page=await browser.newPage({viewport:{width:1000,height:560}});page.on('pageerror',e=>errors.push(e.message));
@@ -13,11 +13,20 @@ let server,browser,owner='',wrong=false;
   else if(u.pathname==='/api/control/acquire'){owner=cid;data={ok:true,deviceId:ID,lockMine:true,controlRole:'MOBILE',rcTimeoutMs:1000};}
   else if(u.pathname==='/api/control/release')owner='';
   else if(u.pathname==='/api/telemetry')data={ok:true,deviceId:ID,armed:false,rcSource:'NONE',rcAgeMs:999999};
+  if(u.pathname==='/api/status'&&!u.searchParams.has('discover')&&holdAuthenticatedStatus){holdAuthenticatedStatus=false;authenticationWaiting=true;await new Promise(r=>{resumeStatus=r});}
   return{code:200,body:JSON.stringify(data)};
  });
  await page.addInitScript(({ID,oldName})=>{localStorage.setItem('zebjus-known-kit',JSON.stringify({deviceId:ID,name:oldName,base:'http://192.168.1.50',ip:'192.168.1.50',staBase:'http://192.168.1.50'}));window.__aerionToken='test';window.NativeAerion={request(k,id,a,m,f){window.__request(a,m,f).then(r=>AerionAndroid.deliver(id,r.code,r.body))},cancel(){},useRouterWifi(){},rcDiagnostics(){return '{"network":{"selected":true,"wifi":true,"target":"STA","ssid":"Router"}}'}}},{ID,oldName});
  await page.goto(`http://localhost:${server.address().port}/assets/flight/index.html`);await page.waitForFunction(()=>document.getElementById('brandSplash').hidden);await page.click('#heroAction');await page.fill('#kitName',name);await page.fill('#kitAddress','192.168.1.50');await page.click('#checkConnection');await page.waitForFunction(()=>document.getElementById('controlHint').textContent==='MOBILE SESSION');
  assert(requests.some(r=>r.host==='192.168.1.50'));assert(requests.some(r=>r.host==='zebjus-drone-1.local'&&r.path==='/api/control/acquire'),'stale IP must fall back to the entered Kit Name');assert.equal(await page.locator('#expectedId').inputValue(),ID);assert(await page.locator('#arm').isDisabled());assert(!requests.some(r=>r.type==='rc_frame'),'reconnect reserves a safe session without publishing RC');
+ // A full authenticated status reply can arrive after the user opens a new
+ // form. It must not close that form or resume an old reservation.
+ await page.evaluate(()=>AerionAndroid.pause());for(let i=0;owner&&i<100;i++)await new Promise(r=>setTimeout(r,10));assert.equal(owner,'');
+ holdAuthenticatedStatus=true;const heldAt=requests.length;await page.evaluate(()=>AerionAndroid.resume());
+ for(let i=0;!authenticationWaiting&&i<150;i++)await new Promise(r=>setTimeout(r,10));assert(authenticationWaiting,'resume must reach the held authenticated status response');
+ await page.click('#connect');await page.fill('#kitName',name);await page.fill('#kitAddress','192.168.1.50');resumeStatus();await new Promise(r=>setTimeout(r,250));
+ assert(await page.locator('#connectDialog').isVisible(),'an old authenticated reply cannot close a new Connection form');assert.equal(await page.locator('#kitAddress').inputValue(),'192.168.1.50');assert.equal(owner,'');assert(!requests.slice(heldAt).some(r=>r.path==='/api/control/acquire'),'stale authenticated discovery cannot reserve control');
+ await page.click('#checkConnection');await page.waitForFunction(()=>document.getElementById('controlHint').textContent==='MOBILE SESSION');assert(await page.locator('#arm').isDisabled());
  await page.evaluate(()=>AerionAndroid.pause());for(let i=0;owner&&i<100;i++)await new Promise(r=>setTimeout(r,10));assert.equal(owner,'');wrong=true;const before=requests.length;await page.evaluate(()=>AerionAndroid.resume());await page.click('#connect');await page.fill('#kitName',name);await page.fill('#kitAddress','192.168.1.50');await page.click('#checkConnection');await page.waitForFunction(()=>document.getElementById('pairMessage').textContent!=='Checking your kit…');assert(!requests.slice(before).some(r=>r.path==='/api/control/acquire'),'a different device at the same hostname cannot acquire control');assert(await page.locator('#arm').isDisabled());assert.equal(await page.locator('#expectedId').inputValue(),ID);assert.deepEqual(errors,[]);
- console.log('PASS: actual Android UI falls back from stale router IP to entered Kit Name, retains exact paired identity, reserves without RC, and rejects a different kit at the same hostname.');
+ console.log('PASS: actual Android UI falls back from stale router IP to entered Kit Name, retains exact paired identity, reserves without RC, fences delayed authenticated replies while a new form is open, and rejects a different kit at the same hostname.');
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(async()=>{if(browser)await browser.close();if(server)server.close()});

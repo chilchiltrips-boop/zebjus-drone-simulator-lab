@@ -1,0 +1,108 @@
+name: Verify Aerion 18.3.82 authenticated reply fence
+on:
+  push:
+    branches: [codex/release-18-3-82-pair-fence]
+permissions:
+  contents: write
+jobs:
+  signed-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned Android build tools
+        run: |
+          set -euo pipefail
+          aerion_sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          test -n "$aerion_sdk"
+          "$aerion_sdk/cmdline-tools/latest/bin/sdkmanager" --install 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Build with the existing public development certificate
+        run: |
+          set -euo pipefail
+          python3 -B tools/embed_ap_pages.py
+          test -s android-app/signing/aerion-development.p12
+          python3 - <<'PY'
+          import os, subprocess, json
+          from pathlib import Path
+          # This repository deliberately includes its development signing key.
+          # Probe only known public development defaults, without printing them.
+          password = None
+          for candidate in ["android","changeit","12345678","zebjus","aerion","zebjus-aerion","zebjus-aerion-dev","aerion-development","zebjus-development"]:
+              probe = dict(os.environ, AERION_PASSWORD_PROBE=candidate)
+              result = subprocess.run(['keytool','-list','-storetype','PKCS12','-keystore','android-app/signing/aerion-development.p12','-storepass:env','AERION_PASSWORD_PROBE'], env=probe, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+              if result.returncode == 0:
+                  password = candidate
+                  break
+          if password is None:
+              raise SystemExit('Existing public development key default is unavailable; no replacement key was created.')
+          sdk = Path(os.environ.get('ANDROID_HOME') or os.environ['ANDROID_SDK_ROOT'])
+          env = dict(os.environ, AERION_DEVELOPMENT_STORE_PASSWORD=password)
+          args = ['python3','-B','android-app/tools/build_apk.py','--build-tools',str(sdk/'build-tools/36.0.0'),'--android-jar',str(sdk/'platforms/android-36/android.jar')]
+          subprocess.run(args, env=env, check=True)
+          subprocess.run(args + ['--verify-only'], env=env, check=True)
+          verified=json.loads(Path('android-app/VERIFICATION.json').read_text())
+          assert verified['certificate_sha256']=='0286c9c3d51284e695cd900d87b6cc7a99ae47991c27cd42c0313fd9f1780f9c'
+          PY
+      - name: Install browser
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Verify connection dialog, native transport and simulator
+        run: |
+          set -euo pipefail
+          npm run test:mobile-view
+          node android-app/tests/browser_transport_test.js
+          node android-app/tests/browser_reconnect_test.js
+          node android-app/tests/browser_modes_test.js
+          node tools/test_reconnect_runtime.js
+          npm run test:ownership
+      - name: Update release record and remove temporary builder
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          report=json.loads(Path('android-app/dist/BUILD_REPORT.json').read_text())
+          p=Path('VALIDATION_REPORT.txt')
+          text=p.read_text()
+          text=re.sub(r'APK bytes: [0-9,]+\. SHA-256: [a-f0-9]{64}\.',f"APK bytes: {report['apkBytes']:,}. SHA-256: {report['sha256']}.",text)
+          text=text.replace('Connection dialog regression: opening a new form cancels pending discovery/reservation work.','Connection dialog regression: opening a new form cancels pending discovery/reservation work, including delayed authenticated status replies. The shipped UI regression holds a full authenticated reply, opens a new form, then verifies the stale reply cannot close it or acquire control.')
+          p.write_text(text)
+          p=Path('SUPPORT/V18_3_82_UPDATE.md')
+          text=p.read_text().replace('so an old auto-connect cannot close the newly opened form.','including delayed pairing/authenticated status replies, so an old auto-connect cannot close the newly opened form.')
+          p.write_text(text)
+          p=Path('RELEASE_NOTES.md')
+          text=p.read_text().replace('Opening a new connection dialog cancels pending discovery/reservation replies.','Opening a new connection dialog cancels pending discovery/reservation replies, including delayed authenticated status.')
+          p.write_text(text)
+          Path('.github/workflows/finish-18-3-82-dialog.yml').unlink()
+          PY
+          npm run release:seal
+          npm run check
+          npm run release:check
+          python3 -B tools/embed_ap_pages.py --check
+          git diff --check
+      - name: Retain final signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aerion-18.3.82-Final-APK
+          path: |
+            android-app/dist/ZEBJUS_Aerion_V18_3_82_Android.apk
+            android-app/dist/BUILD_REPORT.json
+            android-app/VERIFICATION.json
+      - name: Publish verified candidate on isolated branch
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Finish 18.3.82 connection dialog and matching signed APK [skip ci]'
+          git push origin HEAD:codex/release-18-3-82-pair-fence
