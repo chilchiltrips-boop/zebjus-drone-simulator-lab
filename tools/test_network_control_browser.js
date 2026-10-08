@@ -17,6 +17,7 @@ async function api(address,form='',actor='phone'){
  else if(u.pathname==='/api/control/acquire'){if(owner&&owner!==cid)fail(423,'Kit owned by another session');else{owner=cid;role=d.clientRole||'WEB';body={ok:true,deviceId:ID,lockMine:true,controlRole:role,lockTimeoutMs:10000}}}
  else if(u.pathname==='/api/control/ping'){if(owner!==cid)fail(423,'View only')}
  else if(u.pathname==='/api/control/release'){if(owner===cid)owner=role=''}
+ else if(u.pathname==='/api/security/maintenance')body={ok:true};
  else if(u.pathname==='/api/wifi/saved')body={ok:true,profiles:[{ssid:'School',preferred:true}]};
  else if(u.pathname==='/api/wifi/use'){if(owner!==cid)fail(423,'View only');else{mode='STA / LOCAL';owner=role=''}}
  else if(u.pathname==='/api/command'&&d.type==='network_mode_set'){if(owner!==cid)fail(423,'View only');else{mode='AP / DIRECT';owner=role=''}}
@@ -27,7 +28,7 @@ async function api(address,form='',actor='phone'){
 }
 (async()=>{
  const ino=fs.readFileSync(path.join(root,'FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino'),'utf8');
- assert(ino.includes('server.on("/",HTTP_GET,wifiSetupPage)'));assert(ino.includes('server.on("/setup",HTTP_GET,wifiSetupPage)'));assert(ino.includes('server.send(204)'));assert(fs.readFileSync(path.join(root,'FlightCore_Firmware/WIFI_SETUP_PAGE.h'),'utf8').includes('/api/setup/test'));
+ assert(ino.includes('server.on("/",HTTP_GET,wifiSetupPage)'));assert(ino.includes('server.on("/setup",HTTP_GET,wifiSetupPage)'));assert(ino.includes('server.send(204)'));assert(fs.readFileSync(path.join(root,'FlightCore_Firmware/WIFI_SETUP_PAGE.h'),'utf8').includes('/api/wifi/set'));
  for(const rel of ['tools/ap_portal_source.html','tools/ap_io_source.html','tools/ap_fly_source.html','FlightCore_Firmware/AP_ASSETS.h'])assert(!fs.existsSync(path.join(root,rel)),'removed AP asset '+rel);
  server=spawn('python3',[path.join(root,'start_offline.py'),'--no-browser','--port',String(port)],{cwd:root});
  await new Promise((resolve,reject)=>{const t=setTimeout(()=>reject(Error('Server timeout')),10000);server.stdout.on('data',d=>{if(String(d).includes('offline WebApp:')){clearTimeout(t);resolve()}});server.on('error',reject)});
@@ -40,7 +41,7 @@ async function api(address,form='',actor='phone'){
  await laptop.exposeFunction('__observer',()=>({...status('observer'),type:'rc_live',controllerMs:Date.now(),trainingRunId:0,trainingActive:false,outputsBlocked:false,trainingTarget:'NONE',rc:[...rc],rcAgeMs:10,rcSource:source}));
  await laptop.evaluate(()=>{window.__observerTimer=setInterval(async()=>{const t=await window.__observer();zebjusSchool.rcMonitor.packet(t);},100);});
  assert.equal(await laptop.locator('#webTxPowerText').textContent(),'ON');assert.equal(await laptop.evaluate(()=>zebjusSchool.state.txOn),false);assert(await laptop.locator('#topControlToggle').isDisabled(),'mobile ownership makes laptop observer-only');
- await phone.click('#networkMode');await wait(phone,()=>document.getElementById('networkLabel').textContent.includes('STA')&&document.getElementById('controlHint').textContent==='MOBILE SESSION');assert.equal(mode,'STA / LOCAL');assert.equal(await phone.evaluate(()=>__networkCalls.router),1);assert.deepEqual(await phone.evaluate(()=>__routerChoice),{ssid:'School',fromAp:true});assert((await phone.locator('#identityHint').textContent()).includes(ID));assert(await phone.locator('#arm').isDisabled());
+ await phone.click('#networkMode');await wait(phone,()=>document.getElementById('networkLabel').textContent.includes('STA')&&document.getElementById('controlHint').textContent==='MOBILE SESSION');assert.equal(mode,'STA / LOCAL');assert.equal(await phone.evaluate(()=>__networkCalls.router),1);assert.deepEqual(await phone.evaluate(()=>__routerChoice),{ssid:'School',fromAp:true});assert((await phone.locator('#identityHint').textContent()).includes('zebjus_drone_1'));assert(await phone.locator('#arm').isDisabled());
  await phone.click('#networkMode');await wait(phone,()=>document.getElementById('networkLabel').textContent.includes('AP')&&document.getElementById('controlHint').textContent==='MOBILE SESSION');assert.equal(mode,'AP / DIRECT');assert.equal(await phone.evaluate(()=>__networkCalls.ap),1);assert.equal(calls.filter(x=>x.type==='rc_frame').length,0);
  source='PPM';rc=[1720,1370,1450,1600,1000,1000,1000,1000,1500,1000];await phone.click('#kill');await wait(laptop,()=>zebjusSchool.state.remoteTxSource==='PPM'&&!window.__zebjusMobileViewOnly);
  assert.equal(await laptop.locator('#webTxPowerText').textContent(),'ON');assert.equal(await laptop.evaluate(()=>zebjusSchool.state.joy[2]),1450);assert.equal(await laptop.evaluate(()=>zebjusLabAPI.getSimInputOwner()),'receiver');assert.equal(await laptop.evaluate(()=>zebjusSchool.state.txOn),false);assert.equal(calls.filter(x=>x.type==='rc_frame').length,0);

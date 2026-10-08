@@ -1594,8 +1594,8 @@
     },
     {
       "path": "tools/test_expansion_contract.py",
-      "bytes": 5473,
-      "sha256": "0c55cfc32dc20a312ae5bf108ef46c0d87139912143a6215f88a3dd8178081c0"
+      "bytes": 5471,
+      "sha256": "b52abf7e52d6cbdfada3990e7ce55a0551a2e9adefe25140f0c675159c9fea72"
     },
     {
       "path": "tools/test_fc_setup.cpp",
@@ -1684,8 +1684,8 @@
     },
     {
       "path": "tools/test_network_control_browser.js",
-      "bytes": 9070,
-      "sha256": "ecb0d9ac233455bffd7c785478915d629451cddf2518108ae78d6af298bc0c09"
+      "bytes": 9148,
+      "sha256": "080f8372a6fe092682d5093f2e08e08a16eb115cb39eb5a35f4882083f12bcf8"
     },
     {
       "path": "tools/test_offline_browser.js",
