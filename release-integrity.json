@@ -15,7 +15,7 @@
     {
       "path": "FILE_COUNT.txt",
       "bytes": 3,
-      "sha256": "4b9258d432ecb4511cfe5471a58f3feea9e8aa513e1d32294894693827d3b0d4"
+      "sha256": "6950980e3aca96f4dc400eb2e47cc5c343e0d3f483a4e70adcae1d7e6bb22d9c"
     },
     {
       "path": "FlightCore_Firmware/FlightControlMath.h",
@@ -118,11 +118,6 @@
       "sha256": "40b169944c227bf6fb601987da9e67bf4a9f317a600e47f101a3274111083aa5"
     },
     {
-      "path": "THREE-LICENSE.txt",
-      "bytes": 1082,
-      "sha256": "f8ea8e1b14776d862129c02e78297c1de103e958f8212c6c5d594ec07f78f7c9"
-    },
-    {
       "path": "VERSION.txt",
       "bytes": 7,
       "sha256": "f903db14f4e7b51661ccb342d8032265e841b91d29b7d6ce0a9e340fbd1373ba"
@@ -146,11 +141,6 @@
       "path": "android-app/THIRD_PARTY_NOTICES.md",
       "bytes": 600,
       "sha256": "dd61d599837c8f9e91fedb7f7b318f7d0426b82a1ec592344dd9b0485b75e352"
-    },
-    {
-      "path": "android-app/VERIFICATION.json",
-      "bytes": 841,
-      "sha256": "c15839364ec088872ac2ba4e736ac9bd62a82425873b95de44c670299d539e66"
     },
     {
       "path": "android-app/app/build.gradle",
