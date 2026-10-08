@@ -279,8 +279,8 @@
     },
     {
       "path": "RELEASE_NOTES.md",
-      "bytes": 11753,
-      "sha256": "0060d28402919bb8f2763fc788f5021b52c6335aea236b554c06f6afc0c9fbb1"
+      "bytes": 11833,
+      "sha256": "4430b6b14c3335ac98a0c9aa759c8428ff838bbef2bcfe387ff5d1629ef0c5a8"
     },
     {
       "path": "RELEASE_NOTES_V18_3_23.md",
@@ -589,8 +589,8 @@
     },
     {
       "path": "SUPPORT/V18_3_82_UPDATE.md",
-      "bytes": 5179,
-      "sha256": "cc0c6ebf3b5aa96653fd4e670682b1a91ebb6cd96ed879659896a4fce8b1d4d6"
+      "bytes": 5326,
+      "sha256": "568cc293bb2d9a1b7733b7e0469b1c6ac2730fd592457c0912abe457a6561285"
     },
     {
       "path": "SUPPORT/VERIFICATION_V18_3_59.json",
@@ -634,8 +634,8 @@
     },
     {
       "path": "VALIDATION_REPORT.txt",
-      "bytes": 3802,
-      "sha256": "36fcba65ffe9a7b2d7d53c7d3055fa33d6b90dcf7c51f51d345c109190f424fc"
+      "bytes": 4034,
+      "sha256": "d003992b686a16a40a0657eed0338fa0e0cdd4106d37ee44e9acda671b3168c7"
     },
     {
       "path": "VERSION.txt",
@@ -680,7 +680,7 @@
     {
       "path": "android-app/VERIFICATION.json",
       "bytes": 568,
-      "sha256": "3bb4fb802d8039da0162a84f689cfcf83c3a759cb03138f395c932f66434ccf1"
+      "sha256": "29fb58e4577faeca869844831bbf25a795174e5cc660312882708bf6fd85f63d"
     },
     {
       "path": "android-app/app/build.gradle",
@@ -704,8 +704,8 @@
     },
     {
       "path": "android-app/app/src/main/assets/flight/index.html",
-      "bytes": 143121,
-      "sha256": "b54bb064e923a8c96c2053b85760eaade303eb923fef966fcef4f4d1f82acfa5"
+      "bytes": 143181,
+      "sha256": "a194373807c3fbe9adf579c95403fe9629bed918b8554b3e03d6b67ed5ef6a64"
     },
     {
       "path": "android-app/app/src/main/java/in/zebjus/aerion/LaunchPolicy.java",
@@ -775,12 +775,12 @@
     {
       "path": "android-app/dist/BUILD_REPORT.json",
       "bytes": 644,
-      "sha256": "6d6ac0c84882d4e754ee9ea617a2c7b5ac3b78c744fd2c0c200b5a274e7a6da9"
+      "sha256": "a370734d2b194eb397fc7d6629973bcbc73d955598e3da091324c20530d2f8d1"
     },
     {
       "path": "android-app/dist/ZEBJUS_Aerion_V18_3_82_Android.apk",
       "bytes": 2060982,
-      "sha256": "4bd234cee4ee2eddae81e0c82ada43ab7a3c15c2fdf475a17a4c3f61cbb0d347"
+      "sha256": "1d626592b1e53e6dd90d46a84d5d5ccd56104ab918ca731df0c6136d6ad3674d"
     },
     {
       "path": "android-app/gradle/wrapper/gradle-wrapper.jar",
@@ -964,8 +964,8 @@
     },
     {
       "path": "flight/index.html",
-      "bytes": 143073,
-      "sha256": "28e487958f863ae29e63d8cc64c74409eb1e9179c762eb8c3c7331e527e9cb2e"
+      "bytes": 143133,
+      "sha256": "a3b30cb9710f9eadb9ac07ef39baac9f7c388bbd1f0083aff883218fc7978d59"
     },
     {
       "path": "flight/service-worker.js",
@@ -1095,7 +1095,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 44078,
-      "sha256": "8a083363f4c64259819334e2437d494d72954bf1590fcb6f88d873322f59e733"
+      "sha256": "593d44156f5df55ad11dbffef8a15cbcc7ec739fa6cbf01cdaff462bacfaed57"
     },
     {
       "path": "offline-support.js",
@@ -1484,8 +1484,8 @@
     },
     {
       "path": "tools/flight_app_source.html",
-      "bytes": 143073,
-      "sha256": "28e487958f863ae29e63d8cc64c74409eb1e9179c762eb8c3c7331e527e9cb2e"
+      "bytes": 143133,
+      "sha256": "a3b30cb9710f9eadb9ac07ef39baac9f7c388bbd1f0083aff883218fc7978d59"
     },
     {
       "path": "tools/make_offline_manifest.py",
