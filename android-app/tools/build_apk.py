@@ -30,12 +30,14 @@ def main():
     parser.add_argument('--android-jar',type=Path,default=Path(sdk)/'platforms/android-36/android.jar' if sdk else None)
     parser.add_argument('--ecj',type=Path,help='Optional Eclipse compiler JAR when javac is unavailable')
     parser.add_argument('--verify-only',action='store_true',help='Recompile source and compare with the signed APK without signing credentials')
+    parser.add_argument('--unsigned-only',action='store_true',help='Export an aligned APK for signing with a private key outside CI')
     args=parser.parse_args()
     if not args.build_tools or not args.android_jar:parser.error('Set ANDROID_SDK_ROOT or provide --build-tools and --android-jar.')
     tools=args.build_tools.resolve();jar=args.android_jar.resolve()
     for file in (jar,tools/'aapt2',tools/'d8',tools/'zipalign',tools/'apksigner'):
         if not file.is_file():parser.error('Missing Android tool: '+str(file))
-    if not args.verify_only and not os.environ.get('AERION_DEVELOPMENT_STORE_PASSWORD'):parser.error('Set AERION_DEVELOPMENT_STORE_PASSWORD for the existing development certificate.')
+    if args.verify_only and args.unsigned_only:parser.error('Choose only one output mode.')
+    if not (args.verify_only or args.unsigned_only) and not os.environ.get('AERION_DEVELOPMENT_STORE_PASSWORD'):parser.error('Set AERION_DEVELOPMENT_STORE_PASSWORD for the existing development certificate.')
     # Build outside a synced checkout so temporary source/class files cannot
     # enter the compiler inventory while a workspace sync is in progress.
     build=Path(tempfile.mkdtemp(prefix='aerion-android-build-'));dist=ROOT/'dist'
@@ -58,6 +60,17 @@ def main():
     with zipfile.ZipFile(build/'unsigned.apk','a',zipfile.ZIP_DEFLATED) as z:
         for p in dex.glob('*.dex'):z.write(p,p.name)
     run([tools/'zipalign','-f','-p','4',build/'unsigned.apk',build/'aligned.apk'])
+    if args.unsigned_only:
+        unsigned=dist/('ZEBJUS_Aerion_V'+VERSION_NAME.split('-')[0].replace('.','_')+'_Unsigned.apk')
+        shutil.copyfile(build/'aligned.apk',unsigned)
+        run([tools/'zipalign','-c','-p','4',unsigned])
+        with zipfile.ZipFile(unsigned) as z:
+            assert z.testzip() is None and 'classes.dex' in z.namelist()
+            assert z.read('assets/flight/index.html')==(ROOT/'app/src/main/assets/flight/index.html').read_bytes()
+            assert z.read('assets/android-transport.js')==(ROOT/'app/src/main/assets/android-transport.js').read_bytes()
+        print(json.dumps({'unsignedApk':str(unsigned),'sha256':hashlib.sha256(unsigned.read_bytes()).hexdigest(),'version':VERSION_NAME}))
+        shutil.rmtree(build)
+        return
     delivered=dist/APK_NAME;apk=build/APK_NAME
     if args.verify_only:
         shutil.copyfile(delivered,apk)
