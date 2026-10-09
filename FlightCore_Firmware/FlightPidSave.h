@@ -9,7 +9,7 @@ void applyPendingPid(){
 bool securePidCommand(const String& type){
  if(type!="pid_set"&&type!="pid_get")return false;
  if(type=="pid_get"){sendJson(200,"{\"ok\":true,\"pid\":"+pidJson()+",\"pidRevision\":"+String(pidRevision)+",\"savedRevision\":"+String(pidSavedRevision)+",\"saving\":"+String(pidSaveBusy?"true":"false")+"}");return true;}
- if(!FLIGHT_CONTROL_ENABLED||!server.secureContext||setupMode||!securePidPermission()){sendMessage(403,"PID save requires paired STA owner or training laptop permission");return true;}
+ if(!FLIGHT_CONTROL_ENABLED||!server.secureContext||!securePidPermission()){sendMessage(403,"PID save requires paired kit owner or training browser permission");return true;}
  if(armed||benchMode!=BENCH_NONE||firmwareUploadActive||!pidSaveQueue||pidSaveBusy||pidApplyPending){sendMessage(423,"Land and disarm; wait for previous PID save");return true;}
  if(!server.hasArg("pidRevision")||uint32_t(server.arg("pidRevision").toInt())!=pidRevision){sendMessage(409,"PID revision changed; read current kit values before saving");return true;}
  FlightPidSettings next=flightPid;readPidArgs(next);if(!pidConfigValid(next)){sendMessage(400,"PID values outside guarded limits");return true;}

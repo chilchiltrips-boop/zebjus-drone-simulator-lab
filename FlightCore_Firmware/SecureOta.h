@@ -4,7 +4,7 @@ bool secureLayoutReady(){const esp_partition_t* running=esp_ota_get_running_part
 void abortSecureOta(){if(firmwareUploadActive){Update.abort();mbedtls_sha256_free(&otaHash);}firmwareUploadActive=false;otaSession=0;}
 void serviceSecureOta(){if(firmwareUploadActive&&millis()-otaAt>10000)abortSecureOta();}
 void secureOta(const String& p){
- if(!secureOwner()||setupMode||!controlAuthorized()||armed||benchMode!=BENCH_NONE||trainingActive||fcSetupActive){sendMessage(423,"Secure OTA requires STA owner control and an idle, disarmed kit");return;}
+ if(!secureOwner()||!controlAuthorized()||armed||benchMode!=BENCH_NONE||trainingActive||fcSetupActive){sendMessage(423,"Secure OTA requires owner control and an idle, disarmed kit");return;}
  if(p=="/api/firmware/begin"){
   uint32_t n=server.arg("size").toInt();String digest=server.arg("sha256");uint8_t hash[32];
   if(!secureLayoutReady()){sendMessage(409,"USB FACTORY migration required for the larger dual OTA layout");return;}

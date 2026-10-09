@@ -63,13 +63,7 @@ async function flush(){for(let i=0;i<8;i++)await Promise.resolve()}
  const found=await localWindow.ZebjusDroneKit.scanDefaultKits({max:1});assert.equal(found.length,1);assert.equal(found[0].base,'http://192.168.4.1');
  await assert.rejects(localWindow.ZebjusDroneKit.connect('ZFC-FFFFFFFFFFFF','192.168.4.1','ZFC-FFFFFFFFFFFF'),/Device ID mismatch/);
  // The top-bar switch uses actual transport paths and refuses armed/in-use kits.
- sandbox.confirm=()=>true;
- choose({...kit,lockMine:true,locked:true,flightReady:true,armed:false,benchMode:0,mode:'STA / LOCAL'});ctl.st.txOn=false;
- ctl.networkToggleUi();assert.equal($('#topNetworkToggle')['aria-checked'],'false');assert.equal($('#topNetworkToggle').disabled,false);
- await ctl.toggleNetworkMode();assert.equal(commands.at(-1).type,'network_mode_set');assert.equal(commands.at(-1).mode,'AP');assert.match($('#topNetworkNoticeText').textContent,/KIT-AP/);assert.equal(client.connected,false,'STA to AP requires reconnect after the kit restart');
- let used='';client.savedWifi=async()=>({profiles:[{ssid:'School',preferred:true},{ssid:'Other'}]});client.useWifi=async ssid=>{used=ssid;return{ok:true}};
- choose({...kit,lockMine:true,locked:true,flightReady:true,armed:false,benchMode:0,mode:'AP SETUP'});ctl.networkToggleUi();assert.equal($('#topNetworkToggle')['aria-checked'],'true');await ctl.toggleNetworkMode();assert.equal(used,'School');assert.match($('#topNetworkNoticeText').textContent,/STA mode/);
- choose({...kit,lockMine:true,flightReady:true,armed:true,benchMode:0,mode:'STA / LOCAL'});const n=commands.length;await ctl.toggleNetworkMode();assert.equal(commands.length,n,'armed kit must never switch network modes');assert.equal($('#topNetworkToggle').disabled,true);
- choose({...kit,lockMine:true,flightReady:true,armed:false,benchMode:0,mode:'AP SETUP'});client.savedWifi=async()=>({profiles:[{ssid:'A'},{ssid:'B'}]});used='';await ctl.toggleNetworkMode();assert.equal(used,'','multiple profiles without a preference require explicit selection');assert.match($('#topNetworkNoticeText').textContent,/Choose a saved/);
- console.log('PASS: real target / popup-free ARM / RC routing / telemetry ownership / receiver loss / fixed-step timing / clean restart / audio restore / AP discovery / top-bar STA-AP switch');
+ choose({...kit,lockMine:true,locked:true,flightReady:true,armed:false,benchMode:0,mode:'AP / DIRECT'});ctl.st.txOn=false;
+ ctl.networkToggleUi();assert.equal($('#topNetworkToggle')['aria-checked'],'true');const n=commands.length;await ctl.toggleNetworkMode();assert.equal(commands.length,n,'AP-only mode must not send a router switch');assert.match($('#topNetworkNoticeText').textContent,/AP-only/);
+ console.log('PASS: real target / popup-free ARM / RC routing / telemetry ownership / receiver loss / fixed-step timing / clean restart / audio restore / AP discovery / AP-only network control');
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -36,7 +36,7 @@ New third-party Python packages are not automatically available offline. Native 
 
 ## AP, phones and camera access
 
-AP serves the API and a compact Wi-Fi setup page at http://192.168.4.1/setup. Install matching V18.3.82 firmware and APK. The AP uses Kit Name and password 12345678. Laptop uses the local/cached full WebApp; camera requires localhost/HTTPS and permission. For Android joystick simulation, phone, kit and computer share router Wi-Fi; start the simulator in the WebApp. A phone browser Python/vision session needs the full WebApp saved from a suitable HTTPS origin, retained in the same browser/profile. Local kit access remains subject to browser network permission. APK has no Python/camera interface.
+AP serves the API and an AP status page at http://192.168.4.1/setup. Install matching V18.3.83 firmware and APK when their builds become available. The AP uses Kit Name and password 12345678. Laptop uses the local/cached full WebApp; camera requires localhost/HTTPS and permission. For Android joystick simulation, phone and computer both join the kit AP; start the simulator in the WebApp. A phone browser Python/vision session needs the full WebApp saved from a suitable HTTPS origin, retained in the same browser/profile. Local kit access remains subject to browser network permission. APK has no Python/camera interface.
 
 After replacing WebApp files, repeat Save for offline use. The full extracted bundle supports first-run offline use with the local launcher.
 

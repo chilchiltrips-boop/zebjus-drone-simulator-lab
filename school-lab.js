@@ -81,7 +81,7 @@ function updateTopKitStatus(){
  const el=$('#topKitStatus'),d=selected();if(!el)return;
  if(selectedConnected()){const mode=d.lockMine?'CONTROL':d.locked?'VIEW ONLY':'CONNECTED';el.className='top-kit-status online';el.innerHTML=`<i></i><span><b>KIT CONNECTED</b><em>${esc(d.deviceName||'Kit')} • ${mode} • ${esc(d.flightMode||'--')} • ${d.armed?'ARMED':'DISARMED'}</em></span>`;}
  else if(d?.online){el.className='top-kit-status offline';el.innerHTML=`<i></i><span><b>KIT FOUND</b><em>${esc(d.deviceName||d.deviceId)} • press Connect</em></span>`;}
- else{el.className='top-kit-status offline';el.innerHTML='<i></i><span><b>KIT OFFLINE</b><em>Pair a STA kit for training</em></span>';}
+ else{el.className='top-kit-status offline';el.innerHTML='<i></i><span><b>KIT OFFLINE</b><em>Connect to the kit AP for training</em></span>';}
 }
 function targetUi(){
  const mobile=!!window.__zebjusMobileViewOnly;
@@ -121,10 +121,11 @@ let networkSwitchBusy=false;
 function networkNotice(message){setText('wifiMessage',message);setText('topNetworkNoticeText',message);const box=$('#topNetworkNotice');if(box)box.hidden=false}
 function networkToggleUi(){
  const d=selected(),linked=selectedConnected(),ap=linked&&String(d.mode||'').toUpperCase().includes('AP'),button=$('#topNetworkToggle');
- if(button){button.setAttribute('aria-checked',String(!!ap));button.disabled=networkSwitchBusy||!linked||!!d.armed||Number(d.benchMode||0)!==0||!!(d.locked&&!d.lockMine);button.title=!linked?'Connect a kit first':d.armed?'Disarm before switching Wi-Fi mode':d.locked&&!d.lockMine?'Another controller owns this kit':ap?'Activate saved STA Wi-Fi':'Switch this kit to AP'}
+ if(button){button.setAttribute('aria-checked',String(!!ap));button.disabled=networkSwitchBusy||!linked||!!d.armed||Number(d.benchMode||0)!==0||!!(d.locked&&!d.lockMine);button.title='AP-only kit'}
  setText('topNetworkMode',networkSwitchBusy?'SWITCHING…':!linked?'NO KIT':ap?'AP ACTIVE':'STA ACTIVE');
 }
 async function toggleNetworkMode(){
+ networkNotice('AP-only mode is active. Connect the app and browser to this kit AP.');return;
  if(networkSwitchBusy)return;networkSwitchBusy=true;networkToggleUi();
  try{
   if(!selectedConnected()){networkNotice('Connect the selected kit first.');return}
@@ -213,7 +214,7 @@ async function imuRead(){
 }
 const READ_ONLY_DEVICE_COMMANDS=new Set(['ping','pid_get','receiver_read','ppm_read','attitude_read','calibration_get','bench_status','pinmap_get','gps_read','matrix_read','gpio_read','i2c_read']);
 function readOnlyDeviceCommand(command){if(['snapshot_get','flight_settings_get','diagnostics_get','sensor_status','sixface_get','setup_status','setup_end','receiver_setup_get','training_status','training_request','training_stop','training_ping','training_end'].includes(command?.type))return true;return READ_ONLY_DEVICE_COMMANDS.has(String(command?.type||''))}
-function pairedPidWrite(command){const ch=window.ZfcSecurity?.get(client?.base);return command?.type==='pid_set'&&selectedConnected()&&selected()?.trainingActive&&selected()?.outputsBlocked&&String(selected()?.mode).startsWith('STA')&&ch?.info?.pidPermission;}
+function pairedPidWrite(command){const ch=window.ZfcSecurity?.get(client?.base);return command?.type==='pid_set'&&selectedConnected()&&selected()?.trainingActive&&selected()?.outputsBlocked&&String(selected()?.mode).startsWith('AP')&&ch?.info?.pidPermission;}
 function sendDeviceCommand(command){
  const d=selected();if(!d?.online||!client?.connected)return false;const readOnly=readOnlyDeviceCommand(command);if(!readOnly&&!d.lockMine&&!pairedPidWrite(command)){log('VIEW ONLY • Take Control before changing the real kit.');return false}
  const type=String(command?.type||''),sent=Date.now();st.lastCommandSentAt=sent;updateHealthUi();client.command(command).then(r=>{st.lastCommandAckAt=Date.now();if(r?.packet)api()?.receiveDevicePacket(r.packet);else if(r)api()?.receiveDevicePacket(r);if(r?.message)log(r.message);window.dispatchEvent(new CustomEvent('zebjus-device-command-result',{detail:{ok:true,type,response:r,sentAt:sent,ackAt:st.lastCommandAckAt}}));updateHealthUi()}).catch(e=>{st.lastCommandErrorAt=Date.now();simpleError(e.message);window.dispatchEvent(new CustomEvent('zebjus-device-command-result',{detail:{ok:false,type,error:e?.message||String(e),sentAt:sent}}));if(e.status===423||e.status===409)healthRefresh(true);updateHealthUi()});return true
@@ -356,7 +357,7 @@ async function startWebSimulator(target){
    if(found.active&&found.controller==='APP'&&found.target===target&&found.outputsBlocked&&webAppMatches(found)){upsertStatus({...d,trainingActive:true,trainingController:'APP',trainingTarget:target,trainingRunId:found.runId,trainingWebAppId:found.trainingWebAppId,outputsBlocked:true},base);statusUi();networkNotice('Android joystick connected. ARM in the app; physical motors are blocked.');return found;}
    if(!found.requesting&&!(found.active&&found.target===target))throw Error('Simulator request expired. Keep the Android joystick open and start again.');
   }
-  throw Error('Android joystick did not join. Keep the app open on the same router Wi-Fi and start again.');
+  throw Error('Android joystick did not join. Keep the app and computer on the kit AP and start again.');
  }catch(error){try{await commandDevice({type:'training_stop'})}catch{}throw error;}
  finally{st.appSimulatorPending=false;statusUi();}
 }

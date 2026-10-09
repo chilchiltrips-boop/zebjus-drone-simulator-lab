@@ -39,7 +39,7 @@
   const button=document.createElement('button');button.id='androidWifi';button.className='primary';button.textContent='Real flight · Kit AP';button.onclick=android.joinWifi;
   const choices=document.createElement('div');choices.className='connection-choices';document.querySelector('#connectDialog .dialog-head').after(choices);choices.append(button);
   const router=document.createElement('button');router.id='androidRouterWifi';router.className='primary';router.textContent='Router Wi-Fi · STA';router.onclick=android.joinRouter;choices.append(router);
-  const version=document.createElement('p');version.id='androidAppVersion';version.className='note';version.textContent='Android 18.3.82-android.1 · Saved kit pairing is kept on update.';choices.before(version);
+  const version=document.createElement('p');version.id='androidAppVersion';version.className='note';version.textContent='Android 18.3.83-android.1 · Saved kit pairing is kept on update.';choices.before(version);
   const settings=document.createElement('button');settings.id='androidWifiSettings';settings.className='secondary';settings.textContent='Phone Wi-Fi settings (STA / Android 8–9)';settings.onclick=android.openWifi;choices.after(settings);
   document.getElementById('pairMessage').textContent='Choose Kit AP for direct joystick control or Router Wi-Fi for the web simulator. Training uses the same router as the paired STA kit and WebApp, and starts its simulator from the WebApp. Kit AP password: 12345678. Updated AP firmware pairs automatically; router mode keeps owner pairing. Use Phone Wi-Fi settings if the router is not connected.';
   document.querySelector('#settingsDialog .links').hidden=true;

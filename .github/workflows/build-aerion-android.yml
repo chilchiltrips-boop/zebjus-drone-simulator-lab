@@ -89,17 +89,19 @@ jobs:
           java -cp build/core-tests in.zebjus.aerion.SimulationGapTest
           java -cp build/core-tests in.zebjus.aerion.NativeRcStreamTest
           java -cp build/core-tests in.zebjus.aerion.RouterNetworkPolicyTest
-      - name: Recompile and verify delivered development APK
+      - name: Build and sign development APK
+        env:
+          AERION_DEVELOPMENT_STORE_PASSWORD: ${{ secrets.AERION_DEVELOPMENT_STORE_PASSWORD }}
         run: |
           set -euo pipefail
           aerion_sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
-          python3 tools/build_apk.py --verify-only --build-tools "$aerion_sdk/build-tools/36.0.0" --android-jar "$aerion_sdk/platforms/android-36/android.jar"
+          python3 tools/build_apk.py --build-tools "$aerion_sdk/build-tools/36.0.0" --android-jar "$aerion_sdk/platforms/android-36/android.jar"
       - uses: actions/upload-artifact@v4
         with:
           name: Aerion-Android-APK
           if-no-files-found: error
           path: |
-            android-app/dist/ZEBJUS_Aerion_V18_3_82_Android.apk
+            android-app/dist/ZEBJUS_Aerion_V18_3_83_Android.apk
             android-app/dist/BUILD_REPORT.json
             android-app/dist/APK_SIGNATURE.txt
             android-app/dist/APK_MANIFEST.txt

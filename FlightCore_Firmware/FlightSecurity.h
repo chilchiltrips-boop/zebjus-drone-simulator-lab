@@ -87,12 +87,13 @@ bool securePermission(const String& path){
  if(secureCurrent->credential=="AP_WIFI"&&secureCurrent->role=="WEB"&&path=="/api/control/acquire"&&controlRole=="MOBILE"&&!lockMine(secureCurrent->client)){sendMessage(423,"App controls this kit; web is view-only");return false;}
  bool maintenance=(int32_t)(secureMaintenanceUntil[secureCurrent-secureSessions]-millis())>0;
  bool ok=ZfcSecure::permitted(secureOwner(),setupMode,maintenance,!armed&&benchMode==BENCH_NONE,path.c_str(),server.arg("type").c_str());
- if(!ok)sendMessage(403,setupMode?"AP supports joystick and STOP; use STA for training/PID or open disarmed Wi-Fi maintenance":"Laptop permission does not include control, ARM or administration");return ok;
+ if(!ok)sendMessage(403,setupMode?"Connect to the kit AP and use an authenticated app/WebApp session":"Laptop permission does not include control, ARM or administration");return ok;
 }
 
 #include "SecureOta.h"
 void secureDispatch(const String& p){
  if(!securePermission(p))return;
+ if(p.startsWith("/api/wifi/")||p.startsWith("/api/setup/test")){sendMessage(410,"Router Wi-Fi setup was removed; connect to the kit AP");return;}
  if(p=="/api/firmware/begin"||p=="/api/firmware/chunk"||p=="/api/firmware/end"){secureOta(p);return;}
  if(trainingActive&&trainingAppOwned&&secureCurrent->client!=controlOwner&&!scopedTrainingBrowser()&&(p=="/api/telemetry"||p=="/api/command"&&server.arg("type")!="training_status"&&server.arg("type")!="pid_get")){sendMessage(403,"This training run is bound to another WebApp");return;}
  if(p=="/api/webapp/register"||p=="/api/webapp/unregister"){webAppRegister(p.endsWith("unregister"));return;}

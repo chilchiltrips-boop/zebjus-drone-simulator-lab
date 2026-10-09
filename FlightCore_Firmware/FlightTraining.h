@@ -18,7 +18,7 @@ bool trainingCommand(const String& type){
  if(type=="training_status"){sendJson(200,trainingJson());return true;}
  if(!server.arg("expectedDeviceId").equalsIgnoreCase(deviceId)){sendMessage(409,"Exact Device ID is required for training");return true;}
  if(type=="training_request"||type=="training_stop"){
-  uint32_t browser=requestingWebAppId();if(setupMode||!browser){sendMessage(403,"Connect this WebApp to the same STA kit first");return true;}
+  uint32_t browser=requestingWebAppId();if(!browser){sendMessage(403,"Connect this WebApp to the same kit AP first");return true;}
   if(type=="training_stop"){
    if(trainingActive&&!scopedTrainingBrowser()){sendMessage(403,"Another WebApp owns this simulator");return true;}
    if(trainingRequestLive()&&browser!=trainingRequestWebAppId){sendMessage(403,"Another WebApp requested this simulator");return true;}
@@ -34,7 +34,6 @@ bool trainingCommand(const String& type){
  const String token=server.arg("session"),owner=server.arg("clientId");if(!setupTokenValid(token)){sendMessage(400,"Unique training session is required");return true;}
  if(type=="training_end"){cancelTrainingToken(token);if(trainingActive&&trainingSession==token&&trainingOwner==owner)finishTraining();sendJson(200,trainingJson());return true;}
  if(type=="training_begin"||type=="training_select"){
-  if(setupMode){sendMessage(403,"Training requires STA router Wi-Fi; AP is joystick only");return true;}
   if(!requireControl())return true;
   const bool select=type=="training_select";if(select&&controlRole!="MOBILE"){sendMessage(403,"App mode selection requires the mobile control grant");return true;}
   String target=server.arg("target");if(!select&&!target.length())target="FLIGHT";if(target!="TRIPOD"&&target!="FLIGHT"&&!(select&&target=="REAL")){sendMessage(400,"Choose REAL, TRIPOD or FLIGHT");return true;}

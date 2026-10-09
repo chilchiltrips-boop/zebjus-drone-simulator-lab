@@ -1,10 +1,10 @@
 /* Virtual sensors enter the paired FC. Returned motor values stay in virtual physics. */
 (function(w){'use strict';
 let binding='',engine='WEB',run=0,sequence=0,inFlight=false,output=null,at=0,source=null,lastSent=0,generation=0,acceptedSensorSeq=0;
-function kit(){const s=w.zebjusSchool,d=s?.getSelectedDevice?.();return s?.isSelectedConnected?.()&&d&&String(d.mode).startsWith('STA')&&w.ZfcSecurity?.get(s.client.base)&&Date.now()-(w.ZfcSecurity.get(s.client.base).lastReceive||0)<1500?d:null;}
+function kit(){const s=w.zebjusSchool,d=s?.getSelectedDevice?.();return s?.isSelectedConnected?.()&&d&&String(d.mode).startsWith('AP')&&w.ZfcSecurity?.get(s.client.base)&&Date.now()-(w.ZfcSecurity.get(s.client.base).lastReceive||0)<1500?d:null;}
 function allowed(target){const d=kit();return !!d&&w.zebjusSchool?.webAppMatches?.(d)&&d.trainingActive&&d.outputsBlocked===true&&d.trainingTarget===target&&d.trainingController==='APP';}
 async function select(value,target){
- const d=kit();if(!allowed(target))throw Error('Connect and pair the STA kit; select '+target+' in the app first.');
+ const d=kit();if(!allowed(target))throw Error('Connect and pair the kit AP; select '+target+' in the app first.');
  if(value==='FC_PID'&&d.boardId!=='ZFC-A2')throw Error('This kit uses the laptop engine. Advanced Kit PID requires A2.');
  const g=++generation;output=null;at=0;sequence=0;acceptedSensorSeq=0;run=d.trainingRunId;binding=d.deviceId;source=target;
  const r=await w.zebjusSchool.client.command({type:'training_engine',engine:value,runId:run});

@@ -5,10 +5,10 @@
 <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content" name="viewport"/>
 <meta content="#07111b" name="theme-color"/>
 <title>ZEBJUS Aerion</title>
-<script src="wix-embed.js?v=18.3.82-web.1"></script>
-<link href="styles.css?v=18.3.82-r1" rel="stylesheet"/><link href="lab-workflow.css?v=18.3.82-web.1" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
-<link href="wix-embed.css?v=18.3.82-web.1" rel="stylesheet"/>
-<link href="flight-training.css?v=18.3.82-web.1" rel="stylesheet"/>
+<script src="wix-embed.js?v=18.3.83-web.1"></script>
+<link href="styles.css?v=18.3.83-r1" rel="stylesheet"/><link href="lab-workflow.css?v=18.3.83-web.1" rel="stylesheet"/><link href="manifest.webmanifest" rel="manifest"/>
+<link href="wix-embed.css?v=18.3.83-web.1" rel="stylesheet"/>
+<link href="flight-training.css?v=18.3.83-web.1" rel="stylesheet"/>
 <link href="icon-192.png" rel="apple-touch-icon"/>
 <meta content="#07111b" name="theme-color"/>
 </head>
@@ -19,8 +19,8 @@
 <header class="topbar">
 <div id="webAppLink" class="webapp-link"><span><b>KIT <output id="webAppIdValue">------</output></b><em id="webAppIdNote">Connect the same kit as your Android joystick.</em></span></div>
 <div class="topbar-main">
-<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS Aerion</b><span>V18.3.82 • Build · Code · Fly</span></div></div>
-<div class="top-network-control"><span>STA</span><button id="topNetworkToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Switch kit between STA and AP" disabled><i></i></button><span>AP</span><b id="topNetworkMode">NO KIT</b></div>
+<div class="brand"><div class="logo">Z</div><div><b>ZEBJUS Aerion</b><span>V18.3.83 • Build · Code · Fly</span></div></div>
+<div class="top-network-control" hidden><span>STA</span><button id="topNetworkToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Switch kit between STA and AP" disabled><i></i></button><span>AP</span><b id="topNetworkMode">NO KIT</b></div>
 <div class="top-control-control"><span>Take control</span><button id="topControlToggle" class="network-toggle" type="button" role="switch" aria-checked="false" aria-label="Take or release kit control" disabled><i></i></button><b id="topControlState">OFF</b></div>
 <span class="top-kit-status offline" id="topKitStatus" title="Real kit connection status"><i></i><span><b>KIT OFFLINE</b><em>Simulation ready</em></span></span>
 <a class="zebjus-top-shop" href="https://www.zebjus.in/category/all-products" rel="noopener" target="_blank"><span>BUILD IT FOR REAL</span><b>Shop components ↗</b></a>
@@ -411,12 +411,12 @@
 <progress class="offline-progress" id="offlineProgress" value="0" max="1" aria-label="Offline save progress"></progress>
 <p class="micro-note" id="offlineStatus" role="status" aria-live="polite">Local files are included. Check here before saving a browser offline copy.</p>
 <small class="micro-note" id="offlineSize">The browser copy uses space on this device.</small>
-</section><section class="form-card">
+</section><section class="form-card" style="display:none!important">
 <div class="panel-head"><div><small>NETWORK / STA</small><h2>Kit Wi-Fi settings</h2></div></div>
 <div class="settings-network-summary" id="settingsNetworkSummary">Connect a kit to view STA details.</div><div class="button-row"><button class="btn ghost" id="scanWifiBtn">Scan Wi-Fi</button><button class="btn danger ghost" id="resetWifiBtn">Forget All Wi-Fi</button></div>
 <div class="callout"><b>Direct AP, no case button needed</b><p>The AP uses the Kit Name. Use password 12345678. Switch to AP while disarmed, or the kit enters AP if saved Wi-Fi is unavailable. After joining that Wi-Fi, open the installed Aerion Flight app or your locally running web lab. AP stays selected across power cycles.</p></div><div class="button-row"><button class="btn ghost" id="showApCredentialsBtn">Show this kit's AP details</button><button class="btn ghost" id="switchApBtn">Switch selected kit to AP</button></div><span class="micro-note" id="apCredentials">Select a verified kit and Take Control to display its AP details.</span>
 <label>Wi-Fi network<select id="wifiSelect"><option value="">Connect kit first</option></select></label>
-<label>Wi-Fi name / SSID<input id="wifiSsidManual" value="keralavision_binu_1384" placeholder="Exact Wi-Fi name" autocomplete="off" maxlength="32"/></label>
+<label>Wi-Fi name / SSID<input id="wifiSsidManual" placeholder="Exact Wi-Fi name" autocomplete="off" maxlength="32"/></label>
 <label>Wi-Fi password<input autocomplete="new-password" id="wifiPassword" placeholder="Password" type="password"/></label>
 <button class="btn primary full" id="saveWifiBtn">Test &amp; save Wi-Fi</button>
 <p class="micro-note">In AP mode, the kit tests the 2.4 GHz Wi-Fi before saving. After success, join that network on this computer and reconnect the kit. Allow Local Network Access for this site in Chrome/Edge.</p>
@@ -432,27 +432,27 @@
 <div class="form-card"><div class="panel-head"><div><small>PERFORMANCE / STARTUP</small><h2>Runtime diagnostics</h2></div></div><label>Graphics profile<select id="performanceMode"><option value="high">High quality</option><option selected="" value="balanced">Balanced</option><option value="low">Low-end laptop</option></select></label><button class="btn ghost full" id="applyPerformanceBtn">Apply graphics profile</button><pre class="terminal mini" id="startupDiagnostics">Collecting diagnostics…</pre></div>
 </div></section>
 </main></div>
-<script src="ui-runtime.js?v=18.3.82-r1"></script>
-<script src="offline-support.js?v=18.3.82-r1"></script>
-<script src="rc-live.js?v=18.3.82-web.1"></script>
+<script src="ui-runtime.js?v=18.3.83-r1"></script>
+<script src="offline-support.js?v=18.3.83-r1"></script>
+<script src="rc-live.js?v=18.3.83-web.1"></script>
 <script src="vendor/crypto/zfc-crypto.js"></script>
 <script src="kit-security.js"></script>
-<script src="kit-local.js?v=18.3.82-net.2"></script>
-<script src="control-sticks.js?v=18.3.82-r1"></script>
-<script src="receiver-wizard.js?v=18.3.82-web.1"></script>
-<script src="pid-tuning.js?v=18.3.82-web.1"></script>
-<script src="fc-setup.js?v=18.3.82-web.1"></script>
-<script src="kit-console.js?v=18.3.82-r1"></script>
-<script src="lab-workflow.js?v=18.3.82-web.1"></script>
-<script src="telemetry-cockpit.js?v=18.3.82-web.1"></script>
-<script src="flight-training-core.js?v=18.3.82-web.1"></script>
-<script src="flight-training-input.js?v=18.3.82-web.1"></script>
-<script type="module" src="flight-training.js?v=18.3.82-web.1"></script>
-<script src="flight-recorder.js?v=18.3.82-r4"></script>
-<script src="flight-diagnostics.js?v=18.3.82-r1"></script>
-<script src="app.js?v=18.3.82-web.1" type="module"></script>
+<script src="kit-local.js?v=18.3.83-net.2"></script>
+<script src="control-sticks.js?v=18.3.83-r1"></script>
+<script src="receiver-wizard.js?v=18.3.83-web.1"></script>
+<script src="pid-tuning.js?v=18.3.83-web.1"></script>
+<script src="fc-setup.js?v=18.3.83-web.1"></script>
+<script src="kit-console.js?v=18.3.83-r1"></script>
+<script src="lab-workflow.js?v=18.3.83-web.1"></script>
+<script src="telemetry-cockpit.js?v=18.3.83-web.1"></script>
+<script src="flight-training-core.js?v=18.3.83-web.1"></script>
+<script src="flight-training-input.js?v=18.3.83-web.1"></script>
+<script type="module" src="flight-training.js?v=18.3.83-web.1"></script>
+<script src="flight-recorder.js?v=18.3.83-r4"></script>
+<script src="flight-diagnostics.js?v=18.3.83-r1"></script>
+<script src="app.js?v=18.3.83-web.1" type="module"></script>
 <script src="fc-training-bridge.js"></script>
-<script src="school-lab.js?v=18.3.82-web.1"></script>
-<script src="hardware-io.js?v=18.3.82-r1"></script>
-<script src="firmware-updater.js?v=18.3.82-r4"></script>
+<script src="school-lab.js?v=18.3.83-web.1"></script>
+<script src="hardware-io.js?v=18.3.83-r1"></script>
+<script src="firmware-updater.js?v=18.3.83-r4"></script>
 </body></html>

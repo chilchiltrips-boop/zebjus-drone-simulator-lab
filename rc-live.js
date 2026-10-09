@@ -7,8 +7,7 @@
   get live(){return this.state==='live'&&Date.now()-this.receivedAt<STALE_MS;}
   setState(state,message){if(this.state===state)return;this.state=state;this.event({kind:'rc-monitor',state,message,deviceId:this.deviceId,transport:this.protocol||'NDJSON1'});}
   update(base,id,info){
-   const ap=String(info?.mode||'').toUpperCase().startsWith('AP');
-   if(ap){if(this.state==='http'&&!this.binding)return;this.stop();this.protocol='HTTP';this.stats={protocol:'HTTP',frames:0,reconnects:0,invalidFrames:0,lastError:''};this.setState('http','Kit AP uses HTTP telemetry; live simulator monitoring starts on router Wi-Fi.');return;}
+   // The authenticated monitor runs on the kit AP as well as on legacy STA kits.
    const next=base&&id&&['NDJSON1','ZFC3_NDJSON'].includes(info?.rcMonitorProtocol)&&Number(info.rcMonitorPort)===4211?base+'|'+id:'';
    if(next===this.binding||next===this.blockedBinding)return;this.stop();if(!next)return;
    this.binding=next;this.base=base;this.deviceId=id;this.protocol=info.rcMonitorProtocol;this.stats={protocol:this.protocol,frames:0,reconnects:0,invalidFrames:0,lastError:''};this.connect();
@@ -21,7 +20,7 @@
    try{
     timer=setTimeout(()=>ctl.abort(),5000);
     const response=await fetch(url.href,{signal:ctl.signal,cache:'no-store',targetAddressSpace:'local'});
-    if([403,404,409].includes(response.status)){this.blockedBinding=this.binding;this.binding='';throw Error('Live RC monitor permission unavailable. HTTP telemetry remains available; reconnect this paired WebApp on router Wi-Fi.');}
+    if([403,404,409].includes(response.status)){this.blockedBinding=this.binding;this.binding='';throw Error('Live RC monitor permission unavailable. Reconnect this paired WebApp to the kit AP.');}
     if(!response.ok||!response.body?.getReader)throw Error('Live RC monitor unavailable; waiting with backoff.');
     clearTimeout(timer);let lastRead=Date.now();timer=setInterval(()=>{if(Date.now()-lastRead>STALE_MS)ctl.abort();},200);
     reader=response.body.getReader();const decoder=new TextDecoder();

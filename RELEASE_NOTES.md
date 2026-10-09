@@ -1,3 +1,9 @@
+# ZEBJUS Aerion V18.3.83 — direct AP control and training
+
+The FlightCore now starts the kit AP on every boot, including when an older router profile exists. Android joystick and an offline WebApp on a computer join the same AP; browser registration, encrypted live RC observation, simulator selection and virtual FC PID run on that local link. Manual ARM, output inhibition and exact WebApp binding are retained. Router provisioning and network switching are removed from the visible app and WebApp workflow. An owner on the AP can update a matching application image through encrypted OTA while idle and disarmed.
+
+Previously compiled 18.3.82 firmware images and APK are not this release; the build workflows will replace them. Real hardware RF, physical flash and flight tests are still outstanding.
+
 # ZEBJUS Aerion V18.3.82 — AP/STA recovery and Android connection
 
 Stop timed-out STA association before scanning and retry the preferred profile. Preserve transient AP fallback without persisting AP preference, retry the router only when recovery AP is idle, and report real STA disconnect reasons. Keep AP scan radio stable; reuse manually joined matching Android APs and accept selected local router LANs without Internet. Record native network/connection failures, reclaim idle released MOBILE sessions, and skip the STA-only live monitor on AP. Rebuild the matching signed Android APK and both board firmware packages; preserve manual ARM, exact kit identity, control ownership and simulator output inhibition.

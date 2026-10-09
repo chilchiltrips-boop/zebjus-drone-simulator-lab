@@ -13,7 +13,7 @@ String virtualTrainingJson(){float motors[4];bool a;uint32_t seq,at;portENTER_CR
 }
 bool virtualTrainingCommand(const String& type){
  if(type!="training_sensor"&&type!="training_engine")return false;
- if(!FLIGHT_CONTROL_ENABLED||setupMode||!server.secureContext||!trainingActive||armed||benchMode!=BENCH_NONE||!trainingAppOwned||server.arg("runId").toInt()!=trainingRunId){sendMessage(423,"FC PID training needs a paired STA kit, active app run and blocked physical outputs");return true;}
+ if(!FLIGHT_CONTROL_ENABLED||!server.secureContext||!trainingActive||armed||benchMode!=BENCH_NONE||!trainingAppOwned||server.arg("runId").toInt()!=trainingRunId){sendMessage(423,"FC PID training needs a paired kit, active app run and blocked physical outputs");return true;}
  if(type=="training_engine"){
   String engine=server.arg("engine");if(engine!="FC_PID"&&engine!="WEB"){sendMessage(400,"Choose WEB or FC_PID");return true;}
   if(virtualSensorOwner.length()&&virtualSensorOwner!=server.arg("clientId")){sendMessage(423,"Another paired laptop owns the sensor bridge");return true;}
