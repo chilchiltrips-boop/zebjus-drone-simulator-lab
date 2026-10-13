@@ -1,6 +1,6 @@
 {
   "version": "18.3.84",
-  "totalBytes": 115914880,
+  "totalBytes": 115916625,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -50,7 +50,7 @@
     {
       "path": "app.js",
       "bytes": 317923,
-      "sha256": "99f528500bef3c024fe9caba88764481722eb10c4cd0d5cbde4b6cbba78d5fa0"
+      "sha256": "a849335f4a923ed20aaaeafe11c4641e1efadd406c2a6c44cc9cbf04999c5661"
     },
     {
       "path": "battery_strap.glb",
@@ -124,8 +124,8 @@
     },
     {
       "path": "firmware-updater.js",
-      "bytes": 37262,
-      "sha256": "734d2f4ed41c62a4b664a9a928211ce0b5149b1d0e63c34365ddbf05d5f32257"
+      "bytes": 37530,
+      "sha256": "f12cbe2ef92989bb3eab2ca764aba69991e81dc13f487795d7ee09c5d460287c"
     },
     {
       "path": "flight/app.webmanifest",
@@ -134,8 +134,8 @@
     },
     {
       "path": "flight/index.html",
-      "bytes": 143135,
-      "sha256": "ff2326a67fa6592011550a26df3572b94634396486cc879d3b46b9c4d4a4dc13"
+      "bytes": 143116,
+      "sha256": "e4999d1ee0ec760c228ddeee5edcb991ff97feba0a11abadc5d30fc01f83192e"
     },
     {
       "path": "flight/service-worker.js",
@@ -219,13 +219,13 @@
     },
     {
       "path": "kit-local.js",
-      "bytes": 23617,
-      "sha256": "873e4ab0cb8427ba477f01e92d76f9a743a1f1a3adc294cf94933b015d9462b1"
+      "bytes": 23659,
+      "sha256": "5a4bcbadc71607e4173af52f83c47e6de7e80022c08a1f42a2f24e900c600fa9"
     },
     {
       "path": "kit-security.js",
-      "bytes": 9174,
-      "sha256": "68865495b6b9ac1a7b445e557ebf186b5c01048b84c89643b975d7e67923ec95"
+      "bytes": 9155,
+      "sha256": "1f481a50acc2fae43e55987eb3074efd6c72038f5ad0d1ea42dc68cf90edd83b"
     },
     {
       "path": "lab-workflow.css",
@@ -419,8 +419,8 @@
     },
     {
       "path": "server.js",
-      "bytes": 2028,
-      "sha256": "def37932b920d39cc979df6831fcbf671f4ed8beef0a2068ea7faba629718e92"
+      "bytes": 3501,
+      "sha256": "0e469735c196c62f5062e796e51d463b5621f6b99cdc3e1272ce76508cf16c8b"
     },
     {
       "path": "styles.css",
