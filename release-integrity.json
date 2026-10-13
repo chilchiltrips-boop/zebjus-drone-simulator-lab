@@ -1604,8 +1604,8 @@
     },
     {
       "path": "tools/test_expansion_contract.py",
-      "bytes": 5471,
-      "sha256": "b52abf7e52d6cbdfada3990e7ce55a0551a2e9adefe25140f0c675159c9fea72"
+      "bytes": 5593,
+      "sha256": "65cf2b2bbbbff777dc2d79980a4232f5b95071fcf41192c03aae7e2732cbc3cb"
     },
     {
       "path": "tools/test_fc_setup.cpp",

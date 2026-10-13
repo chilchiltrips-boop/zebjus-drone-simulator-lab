@@ -95,7 +95,9 @@ else:
 assert 'server.on("/io",HTTP_GET,sendIoPage)' not in ino
 assert 'server.on("/",HTTP_GET,wifiSetupPage)' in ino
 assert 'server.on("/setup",HTTP_GET,wifiSetupPage)' in ino
-assert '/api/wifi/set' in (ROOT/'FlightCore_Firmware/WIFI_SETUP_PAGE.h').read_text()
+portal=(ROOT/'FlightCore_Firmware/WIFI_SETUP_PAGE.h').read_text()
+assert '/api/setup/test' in portal and '/api/setup/test/status' in portal
+assert 'profileSaved' in portal and 'connectionVerified' in portal
 assert 'DNSServer' not in ino
 assert 'ledcAttachChannel(pin,250,12,i)' in ino and 'ledcAttachChannel(pin,50,12,4)' in ino
 assert ino.count('requireControl()')>=1
