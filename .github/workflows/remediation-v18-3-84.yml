@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - audit/remediation-v18.3.84
+      - fix/ap-owner-take-control
 permissions:
   contents: write
 concurrency:
