@@ -6,7 +6,7 @@ const source=fs.readFileSync('kit-security.js','utf8'),local=fs.readFileSync('ki
 const ID='ZFC-001122334455',NAME='zebjus_drone_1',BASE='http://192.168.4.1',CLIENT='WEB-OWNER-UPGRADE-TEST',OWNER='AB'.repeat(16);
 let responseCode=OWNER,dialogs=0,rejectPermission=false,actions=[];
 const dom={body:{append(){}},createElement(){
- const input={value:responseCode},label={textContent:''};
+ const input={value:responseCode??''},label={textContent:''};
  return{querySelector:q=>q==='input'?input:label,addEventListener(event,cb){if(event==='close')this.close=cb},showModal(){dialogs++;queueMicrotask(()=>{this.returnValue=responseCode===null?'cancel':'pair';this.close()})},remove(){}};
 }};
 const win={ZfcCrypto:Crypto,crypto:{getRandomValues:a=>a.fill(7),randomUUID:()=>CLIENT},dispatchEvent(){}};
