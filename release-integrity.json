@@ -14,8 +14,8 @@
     },
     {
       "path": ".github/workflows/remediation-v18-3-84.yml",
-      "bytes": 3434,
-      "sha256": "8853d96f7d636596b68c0f2f96cb2ee4e7228211d858ea7f174cf1a8c6eb1569"
+      "bytes": 3653,
+      "sha256": "59b4b30266cbd46333fe777701ebcbeb440d1cbb5944aed028261bbe2f01f924"
     },
     {
       "path": ".github/workflows/verify-kit-stages.yml",
