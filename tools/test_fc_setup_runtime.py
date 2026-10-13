@@ -12,6 +12,7 @@ def function(source,name):
  return source[start:end]
 prefix=r'''
 #include <cstdint>
+constexpr int WT_RUNNING=1;int wifiTestState=0;
 #include <cstdlib>
 #include <cmath>
 #include <cassert>
@@ -44,6 +45,7 @@ void allMotorPulse(int p){for(int i=0;i<4;i++)writeEscMicroseconds(i,p);}
 '''
 checks=r'''
 int main(){
+ wifiTestState=WT_RUNNING;armed=true;uint16_t wifiRc[10]={1500,1500,1000,1500,2000,1000};serviceArming(wifiRc);assert(!armed);wifiTestState=0;
  trainingActive=true;armed=true;benchMode=BENCH_MOTOR;benchPulse=1250;benchUntilMs=9000;for(int i=0;i<4;i++){writeEscMicroseconds(i,1800);assert(outputs[i]==1000);}serviceBenchMode();assert(benchMode==BENCH_NONE);uint16_t trainRc[10]={1500,1500,1000,2000,2000,1000};serviceArming(trainRc);assert(!armed);trainingActive=false;
 
  uint16_t rc[10]={1500,1500,1000,1500,1000,1000,1000,1000,1500,1000};

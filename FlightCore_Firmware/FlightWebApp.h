@@ -10,7 +10,7 @@ bool bindTrainingWebApp(const String& id){
  xSemaphoreTake(secureMutex,portMAX_DELAY);auto* e=webAppRegistry.resolve(n,millis());auto* s=e?secureFind(e->session):nullptr;
  bool ok=s&&(s->role=="WEB"||s->role=="COMPANION");if(ok){portENTER_CRITICAL(&stateMux);trainingWebSession=s->id;trainingWebAppId=n;trainingObserverAt=millis();portEXIT_CRITICAL(&stateMux);}xSemaphoreGive(secureMutex);return ok;
 }
-// Called with secureMutex held. AP has no browser RC observer traffic.
+// Called with secureMutex held. AP and STA observers share the same authenticated browser scope.
 bool secureMonitorAllowed(uint64_t sid){uint64_t bound;portENTER_CRITICAL(&stateMux);bound=trainingWebSession;portEXIT_CRITICAL(&stateMux);auto* session=secureFind(sid);if(!session)return false;if((session->role=="WEB"||session->role=="COMPANION")&&!webAppRegistry.find(sid,millis()))return false;return !trainingActive||!trainingAppOwned||sid==bound;}
 void secureMonitorSeen(uint64_t sid){if(auto* s=secureFind(sid))s->lastActivity=millis();webAppRegistry.touch(sid,millis());portENTER_CRITICAL(&stateMux);if(sid==trainingWebSession)trainingObserverAt=millis();portEXIT_CRITICAL(&stateMux);}
 void webAppRegister(bool remove){

@@ -23,11 +23,11 @@ struct String:std::string{using std::string::string;using std::string::operator=
 struct Preferences{std::map<std::string,std::map<std::string,String>> data;std::string ns;bool fail=false;
  bool begin(const char* n,bool){ns=n;return !fail;}void end(){}String getString(const char* k,const char* f){return data[ns].count(k)?data[ns][k]:String(f);}bool getBool(const char* k,bool f){return getString(k,f?"1":"0")=="1";}unsigned char getUChar(const char* k,unsigned char f){return std::stoi(getString(k,std::to_string(f).c_str()));}
  void putString(const char* k,const String& v){if(!fail)data[ns][k]=v;}void putBool(const char* k,bool v){putString(k,v?"1":"0");}void putUChar(const char* k,int v){putString(k,std::to_string(v));}void clear(){data[ns].clear();}void remove(const char* k){data[ns].erase(k);}}prefs;
-constexpr int MAX_WIFI=5,WT_RUNNING=1,WT_SUCCESS=2,WT_FAILED=3,WL_CONNECTED=3,WIFI_AP=2,CONNECT_TIMEOUT_MS=12000;
+constexpr int MAX_WIFI=5,WT_IDLE=0,WT_RUNNING=1,WT_SUCCESS=2,WT_FAILED=3,WL_CONNECTED=3,WIFI_AP=2,WIFI_AP_STA=3,WIFI_AUTH_WPA2_PSK=3,WIFI_AUTH_OPEN=0,CONNECT_TIMEOUT_MS=12000;
 String savedSSID[MAX_WIFI],savedPASS[MAX_WIFI],preferredSSID,kitName="Aerion",testName="Aerion",testSSID="Test-Router",testPASS="test-password",testMessage,testRedirect;
 unsigned long clockMs=100,wifiTestStarted=0,restartAt=0;unsigned long millis(){return clockMs;}
-int wifiTestState=WT_RUNNING,reboots=0,safeStops=0;bool setupMode=true,mdnsStarted=false,autoNameRequired=false,FLIGHT_CONTROL_ENABLED=true,probeAvailable=true,nameConflict=false,preferAp=true,forceAp=true;
-struct Address{String toString(){return "10.0.0.20";}};struct Wifi{int state=WL_CONNECTED;bool dropped=false;int status(){return state;}Address localIP(){return {};}void disconnect(bool,bool){dropped=true;}void mode(int){}}WiFi;
+int wifiTestState=WT_RUNNING,reboots=0,safeStops=0;bool wifiTestVerified=false,firmwareUploadActive=false;bool setupMode=true,mdnsStarted=false,autoNameRequired=false,FLIGHT_CONTROL_ENABLED=true,probeAvailable=true,nameConflict=false,preferAp=true,forceAp=true;
+struct Address{String toString(){return "10.0.0.20";}};struct Wifi{int state=WL_CONNECTED;bool dropped=false;int status(){return state;}String SSID(){return testSSID;}Address localIP(){return {};}void disconnect(bool,bool){dropped=true;}void mode(int){}void setAutoReconnect(bool){}void setSleep(bool){}void setMinSecurity(int){}void begin(const char*,const char*){state=0;}}WiFi;
 struct Mdns{int queryService(const char*,const char*){return nameConflict?1:0;}void end(){}}MDNS;struct SerialType{void println(const String&){}void println(const char*){}}Serial;struct Server{std::map<std::string,String> fields;String arg(const char* k){return fields[k];}void handleClient(){}}server;struct Esp{void restart(){reboots++;}}ESP;
 bool startProbeMdns(){mdnsStarted=probeAvailable;return probeAvailable;}bool queryResultIsName(int,const String&,bool){return nameConflict;}String chooseFreeAutoNameFromCurrentQuery(int){return "zebjus_drone_2";}String shortId(){return "334455";}String defaultKitName(){return "FlightCore A2-334455";}void saveKitName(const String& n){kitName=n;}void setPreferredApMode(bool v){preferAp=v;}void setForceSetupFlag(bool v){forceAp=v;}String optionalWebappUrl(){return "";}
 void servicePairing(){}void serviceSecureOta(){}void delay(int){}void serviceUserLed(){}void pollGps(){}void updateControlRates(){}void serviceBattery(){}void expireLock(){}void serviceTraining(){}void checkRecoveryButton(){}void networkHealth(){}void motorsSafe(){safeStops++;}bool saveWiFi(String,String,bool=true);
@@ -39,7 +39,7 @@ String normalizeDisplayName(const String& s){return s;}String jsonEscape(const S
 '''
 checks=r'''
 void clearRam(){for(int i=0;i<MAX_WIFI;i++){savedSSID[i]="";savedPASS[i]="";}preferredSSID="";}
-void resetTest(){wifiTestState=WT_RUNNING;clockMs=100;wifiTestStarted=0;restartAt=0;reboots=safeStops=0;probeAvailable=true;nameConflict=false;WiFi.state=WL_CONNECTED;WiFi.dropped=false;prefs.fail=false;testName="Aerion";testPASS="test-password";}
+void resetTest(){wifiTestState=WT_RUNNING;clockMs=100;wifiTestStarted=0;wifiTestVerified=false;restartAt=0;reboots=safeStops=0;probeAvailable=true;nameConflict=false;WiFi.state=WL_CONNECTED;WiFi.dropped=false;prefs.fail=false;testName="Aerion";testPASS="test-password";}
 int main(){
  prefs.data["zjsys"]["wifi_seeded"]="1";loadSavedWiFi();assert(preferredSSID==DEFAULT_WIFI_SSID);clearRam();loadSavedWiFi();assert(savedPASS[savedIndex(DEFAULT_WIFI_SSID)]==DEFAULT_WIFI_PASS);
  clearSavedWiFi();clearRam();loadSavedWiFi();assert(savedIndex(DEFAULT_WIFI_SSID)<0);
@@ -52,7 +52,9 @@ int main(){
  resetTest();WiFi.state=0;clockMs=CONNECT_TIMEOUT_MS+1;loop();assert(wifiTestState==WT_FAILED&&restartAt==0&&WiFi.dropped&&!testPASS.empty());
  resetTest();server.fields={{"ssid","Saved-Router"},{"password","correct-password"},{"name","My Flight Controller"}};setWifiApi();assert(code==200&&reply.find("\"profileSaved\":true")!=std::string::npos&&reply.find("\"connectionVerified\":false")!=std::string::npos);assert(preferredSSID=="Saved-Router"&&savedPASS[savedIndex("Saved-Router")]=="correct-password"&&restartAt==clockMs+2500&&kitName=="My Flight Controller"&&!WiFi.dropped&&!preferAp&&!forceAp);int stops=udpStops;clockMs=restartAt-1;loop();assert(reboots==0);clockMs++;loop();assert(reboots==1);
  resetTest();prefs.fail=true;setWifiApi();assert(code==500&&restartAt==0&&udpStops==stops&&!WiFi.dropped);prefs.fail=false;realArmed=true;setWifiApi();assert(code==423&&restartAt==0);realArmed=false;grant=false;setWifiApi();assert(code==423&&restartAt==0);grant=true;
- resetTest();startWifiTestApi();assert(code==200&&reply.find("\"profileSaved\":true")!=std::string::npos&&restartAt==clockMs+2500&&!WiFi.dropped);
+ resetTest();wifiTestState=WT_IDLE;int oldIndex=savedIndex("New-Router");server.fields={{"ssid","New-Router"},{"password","new-password"}};startWifiTestApi();assert(code==202&&wifiTestState==WT_RUNNING&&restartAt==0&&!wifiTestVerified&&savedIndex("New-Router")==oldIndex);WiFi.state=WL_CONNECTED;processWifiTest();assert(wifiTestVerified&&wifiTestState==WT_SUCCESS&&savedIndex("New-Router")>=0&&restartAt==clockMs+7500);
+ resetTest();wifiTestState=WT_IDLE;server.fields={{"ssid","Wrong-Router"},{"password","wrong-password"}};startWifiTestApi();clockMs+=CONNECT_TIMEOUT_MS+1;processWifiTest();assert(wifiTestState==WT_FAILED&&!wifiTestVerified&&!restartAt&&savedIndex("Wrong-Router")<0);
+ resetTest();wifiTestState=WT_IDLE;realArmed=true;startWifiTestApi();assert(code==423&&!restartAt);realArmed=false;setupMode=false;startWifiTestApi();assert(code==409&&!restartAt);setupMode=true;
  std::cout<<"PASS: production NVS persistence/migration/Forget, failed save/password, mDNS fallback/conflict and actual loop restart with safe outputs\n";
 }
 '''

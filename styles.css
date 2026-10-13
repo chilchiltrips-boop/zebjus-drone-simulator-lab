@@ -1147,5 +1147,4 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 
 /* Session notices must not obstruct navigation. */
 .top-network-notice{pointer-events:none}.top-network-notice button{pointer-events:auto}
-
-.webapp-link{display:flex;align-items:center;flex-wrap:wrap;padding:8px 12px;margin-bottom:8px;border:1px solid #2b6477;border-radius:10px;background:#0c202b;color:#d6f5ff}.webapp-link>span{display:flex;align-items:center;gap:18px;flex-wrap:wrap}.webapp-link b{font-size:11px;letter-spacing:.08em}.webapp-link output{font-size:22px;font-variant-numeric:tabular-nums;letter-spacing:.14em;margin-left:8px}.webapp-link em{font-size:11px;font-style:normal;white-space:normal}
+#wifiSettingsCard label{display:flex;flex-direction:column;gap:6px;margin:14px 0;color:#c7e4ed;font-size:13px}#wifiSettingsCard input,#wifiSettingsCard select{width:100%;min-width:0;min-height:40px;border:1px solid #315467;border-radius:8px;padding:9px 12px;background:#102532;color:#eef9fd;font:inherit}#wifiSettingsCard input::placeholder{color:#8eacb9}#wifiSettingsCard input:focus,#wifiSettingsCard select:focus{outline:2px solid #45d9bd;outline-offset:1px}

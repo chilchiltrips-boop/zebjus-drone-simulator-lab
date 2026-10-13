@@ -39,7 +39,7 @@ void select(const char* id,const char* token,const char* target="FLIGHT",const c
 int main(){
  sessions[0]={11,"WEB",50000};sessions[1]={12,"WEB",50000};sessions[2]={13,"COMPANION",50000};sessions[3]={14,"MOBILE",50000};
  reg(0,"123456");assert(code==200);reg(1,"123456");assert(code==200&&webAppRegistry.find(12,now)->id==123457);reg(2,"999999");assert(code==200);
- reg(3,"123455");assert(code==403);reg(0,"12345");assert(code==409);reg(0,"000000");assert(code==409);setupMode=true;reg(0,"123456");assert(code==403&&!secureMonitorAllowed(11));setupMode=false;
+ reg(3,"123455");assert(code==403);reg(0,"12345");assert(code==409);reg(0,"000000");assert(code==409);setupMode=true;reg(0,"123456");assert(code==200&&secureMonitorAllowed(11));setupMode=false;
  select("123456","TRAIN-SESSION-ONE");assert(code==200&&trainingActive&&trainingWebSession==11&&trainingWebAppId==123456&&!armed);
  assert(secureMonitorAllowed(11)&&!secureMonitorAllowed(12)&&!secureMonitorAllowed(13)&&!secureMonitorAllowed(14));secureCurrent=&sessions[0];assert(scopedTrainingBrowser());secureCurrent=&sessions[1];assert(!scopedTrainingBrowser());
  auto run=trainingRunId;select("888888","TRAIN-BAD-ID");assert(code==409&&trainingRunId==run&&trainingWebSession==11);
@@ -54,5 +54,5 @@ int main(){
  now=20000;sessions[0].lastActivity=0;sessions[0].client="BROWSER-CLOSED";assert(secureBrowserRetired(sessions[0]));sessions[0].lastActivity=now;assert(!secureBrowserRetired(sessions[0]));sessions[0].lastActivity=0;sessions[0].client=controlOwner;assert(!secureBrowserRetired(sessions[0]));
  sessions[3].client=controlOwner;sessions[3].lastActivity=0;assert(!secureBrowserRetired(sessions[3]));sessions[3].client="MOBILE-RELEASED";sessions[3].lastActivity=now-9999;assert(!secureBrowserRetired(sessions[3]));sessions[3].lastActivity=now-10000;assert(secureBrowserRetired(sessions[3]));trainingWebSession=sessions[3].id;assert(!secureBrowserRetired(sessions[3]));trainingWebSession=0;
  using namespace RcPriority;assert(choose(false,0,true,true)==PPM);assert(choose(false,1,true,true)==PPM);assert(choose(false,1,false,true)==NETWORK);assert(choose(false,2,false,true)==NONE);assert(choose(false,0,false,false)==NONE);assert(choose(true,1,true,true)==NETWORK);assert(choose(true,2,true,true)==PPM);
- std::cout<<"PASS: production authenticated WebApp register/collision/binding, two browsers/phones, AP denial, same-run gap, switch neutral, stale observer expiry, wraparound; fresh PPM first in physical flight\n";
+ std::cout<<"PASS: production authenticated WebApp register/collision/binding, two browsers/phones, AP/STA registration, same-run gap, switch neutral, stale observer expiry, wraparound; fresh PPM first in physical flight\n";
 }

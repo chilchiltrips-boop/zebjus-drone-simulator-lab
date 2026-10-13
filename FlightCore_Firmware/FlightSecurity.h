@@ -93,7 +93,6 @@ bool securePermission(const String& path){
 #include "SecureOta.h"
 void secureDispatch(const String& p){
  if(!securePermission(p))return;
- if(p.startsWith("/api/wifi/")||p.startsWith("/api/setup/test")){sendMessage(410,"Router Wi-Fi setup was removed; connect to the kit AP");return;}
  if(p=="/api/firmware/begin"||p=="/api/firmware/chunk"||p=="/api/firmware/end"){secureOta(p);return;}
  if(trainingActive&&trainingAppOwned&&secureCurrent->client!=controlOwner&&!scopedTrainingBrowser()&&(p=="/api/telemetry"||p=="/api/command"&&server.arg("type")!="training_status"&&server.arg("type")!="pid_get")){sendMessage(403,"This training run is bound to another WebApp");return;}
  if(p=="/api/webapp/register"||p=="/api/webapp/unregister"){webAppRegister(p.endsWith("unregister"));return;}
