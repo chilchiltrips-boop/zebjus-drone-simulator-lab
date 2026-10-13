@@ -36,6 +36,6 @@
     "test:wifi": "python3 -B tools/test_wifi_runtime.py && python3 -B tools/test_wifi_connection_runtime.py && node tools/test_ap_discovery.js && node tools/test_mobile_wifi.js",
     "test:wifi-browser": "node tools/test_wifi_setup_browser.js",
     "test:stability": "node tools/test_connection_stability.js && node tools/test_destination_ownership.js && node tools/test_tripod_direction.js && python3 -B tools/test_http_recovery_runtime.py",
-    "test:ownership": "node tools/test_control_ownership.js"
+    "test:ownership": "node tools/test_control_ownership.js && node tools/test_ap_owner_upgrade.js"
   }
 }
