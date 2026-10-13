@@ -3,10 +3,11 @@ on:
   push:
     branches:
       - audit/remediation-v18.3.84
+      - fix/ap-owner-take-control
 permissions:
   contents: write
 concurrency:
-  group: remediation-${{ github.ref }}
+  group: remediation-ap-owner-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   regenerate-and-verify:
@@ -35,6 +36,7 @@ jobs:
           python3 -B tools/validate_offline_bundle.py
           python3 -B tools/release_integrity.py --check
           node tools/test_ap_wifi_pairing.js
+          node tools/test_ap_owner_upgrade.js
           python3 tools/test_ap_provisioning_contract.py
           g++ -std=c++17 tools/test_ap_wifi_policy.cpp -o /tmp/zfc-ap-setup-policy
           /tmp/zfc-ap-setup-policy
