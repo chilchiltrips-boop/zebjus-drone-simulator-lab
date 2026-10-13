@@ -16,7 +16,7 @@ async function pair(serverCode,clientCode,credential="OWNER",role="WEB"){
  try{await ch.pair(clientCode,raw);return ch;}finally{p.stdin.end();p.kill();}
 }
 (async()=>{
- const code='0123456789ABCDEF0123456789ABCDEF',ch=await pair(code,code);
+ const code='0123456789ABCDEF0123456789ABCDEF',ch=await pair(code,code);const short=await pair('0012345678','0012345678');assert.equal(short.info.role,'WEB');
  assert.equal(ch.info.role,'WEB');const apCode=S.apWifiCode('ZFC-001122334455');const ap=await pair(apCode,apCode,'AP_WIFI','MOBILE');assert.equal(ap.info.role,'MOBILE');await assert.rejects(pair(apCode,S.apWifiCode('ZFC-FFEEDDCCBBAA'),'AP_WIFI','MOBILE'),/Wrong pairing code/);await assert.rejects(pair(code,'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'),/Wrong pairing code/);
  const envelope=ch.envelope('secret=router-password');assert(!JSON.stringify(envelope).includes('router-password'));
  const payload={sessionId:ch.sid,seq:'2',cipher:S.hex(C.encryptGCM(ch.keys.HTTP_S2C,S.nonce(2),S.utf('{"ok":true}'),S.utf('ZFC3|'+ch.sid+'|2|HTTP_S2C')))};
