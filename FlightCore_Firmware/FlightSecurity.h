@@ -13,6 +13,13 @@ bool makeCredentialWithCode(PairCredential& c,const String& id,const String& cod
  bool ok=ret==ESP_OK&&salt&&verifier&&len>0&&len<=384;if(ok){c.id=id;c.length=len;memcpy(c.salt,salt,16);memcpy(c.verifier,verifier,len);}if(salt){memset(salt,0,16);free(salt);}if(verifier){memset(verifier,0,len);free(verifier);}return ok;
 }
 bool makeCredential(PairCredential& c,const String& id,String& code){uint8_t random[16];esp_fill_random(random,16);code=secureHex(random,16);code.toUpperCase();bool ok=makeCredentialWithCode(c,id,code);memset(random,0,16);return ok;}
+// OWNER is a random 10-digit decimal PIN on new/pair-reset devices. Old 32-hex verifiers remain usable.
+// Rejection sampling prevents modulo bias; SRP and the rate limit still protect the PIN on the wire.
+bool makeOwnerCredential(String& code){
+ code="";code.reserve(10);
+ for(int i=0;i<10;i++){uint32_t n;do{n=esp_random();}while(n>=4294967290UL);code+=char('0'+n%10);}
+ return makeCredentialWithCode(pairOwner,"OWNER",code);
+}
 bool localApPairingPeer(){IPAddress ip=server.client().remoteIP();return setupMode&&ip[0]==AP_IP[0]&&ip[1]==AP_IP[1]&&ip[2]==AP_IP[2]&&ip[3]>1&&ip[3]<255;}
 bool secureApWifiSessionAllowed(const String& credential){return ZfcApWifi::sessionAllowed(setupMode,credential.c_str());}
 void initApWifiCredential(){String seed="ZFC3_AP_WIFI|"+deviceId+"|"+apPassword;uint8_t hash[32];mbedtls_sha256((uint8_t*)seed.c_str(),seed.length(),hash,0);String code=secureHex(hash,16);code.toUpperCase();pairApWifi.length=0;if(!makeCredentialWithCode(pairApWifi,"AP_WIFI",code)){flightReady=false;Serial.println("AP Wi-Fi authentication unavailable");}memset(hash,0,32);code="";seed="";}
@@ -21,7 +28,7 @@ void initPairing(bool reset=false){
  if(!secureMutex)secureMutex=xSemaphoreCreateMutex();Preferences p;p.begin("zjpair",false);
  size_t n=reset?0:p.getBytesLength("verifier");pairOwner.id="OWNER";
  if(n>0&&n<=384&&p.getBytesLength("salt")==16){pairOwner.length=n;p.getBytes("salt",pairOwner.salt,16);p.getBytes("verifier",pairOwner.verifier,n);}
- else{String code;if(!makeCredential(pairOwner,"OWNER",code)){Serial.println("PAIRING ERROR: outputs unavailable");flightReady=false;p.end();return;}p.putBytes("salt",pairOwner.salt,16);p.putBytes("verifier",pairOwner.verifier,pairOwner.length);Serial.println("PAIR LABEL: "+deviceId+" / "+kitName+" / "+code);code="";}
+ else{String code;if(!makeOwnerCredential(code)){Serial.println("PAIRING ERROR: outputs unavailable");flightReady=false;p.end();return;}p.putBytes("salt",pairOwner.salt,16);p.putBytes("verifier",pairOwner.verifier,pairOwner.length);Serial.println("PAIR LABEL: "+deviceId+" / "+kitName+" / "+code);Serial.println("OWNER PIN: 10 digits. Keep private; PAIR RESET rotates it and invalidates prior pairing.");code="";}
  p.end();initApWifiCredential();if(reset){xSemaphoreTake(secureMutex,portMAX_DELAY);for(auto& s:secureSessions){s.id=0;memset(s.keys,0,sizeof(s.keys));}xSemaphoreGive(secureMutex);for(auto& c:pairInvites)c.length=0;clearPairPending();invalidateRcUdp();forceDisarmRequested=true;}
 }
 void servicePairing(){
