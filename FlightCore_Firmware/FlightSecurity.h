@@ -86,7 +86,9 @@ bool securePermission(const String& path){
  if(!secureCurrent)return false;
  if(secureApProvisioning()){
   bool read=path=="/api/status"||path=="/api/telemetry"||path=="/api/security/info"||path=="/api/wifi/saved"||path=="/api/setup/test/status"||path=="/api/firmware/info"||path=="/api/webapp/register"||path=="/api/webapp/unregister";
-  bool configure=!armed&&benchMode==BENCH_NONE&&!trainingActive&&(path=="/api/security/maintenance"||path=="/api/wifi/scan"||path=="/api/setup/test");
+  bool maintenance=(int32_t)(secureMaintenanceUntil[secureCurrent-secureSessions]-millis())>0;
+  bool idle=!effectiveArmed()&&benchMode==BENCH_NONE&&!trainingActive&&!fcSetupActive&&!firmwareUploadActive;
+  bool configure=idle&&(path=="/api/security/maintenance"||maintenance&&(path=="/api/wifi/scan"||path=="/api/wifi/sta"||path=="/api/setup/test"));
   if(read||configure)return true;
   sendMessage(403,"AP credentials permit setup only. Use OWNER pairing for flight control.");return false;
  }

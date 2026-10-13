@@ -35,6 +35,7 @@ jobs:
           python3 -B tools/validate_offline_bundle.py
           python3 -B tools/release_integrity.py --check
           node tools/test_ap_wifi_pairing.js
+          python3 tools/test_ap_provisioning_contract.py
           g++ -std=c++17 tools/test_ap_wifi_policy.cpp -o /tmp/zfc-ap-setup-policy
           /tmp/zfc-ap-setup-policy
           g++ -std=c++17 tools/test_secure_policy.cpp -o /tmp/zfc-secure-policy
