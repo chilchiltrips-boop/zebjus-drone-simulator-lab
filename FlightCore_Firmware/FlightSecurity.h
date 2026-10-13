@@ -71,7 +71,8 @@ bool secureSendJson(int code,const String& body){
  auto out=std::unique_ptr<uint8_t[]>(new uint8_t[plain.length()+16]);if(!ZfcSecure::seal(secureCurrent->keys[1],seq,(uint8_t*)aad.c_str(),aad.length(),(uint8_t*)plain.c_str(),plain.length(),out.get()))return true;
  cors();server.sendHeader("Cache-Control","no-store");server.send(200,"application/json","{\"sessionId\":\""+sid+"\",\"seq\":\""+counter+"\",\"cipher\":\""+secureHex(out.get(),plain.length()+16)+"\"}");return true;
 }
-bool secureOwner(){return secureCurrent&&(secureCurrent->credential=="OWNER"||secureCurrent->credential=="AP_WIFI"&&setupMode&&(secureCurrent->role=="MOBILE"||secureCurrent->role=="WEB"));}
+bool secureOwner(){return secureCurrent&&secureCurrent->credential=="OWNER";}
+bool secureApProvisioning(){return secureCurrent&&secureCurrent->credential=="AP_WIFI"&&setupMode;}
 #include "FlightWebApp.h"
 bool securePidPermission(){return secureCurrent&&(secureOwner()?controlAuthorized()||scopedTrainingBrowser():trainingActive&&trainingAppOwned&&controlRole=="MOBILE"&&scopedTrainingBrowser());}
 void secureInvite(){
@@ -83,6 +84,12 @@ void secureInvite(){
 #include "SecurePolicy.h"
 bool securePermission(const String& path){
  if(!secureCurrent)return false;
+ if(secureApProvisioning()){
+  bool read=path=="/api/status"||path=="/api/telemetry"||path=="/api/security/info"||path=="/api/wifi/saved"||path=="/api/setup/test/status"||path=="/api/firmware/info";
+  bool configure=!armed&&benchMode==BENCH_NONE&&!trainingActive&&(path=="/api/security/maintenance"||path=="/api/wifi/scan"||path=="/api/setup/test");
+  if(read||configure)return true;
+  sendMessage(403,"AP credentials permit setup only. Use OWNER pairing for flight control.");return false;
+ }
  if(server.arg("type")=="rc_frame"&&!ZfcApWifi::physicalRcAllowed(secureCurrent->credential.c_str(),secureCurrent->role.c_str())){sendMessage(403,"AP flight uses the Android native joystick");return false;}
  if(secureCurrent->credential=="AP_WIFI"&&secureCurrent->role=="WEB"&&path=="/api/control/acquire"&&controlRole=="MOBILE"&&!lockMine(secureCurrent->client)){sendMessage(423,"App controls this kit; web is view-only");return false;}
  bool maintenance=(int32_t)(secureMaintenanceUntil[secureCurrent-secureSessions]-millis())>0;
@@ -98,7 +105,7 @@ void secureDispatch(const String& p){
  if(p=="/api/webapp/register"||p=="/api/webapp/unregister"){webAppRegister(p.endsWith("unregister"));return;}
  if(p=="/api/command"&&(server.arg("type")=="training_engine"||server.arg("type")=="training_sensor")&&!scopedTrainingBrowser()){sendMessage(403,"Only the WebApp selected by the app can send virtual sensors");return;}
  if(p=="/api/security/info"){sendJson(200,"{\"ok\":true,\"deviceId\":\""+deviceId+"\",\"name\":\""+jsonEscape(kitName)+"\",\"role\":\""+secureCurrent->role+"\",\"mode\":\""+String(setupMode?"AP":"STA")+"\",\"protocol\":\"ZFC3\",\"pidPermission\":true,\"controlPermission\":"+String(secureOwner()?"true":"false")+"}");return;}
- if(p=="/api/security/maintenance"){if(!secureOwner()||armed||benchMode!=BENCH_NONE){sendMessage(423,"Disarm for Wi-Fi maintenance");return;}secureMaintenanceUntil[secureCurrent-secureSessions]=millis()+120000;sendMessage(200,"Wi-Fi maintenance available for two minutes");return;}
+ if(p=="/api/security/maintenance"){if((!secureOwner()&&!secureApProvisioning())||armed||benchMode!=BENCH_NONE){sendMessage(423,"Disarm for Wi-Fi maintenance");return;}secureMaintenanceUntil[secureCurrent-secureSessions]=millis()+120000;sendMessage(200,"Wi-Fi maintenance available for two minutes");return;}
  if(p=="/api/security/invite"){secureInvite();return;}
  if(p=="/api/security/revoke"){if(!secureOwner()){sendMessage(403,"Owner required");return;}xSemaphoreTake(secureMutex,portMAX_DELAY);for(auto& s:secureSessions)if(s.role=="COMPANION")s.expires=0;xSemaphoreGive(secureMutex);for(auto& c:pairInvites)c.length=0;sendMessage(200,"Laptop permissions revoked");return;}
  if(p=="/api/status")statusApi();else if(p=="/api/telemetry")telemetryApi();else if(p=="/api/control/acquire")acquireApi();else if(p=="/api/control/ping")lockPingApi();else if(p=="/api/control/release")releaseApi();else if(p=="/api/command")commandApi();else if(p=="/api/name")renameApi();else if(p=="/api/name/reset")resetNameApi();else if(p=="/api/wifi/scan")wifiScanApi();else if(p=="/api/wifi/saved")savedWifiApi();else if(p=="/api/wifi/set")setWifiApi();else if(p=="/api/wifi/use")useWifiApi();else if(p=="/api/wifi/forget")forgetWifiApi();else if(p=="/api/wifi/reset")resetWifiApi();else if(p=="/api/wifi/sta")returnToSavedWifiApi();else if(p=="/api/setup/test")startWifiTestApi();else if(p=="/api/setup/test/status")wifiTestStatusApi();else if(p=="/api/firmware/info")firmwareInfoApi();else if(p=="/api/reboot")rebootApi();else if(p=="/api/i2c/scan")i2cScanApi();else if(p=="/api/imu")imuApi();else sendMessage(404,"Secure operation unavailable");
