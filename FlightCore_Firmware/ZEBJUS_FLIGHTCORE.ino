@@ -1136,7 +1136,7 @@ void wifiScanApi(){
  if(lockActive()&&!lockMine(server.arg("clientId"))){sendMessage(423,"View-only session cannot scan / change kit radio");return;}
  if(wifiTestState==WT_RUNNING||wifiTestState==WT_SUCCESS){sendMessage(423,"Wait for Wi-Fi test");return;}
  static bool scanActive=false;int n=WiFi.scanComplete();
- if(!scanActive){if(setupMode){WiFi.setAutoReconnect(false);WiFi.mode(WIFI_AP_STA);}WiFi.scanDelete();int started=WiFi.scanNetworks(true);if(started==WIFI_SCAN_FAILED){sendMessage(503,"Wi-Fi scan could not start. Retry after checking flight training is stopped.");return;}scanActive=true;sendJson(202,"{\"ok\":true,\"scanning\":true,\"networks\":[]}");return;}
+ if(!scanActive){if(setupMode){WiFi.setAutoReconnect(false);WiFi.mode(WIFI_AP_STA);}WiFi.scanDelete();int started=WiFi.scanNetworks(true);if(started<-1){sendMessage(503,"Wi-Fi scan could not start. Retry after checking flight training is stopped.");return;}scanActive=true;sendJson(202,"{\"ok\":true,\"scanning\":true,\"networks\":[]}");return;}
  if(n==WIFI_SCAN_RUNNING){sendJson(202,"{\"ok\":true,\"scanning\":true,\"networks\":[]}");return;}
  if(n<0){scanActive=false;sendMessage(503,"Wi-Fi scan failed");return;}
  String j="{\"ok\":true,\"scanning\":false,\"networks\":[";bool first=true;
