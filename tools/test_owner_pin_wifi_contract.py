@@ -17,6 +17,6 @@ assert '[0-9]{10}' in android and '[A-Fa-f0-9]{32}' in android
 assert "function maybeAutoScanWifi(" in school and "maybeAutoScanWifi(status)" in school
 assert "function apSetupSession()" in school and "if(!canControl()&&!apSetupSession())" in school
 assert "void scanNetworks()" in portal and "scan.onclick=scanNetworks;" in portal
-assert "WiFi.scanNetworks(true)" in scanner and "WIFI_SCAN_FAILED" in scanner
+assert "WiFi.scanNetworks(true)" in scanner and "if(started<-1)" in scanner
 assert "physicalRcAllowed" not in portal
 print('PASS: 10-digit PIN generation with legacy migration, secure Android storage, 8/min pairing limit, automatic AP SSID scan and safe setup-only provisioning')
