@@ -14,8 +14,8 @@
     },
     {
       "path": ".github/workflows/remediation-v18-3-84.yml",
-      "bytes": 3687,
-      "sha256": "c05bb0dfe7ef6da293246bd99dacf7c657e1e7d60d40fbc6588fa10caab48be3"
+      "bytes": 3742,
+      "sha256": "dd3c285763df28a2d4df0f8aba7acf557bc8112d7dc9e5dabcdaad855e4f17c3"
     },
     {
       "path": ".github/workflows/verify-kit-stages.yml",
@@ -1564,8 +1564,8 @@
     },
     {
       "path": "tools/test_ap_owner_upgrade.js",
-      "bytes": 4855,
-      "sha256": "ef86ade102b67b90b77a723acf39cb7dc13cf9f979b58ec2422504a0024f2bc7"
+      "bytes": 4859,
+      "sha256": "370bc0187ea47ebdd769993d129a93776bafac29b0b536eaa01bc77351269ece"
     },
     {
       "path": "tools/test_ap_provisioning_contract.py",
