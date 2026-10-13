@@ -11,7 +11,14 @@ async function offlineStatus(){
  const info=await marker.json(),manifestResponse=await cache.match('./offline-manifest.json');
  if(!manifestResponse)return{ready:false,version:info.version};
  const manifest=await manifestResponse.json();
- for(const file of manifest.files)if(!await cache.match('./'+file.path,{ignoreSearch:true}))return{ready:false,version:info.version};
+ if(manifest.version!==info.version){await cache.delete(READY_KEY);return{ready:false,version:manifest.version};}
+ for(const file of manifest.files){
+  const response=await cache.match('./'+file.path,{ignoreSearch:true});
+  if(!response){await cache.delete(READY_KEY);return{ready:false,version:info.version};}
+  const bytes=await response.arrayBuffer();
+  const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+  if(bytes.byteLength!==file.bytes||digest!==file.sha256){await cache.delete(READY_KEY);return{ready:false,version:info.version,reason:'offline-cache-integrity'};}
+ }
  return{...info,ready:true};
 }
 
@@ -62,27 +69,57 @@ self.addEventListener('install',event=>{
 self.addEventListener('activate',event=>{
   event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE&&(k.startsWith('zebjus-f450-')||k.startsWith('zebjus-flightcore-'))).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
 });
-async function networkFirst(request){
-  const cache=await caches.open(CACHE);
-  try{
-    const response=await fetch(request,{cache:'no-store'});
-    if(response&&response.ok)cache.put(request,response.clone());
-    return response;
-  }catch(err){
-    return (await cache.match(request,{ignoreSearch:true})) || (request.mode==='navigate' ? cache.match('./index.html',{ignoreSearch:true}) : Promise.reject(err));
+async function verifiedCachePut(cache,request,response){
+ if(!response?.ok)return;
+ const marker=await cache.match(READY_KEY);
+ if(marker){
+  const manifestResponse=await cache.match('./offline-manifest.json');
+  if(manifestResponse){
+   const asset=new URL(request.url||request,self.location.href).pathname;
+   const manifest=await manifestResponse.json();
+   const index=new URL('./offline-manifest.json',self.location.href).pathname;
+   if(asset===index){
+    const old=await cache.match('./offline-manifest.json');
+    if(old&&await old.text()!==await response.clone().text())return;
+   }
+   const entry=manifest.files.find(f=>new URL('./'+f.path,self.location.href).pathname===asset);
+   if(entry){
+    const bytes=await response.clone().arrayBuffer();
+    const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+    if(bytes.byteLength!==entry.bytes||hash!==entry.sha256)return;
+   }
   }
+ }
+ await cache.put(request,response.clone());
 }
-async function staleWhileRevalidate(request){
-  const cache=await caches.open(CACHE),cached=await cache.match(request,{ignoreSearch:true});
-  const network=fetch(request).then(response=>{if(response&&response.ok)cache.put(request,response.clone());return response}).catch(()=>null);
-  return cached || await network || Response.error();
+async function networkFirst(request){
+ const cache=await caches.open(CACHE);
+ try{
+  const response=await fetch(request,{cache:'no-store'});
+  if(response?.ok)await verifiedCachePut(cache,request,response).catch(()=>{});
+  return response;
+ }catch(err){
+  const cached=await cache.match(request,{ignoreSearch:true});
+  if(cached)return cached;
+  if(request.mode==='navigate'){
+   const url=new URL(request.url),flight=new URL('./flight/',self.location.href).pathname;
+   return await cache.match(url.pathname.startsWith(flight)?'./flight/index.html':'./index.html',{ignoreSearch:true})||Response.error();
+  }
+  return Response.error();
+ }
+}
+async function staleWhileRevalidate(request,event){
+ const cache=await caches.open(CACHE),cached=await cache.match(request,{ignoreSearch:true});
+ const update=fetch(request).then(async response=>{if(response?.ok)await verifiedCachePut(cache,request,response);return response}).catch(()=>null);
+ if(cached){event.waitUntil(update);return cached;}
+ return await update||Response.error();
 }
 self.addEventListener('fetch',event=>{
-  if(event.request.method!=='GET')return;
-  const url=new URL(event.request.url);
-  if(url.origin!==self.location.origin)return;
-  if(url.pathname.includes('/api/')||url.pathname.endsWith('/health'))return;
-  if(url.pathname.includes('/vendor/'))event.respondWith((async()=>{const cache=await caches.open(CACHE);return await cache.match(event.request,{ignoreSearch:true})||await networkFirst(event.request)})());
-  else if(event.request.mode==='navigate'||CODE_RE.test(url.pathname)||url.pathname.endsWith('/service-worker.js')) event.respondWith(networkFirst(event.request));
-  else event.respondWith(staleWhileRevalidate(event.request));
+ if(event.request.method!=='GET')return;
+ const url=new URL(event.request.url);
+ if(url.origin!==self.location.origin)return;
+ if(url.pathname.includes('/api/')||url.pathname.endsWith('/health'))return;
+ if(url.pathname.includes('/vendor/'))event.respondWith((async()=>{const cache=await caches.open(CACHE);return await cache.match(event.request,{ignoreSearch:true})||await networkFirst(event.request)})());
+ else if(event.request.mode==='navigate'||CODE_RE.test(url.pathname)||url.pathname.endsWith('/service-worker.js'))event.respondWith(networkFirst(event.request));
+ else event.respondWith(staleWhileRevalidate(event.request,event));
 });

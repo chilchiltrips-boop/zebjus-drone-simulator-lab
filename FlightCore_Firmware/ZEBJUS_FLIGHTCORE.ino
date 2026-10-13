@@ -1101,7 +1101,7 @@ void savedWifiApi(){
 }
 void setWifiApi(){
   if((!setupMode||lockActive())&&!requireControl())return;if(effectiveArmed()||benchMode!=BENCH_NONE||trainingActive||fcSetupActive){sendMessage(423,"Disarm and stop simulator / setup before saving Wi-Fi");return;}
-  String ssid=server.arg("ssid"),pass=server.arg("password");ssid.trim();if(!ssid.length()||ssid.length()>32||pass.length()>63){sendMessage(400,"SSID must be 1-32 bytes; password at most 63 bytes");return;}
+  String ssid=server.arg("ssid"),pass=server.arg("password");ssid.trim();if(!ssid.length()||ssid.length()>32||pass.length()>63||(pass.length()>0&&pass.length()<8)){sendMessage(400,"SSID must be 1-32 bytes; WPA2 password must be 8-63 bytes");return;}
   if(!saveWiFi(ssid,pass,true)){sendMessage(500,"Wi-Fi could not be saved. Retry before changing networks.");return;}
   String name=normalizeDisplayName(server.arg("name"));if(name.length()>=3)saveKitName(name);setPreferredApMode(false);setForceSetupFlag(false);invalidateRcUdp();webRcLastMs=0;disarmFlight("Wi-Fi saved; reconnect pending");
   // Keep the AP channel and TCP socket intact until the encrypted saved ACK is sent.

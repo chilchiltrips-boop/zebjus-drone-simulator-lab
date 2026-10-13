@@ -1,5 +1,7 @@
 # ZEBJUS Aerion V18.3.84 — restored router Wi-Fi and AP recovery
 
+Security remediation candidate (source only): offline cache integrity, restricted local server, AP owner pairing and signed OTA under development. Do not flash before firmware and Android acceptance tests; release binaries are not rebuilt by this source commit.
+
 Saved router profiles are tried first at boot; failed association starts a nonpersistent AP fallback. Explicit AP selection stays active until saved router Wi-Fi or a successful new test is selected. Restores visible STA/AP switches and Wi-Fi settings on the WebApp and Android controller, with nearby scan, SSID/password entry, saved-network selection and forget actions. The authenticated AP recovery page tests credentials before storing them; wrong passwords retain the entered value and AP access. A verified test reports the STA IP, confirms persistence and schedules restart to STA. STA changes acknowledge saved credentials before reboot and are verified after reconnecting.
 
 Encrypted ZFC3 sessions, native RC, AP/STA simulator input, output inhibition and manual ARM remain. Removes Android/WebApp connection information from the desktop header. Fresh V18.3.84 A1/A2 firmware is built by Actions; previous compiled binaries and APK must not be relabeled. APK signing still needs the configured development signing secret. Physical phone, radio, USB flash and flight tests have not been performed.
