@@ -67,5 +67,19 @@ async function ensure(base,st,cid,role,raw){
   ch=new Channel(base,st.deviceId,cid,pairRole,credential);try{await ch.pair(secret,raw);if(ch.info.name!==st.name)throw Error('Authenticated Kit Name differs from discovery. Select the correct kit.');if(credential==='OWNER')w.AerionAndroid?.savePairCode?.(st.deviceId,secret.toUpperCase());return ch;}catch(e){registry.delete(base);if(attempt||!saved||e.status!==403)throw e;code=await promptCode(title+' — saved pairing code was rejected. Enter the current code from PAIR LABEL after PAIR RESET.');}
  }
 }
-w.ZfcSecurity={Channel,ensure,apWifiCode,get:base=>registry.get(base),clear:base=>registry.delete(base),promptCode,hex,unhex,cat,big,bytes,pow,N,G,utf,nonce,equal};if(typeof module!=='undefined')module.exports=w.ZfcSecurity;
+async function requireOwner(base,st,cid,role,raw){
+ const current=registry.get(base);
+ if(!current||current.id!==st?.deviceId||current.cid!==cid||current.role!==role)throw Error('Reconnect and verify this exact kit before requesting control.');
+ if(current.credential==='OWNER')return current;
+ if(current.credential!=='AP_WIFI'||role!=='WEB'||!String(st?.mode||'').startsWith('AP'))throw Error('This session cannot take physical control. Pair with the OWNER label code.');
+ const code=await promptCode((st.name||st.deviceId)+' — Take Control requires the 32-character OWNER pairing code from the kit label or serial PAIR LABEL. The Wi-Fi password is not the OWNER code.');
+ const owner=new Channel(base,st.deviceId,cid,role,'OWNER');
+ try{
+  await owner.pair(code,raw);
+  if(owner.info?.deviceId!==st.deviceId||owner.info.role!==role||owner.info.controlPermission!==true)throw Error('Kit did not confirm OWNER control permission.');
+  registry.set(base,owner);
+  return owner;
+ }catch(e){registry.set(base,current);throw e;}
+}
+w.ZfcSecurity={Channel,ensure,requireOwner,apWifiCode,get:base=>registry.get(base),clear:base=>registry.delete(base),promptCode,hex,unhex,cat,big,bytes,pow,N,G,utf,nonce,equal};if(typeof module!=='undefined')module.exports=w.ZfcSecurity;
 })(typeof window!=='undefined'?window:globalThis);
