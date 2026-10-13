@@ -123,7 +123,7 @@ async function promptCode(title){return new Promise((resolve,reject)=>{const box
 function apWifiCode(id){if(!/^ZFC-[A-F0-9]{12}$/i.test(id))throw Error('Exact Device ID required for AP Wi-Fi pairing.');return hex(C.sha256(utf('ZFC3_AP_WIFI|'+id+'|12345678'))).slice(0,32).toUpperCase();}
 async function ensure(base,st,cid,role,raw){
  if(!st.securityRequired)return null;let ch=registry.get(base);if(ch&&ch.id===st.deviceId&&ch.cid===cid){try{await ch.request('/api/security/info',{},raw);return ch;}catch(e){registry.delete(base);}}
- if(st.apWifiPairing===true&&String(st.mode).startsWith('AP')&&(role==='MOBILE'||role==='WEB')){ch=new Channel(base,st.deviceId,cid,role,'AP_WIFI');try{await ch.pair(apWifiCode(st.deviceId),raw);if(ch.info.name!==st.name)throw Error('Authenticated Kit Name differs from discovery. Select the correct kit.');return ch;}catch(e){registry.delete(base);throw e;}}
+ if(st.apWifiPairing===true&&String(st.mode).startsWith('AP')&&role==='WEB'){ch=new Channel(base,st.deviceId,cid,role,'AP_WIFI');try{await ch.pair(apWifiCode(st.deviceId),raw);if(ch.info.name!==st.name)throw Error('Authenticated Kit Name differs from discovery. Select the correct kit.');return ch;}catch(e){registry.delete(base);throw e;}}
  const saved=w.AerionAndroid?.pairCode?.(st.deviceId)||'',requestedRole=role,title=st.name;
  let code=saved||await promptCode(title+' — kit label code or app invitation');
  for(let attempt=0;attempt<2;attempt++){

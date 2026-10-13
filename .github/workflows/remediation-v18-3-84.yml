@@ -1,0 +1,85 @@
+name: Generate and verify V18.3.84 remediation
+on:
+  push:
+    branches:
+      - audit/remediation-v18.3.84
+permissions:
+  contents: write
+concurrency:
+  group: remediation-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  regenerate-and-verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regenerate exact embedded Flight App, AP recovery page, and integrity manifests
+        run: |
+          set -euo pipefail
+          python3 tools/embed_ap_pages.py
+          python3 tools/make_offline_manifest.py
+          python3 -B tools/release_integrity.py --write
+      - name: Validate generated files and source contracts
+        run: |
+          set -euo pipefail
+          python3 tools/embed_ap_pages.py --check
+          python3 -B tools/validate_project.py
+          python3 -B tools/validate_offline_bundle.py
+          python3 -B tools/release_integrity.py --check
+          node tools/test_ap_wifi_pairing.js
+          python3 tools/test_ap_provisioning_contract.py
+          g++ -std=c++17 tools/test_ap_wifi_policy.cpp -o /tmp/zfc-ap-setup-policy
+          /tmp/zfc-ap-setup-policy
+          g++ -std=c++17 tools/test_secure_policy.cpp -o /tmp/zfc-secure-policy
+          /tmp/zfc-secure-policy
+          node --check server.js
+          node --check service-worker.js
+          npm run test:control
+          npm run test:stability
+          npm run test:setup
+          npm run test:wifi
+          npm run test:flight-math
+          npm run test:rc-link
+          npm run test:fc-setup
+          node -e "const a=require('./server'); if(a.publicAsset('android-app/signing/aerion-development.p12')||a.publicAsset('tools/release_integrity.py')||!a.publicAsset('vendor/monaco/min/vs/base/browser/ui/codicons/codicon/codicon.ttf'))process.exit(1); console.log('PASS: private server paths blocked');"
+      - name: Commit generated and sealed artifacts
+        run: |
+          set -euo pipefail
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add tools/flight_app_source.html flight/index.html android-app/app/src/main/assets/flight/index.html FlightCore_Firmware/WIFI_SETUP_PAGE.h offline-manifest.json release-integrity.json FILE_COUNT.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Regenerate sealed Flight App and AP setup for security remediation [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
+  compile-flightcore:
+    needs: regenerate-and-verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Compile A1 and A2 secure firmware without programming hardware
+        run: python3 tools/build_firmware.py
+      - name: Retain compiled APP/FACTORY images for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: remediation-flightcore-a1-a2-candidate
+          path: |
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin
+            FlightCore_Firmware/build-report.json
