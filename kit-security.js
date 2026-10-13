@@ -14,7 +14,7 @@ function nonce(n){const a=new Uint8Array(12);new DataView(a.buffer).setBigUint64
 class Channel {
  constructor(base,id,cid,role,credential='OWNER'){Object.assign(this,{base,id,cid,role,credential,sequence:0n,received:new Set(),high:0n});}
  async pair(code,raw){
-  if(!/^[A-F0-9]{32}$/i.test(code))throw Error('Enter the 32-character pairing code from the kit label.');
+  if(!(this.credential==='OWNER'?( /^(?:[0-9]{10}|[A-F0-9]{32})$/i.test(code)):/^[A-F0-9]{32}$/i.test(code)))throw Error(this.credential==='OWNER'?'Enter the 10-digit OWNER PIN (or the original 32-character code on older firmware).':'Enter the 32-character pairing code.');
   const a=big(rand(32)),A=bytes(pow(G,a),384),user=this.id+'/'+this.credential;
   const fields={clientId:this.cid,expectedDeviceId:this.id,deviceId:this.id,credential:this.credential,role:this.role,A:hex(A)};
   const hello=await raw('/api/security/hello',fields,15000);
@@ -61,7 +61,7 @@ async function ensure(base,st,cid,role,raw){
  if(!st.securityRequired)return null;let ch=registry.get(base);if(ch&&ch.id===st.deviceId&&ch.cid===cid){try{await ch.request('/api/security/info',{},raw);return ch;}catch(e){registry.delete(base);}}
  if(st.apWifiPairing===true&&String(st.mode).startsWith('AP')&&role==='WEB'){ch=new Channel(base,st.deviceId,cid,role,'AP_WIFI');try{await ch.pair(apWifiCode(st.deviceId),raw);if(ch.info.name!==st.name)throw Error('Authenticated Kit Name differs from discovery. Select the correct kit.');return ch;}catch(e){registry.delete(base);throw e;}}
  const saved=w.AerionAndroid?.pairCode?.(st.deviceId)||'',requestedRole=role,title=st.name;
- let code=saved||await promptCode(title+' — kit label code or app invitation');
+ let code=saved||await promptCode(title+' — 10-digit OWNER PIN / legacy 32-character label code / app invitation');
  for(let attempt=0;attempt<2;attempt++){
   let credential='OWNER',pairRole=requestedRole,secret=code.trim();if(secret.includes(':')){[credential,secret]=secret.split(':');pairRole='COMPANION';}
   ch=new Channel(base,st.deviceId,cid,pairRole,credential);try{await ch.pair(secret,raw);if(ch.info.name!==st.name)throw Error('Authenticated Kit Name differs from discovery. Select the correct kit.');if(credential==='OWNER')w.AerionAndroid?.savePairCode?.(st.deviceId,secret.toUpperCase());return ch;}catch(e){registry.delete(base);if(attempt||!saved||e.status!==403)throw e;code=await promptCode(title+' — saved pairing code was rejected. Enter the current code from PAIR LABEL after PAIR RESET.');}
@@ -72,7 +72,7 @@ async function requireOwner(base,st,cid,role,raw){
  if(!current||current.id!==st?.deviceId||current.cid!==cid||current.role!==role)throw Error('Reconnect and verify this exact kit before requesting control.');
  if(current.credential==='OWNER')return current;
  if(current.credential!=='AP_WIFI'||role!=='WEB'||!String(st?.mode||'').startsWith('AP'))throw Error('This session cannot take physical control. Pair with the OWNER label code.');
- const code=await promptCode((st.name||st.deviceId)+' — Take Control requires the 32-character OWNER pairing code from the kit label or serial PAIR LABEL. The Wi-Fi password is not the OWNER code.');
+ const code=await promptCode((st.name||st.deviceId)+' — Take Control needs your 10-digit OWNER PIN (or 32-character legacy code) from the USB Serial PAIR LABEL. The Wi-Fi password is not the OWNER PIN.');
  const owner=new Channel(base,st.deviceId,cid,role,'OWNER');
  try{
   await owner.pair(code,raw);
