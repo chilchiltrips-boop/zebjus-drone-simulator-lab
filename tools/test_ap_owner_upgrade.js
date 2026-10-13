@@ -3,7 +3,7 @@
 // Transport and dialogs are simulated; no hardware is armed by this test.
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const source=fs.readFileSync('kit-security.js','utf8'),local=fs.readFileSync('kit-local.js','utf8'),Crypto=require('../vendor/crypto/zfc-crypto.js');
-const ID='ZFC-001122334455',NAME='zebjus_drone_1',BASE='http://192.168.4.1',CLIENT='WEB-OWNER-UPGRADE-TEST',OWNER='AB'.repeat(16);
+const ID='ZFC-001122334455',NAME='zebjus_drone_1',BASE='http://192.168.4.1',CLIENT='WEB-OWNER-UPGRADE-TEST',OWNER='0012345678';
 let responseCode=OWNER,dialogs=0,rejectPermission=false,actions=[];
 const dom={body:{append(){}},createElement(){
  const input={value:responseCode??''},label={textContent:''};
