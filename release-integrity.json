@@ -14,8 +14,8 @@
     },
     {
       "path": ".github/workflows/remediation-v18-3-84.yml",
-      "bytes": 3883,
-      "sha256": "9fdd0b6194ba7f81c6ffa0902f5b7ea5dfa5c4a0537c2f24dabe96a7af881293"
+      "bytes": 4930,
+      "sha256": "e6bb3140e9e16319a36d894c8cf77cff00bed02fdd8ecdac1d9de032fb087720"
     },
     {
       "path": ".github/workflows/verify-kit-stages.yml",
@@ -1105,7 +1105,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 44079,
-      "sha256": "e6f5644a3bf2072f2bf0ac14cec4093058da3131988e2d783d83ba81ff0cf9f3"
+      "sha256": "21dcfa306689090fec24a599da1d728a539584e8648132826694c969158c7238"
     },
     {
       "path": "offline-support.js",
@@ -1354,8 +1354,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 87640,
-      "sha256": "e1587fe8ff5cd91b3d4c1b28638ccc1f4484447dfd6b684f578092dc51956e30"
+      "bytes": 87757,
+      "sha256": "25a3ac4ee91e12430962f4cc220b23b593bc20db639f7b70afb1592c11ae78c8"
     },
     {
       "path": "server.js",

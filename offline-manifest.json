@@ -1,6 +1,6 @@
 {
   "version": "18.3.84",
-  "totalBytes": 115922813,
+  "totalBytes": 115922930,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -414,8 +414,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 87640,
-      "sha256": "e1587fe8ff5cd91b3d4c1b28638ccc1f4484447dfd6b684f578092dc51956e30"
+      "bytes": 87757,
+      "sha256": "25a3ac4ee91e12430962f4cc220b23b593bc20db639f7b70afb1592c11ae78c8"
     },
     {
       "path": "server.js",
