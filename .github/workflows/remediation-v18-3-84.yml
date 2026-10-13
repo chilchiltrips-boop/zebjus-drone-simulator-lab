@@ -4,10 +4,11 @@ on:
     branches:
       - audit/remediation-v18.3.84
       - fix/ap-owner-take-control
+      - fix/owner-pin-wifi-ssid-discovery
 permissions:
   contents: write
 concurrency:
-  group: remediation-ap-owner-${{ github.ref }}
+  group: remediation-pin-ssid-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   regenerate-and-verify:
@@ -37,6 +38,12 @@ jobs:
           python3 -B tools/release_integrity.py --check
           node tools/test_ap_wifi_pairing.js
           node tools/test_ap_owner_upgrade.js
+          node tools/test_pairing_reset.js
+          python3 tools/test_owner_pin_wifi_contract.py
+          sudo apt-get update -qq
+          sudo apt-get install -y libmbedtls-dev
+          cc -Wno-deprecated-declarations -I tools/security-host -I FlightCore_Firmware/src/crypto tools/security-host/srp_server.c FlightCore_Firmware/src/crypto/esp_srp.c FlightCore_Firmware/src/crypto/esp_srp_mpi.c -lmbedcrypto -o /tmp/zfc-srp-server
+          ZFC_SRP_SERVER=/tmp/zfc-srp-server node tools/test_secure_pairing.js
           python3 tools/test_ap_provisioning_contract.py
           g++ -std=c++17 tools/test_ap_wifi_policy.cpp -o /tmp/zfc-ap-setup-policy
           /tmp/zfc-ap-setup-policy
@@ -85,3 +92,22 @@ jobs:
             FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin
             FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin
             FlightCore_Firmware/build-report.json
+  browser-wifi-setup:
+    needs: regenerate-and-verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser regression runtime
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.0
+          npx playwright install --with-deps chromium
+      - name: Test live AP page automatic SSID discovery and safe setup
+        run: node tools/test_wifi_setup_browser.js

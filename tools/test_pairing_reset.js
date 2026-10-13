@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync('kit-security.js','utf8'),C=require('../vendor/crypto/zfc-crypto.js');
-const id='ZFC-001122334455',name='zebjus_drone_001122334455',old='11111111111111111111111111111111',fresh='22222222222222222222222222222222';
+const id='ZFC-001122334455',name='zebjus_drone_001122334455',old='11111111111111111111111111111111',fresh='0023456789';
 function fixture({saved=old,reply=fresh,error=403}={}){
  const dialogs=[],attempts=[],saves=[];
  const document={body:{append(){}},createElement(){const input={value:reply||''},label={textContent:''};return{querySelector:q=>q==='input'?input:label,addEventListener(type,fn){this.close=fn},showModal(){dialogs.push(label.textContent);queueMicrotask(()=>{this.returnValue=reply===null?'cancel':'pair';this.close()})},remove(){}}}};
