@@ -1644,8 +1644,8 @@
     },
     {
       "path": "tools/test_firmware_updater.js",
-      "bytes": 7123,
-      "sha256": "ea16ae1cad1617bd620e40ec345b498519e0d2710a8c7789f1c75c341838b9f2"
+      "bytes": 7687,
+      "sha256": "888cea2a8065e5b380a1575bc00e070b53b4eb4f022854c82243009089997bc0"
     },
     {
       "path": "tools/test_flight_app_browser.js",
