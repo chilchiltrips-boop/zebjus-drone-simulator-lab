@@ -41,6 +41,7 @@ jobs:
           /tmp/zfc-secure-policy
           node --check server.js
           node --check service-worker.js
+          node -e "const a=require('./server'); if(a.publicAsset('android-app/signing/aerion-development.p12')||a.publicAsset('tools/release_integrity.py')||!a.publicAsset('vendor/monaco/min/vs/base/browser/ui/codicons/codicon/codicon.ttf'))process.exit(1); console.log('PASS: private server paths blocked');"
       - name: Commit generated and sealed artifacts
         run: |
           set -euo pipefail
@@ -51,3 +52,26 @@ jobs:
             git commit -m "Regenerate sealed Flight App and AP setup for security remediation [skip ci]"
             git push origin HEAD:${{ github.ref_name }}
           fi
+  compile-flightcore:
+    needs: regenerate-and-verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Compile A1 and A2 secure firmware without programming hardware
+        run: python3 tools/build_firmware.py
+      - name: Retain compiled APP/FACTORY images for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: remediation-flightcore-a1-a2-candidate
+          path: |
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin
+            FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin
+            FlightCore_Firmware/build-report.json

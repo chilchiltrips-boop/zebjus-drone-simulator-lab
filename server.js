@@ -10,7 +10,7 @@ function publicAsset(rel){
  if(parts.some(p=>!p||p==='.'||p==='..'||p.startsWith('.')))return false;
  const ext=path.extname(rel).toLowerCase();
  if(parts.length===1)return rootExtensions.has(ext)&&!deniedRoot.has(parts[0]);
- if(parts[0]==='vendor')return ['.js','.mjs','.json','.wasm','.whl','.zip','.data','.task','.py','.css','.bin'].includes(ext);
+ if(parts[0]==='vendor')return ['.js','.mjs','.json','.wasm','.whl','.zip','.data','.task','.py','.css','.bin','.ttf','.woff','.woff2'].includes(ext);
  if(parts[0]==='flight')return parts.length===2&&rootExtensions.has(ext);
  if(parts[0]==='python_companion')return parts.length===2&&ext==='.py';
  if(parts[0]==='FlightCore_Firmware')return parts.length===2&&(parts[1]==='catalog.json'||parts[1]==='latest.json'||/^ZEBJUS_FLIGHTCORE_A[12]_(?:APP|FACTORY)\.bin$/.test(parts[1]));
