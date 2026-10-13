@@ -187,11 +187,11 @@ class LocalKitClient{
   async refresh(timeout=2100){if(!this.base)throw new Error('Kit not connected.');const base=this.base,id=this.deviceId,generation=this._generation,seq=++this._requestSeq,st=await requestBase(base,`/api/status?clientId=${encodeURIComponent(this.clientId)}`,{timeout});if(generation!==this._generation)throw new Error('Status request cancelled.');if(id&&!sameDeviceIdentity(st.deviceId,id))throw new Error('Connected device identity changed.');return this._accept(st,base,seq)}
   async reconnect(retries=4){if(this._reconnectPromise)return this._reconnectPromise;this._reconnectPromise=(async()=>{let last;const waits=[0,350,800,1500,2500];for(let i=0;i<Math.max(1,retries);i++){if(waits[i])await new Promise(r=>setTimeout(r,waits[i]));try{return await this.connect(this.name||this.deviceId,this.ipHint,this.deviceId)}catch(e){last=e}}throw last||new Error('Kit reconnect failed.')})();try{return await this._reconnectPromise}finally{this._reconnectPromise=null}}
   async request(path,options={}){if(!this.base)throw Error('Kit not connected.');return requestBase(this.base,path,options)}
-  async uploadFirmware(bytes,name,boardId){
+  async uploadFirmware(bytes,name,boardId,signature='',version=''){
     if(!this.base||!this.deviceId)throw Error('Connect and verify the kit first.');
     const ch=global.ZfcSecurity?.get(this.base);if(!ch)throw Error('Pair the kit before encrypted OTA. USB FACTORY is required for migration.');
     const digest=global.ZfcSecurity.hex(global.ZfcCrypto.sha256(bytes));const data={clientId:this.clientId,expectedDeviceId:this.deviceId};
-    await this.request('/api/firmware/begin',{method:'POST',data:{...data,size:bytes.length,sha256:digest,boardId},timeout:5000});
+    await this.request('/api/firmware/begin',{method:'POST',data:{...data,size:bytes.length,sha256:digest,boardId,signature,version},timeout:5000});
     for(let offset=0;offset<bytes.length;offset+=1024){const chunk=bytes.slice(offset,offset+1024);const r=await this.request('/api/firmware/chunk',{method:'POST',data:{...data,offset,data:global.ZfcSecurity.hex(chunk)},timeout:5000});if(r.offset!==offset+chunk.length)throw Error('Firmware offset not confirmed.');}
     return this.request('/api/firmware/end',{method:'POST',data,timeout:10000});
   }
