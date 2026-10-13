@@ -1,0 +1,53 @@
+name: Generate and verify V18.3.84 remediation
+on:
+  push:
+    branches:
+      - audit/remediation-v18.3.84
+permissions:
+  contents: write
+concurrency:
+  group: remediation-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  regenerate-and-verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regenerate exact embedded Flight App, AP recovery page, and integrity manifests
+        run: |
+          set -euo pipefail
+          python3 tools/embed_ap_pages.py
+          python3 tools/make_offline_manifest.py
+          python3 -B tools/release_integrity.py --write
+      - name: Validate generated files and source contracts
+        run: |
+          set -euo pipefail
+          python3 tools/embed_ap_pages.py --check
+          python3 -B tools/validate_project.py
+          python3 -B tools/validate_offline_bundle.py
+          python3 -B tools/release_integrity.py --check
+          node tools/test_ap_wifi_pairing.js
+          g++ -std=c++17 tools/test_ap_wifi_policy.cpp -o /tmp/zfc-ap-setup-policy
+          /tmp/zfc-ap-setup-policy
+          g++ -std=c++17 tools/test_secure_policy.cpp -o /tmp/zfc-secure-policy
+          /tmp/zfc-secure-policy
+          node --check server.js
+          node --check service-worker.js
+      - name: Commit generated and sealed artifacts
+        run: |
+          set -euo pipefail
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add tools/flight_app_source.html flight/index.html android-app/app/src/main/assets/flight/index.html FlightCore_Firmware/WIFI_SETUP_PAGE.h offline-manifest.json release-integrity.json FILE_COUNT.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "Regenerate sealed Flight App and AP setup for security remediation [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
