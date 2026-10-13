@@ -10,7 +10,7 @@ function fixture(mode='AP',role='MOBILE',reject=false){
 }
 (async()=>{
  for(const role of ['WEB']){const f=fixture('AP',role);await f.run();assert.equal(f.attempts.length,1);assert.equal(f.attempts[0].credential,'AP_WIFI');assert.equal(f.attempts[0].role,role);assert.equal(f.saves.length,0);assert.match(f.attempts[0].code,/^[A-F0-9]{32}$/);assert.notEqual(f.w.ZfcSecurity.apWifiCode(id),f.w.ZfcSecurity.apWifiCode('ZFC-001122334455'),'AP secret is device scoped');}
- const f=fixture('AP','MOBILE',true);await assert.rejects(f.run(),/AP proof rejected/);assert.equal(f.attempts.length,1,'failed AP proof never falls back to an owner prompt');assert.equal(f.saves.length,0);
+ const f=fixture('AP','WEB',true);await assert.rejects(f.run(),/AP proof rejected/);assert.equal(f.attempts.length,1,'failed WEB AP proof never falls back to an owner prompt');assert.equal(f.saves.length,0);
  await assert.rejects(fixture('AP','MOBILE').run(),/saved owner credentials/,'mobile physical flight requires independent OWNER pairing');await assert.rejects(fixture('STA').run(),/saved owner credentials/,'STA never chooses automatic AP credentials');await assert.rejects(fixture('AP','COMPANION').run(),/saved owner credentials/);
- console.log('PASS: production AP auto-pair path has no code dialog, distinct per-kit AP credential, no owner-store pollution, bounded failure and strict STA/companion exclusion');
+ console.log('PASS: WEB-only AP setup auto-pair is bounded; MOBILE physical flight requires OWNER pairing');
 })().catch(e=>{console.error(e);process.exitCode=1});
