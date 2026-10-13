@@ -14,8 +14,8 @@
     },
     {
       "path": ".github/workflows/remediation-v18-3-84.yml",
-      "bytes": 2172,
-      "sha256": "42250e0042f1b0a752bbaffb870213279cdd0a4ce16de92e53acbdaa93725284"
+      "bytes": 3377,
+      "sha256": "1fb3092ab9f01390467c83a780ebec58435d642fc66929425ae35d7f5ee93245"
     },
     {
       "path": ".github/workflows/verify-kit-stages.yml",
@@ -99,8 +99,8 @@
     },
     {
       "path": "FlightCore_Firmware/FlightSecurity.h",
-      "bytes": 17501,
-      "sha256": "94e1f130cf840a98816c4aeb92f36813df409aab1a3b6bb50d6f7681c96e62a3"
+      "bytes": 17563,
+      "sha256": "b5b3ee856e7fbdbaa1ea2fe98a40e59416ac723ca28956e2b3d8db00b970d1b3"
     },
     {
       "path": "FlightCore_Firmware/FlightSetup.h",
@@ -1105,7 +1105,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 44078,
-      "sha256": "082df5b178dd10f5f0669f910140589328c00b9550b2905c89d3ab8751e22056"
+      "sha256": "3bc61249e143bd582e59d2c3e49dd5091a08fd3f113057d7bee2f1d4dda60bfa"
     },
     {
       "path": "offline-support.js",
@@ -1359,8 +1359,8 @@
     },
     {
       "path": "server.js",
-      "bytes": 3501,
-      "sha256": "0e469735c196c62f5062e796e51d463b5621f6b99cdc3e1272ce76508cf16c8b"
+      "bytes": 3525,
+      "sha256": "3bbbbd24f66cec70293e0d9f95c7808634866f88c8b4030c50a2ff6315973c19"
     },
     {
       "path": "service-worker.js",
