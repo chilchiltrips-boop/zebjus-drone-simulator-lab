@@ -14,8 +14,8 @@
     },
     {
       "path": ".github/workflows/remediation-v18-3-84.yml",
-      "bytes": 3377,
-      "sha256": "1fb3092ab9f01390467c83a780ebec58435d642fc66929425ae35d7f5ee93245"
+      "bytes": 3434,
+      "sha256": "8853d96f7d636596b68c0f2f96cb2ee4e7228211d858ea7f174cf1a8c6eb1569"
     },
     {
       "path": ".github/workflows/verify-kit-stages.yml",
@@ -50,7 +50,7 @@
     {
       "path": "FILE_COUNT.txt",
       "bytes": 4,
-      "sha256": "87fcb8e2232cd8ea18e93e6d4761f9843db167599efe621edf5329561faf24a7"
+      "sha256": "1a468c076a2a0ff75141e1f0de7673c5b535639a213c64f35913b07852c86e10"
     },
     {
       "path": "FILE_REPLACEMENT_POLICY.md",
@@ -99,8 +99,8 @@
     },
     {
       "path": "FlightCore_Firmware/FlightSecurity.h",
-      "bytes": 17563,
-      "sha256": "b5b3ee856e7fbdbaa1ea2fe98a40e59416ac723ca28956e2b3d8db00b970d1b3"
+      "bytes": 17764,
+      "sha256": "e329119afa63974979c59294db652593e2ce7a03544bba1ff3becfa0914a86c9"
     },
     {
       "path": "FlightCore_Firmware/FlightSetup.h",
@@ -174,8 +174,8 @@
     },
     {
       "path": "FlightCore_Firmware/WIFI_SETUP_PAGE.h",
-      "bytes": 36706,
-      "sha256": "8afcb4e5f15b6a7b1e7a9f670be75f1a4b43ea192daed24524f7515679b4e7a6"
+      "bytes": 36586,
+      "sha256": "0eda839f620cec6a4ac7990673c651c293b6f7a8c9941c49ff56a171e7f3eb56"
     },
     {
       "path": "FlightCore_Firmware/WebAppScope.h",
@@ -709,8 +709,8 @@
     },
     {
       "path": "android-app/app/src/main/assets/android-transport.js",
-      "bytes": 5909,
-      "sha256": "482348fe0160e9385f84fb5d59ae5c1a1c0b13e0fb40f2bf848b9c236ee4b97d"
+      "bytes": 5919,
+      "sha256": "a82526c5ee22513d7562efdfc9c8a0eec40bb5d63f7391f623feb46cfeb3a43a"
     },
     {
       "path": "android-app/app/src/main/assets/flight/index.html",
@@ -1464,8 +1464,8 @@
     },
     {
       "path": "tools/ap_secure_source.html",
-      "bytes": 4767,
-      "sha256": "0b5218ace109bb87867a932243b482472d6b6de065036b9f0c2c52c5ac932492"
+      "bytes": 4647,
+      "sha256": "cc907bacbbbef9fecee418cbdf82653cdf674e5d406b778db1b429262e0bb587"
     },
     {
       "path": "tools/browser_pairing_double.js",
@@ -1561,6 +1561,11 @@
       "path": "tools/test_ap_discovery.js",
       "bytes": 1206,
       "sha256": "fcf972b911f195536d2fa2f0e4e505b2cad7d68b4ca5c25cf9f3e4888298663c"
+    },
+    {
+      "path": "tools/test_ap_provisioning_contract.py",
+      "bytes": 993,
+      "sha256": "9737bdc9d2b9caf5c116c9e9cdb1ef7c353337a58232cd9f803ab8c1f0dd5eec"
     },
     {
       "path": "tools/test_ap_python_client.py",
@@ -1864,8 +1869,8 @@
     },
     {
       "path": "tools/test_wifi_setup_browser.js",
-      "bytes": 3836,
-      "sha256": "00dee1f2830545bbca624b04f831e345294e943ec8d505b80e44cc3aa971cfb0"
+      "bytes": 3957,
+      "sha256": "beae889cc825752f27006286e421474b8b60dd113646d8f9a58c07525fcc97f9"
     },
     {
       "path": "tools/test_wix_embed_browser.js",
