@@ -14,8 +14,8 @@
     },
     {
       "path": ".github/workflows/remediation-v18-3-84.yml",
-      "bytes": 3653,
-      "sha256": "59b4b30266cbd46333fe777701ebcbeb440d1cbb5944aed028261bbe2f01f924"
+      "bytes": 3687,
+      "sha256": "c05bb0dfe7ef6da293246bd99dacf7c657e1e7d60d40fbc6588fa10caab48be3"
     },
     {
       "path": ".github/workflows/verify-kit-stages.yml",
@@ -29,8 +29,8 @@
     },
     {
       "path": ".github/workflows/verify-secure-stages.yml",
-      "bytes": 7331,
-      "sha256": "29786bc97c136acce357f970436fc6f5f1a038250d56fbbef42f0672833d4a45"
+      "bytes": 7377,
+      "sha256": "f9bf5722cdeb99f91370d4eab37f43ae4c546300272359a45d000dbb1ec55068"
     },
     {
       "path": ".gitignore",
@@ -50,7 +50,7 @@
     {
       "path": "FILE_COUNT.txt",
       "bytes": 4,
-      "sha256": "1a468c076a2a0ff75141e1f0de7673c5b535639a213c64f35913b07852c86e10"
+      "sha256": "ffcbfa87eb58761c6ceac95238670c2e9d6db0c573bc817041951df3d5baaadb"
     },
     {
       "path": "FILE_REPLACEMENT_POLICY.md",
@@ -174,8 +174,8 @@
     },
     {
       "path": "FlightCore_Firmware/WIFI_SETUP_PAGE.h",
-      "bytes": 36586,
-      "sha256": "0eda839f620cec6a4ac7990673c651c293b6f7a8c9941c49ff56a171e7f3eb56"
+      "bytes": 37629,
+      "sha256": "29e52889358a2cc16f1f885f940ca36767a8a1a2d96e6a389c183b1095f8b1fb"
     },
     {
       "path": "FlightCore_Firmware/WebAppScope.h",
@@ -714,8 +714,8 @@
     },
     {
       "path": "android-app/app/src/main/assets/flight/index.html",
-      "bytes": 143164,
-      "sha256": "0856dc63f200aa26d397d8d992c29c63c46e6a97b0ea34efba0a99301c2c142e"
+      "bytes": 144207,
+      "sha256": "431e188d4d0dc13b77a08fa489b9a7968f0e3467613bc7fec16f0141da9858c4"
     },
     {
       "path": "android-app/app/src/main/java/in/zebjus/aerion/LaunchPolicy.java",
@@ -974,8 +974,8 @@
     },
     {
       "path": "flight/index.html",
-      "bytes": 143116,
-      "sha256": "e4999d1ee0ec760c228ddeee5edcb991ff97feba0a11abadc5d30fc01f83192e"
+      "bytes": 144159,
+      "sha256": "7c922fff40e0502454d55aee99a493d5ac1c0709f70bee0e431a1ddb43a5201d"
     },
     {
       "path": "flight/service-worker.js",
@@ -1059,13 +1059,13 @@
     },
     {
       "path": "kit-local.js",
-      "bytes": 23659,
-      "sha256": "5a4bcbadc71607e4173af52f83c47e6de7e80022c08a1f42a2f24e900c600fa9"
+      "bytes": 24415,
+      "sha256": "689ab525d4a0406dd1297c915f7b4cd2d6f015e52fee5abe581d951a5d844873"
     },
     {
       "path": "kit-security.js",
-      "bytes": 9155,
-      "sha256": "1f481a50acc2fae43e55987eb3074efd6c72038f5ad0d1ea42dc68cf90edd83b"
+      "bytes": 10198,
+      "sha256": "35fe9cc2d15da52cad9a9024bc3d92aa6fd424d10fca4f1e0d074adccee452ec"
     },
     {
       "path": "lab-workflow.css",
@@ -1104,8 +1104,8 @@
     },
     {
       "path": "offline-manifest.json",
-      "bytes": 44078,
-      "sha256": "e278f4ce508b1055a730976c090252e0a6ed3530d0a3d8b70df0b3a5eeb688ea"
+      "bytes": 44079,
+      "sha256": "77de827538de15638aff2a63fe5be7275c8eed4472a7ac0c54b1a1f866ae650d"
     },
     {
       "path": "offline-support.js",
@@ -1114,8 +1114,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 3626,
-      "sha256": "30e5a1a905ed65e6ceff089529c08454f8d75d184199fad2a7d810fa2bbe5497"
+      "bytes": 3665,
+      "sha256": "738470cd6f6c31194c3e24b037be1608ee553fd898ab4f207abf9a80a8c6e23b"
     },
     {
       "path": "pid-tuning.js",
@@ -1354,8 +1354,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 86580,
-      "sha256": "0545ea2e395539939b315f976cfdef2ce9a294b4d1fa5b2bb687842875c098c3"
+      "bytes": 86873,
+      "sha256": "fdd4dac376339306fd8e1832215262a740e5254c0c4a450f98a6db1cddcb7b4b"
     },
     {
       "path": "server.js",
@@ -1494,8 +1494,8 @@
     },
     {
       "path": "tools/flight_app_source.html",
-      "bytes": 143116,
-      "sha256": "e4999d1ee0ec760c228ddeee5edcb991ff97feba0a11abadc5d30fc01f83192e"
+      "bytes": 144159,
+      "sha256": "7c922fff40e0502454d55aee99a493d5ac1c0709f70bee0e431a1ddb43a5201d"
     },
     {
       "path": "tools/make_offline_manifest.py",
@@ -1561,6 +1561,11 @@
       "path": "tools/test_ap_discovery.js",
       "bytes": 1206,
       "sha256": "fcf972b911f195536d2fa2f0e4e505b2cad7d68b4ca5c25cf9f3e4888298663c"
+    },
+    {
+      "path": "tools/test_ap_owner_upgrade.js",
+      "bytes": 4855,
+      "sha256": "ef86ade102b67b90b77a723acf39cb7dc13cf9f979b58ec2422504a0024f2bc7"
     },
     {
       "path": "tools/test_ap_provisioning_contract.py",
