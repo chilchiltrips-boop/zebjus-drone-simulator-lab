@@ -153,7 +153,7 @@ function statusUi(){networkToggleUi();controlToggleUi();const current=selected()
  const b=$('#schoolCloudBadge');if(b){b.textContent=ready()?'LOCAL LINK':'UNAVAILABLE';b.className='status '+(ready()?'good':'')}
  const q=$('#kitSearchInput');if(q&&document.activeElement!==q)q.value=st.query;
  const ng=$('#networkGroupBadge');if(ng)ng.textContent='Same Wi-Fi • mDNS';
- const wr=$('#webJoyRoleBadge');if(wr){wr.textContent=selectedConnected()&&window.ZfcSecurity?.get(client?.base)?'PAIRED KIT':'PAIR KIT';wr.className='status good'}
+ const wr=$('#webJoyRoleBadge');if(wr){const ch=selectedConnected()?window.ZfcSecurity?.get(client?.base):null;wr.textContent=ch?.credential==='OWNER'?'OWNER PAIRED':ch?.credential==='AP_WIFI'?'AP SETUP ONLY':ch?'PAIRED KIT':'PAIR KIT';wr.className='status '+(ch?.credential==='AP_WIFI'?'warn':'good')}
  const ss=$('#shareStateBadge');if(ss){const d=selected();ss.textContent=d?.lockMine?'CONTROL':d?.online?'VIEW ONLY':ready()?'READY':'OFFLINE';ss.className='status '+(d?.lockMine?'good':'')}
  renderModules();renderSelected();serviceStatus();targetUi();updateTopKitStatus();updateHealthUi();
 }
@@ -174,7 +174,7 @@ function renderSelected(){
  const online=$('#selectedDeviceOnline');if(online){online.textContent=d?.online?'Online':'Offline';online.className='status '+(d?.online?'good':'')}
  const rename=$('#deviceRenameInput');if(rename&&d&&!rename.matches(':focus'))rename.value=d.deviceName||'';
  const ping=$('#pingSelectedDeviceBtn');if(ping)ping.disabled=!(d&&d.online);const renameBtn=$('#renameDeviceBtn');if(renameBtn)renameBtn.disabled=!canControl();
- const take=$('#takeControlBtn');if(take){take.disabled=exclusiveMobileSession()||window.ZfcSecurity?.get(client?.base)?.role==='COMPANION'||!(d&&d.online&&!d.lockMine&&(!d.locked||d.controlRole==='MOBILE'));take.hidden=!!d?.lockMine;take.textContent=d?.controlRole==='MOBILE'?'Take web control':d?.locked?'Kit In Use':'Take Control'}
+ const take=$('#takeControlBtn');if(take){take.disabled=exclusiveMobileSession()||window.ZfcSecurity?.get(client?.base)?.role==='COMPANION'||!(d&&d.online&&!d.lockMine&&(!d.locked||d.controlRole==='MOBILE'));take.hidden=!!d?.lockMine;take.textContent=d?.controlRole==='MOBILE'?'Take web control':d?.locked?'Kit In Use':window.ZfcSecurity?.get(client?.base)?.credential==='AP_WIFI'?'Pair OWNER & Take Control':'Take Control'}
  const rel=$('#releaseControlBtn');if(rel){rel.hidden=!d?.lockMine;rel.disabled=!d?.lockMine}
  const jm=$('#joySelectedModule');if(jm)jm.textContent=d?.deviceName||'None';const jl=$('#joyLock');if(jl)jl.textContent=!d?'--':d.lockMine?'CONTROL':d.locked?'VIEW ONLY':'AVAILABLE';
  enforceJoystickLink();
