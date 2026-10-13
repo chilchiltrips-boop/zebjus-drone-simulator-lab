@@ -42,6 +42,13 @@ jobs:
           /tmp/zfc-secure-policy
           node --check server.js
           node --check service-worker.js
+          npm run test:control
+          npm run test:stability
+          npm run test:setup
+          npm run test:wifi
+          npm run test:flight-math
+          npm run test:rc-link
+          npm run test:fc-setup
           node -e "const a=require('./server'); if(a.publicAsset('android-app/signing/aerion-development.p12')||a.publicAsset('tools/release_integrity.py')||!a.publicAsset('vendor/monaco/min/vs/base/browser/ui/codicons/codicon/codicon.ttf'))process.exit(1); console.log('PASS: private server paths blocked');"
       - name: Commit generated and sealed artifacts
         run: |
