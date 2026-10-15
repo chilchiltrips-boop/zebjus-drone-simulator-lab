@@ -304,9 +304,41 @@ String hostFromName(String s){
   while(h.endsWith("-"))h.remove(h.length()-1);
   return h;
 }
-void updateApName(){apName=kitName.length()?kitName:defaultKitName();}
+static const char* DEFAULT_AP_PASSWORD="12345678";
+bool validApSsid(const String& name){
+ if(!name.length()||name.length()>32)return false;
+ for(size_t i=0;i<name.length();i++)if((uint8_t)name[i]<32||(uint8_t)name[i]==127)return false;
+ return true;
+}
+bool validApPassword(const String& password){
+ if(password.length()<8||password.length()>63)return false;
+ for(size_t i=0;i<password.length();i++)if((uint8_t)password[i]<32||(uint8_t)password[i]>126)return false;
+ return true;
+}
+// Factory AP name follows the Kit Name. A teacher-set SSID is kept separately.
+void updateApName(){
+ apName=kitName.length()?kitName:defaultKitName();
+ if(prefs.begin("zjap",true)){String custom=prefs.getString("ssid","");prefs.end();if(validApSsid(custom))apName=custom;}
+}
 void loadApPassword(){
- prefs.begin("zjap",false);apPassword="12345678";if(prefs.getString("pass","")!=apPassword)prefs.putString("pass",apPassword);prefs.end();
+ apPassword=DEFAULT_AP_PASSWORD;
+ if(prefs.begin("zjap",true)){String saved=prefs.getString("pass","");prefs.end();if(validApPassword(saved))apPassword=saved;}
+}
+// Store both values transactionally enough to reject a failed/partial NVS write.
+bool saveApCredentials(const String& ssid,const String& password){
+ if(!validApSsid(ssid)||!validApPassword(password)||!prefs.begin("zjap",false))return false;
+ String previousSsid=prefs.getString("ssid",""),previousPass=prefs.getString("pass","");
+ bool wrote=prefs.putString("ssid",ssid)>0&&prefs.putString("pass",password)>0;
+ bool verified=wrote&&prefs.getString("ssid","")==ssid&&prefs.getString("pass","")==password;
+ if(!verified){if(previousSsid.length())prefs.putString("ssid",previousSsid);else prefs.remove("ssid");
+   if(previousPass.length())prefs.putString("pass",previousPass);else prefs.remove("pass");}
+ prefs.end();if(!verified)return false;updateApName();loadApPassword();return true;
+}
+bool resetApCredentials(){
+ if(!prefs.begin("zjap",false))return false;
+ prefs.remove("ssid");prefs.remove("pass");
+ bool ok=!prefs.getString("ssid","").length()&&!prefs.getString("pass","").length();
+ prefs.end();if(!ok)return false;updateApName();loadApPassword();return true;
 }
 String defaultKitName(){return "zebjus_drone_1";}
 String optionalWebappUrl(){
@@ -382,7 +414,7 @@ void setForceSetupFlag(bool on){prefs.begin("zjsys",false);if(on)prefs.putBool("
 bool consumeForceSetupFlag(){prefs.begin("zjsys",false);bool on=prefs.getBool("forceap",false);if(on)prefs.remove("forceap");prefs.end();return on;}
 void setPreferredApMode(bool on){prefs.begin("zjsys",false);if(on)prefs.putBool("preferap",true);else prefs.remove("preferap");prefs.end();}
 bool preferredApMode(){prefs.begin("zjsys",true);bool on=prefs.getBool("preferap",false);prefs.end();return on;}
-void factoryResetAll(){clearSavedWiFi();clearKitName();prefs.begin("zjsys",false);prefs.clear();prefs.end();prefs.begin("zjpid",false);prefs.clear();prefs.end();prefs.begin("zjcal",false);prefs.clear();prefs.end();prefs.begin("zjio",false);prefs.clear();prefs.end();prefs.begin("zjflight",false);prefs.clear();prefs.end();setCalibrationDefaults();}
+void factoryResetAll(){clearSavedWiFi();clearKitName();prefs.begin("zjap",false);prefs.clear();prefs.end();updateApName();loadApPassword();prefs.begin("zjsys",false);prefs.clear();prefs.end();prefs.begin("zjpid",false);prefs.clear();prefs.end();prefs.begin("zjcal",false);prefs.clear();prefs.end();prefs.begin("zjio",false);prefs.clear();prefs.end();prefs.begin("zjflight",false);prefs.clear();prefs.end();setCalibrationDefaults();}
 
 // ============================================================
 // Wi-Fi + mDNS
@@ -1027,11 +1059,29 @@ void commandApi(){
 
   // Everything below this line changes hardware state and requires the selected browser to own control.
   if(!requireControl())return;
-  bool configMutation=type=="pid_set"||type=="pid_defaults"||type=="calibration_set"||type=="calibration_defaults"||type=="level_calibrate"||type=="calibrate_level"||type=="calibrate_gyro"||type=="motor_map_set"||type=="ppm_config"||type=="servo_config"||type=="gps_config"||type=="i2c_write"||type=="matrix_config"||type=="motor_test"||type=="motor_order_test"||type=="esc_calibrate";
+  bool configMutation=type=="pid_set"||type=="pid_defaults"||type=="calibration_set"||type=="calibration_defaults"||type=="level_calibrate"||type=="calibrate_level"||type=="calibrate_gyro"||type=="motor_map_set"||type=="ppm_config"||type=="servo_config"||type=="gps_config"||type=="i2c_write"||type=="matrix_config"||type=="motor_test"||type=="motor_order_test"||type=="esc_calibrate"||type=="ap_credentials_set"||type=="ap_credentials_reset";
   ConfigGuard configGuard;if(!configMutation&&configGuard.held)configurationBusy=false;
   if(configMutation&&!configGuard.held){sendMessage(423,"Disarm and stop bench outputs before configuration");return;}
   if(type=="ap_credentials"){
+    if(!secureOwner()){sendMessage(403,"OWNER pairing required for AP credentials");return;}
     sendJson(200,"{\"ok\":true,\"apSsid\":\""+jsonEscape(apName)+"\",\"apPassword\":\""+jsonEscape(apPassword)+"\",\"deviceId\":\""+deviceId+"\"}");return;
+  }
+  if(type=="ap_credentials_set"||type=="ap_credentials_reset"){
+    if(!secureOwner()){sendMessage(403,"OWNER pairing required for AP administration");return;}
+    if(effectiveArmed()||benchMode!=BENCH_NONE||trainingActive||fcSetupActive||firmwareUploadActive||wifiTestState==WT_RUNNING||restartAt){
+      sendMessage(423,"Disarm and stop training, bench, Wi-Fi testing and updates first");return;
+    }
+    bool resetting=type=="ap_credentials_reset";
+    String newSsid=server.arg("ssid"),newPassword=server.arg("password");
+    if(!resetting&&(!validApSsid(newSsid)||!validApPassword(newPassword))){
+      sendMessage(400,"AP SSID must be 1-32 bytes without controls; WPA2 password must be 8-63 printable ASCII characters");return;
+    }
+    bool saved=resetting?resetApCredentials():saveApCredentials(newSsid,newPassword);
+    newPassword="";
+    if(!saved){sendMessage(500,"Could not store AP credentials; existing values preserved where possible");return;}
+    bool reboot=setupMode;
+    if(reboot){setForceSetupFlag(true);restartAt=millis()+1200;}
+    sendJson(200,"{\"ok\":true,\"deviceId\":\""+deviceId+"\",\"apSsid\":\""+jsonEscape(apName)+"\",\"reset\":"+String(resetting?"true":"false")+",\"rebooting\":"+String(reboot?"true":"false")+",\"message\":\""+String(reboot?"AP credentials saved; reconnect after AP restart":"AP credentials saved for next AP connection")+"\"}");return;
   }
   if(type=="network_mode_set"){
     if(server.arg("mode")!="AP"){sendMessage(400,"Choose AP mode from Settings");return;}
@@ -1258,7 +1308,7 @@ void startNormalServer(){
 }
 void startSetupMode(){
   invalidateRcUdp();setupMode=true;wifiFallbackAt=millis();controlOwner="";controlRole="";mobileReserved=false;rcPreference=setupInput;controlExpiresAt=0;serviceFcSetup();serviceTraining();if(mdnsStarted){MDNS.end();mdnsStarted=false;}WiFi.setAutoReconnect(false);WiFi.disconnect(false,false);delay(120);WiFi.mode(WIFI_AP);WiFi.setSleep(false);updateApName();WiFi.softAPConfig(AP_IP,AP_GATEWAY,AP_SUBNET);bool ok=WiFi.softAP(apName.c_str(),apPassword.c_str());server.begin();startRcUdp();startRcMonitor();wifiTestState=WT_IDLE;
-  Serial.println("==============================");Serial.println("ZEBJUS FlightCore SETUP MODE");Serial.println("AP Status: "+String(ok?"STARTED":"FAILED"));Serial.println("SSID     : "+apName);Serial.println("Password : "+apPassword);Serial.println("Write the AP SSID and password on the kit case before closing it.");Serial.println("Setup    : http://192.168.4.1");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);
+  Serial.println("==============================");Serial.println("ZEBJUS FlightCore SETUP MODE");Serial.println("AP Status: "+String(ok?"STARTED":"FAILED"));Serial.println("SSID     : "+apName);Serial.println("AP password: hidden; connect a trusted USB terminal and send AP SHOW to view it.");Serial.println("Setup    : http://192.168.4.1");Serial.println("Controller: "+String(BOARD_NAME)+" ["+String(BOARD_ID)+"]");Serial.println("Device ID: "+deviceId);Serial.println("Kit Name : "+kitName);
 }
 
 // ============================================================

@@ -534,6 +534,52 @@ async function showApCredentials(){
  const d=selected();if(!selectedConnected()||!canControl())return setText('apCredentials','Connect a verified kit and Take Control first.');
  try{const r=await client.command({type:'ap_credentials'});if(!window.ZebjusDroneKit.sameDeviceIdentity(r.deviceId,d.deviceId))throw Error('Device ID mismatch. Reconnect the correct kit.');setText('apCredentials',`${r.apSsid} • AP password: ${r.apPassword}. Record these details on this kit's case.`)}catch(e){setText('apCredentials','Could not read AP details: '+e.message)}
 }
+function apAdminAuthorized(){
+ const c=window.ZfcSecurity?.get(client?.base);
+ return selectedConnected()&&canControl()&&c?.credential==='OWNER';
+}
+async function apAdminMaintenance(){
+ if(String(selected()?.mode||'').startsWith('AP'))await client.request('/api/security/maintenance',{method:'POST',data:{clientId:client.clientId}});
+}
+async function apAdminView(){
+ if(!apAdminAuthorized())return setText('apAdminMessage','Connect this Kit and Take Control with the OWNER pairing code.');
+ try{
+  await apAdminMaintenance();
+  const r=await client.command({type:'ap_credentials'});
+  if(!window.ZebjusDroneKit.sameDeviceIdentity(r.deviceId,selected()?.deviceId))throw Error('Device ID mismatch.');
+  const f=$('#apAdminSsid');if(f)f.value=r.apSsid||'';
+  setText('apAdminMessage','Current AP: '+r.apSsid+' • Password: '+r.apPassword+' (keep this private).');
+ }catch(e){setText('apAdminMessage','Could not read AP credentials: '+e.message);}
+}
+async function apAdminSave(){
+ if(!apAdminAuthorized())return setText('apAdminMessage','OWNER pairing and Take Control are required.');
+ const ssid=$('#apAdminSsid')?.value||'',password=$('#apAdminPassword')?.value||'';
+ if(new TextEncoder().encode(ssid).length<1||new TextEncoder().encode(ssid).length>32||/[\x00-\x1f\x7f]/.test(ssid))return setText('apAdminMessage','SSID must be 1–32 bytes, without control characters.');
+ if(!/^[\x20-\x7e]{8,63}$/.test(password))return setText('apAdminMessage','WPA2 password must contain 8–63 printable ASCII characters.');
+ const button=$('#saveApAdminBtn');if(button)button.disabled=true;
+ try{
+  await apAdminMaintenance();
+  const r=await client.command({type:'ap_credentials_set',ssid,password});
+  if(!window.ZebjusDroneKit.sameDeviceIdentity(r.deviceId,selected()?.deviceId))throw Error('Device ID mismatch.');
+  if($('#apAdminPassword'))$('#apAdminPassword').value='';
+  setText('apAdminMessage',r.rebooting?'AP saved. Kit restarting; reconnect with the NEW AP password.':'AP saved. New credentials apply next time AP starts.');
+  if(r.rebooting)disconnectKit(false);
+ }catch(e){setText('apAdminMessage','AP save failed: '+e.message);}finally{if(button)button.disabled=false;}
+}
+async function apAdminReset(){
+ if(!apAdminAuthorized())return setText('apAdminMessage','OWNER pairing and Take Control are required.');
+ if(!await confirmInLab('Reset only this Kit AP SSID to its Kit Name and AP password to 12345678? Saved router Wi-Fi and pairing will be retained.'))return;
+ const button=$('#resetApAdminBtn');if(button)button.disabled=true;
+ try{
+  await apAdminMaintenance();
+  const r=await client.command({type:'ap_credentials_reset'});
+  if(!window.ZebjusDroneKit.sameDeviceIdentity(r.deviceId,selected()?.deviceId))throw Error('Device ID mismatch.');
+  if($('#apAdminSsid'))$('#apAdminSsid').value=r.apSsid||'';
+  if($('#apAdminPassword'))$('#apAdminPassword').value='';
+  setText('apAdminMessage',r.rebooting?'AP reset to default (password 12345678). Reconnect after AP restart.':'AP reset to default (password 12345678). Applies when AP starts.');
+  if(r.rebooting)disconnectKit(false);
+ }catch(e){setText('apAdminMessage','AP reset failed: '+e.message);}finally{if(button)button.disabled=false;}
+}
 async function switchToAp(){
  const d=selected();if(!selectedConnected())return networkNotice('Connect the selected kit first.');
  if(!canControl())return networkNotice('Take Control first.');
@@ -545,7 +591,7 @@ async function switchToAp(){
 function initUi(){
  $('#topControlToggle')?.addEventListener('click',toggleKitControl);$('#topNetworkToggle')?.addEventListener('click',toggleNetworkMode);$('#closeNetworkNotice')?.addEventListener('click',()=>{const n=$('#topNetworkNotice');if(n)n.hidden=true});
  loadPrefs();initJoystick();const q=$('#kitSearchInput');if(q){q.value=st.query;q.addEventListener('keydown',e=>{if(e.key==='Enter')searchModules()})}const demo=$('#demoMode');if(demo){demo.checked=st.demoMode;demo.onchange=()=>{st.demoMode=demo.checked;savePrefs();if(st.demoMode)api()?.setFcConnected?.(false);statusUi()}}
- $('#kitSearchBtn')?.addEventListener('click',searchModules);$('#refreshModulesBtn')?.addEventListener('click',scanKitsUi);$('#disconnectKitBtn')?.addEventListener('click',()=>disconnectKit(true));$('#renameDeviceBtn')?.addEventListener('click',renameDevice);$('#resetKitNameBtn')?.addEventListener('click',resetKitName);$('#pingSelectedDeviceBtn')?.addEventListener('click',()=>sendDeviceCommand({type:'ping',time:Date.now()}));$('#takeControlBtn')?.addEventListener('click',()=>acquireLock(false));$('#releaseControlBtn')?.addEventListener('click',()=>releaseLock(false));$('#scanWifiBtn')?.addEventListener('click',scanWifi);$('#wifiSelect')?.addEventListener('change',e=>{if(e.target.value&&$('#wifiSsidManual'))$('#wifiSsidManual').value=e.target.value});$('#saveWifiBtn')?.addEventListener('click',saveWifi);$('#resetWifiBtn')?.addEventListener('click',resetWifi);$('#showApCredentialsBtn')?.addEventListener('click',showApCredentials);$('#switchApBtn')?.addEventListener('click',switchToAp);$('#refreshSavedWifiBtn')?.addEventListener('click',refreshSavedWifi);$('#useSavedWifiBtn')?.addEventListener('click',useSavedWifi);$('#forgetSavedWifiBtn')?.addEventListener('click',forgetSavedWifi);$('#kitSelect')?.addEventListener('change',e=>{const o=e.target.selectedOptions?.[0];if(!o?.value)return;if(q)q.value=o.value;const ip=$('#kitCachedIp');if(ip)ip.value=o.dataset.ip||'';st.query=o.value;savePrefs();setText('kitNameMessage',`${o.value} selected from automatic discovery.`);selectDevice(o.dataset.id).then(refreshSavedWifi).catch(err=>simpleError(err.message))});
+ $('#kitSearchBtn')?.addEventListener('click',searchModules);$('#refreshModulesBtn')?.addEventListener('click',scanKitsUi);$('#disconnectKitBtn')?.addEventListener('click',()=>disconnectKit(true));$('#renameDeviceBtn')?.addEventListener('click',renameDevice);$('#resetKitNameBtn')?.addEventListener('click',resetKitName);$('#pingSelectedDeviceBtn')?.addEventListener('click',()=>sendDeviceCommand({type:'ping',time:Date.now()}));$('#takeControlBtn')?.addEventListener('click',()=>acquireLock(false));$('#releaseControlBtn')?.addEventListener('click',()=>releaseLock(false));$('#scanWifiBtn')?.addEventListener('click',scanWifi);$('#wifiSelect')?.addEventListener('change',e=>{if(e.target.value&&$('#wifiSsidManual'))$('#wifiSsidManual').value=e.target.value});$('#saveWifiBtn')?.addEventListener('click',saveWifi);$('#resetWifiBtn')?.addEventListener('click',resetWifi);$('#showApCredentialsBtn')?.addEventListener('click',showApCredentials);$('#apAdminViewBtn')?.addEventListener('click',apAdminView);$('#saveApAdminBtn')?.addEventListener('click',apAdminSave);$('#resetApAdminBtn')?.addEventListener('click',apAdminReset);$('#switchApBtn')?.addEventListener('click',switchToAp);$('#refreshSavedWifiBtn')?.addEventListener('click',refreshSavedWifi);$('#useSavedWifiBtn')?.addEventListener('click',useSavedWifi);$('#forgetSavedWifiBtn')?.addEventListener('click',forgetSavedWifi);$('#kitSelect')?.addEventListener('change',e=>{const o=e.target.selectedOptions?.[0];if(!o?.value)return;if(q)q.value=o.value;const ip=$('#kitCachedIp');if(ip)ip.value=o.dataset.ip||'';st.query=o.value;savePrefs();setText('kitNameMessage',`${o.value} selected from automatic discovery.`);selectDevice(o.dataset.id).then(refreshSavedWifi).catch(err=>simpleError(err.message))});
  window.addEventListener('pagehide',()=>{window.zebjusStopPythonForSafety?.('Page closed or refreshed');if(ownsLock())client.release({keepalive:true}).catch(()=>{});if(client?.webAppRegistered)client.disconnect()});statusUi();
  if(st.preferredDeviceId){seedPreferredDevice();reconnectTick(true).then(refreshSavedWifi)}else if(st.preferredDeviceName||st.query){connectExact(st.preferredDeviceName||st.query,st.autoAcquire).then(refreshSavedWifi).catch(e=>{log('Auto-connect: '+e.message);scanKitsUi()})}else scanKitsUi();
 }

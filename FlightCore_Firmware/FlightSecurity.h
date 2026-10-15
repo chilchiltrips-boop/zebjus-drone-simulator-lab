@@ -26,7 +26,11 @@ void initPairing(bool reset=false){
 }
 void servicePairing(){
  if(pairPending.srp&&(int32_t)(pairPending.expires-millis())<=0)clearPairPending();
- for(int i=0;i<32&&Serial.available();i++){char c=Serial.read();if(c=='\n'||c=='\r'){pairSerial.trim();if(pairSerial=="PAIR RESET"&&!armed&&benchMode==BENCH_NONE&&!trainingActive&&!firmwareUploadActive)initPairing(true);pairSerial="";}else if(pairSerial.length()<32)pairSerial+=c;}
+ for(int i=0;i<32&&Serial.available();i++){char c=Serial.read();if(c=='\n'||c=='\r'){pairSerial.trim();if(pairSerial=="PAIR RESET"&&!armed&&benchMode==BENCH_NONE&&!trainingActive&&!firmwareUploadActive)initPairing(true);
+    else if(pairSerial=="AP SHOW"&&!effectiveArmed()&&benchMode==BENCH_NONE&&!trainingActive&&!firmwareUploadActive){
+      Serial.println("AP SSID: "+apName);Serial.println("AP PASSWORD: "+apPassword);Serial.println("Protect this USB output: it contains the Kit AP password.");
+    }
+    pairSerial="";}else if(pairSerial.length()<32)pairSerial+=c;}
 }
 void pairingHello(){
  uint32_t now=millis();if(now-pairRateAt>60000){pairRateAt=now;pairRateCount=0;}
