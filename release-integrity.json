@@ -1649,8 +1649,8 @@
     },
     {
       "path": "tools/test_firmware_modes_browser.js",
-      "bytes": 3783,
-      "sha256": "1b424c5715279be45a0c7800b7855f639eb7dc392bc7a8f11df59946ff4a2437"
+      "bytes": 4034,
+      "sha256": "9afdc8efb214710ebd805bdb87cb0baa73e134ce2243a51beb34ea1736269163"
     },
     {
       "path": "tools/test_firmware_setup.py",

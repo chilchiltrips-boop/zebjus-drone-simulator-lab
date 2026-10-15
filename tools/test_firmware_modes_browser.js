@@ -10,7 +10,10 @@ async function ready(){for(let n=0;n<80;n++){try{const r=await fetch(URL+'/healt
   await ready();browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   const page=await browser.newPage({viewport:{width:1440,height:900}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(URL+'/',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.__zebjusAppLoaded===true,null,{timeout:30000});
   await page.locator('button[data-tab="firmware"]').click();
+  await page.locator('#tab-firmware').waitFor({state:'visible',timeout:30000});
+  await page.locator('#fwWifiModePanel').waitFor({state:'visible',timeout:30000});
   await page.waitForFunction(()=>document.querySelector('#fwModeWifiBtn')?.getAttribute('aria-pressed')==='true');
   await page.waitForFunction(()=>!document.querySelector('#fwModeUsbBtn')?.disabled,null,{timeout:30000});
   assert.equal(await page.locator('#fwWifiModePanel').isVisible(),true);
