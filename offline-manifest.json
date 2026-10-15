@@ -1,6 +1,6 @@
 {
   "version": "18.3.84",
-  "totalBytes": 115921560,
+  "totalBytes": 115927156,
   "files": [
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -124,8 +124,8 @@
     },
     {
       "path": "firmware-updater.js",
-      "bytes": 37530,
-      "sha256": "b3a29fff9441d711f2e3b8a8365846a41c73bf37e32aa9744e08b911ec132d0f"
+      "bytes": 39504,
+      "sha256": "ee3f76e1b6895f21296f710b4ba1c39ef6868a48bf77207e8299b6e5c46edd55"
     },
     {
       "path": "flight/app.webmanifest",
@@ -209,8 +209,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 80936,
-      "sha256": "187d0f5bf3f9d4b4810eb1419b676a4a248cc5a9630afc6e595a2eb18cfe4c8c"
+      "bytes": 81659,
+      "sha256": "da166772ca505f6f1294ebd9296b0aae19d61997411a949d754321e13ab2ca8a"
     },
     {
       "path": "kit-console.js",
@@ -424,8 +424,8 @@
     },
     {
       "path": "styles.css",
-      "bytes": 174572,
-      "sha256": "484d4bd4d87fc1d670a69517b587fc441dfeeea64cf5d5d7f8cacc21e07b3639"
+      "bytes": 177471,
+      "sha256": "3e731c1801b30a623a03e7077b138bb5fd871c643078c458bbe8dd5f38df44db"
     },
     {
       "path": "telemetry-cockpit.js",

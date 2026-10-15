@@ -36,6 +36,7 @@ jobs:
         run: |
           npm run check
           node tools/test_firmware_updater.js
+          npm run test:firmware-ui
           node tools/test_usb_recovery.js
           npm run test:wifi
           npm run test:stability

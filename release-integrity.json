@@ -24,8 +24,8 @@
     },
     {
       "path": ".github/workflows/verify-learning-lab.yml",
-      "bytes": 8622,
-      "sha256": "26b6bd51271b7a15e4c08ce3fd9d7ec9d6a7ada2db2e4682edb703e0dd9e4193"
+      "bytes": 8657,
+      "sha256": "841aaf6e5e0f30f8995373bc0c13cbfcf18511529b9b455ea797f411ea7317ab"
     },
     {
       "path": ".github/workflows/verify-secure-stages.yml",
@@ -50,7 +50,7 @@
     {
       "path": "FILE_COUNT.txt",
       "bytes": 4,
-      "sha256": "ffcbfa87eb58761c6ceac95238670c2e9d6db0c573bc817041951df3d5baaadb"
+      "sha256": "5bb74f76025135a88f193adbfd87034f0e6af973dbaeeab8b18605baab9ec1d8"
     },
     {
       "path": "FILE_REPLACEMENT_POLICY.md",
@@ -793,6 +793,11 @@
       "sha256": "28a1a348964304a84d1c9138ea7fbe4456d408ce6fc129d56cd3830f51c6f33a"
     },
     {
+      "path": "android-app/gradle.properties",
+      "bytes": 110,
+      "sha256": "cc38bc495ca4e4d7fa2fe7c9c1112f36af7a63fbf4fc3e7a088e215942403385"
+    },
+    {
       "path": "android-app/gradle/wrapper/gradle-wrapper.jar",
       "bytes": 43705,
       "sha256": "81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f"
@@ -801,11 +806,6 @@
       "path": "android-app/gradle/wrapper/gradle-wrapper.properties",
       "bytes": 288,
       "sha256": "c9f009cf689a22b0c2a2f0c47d04b04fc610f4c9f64261d9d8be88311c7c20a9"
-    },
-    {
-      "path": "android-app/gradle.properties",
-      "bytes": 110,
-      "sha256": "cc38bc495ca4e4d7fa2fe7c9c1112f36af7a63fbf4fc3e7a088e215942403385"
     },
     {
       "path": "android-app/gradlew",
@@ -964,23 +964,8 @@
     },
     {
       "path": "firmware-updater.js",
-      "bytes": 37530,
-      "sha256": "b3a29fff9441d711f2e3b8a8365846a41c73bf37e32aa9744e08b911ec132d0f"
-    },
-    {
-      "path": "flight/app.webmanifest",
-      "bytes": 422,
-      "sha256": "ce54218590031eb57a1af15a057ac5ef609e72e0920d1f49d30b7c7d28b0ce9e"
-    },
-    {
-      "path": "flight/index.html",
-      "bytes": 144159,
-      "sha256": "7c922fff40e0502454d55aee99a493d5ac1c0709f70bee0e431a1ddb43a5201d"
-    },
-    {
-      "path": "flight/service-worker.js",
-      "bytes": 1202,
-      "sha256": "a103e244b02691043d365a8ff0c8d27401caa89d7f6eceba1af42be234b44c64"
+      "bytes": 39504,
+      "sha256": "ee3f76e1b6895f21296f710b4ba1c39ef6868a48bf77207e8299b6e5c46edd55"
     },
     {
       "path": "flight-diagnostics.js",
@@ -1018,6 +1003,21 @@
       "sha256": "2dfebe6385e0e90081b2c056900e0ecbb7c10cd1b859db2a27b18f484d058122"
     },
     {
+      "path": "flight/app.webmanifest",
+      "bytes": 422,
+      "sha256": "ce54218590031eb57a1af15a057ac5ef609e72e0920d1f49d30b7c7d28b0ce9e"
+    },
+    {
+      "path": "flight/index.html",
+      "bytes": 144159,
+      "sha256": "7c922fff40e0502454d55aee99a493d5ac1c0709f70bee0e431a1ddb43a5201d"
+    },
+    {
+      "path": "flight/service-worker.js",
+      "bytes": 1202,
+      "sha256": "a103e244b02691043d365a8ff0c8d27401caa89d7f6eceba1af42be234b44c64"
+    },
+    {
       "path": "frame_screw_m25.glb",
       "bytes": 6296,
       "sha256": "f012eca6d0e6be5169671bab1f19cc076dce048d3dc814d6ed1b811486a27010"
@@ -1049,8 +1049,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 80936,
-      "sha256": "187d0f5bf3f9d4b4810eb1419b676a4a248cc5a9630afc6e595a2eb18cfe4c8c"
+      "bytes": 81659,
+      "sha256": "da166772ca505f6f1294ebd9296b0aae19d61997411a949d754321e13ab2ca8a"
     },
     {
       "path": "kit-console.js",
@@ -1105,7 +1105,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 44079,
-      "sha256": "e529f21dca1a55ccb6e8b8884c86686b5ea4483d3cfc7d90751143d38e5751f2"
+      "sha256": "c384479144d127ff25773c4b2fe93ae5cc8d1ab978baa288e731e79203d81778"
     },
     {
       "path": "offline-support.js",
@@ -1114,8 +1114,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 3665,
-      "sha256": "738470cd6f6c31194c3e24b037be1608ee553fd898ab4f207abf9a80a8c6e23b"
+      "bytes": 3731,
+      "sha256": "b025f710d42fdd2d0c2ce46e864962c77ce5890a9c668fabcf8520520003ce3d"
     },
     {
       "path": "pid-tuning.js",
@@ -1374,8 +1374,8 @@
     },
     {
       "path": "styles.css",
-      "bytes": 174572,
-      "sha256": "484d4bd4d87fc1d670a69517b587fc441dfeeea64cf5d5d7f8cacc21e07b3639"
+      "bytes": 177471,
+      "sha256": "3e731c1801b30a623a03e7077b138bb5fd871c643078c458bbe8dd5f38df44db"
     },
     {
       "path": "telemetry-cockpit.js",
@@ -1646,6 +1646,11 @@
       "path": "tools/test_fc_training_gap.js",
       "bytes": 2307,
       "sha256": "8d64d61a9cd3a79f2f3fbdae3d4ca80aa7c833b71005e8998d96fd12dc4aec61"
+    },
+    {
+      "path": "tools/test_firmware_modes_browser.js",
+      "bytes": 3783,
+      "sha256": "1b424c5715279be45a0c7800b7855f639eb7dc392bc7a8f11df59946ff4a2437"
     },
     {
       "path": "tools/test_firmware_setup.py",

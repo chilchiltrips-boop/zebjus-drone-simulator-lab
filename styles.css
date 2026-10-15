@@ -1148,3 +1148,35 @@ button:disabled,.btn:disabled{transform:none!important;box-shadow:none!important
 /* Session notices must not obstruct navigation. */
 .top-network-notice{pointer-events:none}.top-network-notice button{pointer-events:auto}
 #wifiSettingsCard label{display:flex;flex-direction:column;gap:6px;margin:14px 0;color:#c7e4ed;font-size:13px}#wifiSettingsCard input,#wifiSettingsCard select{width:100%;min-width:0;min-height:40px;border:1px solid #315467;border-radius:8px;padding:9px 12px;background:#102532;color:#eef9fd;font:inherit}#wifiSettingsCard input::placeholder{color:#8eacb9}#wifiSettingsCard input:focus,#wifiSettingsCard select:focus{outline:2px solid #45d9bd;outline-offset:1px}
+
+/* Firmware target: compact segmented controls and full-width responsive monitor. */
+#tab-firmware .firmware-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:start}
+#tab-firmware .firmware-grid>.form-card{min-width:0}
+#tab-firmware .firmware-control-card{grid-column:1 / -1;width:100%;min-width:0}
+#tab-firmware .firmware-mode-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:5px;margin-bottom:12px;background:rgba(1,12,23,.55);border:1px solid rgba(82,174,206,.25);border-radius:13px}
+#tab-firmware .firmware-mode-button{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;min-width:0;min-height:57px;padding:8px 10px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--muted);font-size:12px;font-weight:800;line-height:1.3;font-family:inherit;cursor:pointer}
+#tab-firmware .firmware-mode-button small{font-size:10px;font-weight:600;line-height:1.3;opacity:.85}
+#tab-firmware .firmware-mode-button.active{color:#dcfff7;background:rgba(41,153,137,.2);border-color:rgba(82,229,196,.48)}
+#tab-firmware .firmware-mode-button:focus-visible{outline:2px solid #71edcf;outline-offset:2px}
+#tab-firmware .firmware-mode-button:disabled{opacity:.6;cursor:not-allowed}
+#tab-firmware .firmware-mode-panel[hidden],#tab-firmware #fwUpgradeEraseBtn[hidden]{display:none!important}
+#tab-firmware .firmware-mode-panel{min-width:0}
+#tab-firmware .firmware-mode-panel .firmware-target-option{grid-template-columns:48px minmax(0,1fr) auto;margin-bottom:9px;padding:11px}
+#tab-firmware .firmware-target-option>div:nth-child(2){min-width:0}
+#tab-firmware .firmware-target-actions{margin-top:8px}
+#tab-firmware .firmware-target-actions>.btn{width:100%}
+#tab-firmware .firmware-mode-message{margin:10px 0;min-height:2em;overflow-wrap:anywhere}
+#tab-firmware .firmware-upgrade-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#tab-firmware .firmware-upgrade-actions>.btn{flex:1 1 150px}
+#tab-firmware .firmware-file-info b,#tab-firmware .firmware-live-status b{max-width:100%}
+@media(max-width:1050px){#tab-firmware .firmware-grid{grid-template-columns:minmax(0,1fr)}#tab-firmware .firmware-control-card{grid-column:1}}
+@media(max-width:620px){
+#tab-firmware{padding:12px}#tab-firmware .firmware-hero{padding:15px}#tab-firmware .firmware-grid{gap:12px}
+#tab-firmware .firmware-mode-button{min-height:54px;padding:8px 5px;font-size:11px}
+#tab-firmware .firmware-mode-panel .firmware-target-option{grid-template-columns:42px minmax(0,1fr)}
+#tab-firmware .firmware-target-option .firmware-target-icon{width:40px;height:40px}
+#tab-firmware .firmware-target-option button{grid-column:1/-1;width:100%}
+#tab-firmware .firmware-stages{grid-template-columns:repeat(2,minmax(0,1fr))}
+#tab-firmware .firmware-upgrade-actions>.btn{flex:1 1 100%}
+#tab-firmware .firmware-safety-strip{flex-wrap:wrap}
+}

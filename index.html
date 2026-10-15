@@ -321,12 +321,23 @@
 </div>
 <div class="form-card firmware-target-card">
 <div class="panel-head"><div><small>STEP 2 • TARGET</small><h2>Connect controller</h2></div></div>
-<div class="firmware-target-option wifi"><div class="firmware-target-icon">Wi-Fi</div><div><b>Online Kit OTA</b><span>Fast update through the selected same-Wi-Fi kit. Requires Take Control, DISARMED state, and an application .bin.</span></div><button class="btn ghost small" id="fwRefreshKitBtn">Check Kit</button></div>
-<div class="firmware-target-option usb"><div class="firmware-target-icon">USB</div><div><b>USB Web Serial</b><span>First flash / recovery / factory image. Chrome or Edge on HTTPS/localhost. The browser will ask you to select the FlightCore USB port.</span></div><button class="btn primary small" id="fwConnectUsbBtn">Connect USB</button></div>
+<div class="firmware-mode-switch" role="group" aria-label="Firmware connection method">
+<button type="button" class="firmware-mode-button active" id="fwModeWifiBtn" aria-pressed="true" aria-controls="fwWifiModePanel">Wi-Fi OTA <small>Online Kit</small></button>
+<button type="button" class="firmware-mode-button" id="fwModeUsbBtn" aria-pressed="false" aria-controls="fwUsbModePanel">USB Serial <small>First flash / recovery</small></button>
+</div>
+<div class="firmware-mode-panel" id="fwWifiModePanel" role="region" aria-label="Wi-Fi OTA controls">
+<div class="firmware-target-option wifi"><div class="firmware-target-icon">Wi-Fi</div><div><b>Online Kit OTA</b><span>Update the selected same-Wi-Fi kit. Requires Take Control, DISARMED state, signed application .bin and a compatible partition layout.</span></div><button class="btn ghost small" id="fwRefreshKitBtn">Check Kit</button></div>
+<div class="firmware-target-actions"><button class="btn ghost full" id="fwWifiFlashBtn">Flash Selected Kit over Wi-Fi</button></div>
+</div>
+<div class="firmware-mode-panel" id="fwUsbModePanel" role="region" aria-label="USB Serial controls" hidden>
+<div class="firmware-target-option usb"><div class="firmware-target-icon">USB</div><div><b>USB Web Serial</b><span>First flash, recovery or factory image. Use Chrome / Edge on HTTPS or localhost and select the controller's USB port.</span></div><button class="btn primary small" id="fwConnectUsbBtn">Connect USB</button></div>
 <div class="firmware-usb-info"><div><span>Detected board</span><b id="fwUsbChip">--</b></div><div><span>USB status</span><b id="fwUsbState">Not connected</b></div><div><span>Baud</span><select id="fwUsbBaud"><option selected="" value="115200">115200</option><option value="460800">460800</option><option value="921600">921600</option></select></div></div>
-<label class="firmware-check"><input id="fwUsbManualBoot" type="checkbox"/> Already in BOOT mode <small>For recovery: USB power only, hold BOOT, tap RESET, release BOOT, then connect the USB port. Close Arduino Serial Monitor first. Pairing grants port access; USB READY confirms the bootloader and flash chip.</small></label>
-<label class="firmware-check"><input id="fwEraseUsb" type="checkbox"/> Erase entire flash before USB factory flash <small>Only available for Factory/Merged images. Never erase when flashing an app-only image.</small></label>
-<div class="firmware-upgrade-actions"><button class="btn primary" id="fwUpgradeBtn">Upgrade</button><button class="btn danger ghost" id="fwUpgradeEraseBtn">Upgrade &amp; Erase</button><p class="micro-note">Upgrade uses the connected kit or USB port. Upgrade &amp; Erase requires USB and a complete factory image; it clears saved configuration.</p></div><div class="firmware-target-actions"><button class="btn primary full" id="fwWifiFlashBtn">Flash Selected Kit over Wi-Fi</button><button class="btn ghost full" id="fwUsbFlashBtn">Flash Connected FlightCore over USB</button></div>
+<label class="firmware-check"><input id="fwUsbManualBoot" type="checkbox"/> Already in BOOT mode <small>For recovery: USB power only, hold BOOT, tap RESET, release BOOT, then connect. Close Arduino Serial Monitor. USB READY confirms bootloader and flash chip.</small></label>
+<label class="firmware-check"><input id="fwEraseUsb" type="checkbox"/> Erase entire flash before USB factory flash <small>Factory/Merged images only. Never erase for an application-only update. Erase clears saved configuration.</small></label>
+<div class="firmware-target-actions"><button class="btn ghost full" id="fwUsbFlashBtn">Flash Connected FlightCore over USB</button></div>
+</div>
+<p class="micro-note firmware-mode-message" id="fwModeMessage" role="status" aria-live="polite">Wi-Fi OTA uses a signed application image and an online, controlled, disarmed kit.</p>
+<div class="firmware-upgrade-actions"><button class="btn primary" id="fwUpgradeBtn">Upgrade via Wi-Fi</button><button class="btn danger ghost" id="fwUpgradeEraseBtn" hidden>Upgrade &amp; Erase</button></div>
 </div>
 <div class="form-card firmware-control-card">
 <div class="panel-head"><div><small>STEP 3 • UPDATE MONITOR</small><h2>Flash, reboot &amp; reconnect</h2></div><span class="status" id="fwOverallBadge">READY</span></div>
