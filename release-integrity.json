@@ -190,22 +190,22 @@
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
       "bytes": 1306608,
-      "sha256": "555b46bb619ccee5209a2115315c85fa6e7399c4d085dfd93795408d20a27412"
+      "sha256": "be6346f1f9f337eb4f7520e4c81c9b641c69d7383a9d08618d0180b5d80b2822"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "258e1b1b58c54415c4fe50533323979c3824ab81cfbaaa74484ebb3ad4c10bd5"
+      "sha256": "c5d899c9feea8e40d6c8e42da9aec342064a5044e908d60af24204cb4394819f"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_APP.bin",
       "bytes": 1397328,
-      "sha256": "40a08714e5973929c8c8d456ddcf19443baca26c79f7839641104928015fa94a"
+      "sha256": "7a2f0c9e14b496bed3c65fc44a834346df2c484d228abcae3e108b4a3d1bdaa1"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A2_FACTORY.bin",
       "bytes": 4194304,
-      "sha256": "d0c20fa2a1defba192fd25d023841fadd78732b7e1c6966f22b33b34716d8b72"
+      "sha256": "279332e0b8fd9001653576733444596d9c55cfe77801fc541d090fabf23df04f"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_TYPES.h",
@@ -215,17 +215,17 @@
     {
       "path": "FlightCore_Firmware/build-report.json",
       "bytes": 1677,
-      "sha256": "460537fe6d77a873dffb483df2b17db452094c7ae6704c94ae060f029afc6603"
+      "sha256": "ac3da6d0164b1dfc43b5c0505d21fe25f9f88cd01e024a96800af7fdc42aaba9"
     },
     {
       "path": "FlightCore_Firmware/catalog.json",
       "bytes": 2793,
-      "sha256": "77ab6ac45c22e9838d6e30a7fe3b137f273a3c0d54a657236be86d9ac6d072fb"
+      "sha256": "004bcd679702ad7a7289a85bb1711ddbe10f18d2ce870491f6a537ae8bc9c5b9"
     },
     {
       "path": "FlightCore_Firmware/latest.json",
       "bytes": 259,
-      "sha256": "8abe8e2102fb2a762f99128f3e8b419d7c34aec18d4eb4b5169cb6bbed900e20"
+      "sha256": "86e15a179d7c670c06770b37ff4db22380576a5ad7046c648931c0c2df907028"
     },
     {
       "path": "FlightCore_Firmware/partitions.csv",
@@ -793,11 +793,6 @@
       "sha256": "28a1a348964304a84d1c9138ea7fbe4456d408ce6fc129d56cd3830f51c6f33a"
     },
     {
-      "path": "android-app/gradle.properties",
-      "bytes": 110,
-      "sha256": "cc38bc495ca4e4d7fa2fe7c9c1112f36af7a63fbf4fc3e7a088e215942403385"
-    },
-    {
       "path": "android-app/gradle/wrapper/gradle-wrapper.jar",
       "bytes": 43705,
       "sha256": "81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f"
@@ -806,6 +801,11 @@
       "path": "android-app/gradle/wrapper/gradle-wrapper.properties",
       "bytes": 288,
       "sha256": "c9f009cf689a22b0c2a2f0c47d04b04fc610f4c9f64261d9d8be88311c7c20a9"
+    },
+    {
+      "path": "android-app/gradle.properties",
+      "bytes": 110,
+      "sha256": "cc38bc495ca4e4d7fa2fe7c9c1112f36af7a63fbf4fc3e7a088e215942403385"
     },
     {
       "path": "android-app/gradlew",
@@ -955,17 +955,32 @@
     {
       "path": "firmware-catalog.json",
       "bytes": 2793,
-      "sha256": "77ab6ac45c22e9838d6e30a7fe3b137f273a3c0d54a657236be86d9ac6d072fb"
+      "sha256": "004bcd679702ad7a7289a85bb1711ddbe10f18d2ce870491f6a537ae8bc9c5b9"
     },
     {
       "path": "firmware-latest.json",
       "bytes": 268,
-      "sha256": "35cfe86f6d99498ca00c85b4afca97d8bfc355c50ea6275dba53c6134e0809e6"
+      "sha256": "84d8fb68c2d2b248b9e9f9c62f01bbd749a93be140a5b53796368d92ba2d3aeb"
     },
     {
       "path": "firmware-updater.js",
       "bytes": 39504,
-      "sha256": "ee3f76e1b6895f21296f710b4ba1c39ef6868a48bf77207e8299b6e5c46edd55"
+      "sha256": "6758cf18e39ed17cf47d0633439ef3958e080b3f5953d55086e2c9e636a2a9aa"
+    },
+    {
+      "path": "flight/app.webmanifest",
+      "bytes": 422,
+      "sha256": "ce54218590031eb57a1af15a057ac5ef609e72e0920d1f49d30b7c7d28b0ce9e"
+    },
+    {
+      "path": "flight/index.html",
+      "bytes": 144159,
+      "sha256": "7c922fff40e0502454d55aee99a493d5ac1c0709f70bee0e431a1ddb43a5201d"
+    },
+    {
+      "path": "flight/service-worker.js",
+      "bytes": 1202,
+      "sha256": "a103e244b02691043d365a8ff0c8d27401caa89d7f6eceba1af42be234b44c64"
     },
     {
       "path": "flight-diagnostics.js",
@@ -1001,21 +1016,6 @@
       "path": "flight-training.js",
       "bytes": 32666,
       "sha256": "2dfebe6385e0e90081b2c056900e0ecbb7c10cd1b859db2a27b18f484d058122"
-    },
-    {
-      "path": "flight/app.webmanifest",
-      "bytes": 422,
-      "sha256": "ce54218590031eb57a1af15a057ac5ef609e72e0920d1f49d30b7c7d28b0ce9e"
-    },
-    {
-      "path": "flight/index.html",
-      "bytes": 144159,
-      "sha256": "7c922fff40e0502454d55aee99a493d5ac1c0709f70bee0e431a1ddb43a5201d"
-    },
-    {
-      "path": "flight/service-worker.js",
-      "bytes": 1202,
-      "sha256": "a103e244b02691043d365a8ff0c8d27401caa89d7f6eceba1af42be234b44c64"
     },
     {
       "path": "frame_screw_m25.glb",
@@ -1105,7 +1105,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 44079,
-      "sha256": "c384479144d127ff25773c4b2fe93ae5cc8d1ab978baa288e731e79203d81778"
+      "sha256": "4153592195be320c117cc5ba118fe898c27660db9dcf08c360dc5509f6439d8e"
     },
     {
       "path": "offline-support.js",
