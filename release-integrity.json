@@ -1699,8 +1699,8 @@
     },
     {
       "path": "tools/test_learning_lab_browser.js",
-      "bytes": 9089,
-      "sha256": "c0906944be831f866c33441bda151123729a9dac4935a95dcfe83d4a123e47a4"
+      "bytes": 9237,
+      "sha256": "2129e00c6e38dfd6b99b8e48d341c13cb32d5fffa1fc967fc96514a5c7b3534f"
     },
     {
       "path": "tools/test_matrix.cpp",
