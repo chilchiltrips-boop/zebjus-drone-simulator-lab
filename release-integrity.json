@@ -99,8 +99,8 @@
     },
     {
       "path": "FlightCore_Firmware/FlightSecurity.h",
-      "bytes": 17764,
-      "sha256": "e329119afa63974979c59294db652593e2ce7a03544bba1ff3becfa0914a86c9"
+      "bytes": 18054,
+      "sha256": "97f8c0be599577e761beadbf8e14a349a1d3aa4a593227425d93c6bc03a6258f"
     },
     {
       "path": "FlightCore_Firmware/FlightSetup.h",
@@ -159,8 +159,8 @@
     },
     {
       "path": "FlightCore_Firmware/SecurePolicy.h",
-      "bytes": 1989,
-      "sha256": "ad34ac12e64719a5dfc7c6c728d4f7039de7f336cb06c98a290c6d2f05fef23b"
+      "bytes": 2117,
+      "sha256": "9127ec27064b420bb0f19cb6149ba15d3d77762ffd119974101606a303a413d7"
     },
     {
       "path": "FlightCore_Firmware/SecureSessions.h",
@@ -184,8 +184,8 @@
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE.ino",
-      "bytes": 142849,
-      "sha256": "e98bb73e4a0a2135d6c0fcdae92126b99d587f2efe9c37757b6d06fd0cc67e34"
+      "bytes": 146230,
+      "sha256": "fa3dfb7f8a9cebe24c27acb95258cc525b25ac7df9f1ab59313c9bee773889e9"
     },
     {
       "path": "FlightCore_Firmware/ZEBJUS_FLIGHTCORE_A1_APP.bin",
@@ -279,8 +279,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 1344,
-      "sha256": "6bd44ffb54e3126bb71aebf612bdf0a0ddcaa541ae4a3f660da36b071d0650c1"
+      "bytes": 1830,
+      "sha256": "24d78c8d52d74187188dcf2f4d7a6f4627e6f3db951e9ee7ca5c63a401edbb9c"
     },
     {
       "path": "RELEASE_NOTES.md",
@@ -1049,8 +1049,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 81659,
-      "sha256": "da166772ca505f6f1294ebd9296b0aae19d61997411a949d754321e13ab2ca8a"
+      "bytes": 83213,
+      "sha256": "f0c38f99808e125a10fbf77c81b9b4f93d5f9d8c16daa91cd99f493675a155ad"
     },
     {
       "path": "kit-console.js",
@@ -1105,7 +1105,7 @@
     {
       "path": "offline-manifest.json",
       "bytes": 44079,
-      "sha256": "170e8b3ccbe9f6e8188944712300d3b45b36a684e4c68bb439a25edd94f7a832"
+      "sha256": "c70b20ec2c14e594a1f9a730631da299656cf02e66aa752f03d74bf4fab49674"
     },
     {
       "path": "offline-support.js",
@@ -1354,8 +1354,8 @@
     },
     {
       "path": "school-lab.js",
-      "bytes": 86873,
-      "sha256": "fdd4dac376339306fd8e1832215262a740e5254c0c4a450f98a6db1cddcb7b4b"
+      "bytes": 90259,
+      "sha256": "a4081ac8301d78bf80a7fbf52e4e1ab7a996fb845172c242f042f6813a1a1c06"
     },
     {
       "path": "server.js",
